@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Выбор метода отбора проб воздуха</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg-silk: #f3fbf7;
+      --green-accent: #007760;
+      --green-border: #19a86e;
+      --text-dark: #2c2c2c;
+      --error: #d32f2f;
+    }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--bg-silk);
+      margin: 0;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+    }
+
+    #selector-app {
+      background: #ffffff;
+      border: 1px solid var(--green-border);
+      border-radius: 4px;
+      padding: 20px 30px 25px 30px;
+      width: 100%;
+      max-width: 900px;
+      box-shadow: 0 24px 60px rgba(0,119,96,0.15);
+      box-sizing: border-box;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid rgba(0,119,96,0.12);
+      padding-bottom: 10px;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--green-accent);
+      font-size: 24px;
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    .intro {
+      font-size: 14px;
+      color: var(--text-dark);
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .questions {
+      margin-top: 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .question {
+      border-radius: 6px;
+      border: 1px solid #eee;
+      padding: 12px 14px;
+      background: #fff;
+    }
+
+    .question-title {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+      color: var(--text-dark);
+    }
+
+    .question-hint {
+      font-size: 12px;
+      color: #666666;
+      margin-bottom: 8px;
+    }
+
+    .options {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+    }
+
+    .option-label {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 10px;
+      border-radius: 16px;
+      border: 1px solid #ddd;
+      font-size: 13px;
+      cursor: pointer;
+      background: #fafafa;
+      transition: all 0.2s ease;
+    }
+
+    .option-label:hover {
+      border-color: var(--green-accent);
+      background: #f3fbf7;
+      transform: translateY(-1px);
+    }
+
+    .option-label input {
+      accent-color: var(--green-accent);
+    }
+
+    .actions {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #19a86e, #007760);
+      color: white;
+      padding: 10px 40px;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(0,119,96,0.25);
+      transition: 0.25s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 30px rgba(0,119,96,0.32);
+    }
+
+    .result {
+      margin-top: 18px;
+      border-radius: 6px;
+      border: 1px solid #e0e0e0;
+      padding: 12px 14px;
+      min-height: 40px;
+      font-size: 14px;
+    }
+
+    .result-title {
+      font-weight: 700;
+      margin-bottom: 6px;
+      color: var(--green-accent);
+    }
+
+    .result-text {
+      color: var(--text-dark);
+    }
+
+    .error {
+      color: var(--error);
+      font-size: 13px;
+      margin-top: 6px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <div id="selector-app">
+    <header>
+      <h2>Выбор метода отбора проб воздуха</h2>
+      <div class="intro">
+        После выбора вариантов тренажер подскажет подходящий метод отбора пробы.
+      </div>
+    </header>
+
+    <div class="questions">
+      <div class="question" id="q-phase">
+        <div class="question-title">1. Какое основное агрегатное состояние загрязнителя предполагается?</div>
+        <div class="question-hint">Этот вопрос касается того, в какой форме в воздухе присутствует вещество: в виде газа, частиц или одновременно в обеих формах.</div>
+        <div class="options">
+          <label class="option-label">
+            <input type="radio" name="phase" value="gas">
+            Газ, пары, летучие органические соединения
+          </label>
+          <label class="option-label">
+            <input type="radio" name="phase" value="aerosol">
+            Аэрозоль, пыль, дым, туман
+          </label>
+          <label class="option-label">
+            <input type="radio" name="phase" value="mixed">
+            Смешанная природа (газ + аэрозоль)
+          </label>
+        </div>
+      </div>
+
+      <div class="question" id="q_target">
+        <div class="question-title">2. Какой объект анализа рассматривается в первую очередь?</div>
+        <div class="question-hint">В этом вопросе уточняется, что планируется измерять в лаборатории: газ, массу пыли или полный состав воздуха.</div>
+        <div class="options">
+          <label class="option-label">
+            <input type="radio" name="target" value="specific_gas">
+            Конкретный газ/пара (например, диоксид серы, аммиак, пары растворителя)
+          </label>
+          <label class="option-label">
+            <input type="radio" name="target" value="pm">
+            Взвешенные частицы (пыль, аэрозоль) для взвешивания
+          </label>
+          <label class="option-label">
+            <input type="radio" name="target" value="full_mix">
+            Газовый состав воздуха без химической обработки
+          </label>
+        </div>
+      </div>
+
+      <div class="question" id="q_duration">
+        <div class="question-title">3. Какой характер отбора пробы предусматривается?</div>
+        <div class="question-hint">Этот вопрос задает режим отбора: фиксируется отдельный момент времени или усредняется концентрация за длительный период.</div>
+        <div class="options">
+          <label class="option-label">
+            <input type="radio" name="duration" value="short">
+            Разовый отбор в конкретный момент времени
+          </label>
+          <label class="option-label">
+            <input type="radio" name="duration" value="long">
+            Длительный отбор с прокачкой воздуха через среду
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" onclick="chooseMethod()">Подобрать метод</button>
+      <div id="error" class="error"></div>
+    </div>
+
+    <div class="result" id="result-box">
+      <div class="result-title" id="result-title"></div>
+      <div class="result-text" id="result-text"></div>
+    </div>
+  </div>
+
+  <script>
+    function getCheckedValue(name) {
+      const els = document.querySelectorAll('input[name="' + name + '"]:checked');
+      return els.length ? els[0].value : null;
+    }
+
+    function chooseMethod() {
+      const phase = getCheckedValue('phase');
+      const target = getCheckedValue('target');
+      const duration = getCheckedValue('duration');
+
+      const errorBox = document.getElementById('error');
+      const titleEl = document.getElementById('result-title');
+      const textEl = document.getElementById('result-text');
+
+      errorBox.textContent = '';
+      titleEl.textContent = '';
+      textEl.textContent = '';
+
+      if (!phase || !target || !duration) {
+        errorBox.textContent = 'Для получения рекомендации должны быть выбраны варианты во всех вопросах.';
+        return;
+      }
+
+      let method = '';
+      let explanation = '';
+
+      if (target === 'specific_gas' && duration === 'long') {
+        method = 'Жидкие поглотительные среды (импинджеры, абсорберы)';
+        explanation = 'Метод применяют для отбора газов и паров, хорошо растворимых или реагирующих в поглотительном растворе. Воздух прокачивают через жидкость, где целевой компонент растворяется или вступает в химическую реакцию. Так отбирают, например, кислые газы, аммиак, альдегиды и ряд неорганических газов по действующим методикам и ГОСТам. Важно заранее согласовать состав раствора и расход воздуха с лабораторией, чтобы избежать потерь вещества и перегрузки поглотителя.';
+      } else if (target === 'specific_gas' && duration === 'short') {
+        method = 'Герметичные контейнеры и газовые мешки (разовый отбор)';
+        explanation = 'Разовый отбор пробы в газовый мешок, стеклянный или металлический сосуд применяют, когда требуется сохранить смесь газов без немедленной обработки в полевых условиях. Метод применим для относительно стабильных компонентов, не адсорбирующихся на стенках и не реагирующих с материалом емкости. Срок хранения пробы, тип мешка/сосуда и допустимые загрязнители должны соответствовать требованиям методик и согласовываться с лабораторией.';
+      } else if (target === 'pm') {
+        method = 'Фильтры для отбора взвешенных частиц и аэрозолей';
+        explanation = 'Фильтровальный метод применяют для отбора пыли, аэрозолей, дымов и туманов. Через фильтр известной площади и пористости прокачивают заданный объем воздуха, после чего определяют массу или химический состав осевших частиц. Выбор типа фильтра (мембранный, стекловолоконный и т.п.), фракции (вдыхаемая, респирабельная) и расхода воздуха задается методиками и ГОСТами и согласуется с лабораторией. При наличии газовой фазы, мешающей анализу, часто устанавливают предфильтр или комбинируют фильтр с сорбентом.';
+      } else if (phase === 'gas' && target === 'full_mix') {
+        method = 'Отбор воздуха в герметичную емкость (полный газовый состав)';
+        explanation = 'Отбор целостного газового состава в газовую емкость применяют для последующего лабораторного анализа смеси. Метод используют при оценке фоновой концентрации газов и летучих органических соединений, когда важно сохранить соотношение компонентов. Необходимо учитывать ограничения по времени хранения, материалу емкости и перечню веществ, для которых такой отбор допустим согласно методическим документам.';
+      } else if (phase === 'aerosol' && target === 'full_mix') {
+        method = 'Фильтровальный отбор аэрозолей';
+        explanation = 'При преобладании аэрозольной фракции (пыль, дым, туман) отбор ведут на фильтры с заданной фракционной характеристикой. Это позволяет измерить массовую концентрацию аэрозоля и провести химический анализ частиц. В соответствии с методическими документами подбирают размер отбираемой фракции, тип фильтра и расход воздуха, а также учитывают возможную перегрузку фильтра и мешающие компоненты.';
+      } else if (phase === 'mixed' && duration === 'long') {
+        method = 'Комбинированный отбор: фильтры + жидкие или твердые сорбенты';
+        explanation = 'При смешанном составе загрязнения (аэрозоль + газ/пары) часто применяют последовательную схему: сначала фильтр для улавливания частиц, затем жидкий поглотитель или сорбентную трубку для газовой фазы. Такая схема используется при отборе веществ, присутствующих одновременно в частицах и в газовой фазе. Параметры отбора (расход, объем, соединение фильтра и сорбента) задаются конкретной методикой.';
+      } else {
+        method = 'Твердые сорбенты (сорбционные трубки)';
+        explanation = 'Сорбционные трубки применяют для отбора многих газов и паров, особенно органических соединений. Воздух прокачивают через трубку с адсорбентом (например, активированный уголь, силикагель, пористые полимеры), после чего сорбированный компонент элюируют и анализируют в лаборатории. Тип сорбента, расход и предельный объем воздуха задаются методиками и ГОСТами и должны быть согласованы с лабораторией, чтобы избежать проскока вещества через сорбент и потерь пробы.';
+      }
+
+      titleEl.textContent = 'Рекомендуемый метод: ' + method;
+      textEl.textContent = explanation;
+    }
+  </script>
+</body>
+</html>
