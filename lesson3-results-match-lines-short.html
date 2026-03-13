@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Найди пару: результаты замеров выбросов</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg-silk: #f3fbf7;
+      --green-accent: #007760;
+      --green-border: #19a86e;
+      --text-dark: #2c2c2c;
+      --success: #2e7d32;
+      --error: #d32f2f;
+      --line-soft: rgba(0,119,96,0.45);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--bg-silk);
+      margin: 0;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+    }
+
+    #match-app {
+      background: #ffffff;
+      border: 1px solid var(--green-border);
+      border-radius: 4px;
+      padding: 20px 30px 25px 30px;
+      width: 100%;
+      max-width: 1000px;
+      box-shadow: 0 24px 60px rgba(0,119,96,0.15);
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid rgba(0,119,96,0.12);
+      padding-bottom: 10px;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--green-accent);
+      font-size: 24px;
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    .intro {
+      font-size: 14px;
+      color: var(--text-dark);
+      margin-top: 8px;
+      text-align: center;
+    }
+
+    .match-wrapper {
+      margin-top: 20px;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      position: relative;
+    }
+
+    #svg-lines {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .column {
+      position: relative;
+      z-index: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .item {
+      background: #fff;
+      border: 1px solid #e0e0e0;
+      border-radius: 20px;
+      padding: 7px 12px;
+      font-size: 13px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      min-height: 36px;
+      position: relative;
+      transition: all 0.18s ease;
+    }
+
+    .item-text {
+      color: var(--text-dark);
+    }
+
+    .item:hover {
+      border-color: var(--green-accent);
+      box-shadow: 0 4px 12px rgba(0,119,96,0.12);
+      transform: translateY(-1px);
+      background: #f3fbf7;
+    }
+
+    .item.active {
+      border-color: var(--green-accent);
+      background: #e0f5ec;
+      box-shadow: 0 0 0 2px rgba(0,119,96,0.25);
+    }
+
+    .item.correct {
+      border-color: var(--success);
+      background: #e8f5e9;
+      color: var(--success);
+    }
+
+    .item.wrong {
+      border-color: var(--error);
+      background: #ffebee;
+      color: var(--error);
+    }
+
+    .dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #d0d0d0;
+      position: absolute;
+      top: 50%;
+      transform: translateY(-50%);
+    }
+
+    .dot-left  { left: -5px; }
+    .dot-right { right: -5px; }
+
+    .line-path {
+      fill: none;
+      stroke: var(--line-soft);
+      stroke-width: 2.4;
+      stroke-linecap: round;
+      filter: drop-shadow(0 0 4px rgba(0,119,96,0.35));
+      stroke-dasharray: 400;
+      stroke-dashoffset: 400;
+      animation: draw 0.6s ease-out forwards;
+    }
+
+    @keyframes draw {
+      to { stroke-dashoffset: 0; }
+    }
+
+    .line-correct {
+      stroke: var(--success);
+      stroke-width: 3;
+    }
+
+    .line-wrong {
+      stroke: var(--error);
+      stroke-width: 3;
+    }
+
+    .actions {
+      margin-top: 20px;
+      text-align: center;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #19a86e, #007760);
+      color: white;
+      padding: 10px 40px;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(0,119,96,0.25);
+      transition: 0.25s;
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 30px rgba(0,119,96,0.32);
+    }
+
+    #status {
+      margin-top: 10px;
+      font-size: 13px;
+      text-align: center;
+      min-height: 22px;
+      color: var(--text-dark);
+    }
+  </style>
+</head>
+<body onresize="redrawLines()">
+  <div id="match-app">
+    <header>
+      <h2>Найди пару: результаты замеров выбросов</h2>
+      <div class="intro">
+        Соедините данные замеров слева с задачами, в которых их используют, справа.
+      </div>
+    </header>
+
+    <div class="match-wrapper" id="match-wrapper">
+      <svg id="svg-lines"></svg>
+      <div class="column" id="col-left"></div>
+      <div class="column" id="col-right"></div>
+    </div>
+
+    <div class="actions">
+      <button class="btn-primary" onclick="checkPairs()">Проверить результат</button>
+      <div id="status"></div>
+    </div>
+  </div>
+
+  <script>
+    const data = [
+      {
+        id: 1,
+        left: 'Замеры по каждому источнику и веществу',
+        right: 'Проект нормативов допустимых выбросов (НДВ)'
+      },
+      {
+        id: 2,
+        left: 'Фактические выбросы по источникам',
+        right: 'Инвентаризация источников и выбросов'
+      },
+      {
+        id: 3,
+        left: 'Состав и параметры выбросов',
+        right: 'Проект санитарно-защитной зоны (СЗЗ)'
+      },
+      {
+        id: 4,
+        left: 'Результаты плановых и внеплановых замеров',
+        right: 'Производственный экоконтроль (ПЭК)'
+      },
+      {
+        id: 5,
+        left: 'Сводные данные за отчетный период',
+        right: 'ДВОС и форма 2‑ТП (воздух)'
+      },
+      {
+        id: 6,
+        left: 'Фактические объемы выбросов',
+        right: 'Расчет экологических платежей'
+      },
+      {
+        id: 7,
+        left: 'Концентрации до и после ГОУ',
+        right: 'Оценка эффективности газоочистки'
+      }
+    ];
+
+    let selected = null;
+    let links = [];
+
+    function initMatch() {
+      const leftCol = document.getElementById('col-left');
+      const rightCol = document.getElementById('col-right');
+
+      const leftShuffled = [...data].sort(() => Math.random() - 0.5);
+      const rightShuffled = [...data].sort(() => Math.random() - 0.5);
+
+      leftShuffled.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.dataset.id = item.id;
+        div.dataset.side = 'left';
+        div.innerHTML = `<span class="item-text">${item.left}</span><span class="dot dot-right"></span>`;
+        div.onclick = () => onSelect(div);
+        leftCol.appendChild(div);
+      });
+
+      rightShuffled.forEach(item => {
+        const div = document.createElement('div');
+        div.className = 'item';
+        div.dataset.id = item.id;
+        div.dataset.side = 'right';
+        div.innerHTML = `<span class="dot dot-left"></span><span class="item-text">${item.right}</span>`;
+        div.onclick = () => onSelect(div);
+        rightCol.appendChild(div);
+      });
+    }
+
+    function onSelect(el) {
+      document.getElementById('status').textContent = '';
+      if (el.classList.contains('correct')) return;
+
+      const existingLinkIndex = links.findIndex(l => l.left === el || l.right === el);
+      if (existingLinkIndex !== -1) {
+        links.splice(existingLinkIndex, 1);
+        el.classList.remove('active');
+        redrawLines();
+        return;
+      }
+
+      if (!selected) {
+        selected = el;
+        el.classList.add('active');
+        return;
+      }
+
+      if (selected.dataset.side === el.dataset.side) {
+        selected.classList.remove('active');
+        selected = el;
+        el.classList.add('active');
+        return;
+      }
+
+      const pair = {
+        left: selected.dataset.side === 'left' ? selected : el,
+        right: selected.dataset.side === 'right' ? selected : el,
+        idLeft: selected.dataset.side === 'left' ? selected.dataset.id : el.dataset.id,
+        idRight: selected.dataset.side === 'right' ? selected.dataset.id : el.dataset.id,
+        checked: false
+      };
+
+      links.push(pair);
+      selected.classList.remove('active');
+      el.classList.remove('active');
+      selected = null;
+      redrawLines();
+    }
+
+    function redrawLines() {
+      const svg = document.getElementById('svg-lines');
+      const wrapper = document.getElementById('match-wrapper');
+      const rect = wrapper.getBoundingClientRect();
+      svg.setAttribute('width', rect.width);
+      svg.setAttribute('height', rect.height);
+      svg.innerHTML = '';
+
+      links.forEach(link => {
+        const leftDot = link.left.querySelector('.dot-right').getBoundingClientRect();
+        const rightDot = link.right.querySelector('.dot-left').getBoundingClientRect();
+
+        const x1 = leftDot.left - rect.left + leftDot.width / 2;
+        const y1 = leftDot.top - rect.top + leftDot.height / 2;
+        const x2 = rightDot.left - rect.left + rightDot.width / 2;
+        const y2 = rightDot.top - rect.top + rightDot.height / 2;
+
+        const midX = (x1 + x2) / 2;
+
+        const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+        const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+        path.setAttribute('d', d);
+        path.classList.add('line-path');
+
+        if (link.checked) {
+          path.classList.add(link.idLeft === link.idRight ? 'line-correct' : 'line-wrong');
+        }
+
+        svg.appendChild(path);
+      });
+    }
+
+    function checkPairs() {
+      if (links.length === 0) {
+        const status = document.getElementById('status');
+        status.textContent = 'Нет ни одной пары. Соедините элементы слева и справа.';
+        status.style.color = 'var(--error)';
+        return;
+      }
+
+      let errors = 0;
+
+      links.forEach(link => {
+        link.checked = true;
+        const ok = link.idLeft === link.idRight;
+        link.left.classList.remove('wrong', 'correct');
+        link.right.classList.remove('wrong', 'correct');
+        link.left.classList.add(ok ? 'correct' : 'wrong');
+        link.right.classList.add(ok ? 'correct' : 'wrong');
+        if (!ok) errors++;
+      });
+
+      redrawLines();
+
+      const status = document.getElementById('status');
+      if (errors === 0 && links.length === data.length) {
+        status.textContent = 'Все пары верны. Одни и те же замеры поддерживают все ключевые задачи эколога.';
+        status.style.color = 'var(--success)';
+      } else if (errors === 0) {
+        status.textContent = 'Все соединенные пары верны. Осталось сопоставить остальные элементы.';
+        status.style.color = 'var(--green-accent)';
+      } else {
+        status.textContent = 'Есть ошибки. Неверные пары подсвечены красным.';
+        status.style.color = 'var(--error)';
+      }
+    }
+
+    initMatch();
+  </script>
+</body>
+</html>
