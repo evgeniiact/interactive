@@ -1,0 +1,322 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Ситуация 3. Почва: порядок действий</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;500;600;700&display=swap');
+    :root {
+      --bg-silk: #f3fbf7;
+      --green-accent: #007760;
+      --green-border: #19a86e;
+      --text-dark: #2c2c2c;
+      --error: #d32f2f;
+      --success: #2e7d32;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--bg-silk);
+      margin: 0;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+    }
+    #case-app {
+      background: #ffffff;
+      border: 1px solid var(--green-border);
+      border-radius: 4px;
+      padding: 20px 30px 25px 30px;
+      width: 100%;
+      max-width: 900px;
+      box-shadow: 0 24px 60px rgba(0,119,96,0.15);
+      position: relative;
+    }
+    header {
+      text-align: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid rgba(0,119,96,0.12);
+      padding-bottom: 10px;
+    }
+    h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--green-accent);
+      font-size: 20px;
+      margin: 0;
+      text-transform: uppercase;
+    }
+    .case-text {
+      margin-top: 14px;
+      font-size: 14px;
+      color: var(--text-dark);
+      line-height: 1.5;
+      background: #f7fcf9;
+      border-radius: 6px;
+      border: 1px solid rgba(0,119,96,0.12);
+      padding: 12px 14px;
+    }
+    .question {
+      margin-top: 16px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .steps-wrapper {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .step-card {
+      display: flex;
+      align-items: flex-start;
+      gap: 10px;
+      padding: 10px 12px;
+      background: #ffffff;
+      border-radius: 10px;
+      border: 1px solid #e0e0e0;
+      box-shadow: 0 3px 10px rgba(0,119,96,0.08);
+      cursor: grab;
+      transition: 0.2s;
+      font-size: 13px;
+      color: var(--text-dark);
+    }
+    .step-card:hover {
+      border-color: var(--green-accent);
+      background: #f3fbf7;
+    }
+    .step-index {
+      min-width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      border: 2px solid var(--green-border);
+      color: var(--green-accent);
+      font-size: 12px;
+      font-weight: 700;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-top: 2px;
+      flex-shrink: 0;
+    }
+    .step-text {
+      flex: 1;
+    }
+
+    .actions {
+      margin-top: 20px;
+      text-align: center;
+    }
+    .btn-primary {
+      background: linear-gradient(135deg, #19a86e, #007760);
+      color: white;
+      padding: 10px 40px;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 8px 20px rgba(0,119,96,0.2);
+    }
+    .btn-primary.error { background: linear-gradient(135deg, #e53935, #b71c1c); }
+    .btn-primary.success { background: linear-gradient(135deg, #43a047, #1b5e20); }
+
+    .status-msg {
+      margin-top: 10px;
+      font-size: 13px;
+      color: var(--error);
+      min-height: 20px;
+      text-align: center;
+    }
+
+    #overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(255,255,255,0.98);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      text-align: center;
+      border-radius: 4px;
+    }
+  </style>
+</head>
+<body>
+  <div id="case-app">
+    <header>
+      <h2>Ситуация 3. Когда одна проба обманывает</h2>
+    </header>
+
+    <div class="case-text">
+      Нефтехимический завод размещает шламы на полигоне с неоднородным рельефом и понижениями, где скапливается загрязнение. Для отчета по ПЭК взяли одну пробу почвы у въезда на полигон, по нефти и металлам там все в норме. При плановой проверке надзор отобрал объединенные пробы в зонах накопления и нашел превышения, предприятие не может объяснить расхождение.
+    </div>
+
+    <div class="question">
+      Расположите шаги эколога по отбору проб почвы на таком полигоне в корректной последовательности.
+    </div>
+
+    <div class="steps-wrapper" id="steps-wrapper">
+      <!-- Карточки шагов будут добавлены скриптом -->
+    </div>
+
+    <div class="actions">
+      <button id="action-btn" class="btn-primary">Проверить порядок</button>
+      <div id="status-msg" class="status-msg"></div>
+    </div>
+
+    <div id="overlay">
+      <div style="font-family:'Playfair Display', serif; color:var(--success); font-size:22px; margin-bottom:15px;">
+        Вы выстроили правильный маршрут отбора
+      </div>
+      <div style="font-size:14px; line-height:1.6; margin-bottom:24px;">
+        Вы правильно выстроили логику работы на полигоне. Сначала эколог анализирует карту и рельеф, выделяет зоны возможного максимального загрязнения, затем отбирает объединенные пробы по схеме и фиксирует все в документации. Такой подход дает представительную картину, которую трудно оспорить при проверке.
+      </div>
+      <button class="btn-primary" id="restart-btn">Пройти заново</button>
+    </div>
+  </div>
+
+  <script>
+    const stepsData = [
+      {
+        id: 's1',
+        order: 1,
+        text: 'Изучить карту полигона и рельеф, отметить понижения и зоны, где шлам мог накапливаться дольше всего.'
+      },
+      {
+        id: 's2',
+        order: 2,
+        text: 'Составить схему отбора проб: выделить несколько участков в зонах возможного максимального загрязнения и на каждой площадке запланировать объединенную пробу.'
+      },
+      {
+        id: 's3',
+        order: 3,
+        text: 'На каждом выбранном участке отобрать отдельные точечные пробы по методике и объединить их в одну пробу для анализа по конкретной площадке.'
+      },
+      {
+        id: 's4',
+        order: 4,
+        text: 'Зафиксировать на схеме фактические точки отбора, глубину и условия, оформить акт отбора проб и приложить его к материалам по ПЭК.'
+      }
+    ];
+
+    let isChecked = false;
+    let dragSrcEl = null;
+
+    function renderSteps() {
+      const wrapper = document.getElementById('steps-wrapper');
+      wrapper.innerHTML = '';
+      const shuffled = [...stepsData].sort(() => Math.random() - 0.5);
+      shuffled.forEach((step, index) => {
+        const card = document.createElement('div');
+        card.className = 'step-card';
+        card.draggable = true;
+        card.dataset.id = step.id;
+
+        card.innerHTML = `
+          <div class="step-index">${index + 1}</div>
+          <div class="step-text">${step.text}</div>
+        `;
+
+        addDnDHandlers(card);
+        wrapper.appendChild(card);
+      });
+    }
+
+    function addDnDHandlers(card) {
+      card.addEventListener('dragstart', function (e) {
+        if (isChecked) return;
+        dragSrcEl = this;
+        this.style.opacity = '0.5';
+        e.dataTransfer.effectAllowed = 'move';
+        e.dataTransfer.setData('text/plain', this.dataset.id);
+      });
+
+      card.addEventListener('dragend', function () {
+        this.style.opacity = '1';
+        dragSrcEl = null;
+        updateIndexes();
+      });
+
+      card.addEventListener('dragover', function (e) {
+        if (isChecked) return;
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      });
+
+      card.addEventListener('drop', function (e) {
+        if (isChecked) return;
+        e.preventDefault();
+        const wrapper = document.getElementById('steps-wrapper');
+        if (dragSrcEl && dragSrcEl !== this) {
+          const cards = Array.from(wrapper.children);
+          const srcIndex = cards.indexOf(dragSrcEl);
+          const targetIndex = cards.indexOf(this);
+          if (srcIndex < targetIndex) {
+            wrapper.insertBefore(dragSrcEl, this.nextSibling);
+          } else {
+            wrapper.insertBefore(dragSrcEl, this);
+          }
+        }
+      });
+    }
+
+    function updateIndexes() {
+      const cards = document.querySelectorAll('.step-card');
+      cards.forEach((card, idx) => {
+        const idxEl = card.querySelector('.step-index');
+        idxEl.textContent = idx + 1;
+      });
+    }
+
+    function checkOrder() {
+      const cards = Array.from(document.querySelectorAll('.step-card'));
+      const currentOrder = cards.map(c => c.dataset.id);
+      const correctOrder = stepsData
+        .slice()
+        .sort((a, b) => a.order - b.order)
+        .map(s => s.id);
+
+      const isCorrect = JSON.stringify(currentOrder) === JSON.stringify(correctOrder);
+
+      isChecked = true;
+      const btn = document.getElementById('action-btn');
+      btn.textContent = 'Пройти заново';
+
+      if (isCorrect) {
+        btn.className = 'btn-primary success';
+        document.getElementById('status-msg').textContent = '';
+        document.getElementById('overlay').style.display = 'flex';
+      } else {
+        btn.className = 'btn-primary error';
+        document.getElementById('status-msg').textContent =
+          'Порядок шагов сейчас не отражает логику работы на полигоне. Подумайте, что эколог делает в самом начале и чем заканчивает.';
+      }
+    }
+
+    function restart() {
+      isChecked = false;
+      const btn = document.getElementById('action-btn');
+      btn.textContent = 'Проверить порядок';
+      btn.className = 'btn-primary';
+      document.getElementById('status-msg').textContent = '';
+      document.getElementById('overlay').style.display = 'none';
+      renderSteps();
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      renderSteps();
+      document.getElementById('action-btn').addEventListener('click', () => {
+        if (isChecked) restart(); else checkOrder();
+      });
+      document.getElementById('restart-btn').addEventListener('click', restart);
+    });
+  </script>
+</body>
+</html>
