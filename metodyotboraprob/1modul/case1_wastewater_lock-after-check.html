@@ -1,0 +1,467 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Ситуация 1. Когда точка отбора подводит</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;500;600;700&display=swap');
+
+    :root {
+      --bg-silk: #f3fbf7;
+      --green-accent: #007760;
+      --green-border: #19a86e;
+      --text-dark: #2c2c2c;
+      --error: #d32f2f;
+      --success: #2e7d32;
+      --card-shadow: 0 24px 60px rgba(0,119,96,0.15);
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--bg-silk);
+      margin: 0;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+    }
+
+    #case1_wastewater {
+      background: #ffffff;
+      border: 1px solid var(--green-border);
+      border-radius: 4px;
+      padding: 20px 30px 25px 30px;
+      width: 100%;
+      max-width: 900px;
+      box-shadow: var(--card-shadow);
+      box-sizing: border-box;
+      position: relative;
+      overflow: hidden;
+    }
+
+    header {
+      text-align: center;
+      margin-bottom: 15px;
+      border-bottom: 1px solid rgba(0,119,96,0.12);
+      padding-bottom: 10px;
+    }
+
+    h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--green-accent);
+      font-size: 22px;
+      margin: 0;
+      text-transform: uppercase;
+    }
+
+    .case-text {
+      margin-top: 14px;
+      font-size: 14px;
+      color: var(--text-dark);
+      line-height: 1.5;
+      background: #f7fcf9;
+      border-radius: 6px;
+      border: 1px solid rgba(0,119,96,0.12);
+      padding: 10px 12px;
+    }
+
+    .question {
+      margin-top: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-dark);
+      text-align: center;
+    }
+
+    .options-wrapper {
+      margin-top: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option-card {
+      position: relative;
+      border-radius: 10px;
+      padding: 10px 12px 10px 14px;
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      font-size: 13px;
+      color: var(--text-dark);
+      cursor: pointer;
+      transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+      box-shadow: 0 3px 10px rgba(0,119,96,0.08);
+    }
+
+    .option-card.disabled {
+      cursor: default;
+      opacity: 0.9;
+    }
+
+    .option-card:hover:not(.disabled) {
+      border-color: var(--green-accent);
+      box-shadow: 0 6px 18px rgba(0,119,96,0.18);
+      background: #f3fbf7;
+    }
+
+    .option-card.selected {
+      border-color: var(--green-accent);
+      box-shadow: 0 0 0 1px rgba(0,119,96,0.4);
+      background: #e0f5ec;
+    }
+
+    .feedback-item {
+      margin-top: 6px;
+      font-size: 12px;
+      line-height: 1.4;
+    }
+
+    .feedback-item.correct {
+      color: var(--success);
+    }
+
+    .feedback-item.wrong {
+      color: var(--error);
+    }
+
+    .actions {
+      margin-top: 18px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+      align-items: center;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, #19a86e, #007760);
+      color: white;
+      padding: 10px 40px;
+      border: none;
+      border-radius: 20px;
+      font-size: 14px;
+      font-weight: 700;
+      text-transform: uppercase;
+      cursor: pointer;
+      box-shadow: 0 10px 22px rgba(0,119,96,0.25);
+      transition: 0.25s;
+      display: inline-block;
+    }
+
+    .btn-primary.error-state {
+      background: linear-gradient(135deg, #d32f2f, #b71c1c);
+      box-shadow: 0 10px 22px rgba(211,47,47,0.35);
+    }
+
+    .btn-primary.success-state {
+      background: linear-gradient(135deg, #2e7d32, #1b5e20);
+      box-shadow: 0 10px 22px rgba(46,125,50,0.35);
+    }
+
+    .btn-primary:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 16px 30px rgba(0,119,96,0.32);
+    }
+
+    .status-global {
+      margin-top: 4px;
+      font-size: 13px;
+      min-height: 22px;
+      text-align: center;
+    }
+
+    .status-global.success {
+      color: var(--success);
+    }
+
+    .status-global.partial {
+      color: var(--green-accent);
+    }
+
+    .status-global.error {
+      color: var(--error);
+    }
+
+    .final-overlay {
+      position: absolute;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 10px;
+      box-sizing: border-box;
+      z-index: 10;
+    }
+
+    .final-box {
+      max-width: 780px;
+      background: #e8f5e9;
+      border-radius: 8px;
+      border: 1px solid rgba(46,125,50,0.5);
+      padding: 14px 16px 14px 16px;
+      box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+      color: var(--text-dark);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .final-box-title {
+      font-weight: 700;
+      color: var(--success);
+      margin-bottom: 6px;
+      font-size: 14px;
+      text-align: left;
+    }
+
+    .final-box-footer {
+      margin-top: 10px;
+      text-align: right;
+    }
+
+    .final-restart-btn {
+      background: transparent;
+      color: var(--green-accent);
+      border-radius: 16px;
+      border: 1px solid rgba(0,119,96,0.6);
+      padding: 5px 18px;
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+    }
+
+    .final-restart-btn:hover {
+      background: #f3fbf7;
+    }
+  </style>
+</head>
+<body>
+  <div id="case1_wastewater">
+    <header>
+      <h2>Ситуация 1. Когда точка отбора подводит</h2>
+    </header>
+
+    <div class="case-text">
+      Завод ЛКМ сбрасывает сточные воды после очистки в городскую канализацию. В стоках есть ПАВ, нефтепродукты и тяжелые металлы. Лаборатория нашла превышение по нефтепродуктам и ХПК, но пробы взяли не в точке по программе ПЭК, а в технологическом колодце в цехе. Результаты можно оспорить как недостоверные, хотя по ним уже посчитали плату и выписали штраф.
+    </div>
+
+    <div class="question">
+      Какие шаги эколога помогут исправить ошибку с точкой отбора и снизить риски для предприятия?
+    </div>
+
+    <div class="options-wrapper" id="options-wrapper">
+      <!-- варианты подставляются скриптом -->
+    </div>
+
+    <div class="actions">
+      <button id="check-btn" class="btn-primary" onclick="onMainButtonClick()">Проверить</button>
+      <div id="status-global" class="status-global"></div>
+    </div>
+
+    <div id="final-overlay" class="final-overlay">
+      <div class="final-box">
+        <div class="final-box-title">Вы собрали оптимальное решение</div>
+        <div id="final-feedback-text"></div>
+        <div class="final-box-footer">
+          <button class="final-restart-btn" onclick="restartFromOverlay()">Пройти заново</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const feedbackCorrectGlobal = 'Вы верно определили, что ключевая проблема здесь в точке отбора и несоответствии программе ПЭК, а не в «плохой лаборатории». Вы предложили решение, которое закрывает ситуацию на всех уровнях: корректируете программу, проводите повторный отбор в нужной точке и оспариваете результаты, на основании которых посчитали плату и штраф. Параллельно вы фиксируете изменения в договоре и внутренних регламентах, чтобы такой отбор «из удобного колодца» не повторился.';
+
+    const optionsDataBase = [
+      {
+        id: 'c1_o1',
+        text: 'Пересогласовать программу ПЭК, уточнить точки отбора, организовать повторный отбор с аккредитованной лабораторией в корректных точках и направить в надзор письменные возражения с новыми протоколами.',
+        isCorrect: true,
+        feedback: 'Да. Без уточненной программы ПЭК и повторного отбора в корректной точке у вас не будет аргументов оспорить результаты и снизить платеж.'
+      },
+      {
+        id: 'c1_o2',
+        text: 'Подготовить служебную записку руководству о допущенных нарушениях, инициировать пересмотр договора с лабораторией и регламента отбора проб, чтобы исключить повторение ошибки.',
+        isCorrect: true,
+        feedback: 'Да. Если не прописать порядок в договоре и внутренних документах, ошибка может повториться, и предприятие снова попадет на штраф.'
+      },
+      {
+        id: 'c1_o3',
+        text: 'Попросить лабораторию переписать протоколы с «правильными» точками отбора без повторного отбора проб.',
+        isCorrect: false,
+        feedback: 'Переписать протоколы без фактического отбора в нужной точке – это новое нарушение. Надзор легко увидит подмену и ситуация только ухудшится.'
+      },
+      {
+        id: 'c1_o4',
+        text: 'Ничего не делать, дождаться следующей проверки, там уже взять пробы правильно.',
+        isCorrect: false,
+        feedback: 'Ожидание следующей проверки не решает проблему. Штраф и завышенный платеж уже назначены, их нужно оспаривать с опорой на корректные пробы.'
+      }
+    ];
+
+    const correctIds = ['c1_o1', 'c1_o2'];
+    let optionsData = [];
+    let mode = 'check'; // 'check' или 'restart'
+
+    function shuffleArray(arr) {
+      const a = arr.slice();
+      for (let i = a.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [a[i], a[j]] = [a[j], a[i]];
+      }
+      return a;
+    }
+
+    function renderOptions() {
+      optionsData = shuffleArray(optionsDataBase);
+      const wrapper = document.getElementById('options-wrapper');
+      wrapper.innerHTML = '';
+      optionsData.forEach((opt) => {
+        const card = document.createElement('div');
+        card.className = 'option-card';
+        card.dataset.id = opt.id;
+
+        const textDiv = document.createElement('div');
+        textDiv.className = 'option-text';
+        textDiv.textContent = opt.text;
+
+        const fbDiv = document.createElement('div');
+        fbDiv.className = 'feedback-item';
+        fbDiv.style.display = 'none';
+
+        card.appendChild(textDiv);
+        card.appendChild(fbDiv);
+
+        card.addEventListener('click', () => toggleSelect(card));
+
+        wrapper.appendChild(card);
+      });
+    }
+
+    function resetGlobalStatus() {
+      const statusEl = document.getElementById('status-global');
+      statusEl.textContent = '';
+      statusEl.className = 'status-global';
+      const overlay = document.getElementById('final-overlay');
+      overlay.style.display = 'none';
+      document.getElementById('final-feedback-text').textContent = '';
+      const btn = document.getElementById('check-btn');
+      btn.classList.remove('error-state', 'success-state');
+      btn.textContent = 'Проверить';
+      mode = 'check';
+    }
+
+    function toggleSelect(card) {
+      if (mode !== 'check' || card.classList.contains('disabled')) return;
+
+      card.classList.toggle('selected');
+      resetGlobalStatus();
+
+      const fb = card.querySelector('.feedback-item');
+      fb.style.display = 'none';
+      fb.textContent = '';
+      fb.classList.remove('correct', 'wrong');
+    }
+
+    function onMainButtonClick() {
+      if (mode === 'check') {
+        checkCase();
+      } else {
+        resetCaseCore();
+      }
+    }
+
+    function checkCase() {
+      const cards = document.querySelectorAll('.option-card');
+      const selectedIds = [];
+
+      cards.forEach(card => {
+        const fb = card.querySelector('.feedback-item');
+        fb.style.display = 'none';
+        fb.textContent = '';
+        fb.classList.remove('correct', 'wrong');
+        if (card.classList.contains('selected')) {
+          selectedIds.push(card.dataset.id);
+        }
+      });
+
+      const statusEl = document.getElementById('status-global');
+      const btn = document.getElementById('check-btn');
+      btn.classList.remove('error-state', 'success-state');
+
+      if (selectedIds.length === 0) {
+        statusEl.textContent = 'Отметьте хотя бы один вариант и повторно нажмите «Проверить».';
+        statusEl.className = 'status-global error';
+        btn.classList.add('error-state');
+        btn.textContent = 'Пройти заново';
+        mode = 'restart';
+        disableOptions();
+        return;
+      }
+
+      const selectedSet = new Set(selectedIds);
+      const correctSet = new Set(correctIds);
+      const allCorrectSelected = correctIds.every(id => selectedSet.has(id));
+      const noExtra = selectedIds.every(id => correctSet.has(id));
+      const isFullyCorrect = allCorrectSelected && noExtra;
+
+      cards.forEach(card => {
+        const id = card.dataset.id;
+        const opt = optionsDataBase.find(o => o.id === id);
+        const fb = card.querySelector('.feedback-item');
+
+        if (card.classList.contains('selected')) {
+          fb.textContent = opt.feedback;
+          fb.style.display = 'block';
+          fb.classList.add(opt.isCorrect ? 'correct' : 'wrong');
+        }
+      });
+
+      if (isFullyCorrect) {
+        statusEl.textContent = '';
+        statusEl.className = 'status-global success';
+        btn.classList.add('success-state');
+        const overlay = document.getElementById('final-overlay');
+        const finalText = document.getElementById('final-feedback-text');
+        finalText.textContent = feedbackCorrectGlobal;
+        overlay.style.display = 'flex';
+      } else {
+        const correctCount = correctIds.length;
+        statusEl.textContent = 'Здесь ' + correctCount + ' правильных варианта. Выберите оба верных ответа: один про корректные пробы и возражения, второй про изменение договоров и регламентов.';
+        statusEl.className = 'status-global partial';
+        btn.classList.add('error-state');
+      }
+
+      btn.textContent = 'Пройти заново';
+      mode = 'restart';
+      disableOptions();
+    }
+
+    function disableOptions() {
+      const cards = document.querySelectorAll('.option-card');
+      cards.forEach(card => card.classList.add('disabled'));
+    }
+
+    function resetCaseCore() {
+      const cards = document.querySelectorAll('.option-card');
+      cards.forEach(card => {
+        card.classList.remove('selected', 'disabled');
+        const fb = card.querySelector('.feedback-item');
+        fb.style.display = 'none';
+        fb.textContent = '';
+        fb.classList.remove('correct', 'wrong');
+      });
+      resetGlobalStatus();
+      renderOptions();
+    }
+
+    function restartFromOverlay() {
+      resetCaseCore();
+    }
+
+    renderOptions();
+  </script>
+</body>
+</html>
