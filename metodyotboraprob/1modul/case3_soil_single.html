@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Ситуация 3. Почва</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;500;600;700&display=swap');
+    :root { --bg-silk: #f3fbf7; --green-accent: #007760; --green-border: #19a86e; --text-dark: #2c2c2c; --error: #d32f2f; --success: #2e7d32; }
+    body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-silk); margin: 0; padding: 10px; display: flex; justify-content: center; }
+    #case-app { background: #ffffff; border: 1px solid var(--green-border); border-radius: 4px; padding: 20px 30px 25px 30px; width: 100%; max-width: 900px; box-shadow: 0 24px 60px rgba(0,119,96,0.15); }
+    header { text-align: center; border-bottom: 1px solid rgba(0,119,96,0.12); padding-bottom: 10px; }
+    h2 { font-family: 'Playfair Display', serif; color: var(--green-accent); font-size: 20px; text-transform: uppercase; margin: 0; }
+    .case-text { margin-top: 14px; font-size: 14px; background: #f7fcf9; border-radius: 6px; border: 1px solid rgba(0,119,96,0.12); padding: 12px 14px; line-height: 1.5; }
+    .question { margin-top: 16px; font-size: 15px; font-weight: 600; }
+    .options { margin-top: 18px; display: flex; flex-direction: column; gap: 10px; }
+    .option-card { padding: 12px 14px; border-radius: 10px; border: 1px solid #e0e0e0; cursor: pointer; transition: 0.2s; font-size: 13px; }
+    .option-card:hover:not(.locked) { border-color: var(--green-accent); background: #f3fbf7; }
+    .option-card.correct { border-color: var(--success); background: #e8f5e9; }
+    .option-card.wrong { border-color: var(--error); background: #ffebee; }
+    .option-card.locked { cursor: default; }
+    .fb { font-size: 12px; margin-top: 6px; display: none; line-height: 1.4; }
+    .fb.visible { display: block; }
+    .fb.correct { color: var(--success); }
+    .fb.wrong { color: var(--error); }
+    .actions { margin-top: 20px; display: flex; gap: 10px; justify-content: center; }
+    .btn { padding: 10px 25px; border-radius: 20px; border: none; font-size: 13px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+    .btn-secondary { background: #eee; color: #666; }
+    .btn-primary { background: linear-gradient(135deg, #19a86e, #007760); color: #fff; }
+    #global-fb { margin-top: 15px; padding: 12px; border-radius: 6px; background: #e8f5e9; color: var(--success); font-size: 13px; display: none; border: 1px solid var(--success); }
+  </style>
+</head>
+<body>
+  <div id="case-app">
+    <header><h2>Ситуация 3. Почва на полигоне шламов</h2></header>
+    <div class="case-text">Предприятие взяло одну пробу у въезда (норма), а надзор нашел превышения в низинах.</div>
+    <div class="question">Какая основная ошибка допущена при отборе проб?</div>
+    <div class="options">
+      <div class="option-card" onclick="select(this, '1', false)">Ошибка — отсутствие фоновых проб рядом с полигоном. <div class="fb" id="fb-1">Фоновые пробы не объясняют расхождение в точках самого полигона.</div></div>
+      <div class="option-card" onclick="select(this, '2', true)">Ошибка — отбор одной точечной пробы вместо объединенных в зонах накопления загрязнения. <div class="fb" id="fb-2">Верно! Одна удобная точка не показывает реальное состояние неоднородного участка.</div></div>
+      <div class="option-card" onclick="select(this, '3', false)">Ошибка — неверный расчет погодных условий при отборе. <div class="fb" id="fb-3">Место отбора для почвы важнее погоды.</div></div>
+    </div>
+    <div id="global-fb">Верно. Здесь критична схема отбора: одна точка вместо представительной объединенной пробы.</div>
+    <div class="actions"><button class="btn btn-secondary" onclick="select(document.querySelector('.option-card:nth-child(2)'), '2', true)">Ответ</button><button class="btn btn-primary" onclick="location.reload()">Заново</button></div>
+  </div>
+  <script>
+    let locked = false;
+    function select(el, id, ok) {
+      if (locked) return; locked = true;
+      document.querySelectorAll('.option-card').forEach(c => c.classList.add('locked'));
+      el.classList.add(ok ? 'correct' : 'wrong');
+      const fb = document.getElementById('fb-'+id); fb.classList.add('visible', ok ? 'correct' : 'wrong');
+      if (ok) document.getElementById('global-fb').style.display = 'block';
+    }
+  </script>
+</body>
+</html>
