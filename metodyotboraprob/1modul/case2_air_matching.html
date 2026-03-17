@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8">
+  <title>Ситуация 2. Воздух</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;500;600;700&display=swap');
+    :root { --bg-silk: #f3fbf7; --green-accent: #007760; --green-border: #19a86e; --text-dark: #2c2c2c; --error: #d32f2f; --success: #2e7d32; }
+    body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-silk); margin: 0; padding: 10px; display: flex; justify-content: center; }
+    #case-app { background: #ffffff; border: 1px solid var(--green-border); border-radius: 4px; padding: 20px 30px 25px 30px; width: 100%; max-width: 900px; box-shadow: 0 24px 60px rgba(0,119,96,0.15); position: relative; }
+    header { text-align: center; border-bottom: 1px solid rgba(0,119,96,0.12); padding-bottom: 10px; }
+    h2 { font-family: 'Playfair Display', serif; color: var(--green-accent); font-size: 20px; text-transform: uppercase; margin: 0; }
+    .case-text { margin-top: 14px; font-size: 14px; color: var(--text-dark); background: #f7fcf9; border-radius: 6px; border: 1px solid rgba(0,119,96,0.12); padding: 12px 14px; }
+    .question { margin-top: 16px; font-size: 15px; font-weight: 600; text-align: center; }
+    .matching-table { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
+    .match-row { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid #eee; border-radius: 8px; }
+    .match-left { font-size: 13px; font-weight: 600; color: var(--green-accent); }
+    select { width: 100%; padding: 8px; border-radius: 6px; font-family: inherit; font-size: 13px; border: 1px solid #ccc; }
+    .fb { font-size: 12px; display: none; margin-top: 6px; line-height: 1.4; }
+    .fb.correct { color: var(--success); display: block; }
+    .fb.wrong { color: var(--error); display: block; }
+    .actions { margin-top: 20px; text-align: center; }
+    .btn { background: linear-gradient(135deg, #19a86e, #007760); color: #fff; padding: 10px 40px; border: none; border-radius: 20px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
+    #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
+  </style>
+</head>
+<body>
+  <div id="case-app">
+    <header><h2>Ситуация 2. Риски выбора лаборатории</h2></header>
+    <div class="case-text">У лаборатории нет аккредитации на атмосферный воздух, только на помещения. Протоколы могут признать недействительными.</div>
+    <div class="question">Соотнесите ошибку и риск для предприятия.</div>
+    <div class="matching-table">
+      <div class="match-row" id="row-A">
+        <div class="match-left">Выбор лаборатории без области аккредитации на атмосферный воздух</div>
+        <select id="sel-A"><option value="">-- Выберите риск --</option><option value="1">Недействительность протоколов и невыполнение ПЭК</option><option value="2">Нарушение ст. 8.1 КоАП и авральный поиск замены</option><option value="3">Повторные замеры и конфликт с подрядчиком</option></select>
+        <div class="fb" id="fb-A"></div>
+      </div>
+      <div class="match-row" id="row-B">
+        <div class="match-left">Отсутствие проверки аттестата и области при заключении договора</div>
+        <select id="sel-B"><option value="">-- Выберите риск --</option><option value="1">Недействительность протоколов и невыполнение ПЭК</option><option value="2">Нарушение ст. 8.1 КоАП и авральный поиск замены</option><option value="3">Повторные замеры и конфликт с подрядчиком</option></select>
+        <div class="fb" id="fb-B"></div>
+      </div>
+      <div class="match-row" id="row-C">
+        <div class="match-left">В договоре не прописана ответственность за область аккредитации</div>
+        <select id="sel-C"><option value="">-- Выберите риск --</option><option value="1">Недействительность протоколов и невыполнение ПЭК</option><option value="2">Нарушение ст. 8.1 КоАП и авральный поиск замены</option><option value="3">Повторные замеры и конфликт с подрядчиком</option></select>
+        <div class="fb" id="fb-C"></div>
+      </div>
+    </div>
+    <div class="actions"><button class="btn" onclick="check()">Проверить</button></div>
+    <div id="overlay">
+      <div style="font-family:'Playfair Display'; color:var(--success); font-size:22px; margin-bottom:15px;">Верно!</div>
+      <div style="font-size:14px; margin-bottom:20px;">Вы связываете область аккредитации с юридической силой протоколов. Без нужной области ПЭК будет считаться невыполненным.</div>
+      <button class="btn" onclick="location.reload()">Заново</button>
+    </div>
+  </div>
+  <script>
+    const correct = { A: "1", B: "2", C: "3" };
+    const fbs = { 
+      A: "Главный риск – юридическая ничтожность протоколов.", 
+      B: "Это ведет к ответственности по ст. 8.1 КоАП за нарушение организации контроля.", 
+      C: "Слабый договор ведет к спорам с подрядчиком и повторным затратам." 
+    };
+    function check() {
+      let win = true;
+      ['A','B','C'].forEach(id => {
+        const val = document.getElementById('sel-'+id).value; const fb = document.getElementById('fb-'+id);
+        fb.style.display = 'block';
+        if (val === correct[id]) { fb.textContent = "Верно."; fb.className = "fb correct"; }
+        else { win = false; fb.textContent = fbs[id]; fb.className = "fb wrong"; }
+      });
+      if (win) document.getElementById('overlay').style.display = 'flex';
+    }
+  </script>
+</body>
+</html>
