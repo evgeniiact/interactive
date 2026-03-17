@@ -2,74 +2,402 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Ситуация 2. Воздух</title>
+  <title>Ситуация 2. Атмосферный воздух</title>
   <style>
     @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;500;600;700&display=swap');
-    :root { --bg-silk: #f3fbf7; --green-accent: #007760; --green-border: #19a86e; --text-dark: #2c2c2c; --error: #d32f2f; --success: #2e7d32; }
-    body { font-family: 'Montserrat', sans-serif; background-color: var(--bg-silk); margin: 0; padding: 10px; display: flex; justify-content: center; }
-    #case-app { background: #ffffff; border: 1px solid var(--green-border); border-radius: 4px; padding: 20px 30px 25px 30px; width: 100%; max-width: 900px; box-shadow: 0 24px 60px rgba(0,119,96,0.15); position: relative; }
-    header { text-align: center; border-bottom: 1px solid rgba(0,119,96,0.12); padding-bottom: 10px; }
-    h2 { font-family: 'Playfair Display', serif; color: var(--green-accent); font-size: 20px; text-transform: uppercase; margin: 0; }
-    .case-text { margin-top: 14px; font-size: 14px; color: var(--text-dark); background: #f7fcf9; border-radius: 6px; border: 1px solid rgba(0,119,96,0.12); padding: 12px 14px; }
-    .question { margin-top: 16px; font-size: 15px; font-weight: 600; text-align: center; }
-    .matching-table { margin-top: 20px; display: flex; flex-direction: column; gap: 12px; }
-    .match-row { display: flex; flex-direction: column; gap: 8px; padding: 12px; border: 1px solid #eee; border-radius: 8px; }
-    .match-left { font-size: 13px; font-weight: 600; color: var(--green-accent); }
-    select { width: 100%; padding: 8px; border-radius: 6px; font-family: inherit; font-size: 13px; border: 1px solid #ccc; }
-    .fb { font-size: 12px; display: none; margin-top: 6px; line-height: 1.4; }
-    .fb.correct { color: var(--success); display: block; }
-    .fb.wrong { color: var(--error); display: block; }
-    .actions { margin-top: 20px; text-align: center; }
-    .btn { background: linear-gradient(135deg, #19a86e, #007760); color: #fff; padding: 10px 40px; border: none; border-radius: 20px; font-weight: 700; cursor: pointer; text-transform: uppercase; }
-    #overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.98); z-index: 100; display: none; flex-direction: column; align-items: center; justify-content: center; padding: 30px; text-align: center; }
+    :root {
+      --bg-silk: #f3fbf7;
+      --green-accent: #007760;
+      --green-border: #19a86e;
+      --text-dark: #2c2c2c;
+      --success: #2e7d32;
+      --error: #d32f2f;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: 'Montserrat', sans-serif;
+      background-color: var(--bg-silk);
+      margin: 0;
+      padding: 10px;
+      display: flex;
+      justify-content: center;
+    }
+    #case-app {
+      background: #ffffff;
+      border: 1px solid var(--green-border);
+      border-radius: 4px;
+      padding: 20px 30px 25px 30px;
+      width: 100%;
+      max-width: 1000px;
+      box-shadow: 0 24px 60px rgba(0,119,96,0.15);
+      position: relative;
+    }
+    header {
+      margin-bottom: 12px;
+      border-bottom: 1px solid rgba(0,119,96,0.12);
+      padding-bottom: 8px;
+    }
+    h2 {
+      font-family: 'Playfair Display', serif;
+      color: var(--green-accent);
+      font-size: 20px;
+      margin: 0;
+      text-transform: uppercase;
+    }
+    .case-text {
+      margin-top: 10px;
+      font-size: 14px;
+      color: var(--text-dark);
+      line-height: 1.5;
+      background: #f7fcf9;
+      border-radius: 6px;
+      border: 1px solid rgba(0,119,96,0.12);
+      padding: 10px 12px;
+    }
+    .question-text {
+      margin-top: 14px;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+    .main-layout {
+      margin-top: 16px;
+      display: flex;
+      gap: 24px;
+      align-items: flex-start;
+    }
+    .tasks-column {
+      flex: 2;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+    .pool-column {
+      flex: 1;
+      background: #f3fbf7;
+      border: 1px solid rgba(0,119,96,0.18);
+      border-radius: 6px;
+      padding: 14px;
+      position: sticky;
+      top: 20px;
+      min-height: 220px;
+    }
+    .column-title {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: #527a6b;
+      margin: 0 0 8px 0;
+    }
+    .task-row {
+      display: grid;
+      grid-template-columns: 1.4fr 32px 1.4fr;
+      align-items: stretch;
+      column-gap: 10px;
+    }
+    .problem-box {
+      background: #ffffff;
+      padding: 10px 12px;
+      border: 1px solid #e0e0e0;
+      border-radius: 6px;
+      font-size: 13px;
+      color: var(--text-dark);
+      display: flex;
+      align-items: center;
+      box-shadow: 0 2px 6px rgba(0,119,96,0.08);
+      min-height: 60px;
+    }
+    .line-connector {
+      height: 1px;
+      background: var(--green-border);
+      opacity: 0.35;
+      align-self: center;
+    }
+    .drop-slot {
+      background: #f9fbfa;
+      border: 2px dashed #cfd8dc;
+      border-radius: 6px;
+      min-height: 60px;
+      padding: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      text-align: center;
+      font-size: 13px;
+      color: #78909c;
+      transition: 0.25s;
+    }
+    .drop-slot.active {
+      background: #e3f3ec;
+      border-color: var(--green-accent);
+      color: var(--text-dark);
+    }
+    .correct-slot {
+      border: 2px solid var(--success) !important;
+      background: #e6f4ea !important;
+      color: var(--text-dark);
+    }
+    .wrong-slot {
+      border: 2px solid var(--error) !important;
+      background: #ffebee !important;
+      color: var(--text-dark);
+    }
+    .chip {
+      background: #ffffff;
+      border: 1px solid #e0e0e0;
+      padding: 10px 12px;
+      border-radius: 6px;
+      cursor: grab;
+      font-size: 13px;
+      color: var(--text-dark);
+      margin-bottom: 8px;
+      box-shadow: 0 3px 10px rgba(0,119,96,0.08);
+      transition: 0.2s;
+    }
+    .chip:hover {
+      border-color: var(--green-accent);
+      background: #f3fbf7;
+      transform: translateX(4px);
+    }
+    .footer-nav {
+      margin-top: 18px;
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      border-top: 1px solid rgba(0,119,96,0.12);
+      padding-top: 12px;
+    }
+    .btn {
+      padding: 9px 26px;
+      border-radius: 18px;
+      font-size: 13px;
+      font-weight: 600;
+      text-transform: uppercase;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+    .btn-gold {
+      background: linear-gradient(135deg, #19a86e, #007760);
+      color: white;
+      border: none;
+      box-shadow: 0 8px 20px rgba(0,119,96,0.2);
+    }
+    .btn-outline {
+      background: transparent;
+      border: 1.2px solid var(--green-accent);
+      color: var(--green-accent);
+    }
+    #feedback-log {
+      margin-top: 10px;
+      font-weight: 500;
+      font-size: 13px;
+      color: var(--text-dark);
+      min-height: 20px;
+    }
+    #overlay {
+      position: absolute;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(255,255,255,0.98);
+      z-index: 100;
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 30px;
+      text-align: center;
+      border-radius: 4px;
+    }
+    @media (max-width: 900px) {
+      .main-layout { flex-direction: column; }
+      .pool-column { position: static; min-height: auto; width: 100%; }
+      .task-row { grid-template-columns: 1fr; row-gap: 6px; }
+      .line-connector { display: none; }
+    }
   </style>
 </head>
 <body>
-  <div id="case-app">
-    <header><h2>Ситуация 2. Риски выбора лаборатории</h2></header>
-    <div class="case-text">Металлургическое предприятие контролирует воздух на границе санитарно-защитной зоны, в выбросах оксиды азота, сернистый ангидрид и пыль. Новый эколог выяснил, что у лаборатории нет аккредитации на отбор проб атмосферного воздуха, только на воздух в помещениях и воду. Протоколы такого контроля могут признать недействительными, а ПЭК по воздуху – невыполненным.</div>
-    <div class="question">Соотнесите ошибку и риск для предприятия.</div>
-    <div class="matching-table">
-      <div class="match-row" id="row-A">
-        <div class="match-left">Выбор лаборатории без области аккредитации на атмосферный воздух</div>
-        <select id="sel-A"><option value="">-- Выберите риск --</option><option value="1">Недействительность протоколов и невыполнение ПЭК</option><option value="2">Нарушение ст. 8.1 КоАП и авральный поиск замены</option><option value="3">Повторные замеры и конфликт с подрядчиком</option></select>
-        <div class="fb" id="fb-A"></div>
+
+<div id="case-app">
+  <header>
+    <h2>Ситуация 2. Когда аккредитации не хватает</h2>
+    <div class="case-text">
+      Металлургическое предприятие контролирует воздух на границе санитарно защитной зоны. В выбросах оксиды азота, сернистый ангидрид и пыль. Новый эколог проверил документы и увидел, что у лаборатории нет аккредитации на отбор проб атмосферного воздуха, только на воздух в помещениях и воду. Протоколы могут не принять, а ПЭК по воздуху посчитают невыполненным.
+    </div>
+    <div class="question-text">
+      Соотнесите действия эколога при выборе лаборатории и риски для предприятия.
+    </div>
+  </header>
+
+  <div class="main-layout">
+    <div class="tasks-column">
+      <p class="column-title">Действия и ошибки эколога</p>
+
+      <div class="task-row">
+        <div class="problem-box">
+          Эколог не проверил в реестре, есть ли у лаборатории действующая аккредитация на отбор проб атмосферного воздуха
+        </div>
+        <div class="line-connector"></div>
+        <div class="drop-slot" data-match="1">Перетащите сюда риск</div>
       </div>
-      <div class="match-row" id="row-B">
-        <div class="match-left">Отсутствие проверки аттестата и области при заключении договора</div>
-        <select id="sel-B"><option value="">-- Выберите риск --</option><option value="1">Недействительность протоколов и невыполнение ПЭК</option><option value="2">Нарушение ст. 8.1 КоАП и авральный поиск замены</option><option value="3">Повторные замеры и конфликт с подрядчиком</option></select>
-        <div class="fb" id="fb-B"></div>
+
+      <div class="task-row">
+        <div class="problem-box">
+          Эколог не сверил область аккредитации лаборатории с нужными методиками и условиями отбора (граница СЗЗ)
+        </div>
+        <div class="line-connector"></div>
+        <div class="drop-slot" data-match="2">Перетащите сюда риск</div>
       </div>
-      <div class="match-row" id="row-C">
-        <div class="match-left">В договоре не прописана ответственность за область аккредитации</div>
-        <select id="sel-C"><option value="">-- Выберите риск --</option><option value="1">Недействительность протоколов и невыполнение ПЭК</option><option value="2">Нарушение ст. 8.1 КоАП и авральный поиск замены</option><option value="3">Повторные замеры и конфликт с подрядчиком</option></select>
-        <div class="fb" id="fb-C"></div>
+
+      <div class="task-row">
+        <div class="problem-box">
+          Эколог не проверил, есть ли в области аккредитации лаборатории нужные вещества, и не обсудил с подрядчиком или своей лабораторией сроки расширения области аккредитации
+        </div>
+        <div class="line-connector"></div>
+        <div class="drop-slot" data-match="3">Перетащите сюда риск</div>
       </div>
     </div>
-    <div class="actions"><button class="btn" onclick="check()">Проверить</button></div>
-    <div id="overlay">
-      <div style="font-family:'Playfair Display'; color:var(--success); font-size:22px; margin-bottom:15px;">Верно!</div>
-      <div style="font-size:14px; margin-bottom:20px;">Вы правильно связали область аккредитации лаборатории с юридической силой протоколов. Ошибка здесь не в том, что «неповезло с подрядчиком», а в том, что предприятие организовало контроль без проверки аккредитации и без жестких требований в договоре. Вы показали, к чему это ведет: протоколы могут не принять, ПЭК по воздуху посчитают невыполненным, а предприятию придется и отвечать перед надзором, и срочно перестраивать систему контроля.</div>
-      <button class="btn" onclick="location.reload()">Заново</button>
+
+    <div class="pool-column" id="pool">
+      <p class="column-title">Риски для предприятия</p>
+      <div id="pool-list">
+        <div class="chip" draggable="true" id="chip-1">
+          Протоколы могут признать недействительными, а ПЭК по воздуху невыполненным. Надзор выдает предписание и штраф.
+        </div>
+        <div class="chip" draggable="true" id="chip-2">
+          Нужные методики и условия отбора не входят в область аккредитации. Результаты не принимают как доказательство при проверке и в суде.
+        </div>
+        <div class="chip" draggable="true" id="chip-3">
+          Нужных веществ нет в области аккредитации и расширение вовремя не согласовали. Протоколы по этим показателям могут не принять, а контроль придется повторять или переносить на более поздний срок.
+        </div>
+      </div>
     </div>
   </div>
-  <script>
-    const correct = { A: "1", B: "2", C: "3" };
-    const fbs = { 
-      A: "Главный риск – юридическая ничтожность протоколов.", 
-      B: "Это ведет к ответственности по ст. 8.1 КоАП за нарушение организации контроля.", 
-      C: "Слабый договор ведет к спорам с подрядчиком и повторным затратам." 
-    };
-    function check() {
-      let win = true;
-      ['A','B','C'].forEach(id => {
-        const val = document.getElementById('sel-'+id).value; const fb = document.getElementById('fb-'+id);
-        fb.style.display = 'block';
-        if (val === correct[id]) { fb.textContent = "Верно."; fb.className = "fb correct"; }
-        else { win = false; fb.textContent = fbs[id]; fb.className = "fb wrong"; }
+
+  <div class="footer-nav">
+    <button class="btn btn-outline" onclick="resetApp()">Сбросить</button>
+    <button class="btn btn-gold" onclick="checkApp()">Проверить решение</button>
+  </div>
+
+  <div id="feedback-log"></div>
+
+  <div id="overlay">
+    <div style="font-family:'Playfair Display', serif; color:var(--success); font-size:22px; margin-bottom:15px;">
+      Вы выстроили грамотную работу с лабораторией
+    </div>
+    <div style="font-size:14px; line-height:1.6; margin-bottom:24px;">
+      Вы правильно связали аккредитацию лаборатории и ее область с юридической силой протоколов. Ошибка здесь не в том, что не повезло с подрядчиком, а в том, как организован контроль: лабораторию выбирают без проверки аккредитации, области и сроков расширения. Вы показали, к чему это приводит: протоколы могут не принять, ПЭК по воздуху посчитают невыполненным, а предприятию придется повторять контроль, искать нового подрядчика и объясняться с надзором.
+    </div>
+    <button class="btn btn-gold" onclick="resetApp(); document.getElementById('overlay').style.display='none';">
+      Пройти заново
+    </button>
+  </div>
+</div>
+
+<script>
+  let activeItem = null;
+  const slots = document.querySelectorAll('.drop-slot');
+  const pool = document.getElementById('pool');
+  const feedbackLog = document.getElementById('feedback-log');
+  const overlay = document.getElementById('overlay');
+
+  function shufflePool() {
+    const list = document.getElementById('pool-list');
+    const cards = Array.from(list.querySelectorAll('.chip'));
+    cards.sort(() => Math.random() - 0.5);
+    cards.forEach(c => list.appendChild(c));
+  }
+
+  function initDnD() {
+    const chips = document.querySelectorAll('.chip');
+
+    chips.forEach(c => {
+      c.addEventListener('dragstart', e => {
+        activeItem = c;
+        c.style.opacity = '0.5';
+        e.dataTransfer.effectAllowed = 'move';
       });
-      if (win) document.getElementById('overlay').style.display = 'flex';
+      c.addEventListener('dragend', () => {
+        activeItem = null;
+        c.style.opacity = '1';
+      });
+    });
+
+    slots.forEach(s => {
+      s.addEventListener('dragover', e => {
+        e.preventDefault();
+        e.dataTransfer.dropEffect = 'move';
+      });
+      s.addEventListener('dragenter', () => s.classList.add('active'));
+      s.addEventListener('dragleave', () => s.classList.remove('active'));
+      s.addEventListener('drop', () => {
+        s.classList.remove('active');
+        if (activeItem) {
+          const existingChip = s.querySelector('.chip');
+          if (existingChip) {
+            document.getElementById('pool-list').appendChild(existingChip);
+          }
+          s.textContent = '';
+          s.appendChild(activeItem);
+          s.classList.remove('correct-slot', 'wrong-slot');
+        }
+      });
+    });
+
+    pool.addEventListener('dragover', e => {
+      e.preventDefault();
+      e.dataTransfer.dropEffect = 'move';
+    });
+
+    pool.addEventListener('drop', () => {
+      if (activeItem) {
+        document.getElementById('pool-list').appendChild(activeItem);
+      }
+    });
+  }
+
+  function checkApp() {
+    let ok = 0;
+    slots.forEach(s => {
+      const matchId = s.getAttribute('data-match');
+      const child = s.querySelector('.chip');
+      s.classList.remove('correct-slot', 'wrong-slot');
+      if (child && child.id === 'chip-' + matchId) {
+        ok++;
+        s.classList.add('correct-slot');
+      } else if (child) {
+        s.classList.add('wrong-slot');
+      }
+    });
+
+    if (ok === slots.length) {
+      feedbackLog.style.color = '#2e7d32';
+      feedbackLog.textContent = 'Все пары собраны верно.';
+      overlay.style.display = 'flex';
+    } else {
+      feedbackLog.style.color = '#d32f2f';
+      feedbackLog.textContent =
+        'Есть ошибки в сопоставлении. Подумайте, какой риск напрямую следует из каждой ошибки эколога.';
     }
-  </script>
+  }
+
+  function resetApp() {
+    const list = document.getElementById('pool-list');
+    const chips = document.querySelectorAll('.chip');
+    chips.forEach(c => list.appendChild(c));
+    slots.forEach(s => {
+      s.classList.remove('correct-slot', 'wrong-slot', 'active');
+      s.textContent = 'Перетащите сюда риск';
+    });
+    feedbackLog.textContent = '';
+    overlay.style.display = 'none';
+    shufflePool();
+    initDnD();
+  }
+
+  shufflePool();
+  initDnD();
+</script>
+
 </body>
 </html>
