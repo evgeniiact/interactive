@@ -104,6 +104,7 @@
       flex-shrink: 0;
     }
 
+    /* 5 строк, карточки лево/право всегда на одном уровне и одной высоты */
     .items {
       display: grid;
       grid-template-rows: repeat(5, 1fr);
@@ -247,22 +248,22 @@
       width: 100%;
     }
 
-    /* левая карточка: текст режем по высоте строки (как у правой),
-       но при этом в JS покажем поверх полную версию */
-    .item[data-side="left"] .item-text {
-      display: -webkit-box;
-      -webkit-line-clamp: 4;
-      -webkit-box-orient: vertical;
+    /* левая карточка – не меняем ее размеры при наведении, убираем дерганье */
+    .item[data-side="left"] {
       overflow: hidden;
     }
 
-    /* правая карточка показывает весь текст, но высота строки совпадает с левой,
-       потому что обе находятся в одной строке grid и имеют height:100% */
+    .item[data-side="left"] .item-text {
+      white-space: normal;
+      overflow: auto;
+    }
+
+    /* правая карточка показывает весь текст, высоту строки задает grid */
     .item[data-side="right"] .item-text {
       white-space: normal;
     }
 
-    /* всплывающая карточка поверх сетки при наведении на левую */
+    /* всплывающая копия левой карточки поверх сетки, без влияния на layout */
     .floating-left {
       position: absolute;
       z-index: 5;
@@ -276,10 +277,8 @@
     }
 
     .floating-left .item-text {
-      display: block;
-      -webkit-line-clamp: unset;
-      overflow: visible;
       white-space: normal;
+      overflow: visible;
     }
 
     @media (max-width: 600px) {
