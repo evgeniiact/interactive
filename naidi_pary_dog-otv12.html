@@ -104,7 +104,6 @@
       flex-shrink: 0;
     }
 
-    /* 5 строк, карточки лево/право всегда на одном уровне и одной высоты */
     .items {
       display: grid;
       grid-template-rows: repeat(5, 1fr);
@@ -123,7 +122,7 @@
       display: flex;
       align-items: center;
       position: relative;
-      transition: all 0.18s ease;
+      transition: background-color 0.18s ease, border-color 0.18s ease;
       width: 100%;
       overflow: hidden;
       height: 100%;
@@ -133,9 +132,15 @@
       color: var(--text-dark);
     }
 
-    .item:hover {
+    .item[data-side="right"]:hover {
       border-color: var(--green-accent);
       box-shadow: 0 3px 10px rgba(0,119,96,0.12);
+      background: #f3fbf7;
+      transform: translateY(-1px);
+    }
+
+    .item[data-side="left"]:hover {
+      border-color: var(--green-accent);
       background: #f3fbf7;
     }
 
@@ -248,22 +253,17 @@
       width: 100%;
     }
 
-    /* левая карточка – не меняем ее размеры при наведении, убираем дерганье */
-    .item[data-side="left"] {
+    .item[data-side="left"] .item-text {
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
       overflow: hidden;
     }
 
-    .item[data-side="left"] .item-text {
-      white-space: normal;
-      overflow: auto;
-    }
-
-    /* правая карточка показывает весь текст, высоту строки задает grid */
     .item[data-side="right"] .item-text {
       white-space: normal;
     }
 
-    /* всплывающая копия левой карточки поверх сетки, без влияния на layout */
     .floating-left {
       position: absolute;
       z-index: 5;
@@ -277,8 +277,10 @@
     }
 
     .floating-left .item-text {
-      white-space: normal;
+      display: block;
+      -webkit-line-clamp: unset;
       overflow: visible;
+      white-space: normal;
     }
 
     @media (max-width: 600px) {
@@ -389,9 +391,11 @@
         div.dataset.id = item.id;
         div.dataset.side = 'left';
         div.innerHTML = `<span class="item-text">${item.left}</span><span class="dot dot-right"></span>`;
-        div.onclick = () => onSelect(div);
-        div.addEventListener('mouseenter', () => showFloating(div, item.left));
-        div.addEventListener('mouseleave', () => removeFloating());
+        div.addEventListener('click', (e) => {
+          showFloating(div, item.left);
+          onSelect(div);
+          e.stopPropagation();
+        });
         leftWrap.appendChild(div);
       });
 
@@ -406,6 +410,16 @@
       });
 
       setTimeout(redrawLines, 0);
+
+      // закрытие плавающей карточки по клику вне
+      document.addEventListener('click', handleDocumentClick);
+    }
+
+    function handleDocumentClick(e) {
+      // если клик не по плавающей карточке и не по левой карточке – убрать плавающую
+      if (floating && !floating.contains(e.target) && !e.target.closest('.item[data-side="left"]')) {
+        removeFloating();
+      }
     }
 
     function showFloating(baseEl, text) {
@@ -549,6 +563,7 @@
     }
 
     function restartGame() {
+      document.removeEventListener('click', handleDocumentClick);
       initMatch();
     }
 
