@@ -34,16 +34,20 @@
       padding: 16px 20px 20px 20px;
       width: 560px;
       max-width: 560px;
+      max-height: 800px;
       box-shadow: 0 24px 60px rgba(0,119,96,0.15);
       position: relative;
       overflow: hidden;
+      display: flex;
+      flex-direction: column;
     }
 
     header {
       text-align: center;
-      margin-bottom: 12px;
+      margin-bottom: 10px;
       border-bottom: 1px solid rgba(0,119,96,0.12);
-      padding-bottom: 8px;
+      padding-bottom: 6px;
+      flex-shrink: 0;
     }
 
     h2 {
@@ -64,10 +68,12 @@
     }
 
     .match-wrapper {
-      margin-top: 14px;
+      margin-top: 10px;
       display: flex;
-      gap: 16px;
+      gap: 18px;
       position: relative;
+      flex: 1;
+      min-height: 0;
     }
 
     #svg-lines {
@@ -84,9 +90,9 @@
       position: relative;
       z-index: 2;
       flex: 1;
-      display: grid;
-      grid-template-rows: auto repeat(5, auto);
-      gap: 6px;
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
     }
 
     .column-title {
@@ -95,11 +101,15 @@
       letter-spacing: 0.04em;
       color: #527a6b;
       margin-bottom: 4px;
+      flex-shrink: 0;
     }
 
-    .item-wrapper {
-      display: flex;
-      align-items: stretch;
+    .items {
+      display: grid;
+      grid-template-rows: repeat(5, 1fr);
+      gap: 6px;
+      flex: 1;
+      min-height: 0;
     }
 
     .item {
@@ -114,6 +124,8 @@
       position: relative;
       transition: all 0.18s ease;
       width: 100%;
+      overflow: hidden;
+      height: 100%;
     }
 
     .item-text {
@@ -123,7 +135,6 @@
     .item:hover {
       border-color: var(--green-accent);
       box-shadow: 0 3px 10px rgba(0,119,96,0.12);
-      transform: translateY(-1px);
       background: #f3fbf7;
     }
 
@@ -184,13 +195,14 @@
     }
 
     .actions {
-      margin-top: 14px;
+      margin-top: 10px;
       text-align: center;
       display: flex;
       flex-wrap: wrap;
       gap: 8px;
       justify-content: center;
       align-items: center;
+      flex-shrink: 0;
     }
 
     .btn-primary {
@@ -235,6 +247,41 @@
       width: 100%;
     }
 
+    /* левая карточка: текст режем по высоте строки (как у правой),
+       но при этом в JS покажем поверх полную версию */
+    .item[data-side="left"] .item-text {
+      display: -webkit-box;
+      -webkit-line-clamp: 4;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    /* правая карточка показывает весь текст, но высота строки совпадает с левой,
+       потому что обе находятся в одной строке grid и имеют height:100% */
+    .item[data-side="right"] .item-text {
+      white-space: normal;
+    }
+
+    /* всплывающая карточка поверх сетки при наведении на левую */
+    .floating-left {
+      position: absolute;
+      z-index: 5;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid var(--green-accent);
+      padding: 6px 10px;
+      font-size: 12px;
+      box-shadow: 0 10px 26px rgba(0,0,0,0.3);
+      max-width: 260px;
+    }
+
+    .floating-left .item-text {
+      display: block;
+      -webkit-line-clamp: unset;
+      overflow: visible;
+      white-space: normal;
+    }
+
     @media (max-width: 600px) {
       body { padding: 4px; }
       #match-app {
@@ -260,12 +307,14 @@
     <div class="match-wrapper" id="match-wrapper">
       <svg id="svg-lines"></svg>
 
-      <div class="column" id="col-left">
+      <div class="column">
         <div class="column-title">Колонка А. Фрагменты формулировки</div>
+        <div class="items" id="left-items"></div>
       </div>
 
-      <div class="column" id="col-right">
+      <div class="column">
         <div class="column-title">Колонка Б. Смысловое назначение</div>
+        <div class="items" id="right-items"></div>
       </div>
     </div>
 
@@ -280,27 +329,27 @@
     const data = [
       {
         id: 1,
-        left: '«Сторона 1 (эколог предприятия) обязуется своевременно предоставить Стороне 2 (подрядчику) исходные данные для подготовки отчетности в формате Excel с приложением подтверждающих документов».',
-        right: 'Определяет зоны ответственности каждой стороны (исходные данные – эколог, расчеты и заполнение форм – подрядчик).'
+        left: 'Сторона 1, заказчик, обязуется своевременно предоставить Стороне 2, подрядчику, исходные данные для подготовки отчетности с приложением подтверждающих документов.',
+        right: 'Определяет зоны ответственности каждой стороны. За передачу исходных данных отвечает эколог предприятия, а за расчеты и заполнение форм – подрядчик.'
       },
       {
         id: 2,
-        left: '«Факт передачи исходных данных фиксируется актом приема-передачи данных, подписываемым сторонами в течение 3 рабочих дней после получения информации подрядчиком».',
-        right: 'Устанавливает порядок подтверждения передачи исходных данных (способ передачи, фиксация факта получения, сроки).'
+        left: 'Факт передачи исходных данных фиксируется актом приема-передачи данных, стороны подписывают его в течение 3 рабочих дней.',
+        right: 'Устанавливает порядок подтверждения передачи исходных данных: способ передачи, фиксация факта получения, сроки.'
       },
       {
         id: 3,
-        left: '«При выявлении ошибок в сданной отчетности стороны в течение 5 рабочих дней проводят совместную проверку: Сторона 1 подтверждает корректность переданных исходных данных либо предоставляет исправленные данные; Сторона 2 проверяет корректность расчетов и заполнения форм, при необходимости вносит исправления».',
-        right: 'Описывает алгоритм действий при обнаружении ошибки (сроки проверки, порядок запроса уточнений, обязанность предоставить подтверждающие документы).'
+        left: 'При выявлении ошибок в сданной отчетности стороны в течение 5 рабочих дней проводят совместную проверку: Сторона 1 подтверждает корректность переданных исходных данных либо предоставляет исправленные данные; Сторона 2 проверяет корректность расчетов и заполнения форм, при необходимости вносит исправления.',
+        right: 'Описывает алгоритм действий при обнаружении ошибки: сроки проверки, порядок запроса уточнений, обязанность предоставить подтверждающие документы.'
       },
       {
         id: 4,
-        left: '«Возмещение штрафов, наложенных контролирующими органами, осуществляется стороной, допустившей ошибку. Если ошибка возникла по вине обеих сторон, штраф распределяется пропорционально степени вины, определяемой на основании акта совместной проверки».',
-        right: 'Фиксирует условия возмещения убытков (штрафов): когда ответственность несет подрядчик, когда – эколог, возможен ли вариант разделения ответственности.'
+        left: 'Возмещение штрафов, наложенных контролирующими органами, осуществляется стороной, допустившей ошибку. Если ошибка возникла по вине обеих сторон, штраф распределяется пропорционально степени вины, определяемой на основании акта совместной проверки.',
+        right: 'Фиксирует условия возмещения убытков/штрафов: когда ответственность несет подрядчик, когда эколог, возможен ли вариант разделения ответственности.'
       },
       {
         id: 5,
-        left: '«Претензии по качеству выполненных работ направляются в письменной форме с приложением подтверждающих документов. Спорные вопросы подлежат урегулированию в досудебном порядке в течение 10 рабочих дней с момента получения претензии».',
+        left: 'Претензии по качеству выполненных работ направляются в письменной форме с приложением подтверждающих документов. Спорные вопросы подлежат урегулированию в досудебном порядке в течение 10 рабочих дней с момента получения претензии.',
         right: 'Регламентирует сроки и порядок подачи претензий и урегулирования разногласий.'
       }
     ];
@@ -308,14 +357,15 @@
     let selected = null;
     let links = [];
     let locked = false;
+    let floating = null;
 
     function shuffle(arr) {
       return [...arr].sort(() => Math.random() - 0.5);
     }
 
     function initMatch() {
-      const leftCol = document.getElementById('col-left');
-      const rightCol = document.getElementById('col-right');
+      const leftWrap = document.getElementById('left-items');
+      const rightWrap = document.getElementById('right-items');
       const status = document.getElementById('status');
       const btnCheck = document.getElementById('btn-check');
 
@@ -324,46 +374,64 @@
       locked = false;
       btnCheck.disabled = false;
 
-      Array.from(leftCol.querySelectorAll('.item-wrapper')).forEach(n => n.remove());
-      Array.from(rightCol.querySelectorAll('.item-wrapper')).forEach(n => n.remove());
+      leftWrap.innerHTML = '';
+      rightWrap.innerHTML = '';
       links = [];
       selected = null;
+      removeFloating();
       document.getElementById('svg-lines').innerHTML = '';
 
       const leftShuffled = shuffle(data);
       const rightShuffled = shuffle(data);
 
       leftShuffled.forEach(item => {
-        const wrap = document.createElement('div');
-        wrap.className = 'item-wrapper';
-
         const div = document.createElement('div');
         div.className = 'item';
         div.dataset.id = item.id;
         div.dataset.side = 'left';
         div.innerHTML = `<span class="item-text">${item.left}</span><span class="dot dot-right"></span>`;
         div.onclick = () => onSelect(div);
-
-        wrap.appendChild(div);
-        leftCol.appendChild(wrap);
+        div.addEventListener('mouseenter', () => showFloating(div, item.left));
+        div.addEventListener('mouseleave', () => removeFloating());
+        leftWrap.appendChild(div);
       });
 
       rightShuffled.forEach(item => {
-        const wrap = document.createElement('div');
-        wrap.className = 'item-wrapper';
-
         const div = document.createElement('div');
         div.className = 'item';
         div.dataset.id = item.id;
         div.dataset.side = 'right';
         div.innerHTML = `<span class="dot dot-left"></span><span class="item-text">${item.right}</span>`;
         div.onclick = () => onSelect(div);
-
-        wrap.appendChild(div);
-        rightCol.appendChild(wrap);
+        rightWrap.appendChild(div);
       });
 
       setTimeout(redrawLines, 0);
+    }
+
+    function showFloating(baseEl, text) {
+      removeFloating();
+
+      const appRect = document.getElementById('match-app').getBoundingClientRect();
+      const rect = baseEl.getBoundingClientRect();
+
+      const float = document.createElement('div');
+      float.className = 'floating-left';
+      float.innerHTML = `<span class="item-text">${text}</span>`;
+
+      float.style.left = (rect.left - appRect.left) + 'px';
+      float.style.top = (rect.top - appRect.top) + 'px';
+      float.style.width = rect.width + 'px';
+
+      document.getElementById('match-app').appendChild(float);
+      floating = float;
+    }
+
+    function removeFloating() {
+      if (floating) {
+        floating.remove();
+        floating = null;
+      }
     }
 
     function onSelect(el) {
@@ -484,6 +552,11 @@
     function restartGame() {
       initMatch();
     }
+
+    window.addEventListener('resize', () => {
+      redrawLines();
+      removeFloating();
+    });
 
     initMatch();
   </script>
