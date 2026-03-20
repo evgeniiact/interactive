@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Интерактив: где пролетит эколог</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-silk: #f3fbf7;
+  --green-accent: #007760;
+  --green-border: #19a86e;
+  --text-dark: #2c2c2c;
+  --error: #d32f2f;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-silk);
+  margin: 0;
+  padding: 10px;
+  display: flex;
+  justify-content: center;
+}
+
+#quiz-app {
+  background: #ffffff;
+  border: 1px solid var(--green-border);
+  border-radius: 4px;
+  padding: 14px 18px 16px 18px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 800px;
+  box-shadow: 0 24px 60px rgba(0,119,96,0.15);
+  box-sizing: border-box;
+  overflow: auto;
+  position: relative;
+}
+
+header {
+  text-align: left;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(0,119,96,0.12);
+  padding-bottom: 6px;
+}
+
+h2 {
+  font-family: 'Playfair Display', serif;
+  color: var(--green-accent);
+  font-size: 20px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.intro {
+  font-size: 13px;
+  color: var(--text-dark);
+  margin-top: 6px;
+}
+
+/* карточка сценария */
+
+.card {
+  margin-top: 12px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  padding: 10px 12px;
+  background: #f9fbf9;
+}
+
+.card-header {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--green-accent);
+  margin-bottom: 4px;
+  text-transform: uppercase;
+}
+
+.card-scenario {
+  font-size: 13px;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+
+/* варианты */
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 2px;
+}
+
+.option-btn {
+  border-radius: 16px;
+  border: 1px solid #dddddd;
+  padding: 6px 10px;
+  font-size: 12px;
+  text-align: left;
+  cursor: pointer;
+  background: #ffffff;
+  transition: border-color 0.2s, background 0.2s, transform 0.1s;
+}
+
+.option-btn:hover {
+  border-color: var(--green-accent);
+  background: #f3fbf7;
+  transform: translateY(-1px);
+}
+
+.option-btn.correct {
+  border-color: #1b5e20;
+  background: #f2fbf4;
+}
+
+.option-btn.incorrect {
+  border-color: var(--error);
+  background: #fff5f5;
+}
+
+/* навигация */
+
+.nav {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.btn {
+  background: linear-gradient(135deg, #19a86e, #007760);
+  color: white;
+  padding: 7px 16px;
+  border: none;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(0,119,96,0.25);
+  transition: 0.25s;
+}
+
+.btn[disabled] {
+  opacity: 0.4;
+  cursor: default;
+  box-shadow: none;
+}
+
+.btn:hover:not([disabled]) {
+  transform: translateY(-2px);
+  box-shadow: 0 16px 30px rgba(0,119,96,0.18);
+}
+
+.nav-info {
+  font-size: 11px;
+  color: #666666;
+}
+
+/* итог */
+
+.summary {
+  margin-top: 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  padding: 8px 10px;
+  display: none;
+}
+.summary-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--green-accent);
+}
+
+/* модальное окно разбора */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  max-width: 420px;
+  width: 90%;
+  padding: 10px 12px 12px 12px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+  font-size: 13px;
+}
+
+.modal-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--green-accent);
+}
+
+.modal-text {
+  font-size: 13px;
+  color: var(--text-dark);
+  margin-bottom: 8px;
+}
+
+.modal-extra {
+  font-size: 12px;
+  color: #555555;
+}
+
+.modal-close {
+  margin-top: 8px;
+  text-align: right;
+  font-size: 11px;
+  color: #666666;
+  cursor: pointer;
+  text-decoration: underline;
+}
+</style>
+</head>
+<body>
+<div id="quiz-app">
+  <header>
+    <h2>Где пролетит эколог</h2>
+    <div class="intro">
+      Ниже пять рабочих ситуаций. В каждой выберите, к чему приведет слабый отбор проб. После ответа посмотрите разбор и выводы для эколога.
+    </div>
+  </header>
+
+  <div id="card-container"></div>
+
+  <div class="nav">
+    <button class="btn" id="prev-btn">Назад</button>
+    <div class="nav-info" id="nav-info"></div>
+    <button class="btn" id="next-btn">Далее</button>
+  </div>
+
+  <div class="summary" id="summary-box">
+    <div class="summary-title">Что важно запомнить</div>
+    <div id="summary-text"></div>
+  </div>
+</div>
+
+<!-- модальное окно с разбором -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" id="modal-box">
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-text" id="modal-text"></div>
+    <div class="modal-extra" id="modal-extra"></div>
+    <div class="modal-close" id="modal-close">Скрыть разбор</div>
+  </div>
+</div>
+
+<script>
+const scenarios = [
+  {
+    id: 1,
+    title: "Ситуация 1. Программа ПЭК",
+    scenario: "Вы обновляете программу ПЭК. За прошлый год есть часть протоколов, но не по всем источникам и не всегда по тем точкам, которые прописаны в действующей программе. По одному из показателей лаборатория работала без аккредитации.",
+    options: [
+      {
+        text: "Можно опереться на эти данные, а недостающие показатели взять по проекту и НДВ.",
+        correct: true
+      },
+      {
+        text: "Лучше вообще не ссылаться на старые протоколы, чтобы не привлекать внимание инспектора.",
+        correct: false
+      }
+    ],
+    explanationTitle: "Как это выглядит на проверке",
+    explanationText:
+      "Инспектор понимает, что ПЭК живет не в идеальном мире. Часто часть протоколов есть, часть отсутствует. Но опереться в программе можно только на те результаты, которые оформлены без явных нарушений. Поэтому разумный шаг – честно показать, какие данные у вас есть, а где вы вынуждены ориентироваться на проект и НДВ. Попытка «спрятать» протоколы с недочетами хуже, чем аккуратно их разобрать.",
+    explanationExtra:
+      "Вывод для эколога. Соберите все протоколы, отберите юридически устойчивые и именно на них опирайте программу ПЭК. Остальные используйте для внутренних выводов, но не как опору в документах."
+  },
+  {
+    id: 2,
+    title: "Ситуация 2. Плата за НВОС",
+    scenario: "Подрядная лаборатория отобрала пробы и прислала протоколы. Уже после сдачи декларации вы узнали, что по одному веществу в момент отбора у лаборатории не было аккредитации на нужную матрицу.",
+    options: [
+      {
+        text: "Риски есть: контролирующий орган может не принять такой показатель и посчитать плату по нормативу.",
+        correct: true
+      },
+      {
+        text: "Если декларация уже сдана в срок, вопрос аккредитации лаборатории вторичен.",
+        correct: false
+      }
+    ],
+    explanationTitle: "Что будет с декларацией",
+    explanationText:
+      "Для платы за НВОС важно не только сдать декларацию в срок, но и показать, что исходные данные законно получены. Отсутствие аккредитации по нужной матрице может стать основанием не признать конкретный показатель. Тогда по нему рассчитают плату по нормативу, а это почти всегда дороже. Формально вы заплатите за ошибки в выборе подрядчика и организации отбора проб.",
+    explanationExtra:
+      "Вывод для эколога. Перед договором с лабораторией проверьте аккредитацию именно по вашим веществам и средам. И периодически перепроверяйте, не сократился ли у нее перечень."
+  },
+  {
+    id: 3,
+    title: "Ситуация 3. Плановая проверка",
+    scenario: "На плановой проверке инспектор поднимает программу ПЭК и ваши протоколы отбора проб за два года. По одному источнику точки в актах не совпадают с теми, что утверждены в программе. В паре протоколов есть исправления без расшифровки.",
+    options: [
+      {
+        text: "Инспектор может признать эти протоколы ненадежными и потребовать повторные измерения.",
+        correct: true
+      },
+      {
+        text: "Если концентрации не превышают НДВ, такие расхождения обычно не трогают.",
+        correct: false
+      }
+    ],
+    explanationTitle: "Почему цепляются к мелочам",
+    explanationText:
+      "Несовпадение точек с программой ПЭК и необъясненные исправления ставят под сомнение весь протокол. Инспектор видит, что на практике ПЭК живет своей жизнью, а документы – своей. В такой ситуации проще не засчитать спорные протоколы и потребовать новые замеры по правилам, чем разбираться, где именно была взята проба и кто поправил цифры без подписи.",
+    explanationExtra:
+      "Вывод для эколога. Следите, чтобы фактические точки и графики отбора совпадали с программой ПЭК. Любые отступления и исправления фиксируйте письменно, иначе протокол легко обесценить."
+  },
+  {
+    id: 4,
+    title: "Ситуация 4. Жалоба от соседей",
+    scenario: "Жители соседнего поселка жалуются на запах и дым. Вы знаете, что в этот период технологический режим был стабильным, но последних протоколов по воздуху и воде нет – отбор по ПЭК переносили «на потом».",
+    options: [
+      {
+        text: "На проверке у предприятия не будет свежих цифр, чтобы подтвердить свою позицию.",
+        correct: true
+      },
+      {
+        text: "Можно сослаться на метеоусловия и старые протоколы – этого должно хватить.",
+        correct: false
+      }
+    ],
+    explanationTitle: "Чем обернется экономия на замерах",
+    explanationText:
+      "Жалоба усиливает внимание к предприятию. Если у вас нет свежих протоколов отбора проб, вы опираетесь только на слова и старые документы. Инспектору проще доверять своим замерам, чем вашим объяснениям. Регулярный отбор проб по ПЭК – это ваша страховка, чтобы в момент жалобы показать не только версию, но и актуальные данные.",
+    explanationExtra:
+      "Вывод для эколога. Следите, чтобы ключевые точки по воздуху, воде и отходам не выпадали из графика ПЭК. Особенно там, где уже есть история жалоб."
+  },
+  {
+    id: 5,
+    title: "Ситуация 5. Аварийный выброс",
+    scenario: "Произошел аварийный выброс. До аварии фоновые пробы не отбирали ни по воздуху, ни по воде. В ПЭК такой мониторинг не заложен, и лаборатория приезжает только после инцидента.",
+    options: [
+      {
+        text: "Оценить ущерб будет сложнее: нельзя отделить ваш вклад от уже существующего фона.",
+        correct: true
+      },
+      {
+        text: "Раз авария локальная, фон до инцидента значения не имеет – считают только по факту.",
+        correct: false
+      }
+    ],
+    explanationTitle: "Почему нужен фон до аварии",
+    explanationText:
+      "Без фоновых проб сложно доказать, какую часть загрязнения дало именно ваше предприятие, а какая была в среде изначально. В спорной ситуации расчет ущерба часто делают по консервативному сценарию, то есть не в вашу пользу. Регулярный фон до аварии – это аргумент, который может сэкономить предприятию заметные деньги.",
+    explanationExtra:
+      "Вывод для эколога. Если у предприятия есть риски нештатных ситуаций, продумайте фоновые точки и частоту их контроля заранее, а не после аварии."
+  }
+];
+
+let currentIndex = 0;
+
+const cardContainer = document.getElementById('card-container');
+const prevBtn = document.getElementById('prev-btn');
+const nextBtn = document.getElementById('next-btn');
+const navInfo = document.getElementById('nav-info');
+const summaryBox = document.getElementById('summary-box');
+const summaryText = document.getElementById('summary-text');
+
+const modalBackdrop = document.getElementById('modal-backdrop');
+const modalBox = document.getElementById('modal-box');
+const modalTitle = document.getElementById('modal-title');
+const modalText = document.getElementById('modal-text');
+const modalExtra = document.getElementById('modal-extra');
+const modalClose = document.getElementById('modal-close');
+
+let lastClickedOptionId = null; // id сценария + индекс варианта, чтобы закрывать окно по повторному клику
+
+function renderCard(index) {
+  const s = scenarios[index];
+  cardContainer.innerHTML = '';
+
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const header = document.createElement('div');
+  header.className = 'card-header';
+  header.textContent = s.title;
+
+  const scenarioEl = document.createElement('div');
+  scenarioEl.className = 'card-scenario';
+  scenarioEl.textContent = s.scenario;
+
+  const optionsEl = document.createElement('div');
+  optionsEl.className = 'options';
+
+  s.options.forEach((opt, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt.text;
+    btn.addEventListener('click', () => handleAnswer(btn, opt.correct, s, i));
+    optionsEl.appendChild(btn);
+  });
+
+  card.appendChild(header);
+  card.appendChild(scenarioEl);
+  card.appendChild(optionsEl);
+
+  cardContainer.appendChild(card);
+
+  navInfo.textContent = (index + 1) + ' из ' + scenarios.length;
+
+  prevBtn.disabled = index === 0;
+  nextBtn.disabled = index === scenarios.length - 1;
+}
+
+function handleAnswer(button, isCorrect, scenario, optionIndex) {
+  const optionId = scenario.id + '-' + optionIndex;
+
+  // повторный клик по тому же варианту скрывает окно
+  if (lastClickedOptionId === optionId && modalBackdrop.style.display === 'flex') {
+    hideModal();
+    return;
+  }
+
+  const optionButtons = button.parentElement.querySelectorAll('.option-btn');
+  optionButtons.forEach(b => {
+    b.classList.remove('correct','incorrect');
+  });
+
+  if (isCorrect) {
+    button.classList.add('correct');
+  } else {
+    button.classList.add('incorrect');
+  }
+
+  showModal(scenario, isCorrect);
+  lastClickedOptionId = optionId;
+
+  if (currentIndex === scenarios.length - 1) {
+    showSummary();
+  }
+}
+
+function showModal(scenario, isCorrect) {
+  modalTitle.textContent = scenario.explanationTitle;
+  modalText.textContent = scenario.explanationText;
+  modalExtra.textContent = scenario.explanationExtra;
+
+  modalBackdrop.style.display = 'flex';
+
+  // легкая анимация появления
+  requestAnimationFrame(() => {
+    modalBackdrop.classList.add('visible');
+  });
+}
+
+function hideModal() {
+  modalBackdrop.style.display = 'none';
+  lastClickedOptionId = null;
+}
+
+function showSummary() {
+  summaryBox.style.display = 'block';
+  summaryText.textContent =
+    'Во всех этих историях эколог формально «сдал отчет», но фактически лишился опоры. Слабый отбор проб делает протоколы спорными, ПЭК формальной, а позицию предприятия на проверках и после инцидентов – уязвимой. Ваша задача как эколога – выстроить отбор так, чтобы в любой из этих ситуаций у вас были не только объяснения, но и корректные результаты измерений.';
+}
+
+prevBtn.addEventListener('click', () => {
+  if (currentIndex > 0) {
+    currentIndex--;
+    hideModal();
+    renderCard(currentIndex);
+  }
+});
+
+nextBtn.addEventListener('click', () => {
+  if (currentIndex < scenarios.length - 1) {
+    currentIndex++;
+    hideModal();
+    renderCard(currentIndex);
+  }
+});
+
+modalClose.addEventListener('click', hideModal);
+modalBackdrop.addEventListener('click', (e) => {
+  if (e.target === modalBackdrop) {
+    hideModal();
+  }
+});
+
+renderCard(currentIndex);
+</script>
+</body>
+</html>
