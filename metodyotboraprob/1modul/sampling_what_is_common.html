@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Что общего у всех проб</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Montserrat:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-silk: #f3fbf7;
+  --green-accent: #007760;
+  --green-border: #19a86e;
+  --text-dark: #2c2c2c;
+  --success: #2e7d32;
+  --error: #d32f2f;
+}
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-silk);
+  margin: 0;
+  padding: 5px;
+  display: flex;
+  justify-content: center;
+  overflow-x: hidden;
+}
+
+#quiz-panel {
+  background: #ffffff;
+  border: 1px solid var(--green-border);
+  border-radius: 4px;
+  padding: 14px 18px;
+  width: 100%;
+  max-width: 560px;
+  max-height: 800px;
+  box-shadow: 0 24px 60px rgba(0,119,96,0.18);
+  display: flex;
+  flex-direction: column;
+  box-sizing: border-box;
+}
+
+header {
+  text-align: left;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(0,119,96,0.12);
+  padding-bottom: 8px;
+}
+
+h2 {
+  font-family: 'Playfair Display', serif;
+  color: var(--green-accent);
+  font-size: 20px;
+  margin: 0;
+  text-transform: uppercase;
+}
+
+.intro {
+  font-size: 13px;
+  color: var(--text-dark);
+  margin-top: 6px;
+}
+
+/* карточка вопроса */
+
+.card {
+  margin-top: 10px;
+  border-radius: 6px;
+  border: 1px solid #d4e3da;
+  padding: 10px 12px;
+  background: #f6faf7;
+}
+
+.card-question {
+  font-size: 13px;
+  color: var(--text-dark);
+  margin-bottom: 10px;
+}
+
+/* варианты */
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.option-btn {
+  border-radius: 16px;
+  border: 1px solid #d4e3da;
+  padding: 6px 10px;
+  font-size: 12px;
+  cursor: pointer;
+  background: #ffffff;
+  text-align: left;
+  transition: 0.2s;
+}
+
+.option-btn:hover {
+  border-color: var(--green-accent);
+  background: #f3fbf7;
+  transform: translateY(-1px);
+}
+
+.option-btn.correct {
+  border-color: var(--success);
+  background: #f2fbf4;
+}
+
+.option-btn.incorrect {
+  border-color: var(--error);
+  background: #fff5f5;
+}
+
+/* навигация */
+
+.nav {
+  margin-top: 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+}
+
+.btn-primary {
+  background: linear-gradient(135deg, #19a86e, #007760);
+  color: white;
+  padding: 7px 14px;
+  border: none;
+  border-radius: 16px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  cursor: pointer;
+  box-shadow: 0 10px 22px rgba(0,119,96,0.22);
+  transition: 0.25s;
+  min-width: 90px;
+}
+
+.btn-primary[disabled] {
+  opacity: 0.4;
+  cursor: default;
+  box-shadow: none;
+}
+
+.btn-primary:hover:not([disabled]) {
+  transform: translateY(-2px);
+  box-shadow: 0 14px 28px rgba(0,119,96,0.25);
+}
+
+.nav-info {
+  font-size: 11px;
+  color: #666666;
+  text-align: center;
+  flex: 1;
+}
+
+/* итог */
+
+.summary {
+  margin-top: 10px;
+  font-size: 12px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  padding: 8px 10px;
+  display: none;
+}
+
+.summary-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  color: var(--green-accent);
+}
+
+/* модальное окно с комментарием */
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+
+.modal {
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  max-width: 420px;
+  width: 90%;
+  padding: 10px 12px 12px 12px;
+  box-shadow: 0 16px 40px rgba(0,0,0,0.25);
+  font-size: 13px;
+}
+
+.modal-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: var(--green-accent);
+}
+
+.modal-text {
+  font-size: 13px;
+  color: var(--text-dark);
+}
+
+.modal-close {
+  margin-top: 8px;
+  text-align: right;
+  font-size: 11px;
+  color: #666666;
+  cursor: pointer;
+  text-decoration: underline;
+}
+
+@media (max-width: 480px) {
+  #quiz-panel {
+    padding: 10px 12px;
+  }
+}
+</style>
+</head>
+<body>
+<div id="quiz-panel">
+  <header>
+    <h2>Что общего у всех проб</h2>
+    <div class="intro">
+      В этом упражнении вы проверите, какие требования встречаются в любых ГОСТах по отбору проб, а какие относятся только к отдельным средам. Это поможет легче воспринимать общие принципы в уроке.
+    </div>
+  </header>
+
+  <div id="card-container"></div>
+
+  <div class="nav">
+    <button class="btn-primary" id="prev-btn">Назад</button>
+    <div class="nav-info" id="nav-info"></div>
+    <button class="btn-primary" id="next-btn">Далее</button>
+  </div>
+
+  <div class="summary" id="summary-box">
+    <div class="summary-title">Зачем это упражнение</div>
+    <div id="summary-text"></div>
+  </div>
+</div>
+
+<!-- модальное окно с комментарием -->
+<div class="modal-backdrop" id="modal-backdrop">
+  <div class="modal" id="modal-box">
+    <div class="modal-title" id="modal-title"></div>
+    <div class="modal-text" id="modal-text"></div>
+    <div class="modal-close" id="modal-close">Скрыть комментарий</div>
+  </div>
+</div>
+
+<script>
+const questionsSource = [
+  {
+    id: 1,
+    question: "Точку отбора нужно привязать к схеме или плану площадки.",
+    options: [
+      { text: "Это универсальное требование для любой пробы.", value: "universal" },
+      { text: "Это актуально только для грунтов и почв.", value: "specific" }
+    ],
+    correctValue: "universal",
+    explanationTitle: "Привязка точки нужна всегда",
+    explanationText:
+      "И вода, и почва, и воздух не могут отбираться «где‑то у трубы». ГОСТы требуют четкой привязки к местности или оборудованию. Без этого результат сложно повторить и защитить на проверке."
+  },
+  {
+    id: 2,
+    question: "Нужно учитывать направление и скорость ветра при отборе.",
+    options: [
+      { text: "Это универсальное требование для любой пробы.", value: "universal" },
+      { text: "Это в первую очередь особенность контроля воздуха.", value: "specific" }
+    ],
+    correctValue: "specific",
+    explanationTitle: "Ветер критичен для воздуха",
+    explanationText:
+      "Для почвы и воды метеоусловия важны, но не так жестко. При контроле воздуха ГОСТ прямо привязывает отбор к ветру и состоянию атмосферы. Если этим пренебречь, результат легко оспорить."
+  },
+  {
+    id: 3,
+    question: "У пробы должен быть документально оформленный путь от точки отбора до лаборатории.",
+    options: [
+      { text: "Это универсальное требование для любых проб.", value: "universal" },
+      { text: "Это нужно только для питьевой воды и сточных вод.", value: "specific" }
+    ],
+    correctValue: "universal",
+    explanationTitle: "Маршрут пробы важен для всех",
+    explanationText:
+      "ГОСТы и документы ПНД Ф по всем средам задают требования к срокам и условиям хранения и доставки. Если нельзя проследить путь пробы до анализа, достоверность результата легко поставить под сомнение."
+  },
+  {
+    id: 4,
+    question: "При отборе почвы всегда используют одну и ту же глубину, например 0–20 см.",
+    options: [
+      { text: "Это универсальное правило для всех проб.", value: "universal" },
+      { text: "Это частный случай и зависит от задачи и методики.", value: "specific" }
+    ],
+    correctValue: "specific",
+    explanationTitle: "Глубина отбора не всегда одна",
+    explanationText:
+      "ГОСТ по почвам задает подход к выбору глубины, а не одну цифру. Для воды и воздуха понятия «глубина» вообще нет. Важно обосновать выбранную схему и строго ей следовать."
+  },
+  {
+    id: 5,
+    question: "Перед отбором нужно проверить чистоту тары и пригодность расходных материалов.",
+    options: [
+      { text: "Это базовое требование для любой среды.", value: "universal" },
+      { text: "Это важно только для сложных химических анализов.", value: "specific" }
+    ],
+    correctValue: "universal",
+    explanationTitle: "Чистая тара — общий принцип",
+    explanationText:
+      "Для любых проб грязная тара или неподходящие материалы убивают результат. ГОСТы и ПНД Ф прямо требуют подтверждать чистоту посуды и ее соответствие объекту отбора."
+  },
+  {
+    id: 6,
+    question: "Объем пробы всегда одинаковый — его выбирает лаборатория для удобства.",
+    options: [
+      { text: "Это универсальное правило: лаборатория решает.", value: "universal" },
+      { text: "Это неверно: объем задают методики и ГОСТы для конкретной среды.", value: "specific" }
+    ],
+    correctValue: "specific",
+    explanationTitle: "Объем должен быть обоснован",
+    explanationText:
+      "Объем пробы определяется методиками и задачами анализа, а не удобством. Универсально одно: объем нужно обосновать и зафиксировать, иначе результат легко поставить под сомнение."
+  }
+];
+
+let questions = [];
+let currentIndex = 0;
+let answered = 0;
+
+const cardContainer = document.getElementById('card-container');
+const nextBtn = document.getElementById('next-btn');
+const prevBtn = document.getElementById('prev-btn');
+const navInfo = document.getElementById('nav-info');
+const summaryBox = document.getElementById('summary-box');
+const summaryText = document.getElementById('summary-text');
+
+const modalBackdrop = document.getElementById('modal-backdrop');
+const modalTitle = document.getElementById('modal-title');
+const modalText = document.getElementById('modal-text');
+const modalClose = document.getElementById('modal-close');
+
+function shuffle(arr) {
+  return arr.sort(() => Math.random() - 0.5);
+}
+
+function initQuiz() {
+  questions = shuffle([...questionsSource]);
+  currentIndex = 0;
+  answered = 0;
+  renderQuestion();
+}
+
+function renderQuestion() {
+  const q = questions[currentIndex];
+  cardContainer.innerHTML = '';
+
+  const card = document.createElement('div');
+  card.className = 'card';
+
+  const qEl = document.createElement('div');
+  qEl.className = 'card-question';
+  qEl.textContent = q.question;
+
+  const optionsEl = document.createElement('div');
+  optionsEl.className = 'options';
+
+  q.options.forEach(opt => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt.text;
+    btn.dataset.value = opt.value;
+    btn.addEventListener('click', () => handleAnswer(btn, q));
+    optionsEl.appendChild(btn);
+  });
+
+  card.appendChild(qEl);
+  card.appendChild(optionsEl);
+  cardContainer.appendChild(card);
+
+  navInfo.textContent = (currentIndex + 1) + ' из ' + questions.length;
+  updateNavButtons();
+}
+
+function handleAnswer(button, question) {
+  const card = button.closest('.card');
+  const optionButtons = card.querySelectorAll('.option-btn');
+
+  optionButtons.forEach(b => {
+    b.disabled = true;
+    if (b.dataset.value === question.correctValue) {
+      b.classList.add('correct');
+    }
+  });
+
+  if (button.dataset.value !== question.correctValue) {
+    button.classList.add('incorrect');
+  }
+
+  showExplanation(question);
+
+  if (!question.answered) {
+    question.answered = true;
+    answered++;
+  }
+
+  if (answered === questions.length) {
+    showSummary();
+  }
+}
+
+function showExplanation(question) {
+  modalTitle.textContent = question.explanationTitle;
+  modalText.textContent = question.explanationText;
+  modalBackdrop.style.display = 'flex';
+}
+
+function hideModal() {
+  modalBackdrop.style.display = 'none';
+}
+
+function updateNavButtons() {
+  prevBtn.disabled = currentIndex === 0;
+  nextBtn.disabled = currentIndex === questions.length - 1;
+}
+
+function showSummary() {
+  summaryBox.style.display = 'block';
+  summaryText.textContent =
+    'ГОСТы по воде, почве и воздуху и документы системы ПНД Ф формулируют одни и те же принципы достоверности. В уроке мы соберем эти принципы в общий фундамент, а потом посмотрим, как они раскрываются для каждой среды.';
+}
+
+nextBtn.addEventListener('click', () => {
+  if (currentIndex < questions.length - 1) {
+    currentIndex++;
+    renderQuestion();
+  }
+});
+
+prevBtn.addEventListener('click', () => {
+  if (currentIndex > 0) {
+    currentIndex--;
+    renderQuestion();
+  }
+});
+
+modalClose.addEventListener('click', hideModal);
+modalBackdrop.addEventListener('click', (e) => {
+  if (e.target === modalBackdrop) hideModal();
+});
+
+initQuiz();
+</script>
+</body>
+</html>
