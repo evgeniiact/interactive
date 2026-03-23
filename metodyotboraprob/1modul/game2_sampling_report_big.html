@@ -5,7 +5,7 @@
 <meta name="viewport"
       content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
 <meta name="google" content="notranslate" />
-<title>Где отбирать пробы на предприятии</title>
+<title>План предприятия – точки отбора проб</title>
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
@@ -17,164 +17,90 @@
   --text-dark: #2c2c2c;
 }
 
+/* контейнер 560x800 */
 * { box-sizing: border-box; }
 
 body {
-  font-family: 'Montserrat', sans-serif;
-  background-color: var(--bg-silk);
   margin: 0;
-  padding: 8px;
+  padding: 0;
+  background: var(--bg-silk);
+  font-family: 'Montserrat', sans-serif;
   display: flex;
   justify-content: center;
+  align-items: flex-start;
 }
 
-/* стартовый блок */
-#launch-block {
+#app {
+  width: 560px;
+  height: 800px;
   background: #ffffff;
   border: 1px solid var(--green-border);
   border-radius: 4px;
-  padding: 16px 18px 18px 18px;
-  width: 100%;
-  max-width: 560px;
   box-shadow: 0 18px 40px rgba(0, 119, 96, 0.16);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
 }
 
-#launch-block h2 {
+/* шапка и прогресс */
+header {
+  padding: 10px 14px 6px 14px;
+  border-bottom: 1px solid rgba(0,119,96,0.12);
+}
+
+h2 {
   margin: 0;
   font-size: 16px;
   font-weight: 700;
   color: var(--green-accent);
 }
 
-.launch-subtitle {
-  margin-top: 6px;
+.subtitle {
+  margin-top: 4px;
   font-size: 12px;
   color: var(--text-dark);
 }
 
-.launch-image {
-  margin-top: 10px;
-  border-radius: 6px;
-  background: #f3fbf7;
-  padding: 8px;
-}
-
-.launch-image img {
-  width: 100%;
-  display: block;
-  border-radius: 6px;
-}
-
-/* кнопка запуска */
-.btn-main {
-  margin-top: 12px;
-  font-family: 'Montserrat', sans-serif;
-  border-radius: 18px;
-  padding: 8px 22px;
-  font-size: 12px;
-  font-weight: 700;
-  text-transform: uppercase;
-  border: none;
-  cursor: pointer;
-  background: var(--green-gradient);
-  color: #ffffff;
-  box-shadow: 0 10px 22px rgba(0,119,96,0.25);
-}
-
-.btn-main:hover {
-  transform: translateY(-1px);
-}
-
-/* модалка с игрой */
-#game-modal {
-  position: fixed;
-  inset: 0;
-  background: rgba(0,0,0,0.45);
-  display: none;
-  justify-content: center;
-  align-items: center;
-  z-index: 1000;
-}
-
-#game-wrapper {
-  width: 100%;
-  max-width: 1024px;
-  height: 90vh;
-  max-height: 680px;
-  background: #ffffff;
-  border-radius: 6px;
-  border: 1px solid var(--green-border);
-  box-shadow: 0 24px 60px rgba(0, 119, 96, 0.35);
-  display: flex;
-  flex-direction: column;
-  padding: 16px 18px 16px 18px;
-}
-
-/* шапка игры */
-.game-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  border-bottom: 1px solid rgba(0,119,96,0.12);
-  padding-bottom: 6px;
-  margin-bottom: 8px;
-}
-
-.game-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--green-accent);
-}
-
-.game-subtitle {
-  font-size: 12px;
-  color: var(--text-dark);
-}
-
-.btn-close {
-  border-radius: 50%;
-  width: 26px;
-  height: 26px;
-  border: 1px solid rgba(0,0,0,0.15);
-  background: #ffffff;
-  cursor: pointer;
-  font-size: 14px;
-}
-
-/* тело игры */
-.game-body {
-  flex: 1;
-  display: grid;
-  grid-template-columns: 2fr 1.4fr;
-  gap: 14px;
+.progress-bar {
+  margin-top: 8px;
+  height: 6px;
+  border-radius: 999px;
+  background: #e4f2ec;
   overflow: hidden;
 }
 
-/* поле с картинкой */
-.map-area {
-  border-radius: 8px;
-  border: 1px solid rgba(0,119,96,0.25);
-  background: #f3fbf7;
-  padding: 10px;
-  display: flex;
-  flex-direction: column;
+.progress-fill {
+  height: 100%;
+  width: 0;
+  background: var(--green-gradient);
+  transition: width 0.25s;
+}
+
+/* основное поле */
+.main {
+  flex: 1;
+  padding: 8px 10px 10px 10px;
 }
 
 .map-wrapper {
-  flex: 1;
-  border-radius: 8px;
-  background: #ffffff;
   position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 8px;
+  border: 1px solid rgba(0,119,96,0.25);
+  background: #f7faf9;
   overflow: hidden;
 }
 
-.map-bg {
-  position: absolute;
-  inset: 0;
-  background: url('plant-map.png') center/contain no-repeat;
+/* картинка схемы */
+.map-wrapper img {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 
-/* кликабельные точки */
+/* точки */
 .point {
   position: absolute;
   width: 18px;
@@ -184,9 +110,10 @@ body {
   border: 2px solid #19a86e;
   cursor: pointer;
   box-shadow: 0 0 0 2px rgba(0,119,96,0.18);
+  transform: translate(-50%, -50%);
 }
 .point:hover {
-  transform: translateY(-1px);
+  transform: translate(-50%, -52%);
 }
 .point::after {
   content: '';
@@ -200,372 +127,496 @@ body {
   transform: rotate(35deg);
 }
 
-/* маленькие подписи */
-.label {
+/* всплывающие подсказки у точек */
+.tooltip {
   position: absolute;
-  font-size: 11px;
-  background: rgba(255,255,255,0.9);
-  padding: 2px 4px;
+  padding: 4px 6px;
   border-radius: 4px;
-  border: 1px solid rgba(0,0,0,0.08);
+  background: rgba(255,255,255,0.96);
+  border: 1px solid rgba(0,0,0,0.18);
+  font-size: 11px;
+  max-width: 180px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
+  transform: translate(-50%, -110%);
+  display: none;
+  z-index: 3;
+}
+.tooltip::after {
+  content: '';
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  border-width: 6px 6px 0 6px;
+  border-style: solid;
+  border-color: rgba(0,0,0,0.18) transparent transparent transparent;
 }
 
-/* правая панель */
-.side-panel {
+/* модальное окно для выбора и вопросов */
+.modal {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.32);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal-inner {
+  width: 90%;
+  max-width: 480px;
+  background: #ffffff;
   border-radius: 8px;
-  border: 1px solid rgba(0,119,96,0.2);
-  background: #f7faf9;
-  padding: 8px 10px;
+  border: 1px solid var(--green-border);
+  box-shadow: 0 18px 40px rgba(0, 119, 96, 0.3);
+  padding: 12px 14px 14px 14px;
+  font-size: 12px;
+}
+
+.modal-header {
   display: flex;
-  flex-direction: column;
+  justify-content: space-between;
+  align-items: center;
 }
 
-.task-title {
+.modal-title {
+  font-weight: 700;
+  color: var(--green-accent);
+}
+
+.modal-close {
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.modal-body {
+  margin-top: 8px;
+}
+
+.modal-question {
   font-weight: 600;
-  margin-bottom: 4px;
-  font-size: 12px;
+  margin-bottom: 6px;
 }
 
-.task-text {
-  font-size: 12px;
-}
-
-.task-options {
+.options {
   list-style: none;
   padding: 0;
-  margin: 6px 0 0 0;
+  margin: 0;
 }
 
-.task-option {
+.option {
   padding: 6px 7px;
   border-radius: 6px;
   border: 1px solid #e0e0e0;
   margin-bottom: 4px;
   cursor: pointer;
-  font-size: 12px;
 }
 
-.task-option:hover {
+.option:hover {
   background: #f0f7f3;
 }
 
-.task-option.correct {
+.option.correct {
   border-color: #19a86e;
   background: #e7f7ee;
 }
 
-.task-option.wrong {
+.option.wrong {
   border-color: #c0392b;
   background: #fff3f1;
 }
 
-/* прогресс */
-.blocks {
+.modal-footer {
   margin-top: 8px;
-  padding-top: 6px;
-  border-top: 1px solid rgba(0,119,96,0.2);
-  font-size: 11px;
-}
-
-.blocks-title {
-  font-weight: 600;
-  color: var(--green-accent);
-  margin-bottom: 3px;
-}
-
-.block-item {
-  margin-bottom: 2px;
-}
-
-.block-item.collected::before {
-  content: '● ';
-  color: #19a86e;
-}
-
-/* комментарий */
-.comment {
-  margin-top: 6px;
   font-size: 11px;
   min-height: 18px;
 }
 
-.comment_ok {
+.modal-footer_ok {
   color: var(--green-accent);
+}
+
+/* маленький бейдж-прогресс под заголовком модалки */
+.step-indicator {
+  font-size: 10px;
+  color: #557267;
 }
 </style>
 </head>
 <body>
-<div id="launch-block">
-  <h2>Где вы возьмете пробу</h2>
-  <div class="launch-subtitle">
-    На плане предприятия отметьте точки отбора и решите, что записать в акте, чтобы его не разнес надзор.
-  </div>
-  <div class="launch-image">
-    <img src="plant-map.png" alt="План предприятия" />
-  </div>
-  <button class="btn-main" id="btn-open">Открыть план предприятия</button>
-</div>
-
-<div id="game-modal">
-  <div id="game-wrapper">
-    <div class="game-header">
-      <div>
-        <div class="game-title">План предприятия</div>
-        <div class="game-subtitle">Нажимайте на точки, выбирайте ответы и собирайте грамотные акты отбора проб.</div>
-      </div>
-      <button class="btn-close" id="btn-close">×</button>
+<div id="app">
+  <header>
+    <h2>Где и как вы возьмете пробу</h2>
+    <div class="subtitle">
+      Нажмите на объект на схеме. Сначала выберите вид пробы, потом – как оформить отбор в акте.
     </div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progress-fill"></div>
+    </div>
+  </header>
 
-    <div class="game-body">
-      <!-- карта -->
-      <div class="map-area">
-        <div class="map-wrapper">
-          <div class="map-bg"></div>
+  <div class="main">
+    <div class="map-wrapper" id="map">
+      <img src="plant-map.png" alt="План предприятия" />
 
-          <!-- позиции подобраны под схему; при желании можно подкорректировать проценты -->
-
-          <!-- труба источника выбросов -->
-          <div class="point" data-key="stack" style="left:20%; top:24%;"></div>
-          <div class="label" style="left:5%; top:18%;">Источник выброса</div>
-
-          <!-- сброс в реку -->
-          <div class="point" data-key="outfall" style="right:14%; bottom:18%;"></div>
-          <div class="label" style="right:4%; bottom:30%;">Сброс сточных вод в реку</div>
-
-          <!-- колодец сточных вод -->
-          <div class="point" data-key="well" style="left:60%; bottom:25%;"></div>
-          <div class="label" style="left:54%; bottom:34%;">Контрольный колодец</div>
-
-          <!-- граница СЗЗ (одна из метеомачт на контуре) -->
-          <div class="point" data-key="szz" style="left:52%; top:18%;"></div>
-          <div class="label" style="left:48%; top:10%;">Граница СЗЗ</div>
-
-          <!-- площадка с отходами НП -->
-          <div class="point" data-key="soil" style="left:30%; bottom:28%;"></div>
-          <div class="label" style="left:22%; bottom:38%;">Площадка отходов НП</div>
-
-          <!-- доп. интерактивные элементы без вопросов (подсказки) -->
-          <div class="point" data-key="hint-lab" style="left:66%; top:40%; width:14px; height:14px;"></div>
-          <div class="label" style="left:64%; top:34%;">Лаборатория (логистика, но не точка отбора)</div>
-
-          <div class="point" data-key="hint-yard" style="left:18%; top:48%; width:14px; height:14px;"></div>
-          <div class="label" style="left:4%; top:52%;">Производственная площадка (здесь отбор не делают без обоснования)</div>
-        </div>
+      <!-- труба источника выбросов -->
+      <div class="point" data-key="stack" style="left:23%; top:26%;"></div>
+      <div class="tooltip" data-tip-for="stack">
+        Дымовая труба. Здесь контролируете выбросы в атмосферу.
       </div>
 
-      <!-- правая панель -->
-      <div class="side-panel">
-        <div id="task">
-          <div class="task-title">Выберите точку на плане.</div>
-          <div class="task-text">
-            Нажмите на зеленую метку. Для ключевых точек вы получите вопрос по отбору и оформлению акта. Для серых зон – короткий комментарий, почему отбор там не делают.
+      <!-- сброс в реку -->
+      <div class="point" data-key="outfall" style="left:74%; top:68%;"></div>
+      <div class="tooltip" data-tip-for="outfall">
+        Выпуск в реку. Контроль сточных вод при сбросе.
+      </div>
+
+      <!-- колодец сточных вод -->
+      <div class="point" data-key="well" style="left:62%; top:57%;"></div>
+      <div class="tooltip" data-tip-for="well">
+        Контрольный колодец перед очистными или после них.
+      </div>
+
+      <!-- граница СЗЗ (мачта на контуре) -->
+      <div class="point" data-key="szz" style="left:66%; top:20%;"></div>
+      <div class="tooltip" data-tip-for="szz">
+        Граница санитарно-защитной зоны. Здесь отбираете воздух.
+      </div>
+
+      <!-- площадка с отходами нефтепродуктов -->
+      <div class="point" data-key="soil" style="left:36%; top:60%;"></div>
+      <div class="tooltip" data-tip-for="soil">
+        Площадка отходов НП. Здесь смотрите загрязнение почвы.
+      </div>
+
+      <!-- модалка -->
+      <div class="modal" id="modal">
+        <div class="modal-inner">
+          <div class="modal-header">
+            <div>
+              <div class="modal-title" id="modal-title"></div>
+              <div class="step-indicator" id="step-indicator"></div>
+            </div>
+            <button class="modal-close" id="modal-close">×</button>
           </div>
+          <div class="modal-body" id="modal-body"></div>
+          <div class="modal-footer" id="modal-footer"></div>
         </div>
-
-        <div class="blocks">
-          <div class="blocks-title">Что вы уже проработали</div>
-          <div class="block-item" data-block="stack">Акт отбора проб из источника выброса</div>
-          <div class="block-item" data-block="outfall">Акт отбора проб при сбросе сточных вод в водный объект</div>
-          <div class="block-item" data-block="well">Акт отбора проб сточных вод в контрольном колодце</div>
-          <div class="block-item" data-block="szz">Акт отбора проб атмосферного воздуха на границе СЗЗ</div>
-          <div class="block-item" data-block="soil">Акт отбора проб почвы на площадке отходов НП</div>
-        </div>
-
-        <div class="comment" id="comment"></div>
       </div>
     </div>
   </div>
 </div>
 
 <script>
-var modal = document.getElementById('game-modal');
-document.getElementById('btn-open').onclick = function() {
-  modal.style.display = 'flex';
-};
-document.getElementById('btn-close').onclick = function() {
-  modal.style.display = 'none';
+var state = {
+  completed: { stack:false, outfall:false, well:false, szz:false, soil:false },
+  currentPoint: null,
+  currentStep: 1 // 1 – выбор вида пробы, 2 – вопрос про оформление
 };
 
 var tasks = {
   stack: {
     title: 'Источник выброса',
-    text: 'Вы отбираете пробу из стационарного источника выбросов. Инспектор придет с протоколом ГВС. Что обязательно зафиксировать в акте?',
-    options: [
+    sampleQuestion: 'Какую пробу вы будете отбирать на этом объекте?',
+    sampleOptions: [
       {
-        text: 'Номер источника и точки отбора по схеме ГВС, высоту отбора, вид топлива, нагрузку на источник, температуру и влажность ГВС в момент отбора.',
+        text: 'Газовую пробу отходящих газов на определение концентраций загрязняющих веществ по РД и ГОСТам.',
         correct: true,
-        feedback: 'Так режим можно сверить с НДВ и требованиями методик измерений.'
+        feedback: 'Верно. На трубе вы отбираете газовую пробу ГВС, а не воздух рабочей зоны.'
       },
       {
-        text: 'Только номер источника и что он работал в «номинальном режиме», без числовых параметров.',
+        text: 'Пробу воздуха рабочей зоны для оценки условий труда.',
+        correct: false,
+        feedback: 'Это другая задача. На трубе контролируете именно выброс.'
+      }
+    ],
+    methodQuestion: 'Что обязательно зафиксировать в акте отбора пробы из источника выброса?',
+    methodOptions: [
+      {
+        text: 'Номер источника и точки по схеме ГВС, высоту отбора, вид топлива, нагрузку на источник, температуру и влажность ГВС во время отбора.',
+        correct: true,
+        feedback: 'Так режим можно сверить с НДВ и требованиями методик.'
+      },
+      {
+        text: 'Только номер источника и фразу «работал в номинальном режиме».',
         correct: false,
         feedback: 'Без высоты, координат точки и нагрузки режим не подтвержден.'
       }
-    ],
-    block: 'stack'
+    ]
   },
   outfall: {
     title: 'Сброс в реку',
-    text: 'Берете пробы в створе выпуска сточных вод в реку. Как лучше описать точку отбора и условия в акте?',
-    options: [
+    sampleQuestion: 'Какую пробу логично отбирать у выпуска в реку?',
+    sampleOptions: [
       {
-        text: 'Номер выпуска по схеме, координаты по ГСК‑2011, тип сброса, глубину и расстояние от устья до точки, состояние реки (уровень, течение, лед, ветровой нагон) на момент отбора.',
+        text: 'Пробу сточной воды на соответствие нормативам по сбросам в водный объект.',
         correct: true,
-        feedback: 'Так можно воспроизвести точку и связать результат с гидрологическими условиями.'
+        feedback: 'Да. Здесь контролируете качество сточной воды в точке сброса.'
       },
       {
-        text: '«Сброс сточных вод в реку на участке предприятия, отбор у устья выпуска, река без запаха».',
+        text: 'Пробу донных отложений реки для геохимического мониторинга.',
         correct: false,
-        feedback: 'Здесь нет координат и описания режима водного объекта – акт легко оспорить.'
+        feedback: 'Донные отложения – отдельная задача, не базовый контроль сброса.'
       }
     ],
-    block: 'outfall'
+    methodQuestion: 'Как корректно описать точку и условия отбора в акте?',
+    methodOptions: [
+      {
+        text: 'Номер выпуска по схеме, координаты по ГСК‑2011, тип сброса, глубину и расстояние от устья, состояние реки (уровень, течение, лед, ветровой нагон) на момент отбора.',
+        correct: true,
+        feedback: 'Так можно воспроизвести отбор и связать результат с гидрологией.'
+      },
+      {
+        text: 'Общее описание «сброс сточных вод в реку, отбор у устья, вода без запаха».',
+        correct: false,
+        feedback: 'Здесь нет координат и описания режима водного объекта – акт слабый.'
+      }
+    ]
   },
   well: {
     title: 'Контрольный колодец',
-    text: 'Вы контролируете эффективность очистных и берете пробы в контрольном колодце. В чем главная ошибка при оформлении акта?',
-    options: [
+    sampleQuestion: 'Какую пробу вы возьмете в контрольном колодце?',
+    sampleOptions: [
       {
-        text: 'Указать только, что колодец «перед очистными», без номера по схеме, глубины воды, режима работы очистных и интервала усреднения пробы.',
+        text: 'Усредненную пробу сточных вод за расчетный интервал работы очистных.',
         correct: true,
-        feedback: 'Без этих данных нельзя доказать, что проба репрезентативна для фактического режима.'
+        feedback: 'Так вы получаете репрезентативную пробу для режима работы сооружений.'
       },
       {
-        text: 'Дополнительно к номеру колодца описать глубину, способ усреднения, время начала и конца отбора и режим работы очистных.',
+        text: 'Разовую пробу в момент максимального притока сточных вод.',
         correct: false,
-        feedback: 'Так как раз и нужно делать – это не ошибка, а желаемый вариант.'
+        feedback: 'Разовая проба может не отражать средний режим, если методика требует усреднение.'
       }
     ],
-    block: 'well'
+    methodQuestion: 'Какая ошибка в оформлении акта для этой точки критична?',
+    methodOptions: [
+      {
+        text: 'Не указать номер колодца по схеме, глубину воды, режим работы очистных и интервал усреднения пробы.',
+        correct: true,
+        feedback: 'Без этих данных нельзя доказать репрезентативность пробы.'
+      },
+      {
+        text: 'Дополнительно описать погодные условия и температуру воздуха.',
+        correct: false,
+        feedback: 'Это допустимо и не делает акт хуже. Критичны как раз схема и режим работы очистных.'
+      }
+    ]
   },
   szz: {
     title: 'Граница СЗЗ',
-    text: 'Вы отбираете воздух на границе санитарно‑защитной зоны. Как корректно привязать точку и режим работы предприятия?',
-    options: [
+    sampleQuestion: 'Какую пробу вы собираетесь взять на этой точке?',
+    sampleOptions: [
       {
-        text: 'Прописать координаты точки по ГСК‑2011, высоту отбора, продолжительность отбора, список работающих источников и их нагрузки, а также количественные метеопараметры (скорость и направление ветра, температуру, давление, влажность).',
+        text: 'Пробу атмосферного воздуха на контролируемые загрязняющие вещества.',
+        correct: true,
+        feedback: 'Да. Это контроль на границе СЗЗ, а не внутри цеха.'
+      },
+      {
+        text: 'Пробу осадков с поверхности земли после дождя.',
+        correct: false,
+        feedback: 'Осадки можно изучать отдельно, но базовый контроль – это воздух.'
+      }
+    ],
+    methodQuestion: 'Что важно зафиксировать в акте по отбору воздуха на границе СЗЗ?',
+    methodOptions: [
+      {
+        text: 'Координаты точки по ГСК‑2011, высоту отбора, продолжительность отбора, список работающих источников и их нагрузки, количественные метеопараметры (скорость и направление ветра, температуру, давление, влажность).',
         correct: true,
         feedback: 'Так результат можно связать с конкретной метеоситуацией и режимом источников.'
       },
       {
-        text: 'Ограничиться формулировкой «точка на границе СЗЗ со стороны жилой застройки, ветер южный».',
+        text: 'Только фразу «точка на границе СЗЗ, ветер южный, пасмурно».',
         correct: false,
-        feedback: 'Без координат, высоты и чисел по метео данные не выдержат спора с надзором.'
+        feedback: 'Нужны координаты, высота и числовые значения метеопараметров.'
       }
-    ],
-    block: 'szz'
+    ]
   },
   soil: {
-    title: 'Площадка отходов нефтепродуктов',
-    text: 'Вы берете пробы почвы у площадки хранения отходов НП. Какой вариант схемы отбора будет корректным для акта?',
-    options: [
+    title: 'Площадка отходов НП',
+    sampleQuestion: 'Какую пробу вы будете отбирать на этой площадке?',
+    sampleOptions: [
       {
-        text: 'Нанести на схему границы площадки и точки отбора вдоль направления возможного растекания, указать глубины и тип проб (точечные/объединенные), массу объединенной пробы и код каждой емкости.',
+        text: 'Пробу почвы вокруг площадки по схеме точечных и объединенных проб.',
         correct: true,
-        feedback: 'Такая схема позволит повторить отбор и доказать, что вы захватили зону загрязнения.'
+        feedback: 'Здесь оцениваете загрязнение грунта, а не только сам отход.'
       },
       {
-        text: 'Взять одну пробу «в самом темном пятне» и в акте ограничиться описанием «наиболее загрязненное место».',
+        text: 'Пробу нефти из контейнеров для проверки паспорта отхода.',
         correct: false,
-        feedback: 'Без схемы и глубин пробу легко признать нерепрезентативной.'
+        feedback: 'Это другая задача. Сейчас важно состояние почвы вокруг хранилища.'
       }
     ],
-    block: 'soil'
+    methodQuestion: 'Какой вариант схемы отбора правильно отражать в акте?',
+    methodOptions: [
+      {
+        text: 'Нанести на схему границы площадки и точки отбора вдоль направления стока, указать глубины, тип проб (точечные/объединенные), массу объединенной пробы и коды емкостей.',
+        correct: true,
+        feedback: 'Такая схема позволит повторить отбор и показать, что вы охватили зону возможного загрязнения.'
+      },
+      {
+        text: 'Взять одну пробу «в самом темном пятне» и описать словами без координат.',
+        correct: false,
+        feedback: 'Без схемы и глубин пробы легко признать нерепрезентативными.'
+      }
+    ]
   }
 };
 
-// подсказочные точки без полноценного задания
-var hints = {
-  'hint-lab': 'Лаборатория – важна для логистики и хранения проб, но место официального отбора фиксируется на выбросе, сбросе, в колодце, на СЗЗ или площадке.',
-  'hint-yard': 'Производственная площадка сама по себе не является точкой отбора, если это не закреплено в программе ПЭК и методиках.'
-};
+function updateProgress() {
+  var total = Object.keys(state.completed).length;
+  var done = Object.values(state.completed).filter(Boolean).length;
+  var percent = (done / total) * 100;
+  document.getElementById('progress-fill').style.width = percent + '%';
+}
 
-var collected = {
-  stack: false,
-  outfall: false,
-  well: false,
-  szz: false,
-  soil: false
-};
+function openModalForPoint(key) {
+  state.currentPoint = key;
+  state.currentStep = 1;
+  var modal = document.getElementById('modal');
+  var titleEl = document.getElementById('modal-title');
+  var stepEl = document.getElementById('step-indicator');
+  var bodyEl = document.getElementById('modal-body');
+  var footerEl = document.getElementById('modal-footer');
 
-function renderTask(key) {
-  var taskEl = document.getElementById('task');
-  var commentEl = document.getElementById('comment');
-  commentEl.textContent = '';
-  commentEl.className = 'comment';
+  var cfg = tasks[key];
 
-  taskEl.innerHTML = '';
+  titleEl.textContent = cfg.title;
+  stepEl.textContent = 'Шаг 1 из 2 – выберите вид пробы';
+  footerEl.textContent = '';
+  footerEl.className = 'modal-footer';
 
-  // если это подсказка
-  if (hints[key]) {
-    var t = document.createElement('div');
-    t.className = 'task-title';
-    t.textContent = 'Подсказка по точке';
-    taskEl.appendChild(t);
-
-    var d = document.createElement('div');
-    d.className = 'task-text';
-    d.textContent = hints[key];
-    taskEl.appendChild(d);
-    return;
-  }
-
-  var task = tasks[key];
-
-  var title = document.createElement('div');
-  title.className = 'task-title';
-  title.textContent = task.title;
-  taskEl.appendChild(title);
-
-  var text = document.createElement('div');
-  text.className = 'task-text';
-  text.textContent = task.text;
-  taskEl.appendChild(text);
+  bodyEl.innerHTML = '';
+  var q = document.createElement('div');
+  q.className = 'modal-question';
+  q.textContent = cfg.sampleQuestion;
+  bodyEl.appendChild(q);
 
   var list = document.createElement('ul');
-  list.className = 'task-options';
+  list.className = 'options';
 
-  task.options.forEach(function(opt, idx) {
+  cfg.sampleOptions.forEach(function(opt, idx) {
     var li = document.createElement('li');
-    li.className = 'task-option';
+    li.className = 'option';
     li.textContent = opt.text;
     li.addEventListener('click', function() {
-      handleAnswer(key, idx, li);
+      handleSampleAnswer(key, idx, li);
     });
     list.appendChild(li);
   });
 
-  taskEl.appendChild(list);
+  bodyEl.appendChild(list);
+  modal.style.display = 'flex';
 }
 
-function handleAnswer(key, idx, liEl) {
-  var task = tasks[key];
-  var opt = task.options[idx];
-  var commentEl = document.getElementById('comment');
+function handleSampleAnswer(key, idx, liEl) {
+  var cfg = tasks[key];
+  var opt = cfg.sampleOptions[idx];
+  var footerEl = document.getElementById('modal-footer');
 
-  liEl.parentElement.querySelectorAll('.task-option').forEach(function(o){
+  liEl.parentElement.querySelectorAll('.option').forEach(function(o){
     o.classList.remove('correct','wrong');
   });
 
   if (opt.correct) {
     liEl.classList.add('correct');
-    collected[task.block] = true;
-    document.querySelector('.block-item[data-block="'+task.block+'"]').classList.add('collected');
-    commentEl.textContent = opt.feedback;
-    commentEl.className = 'comment comment_ok';
+    footerEl.textContent = opt.feedback + ' Теперь разберемся с оформлением акта.';
+    footerEl.className = 'modal-footer modal-footer_ok';
+
+    // небольшая задержка и переход ко второму шагу
+    setTimeout(function() {
+      showMethodStep(key);
+    }, 800);
   } else {
     liEl.classList.add('wrong');
-    commentEl.textContent = opt.feedback;
-    commentEl.className = 'comment';
+    footerEl.textContent = opt.feedback;
+    footerEl.className = 'modal-footer';
   }
 }
 
+function showMethodStep(key) {
+  state.currentStep = 2;
+  var cfg = tasks[key];
+  var stepEl = document.getElementById('step-indicator');
+  var bodyEl = document.getElementById('modal-body');
+  var footerEl = document.getElementById('modal-footer');
+
+  stepEl.textContent = 'Шаг 2 из 2 – как оформить отбор';
+  footerEl.textContent = '';
+  footerEl.className = 'modal-footer';
+
+  bodyEl.innerHTML = '';
+  var q = document.createElement('div');
+  q.className = 'modal-question';
+  q.textContent = cfg.methodQuestion;
+  bodyEl.appendChild(q);
+
+  var list = document.createElement('ul');
+  list.className = 'options';
+
+  cfg.methodOptions.forEach(function(opt, idx) {
+    var li = document.createElement('li');
+    li.className = 'option';
+    li.textContent = opt.text;
+    li.addEventListener('click', function() {
+      handleMethodAnswer(key, idx, li);
+    });
+    list.appendChild(li);
+  });
+
+  bodyEl.appendChild(list);
+}
+
+function handleMethodAnswer(key, idx, liEl) {
+  var cfg = tasks[key];
+  var opt = cfg.methodOptions[idx];
+  var footerEl = document.getElementById('modal-footer');
+
+  liEl.parentElement.querySelectorAll('.option').forEach(function(o){
+    o.classList.remove('correct','wrong');
+  });
+
+  if (opt.correct) {
+    liEl.classList.add('correct');
+    state.completed[key] = true;
+    updateProgress();
+    footerEl.textContent = opt.feedback + ' Этот объект вы проработали.';
+    footerEl.className = 'modal-footer modal-footer_ok';
+  } else {
+    liEl.classList.add('wrong');
+    footerEl.textContent = opt.feedback;
+    footerEl.className = 'modal-footer';
+  }
+}
+
+/* обработчики */
 document.querySelectorAll('.point').forEach(function(p){
+  p.addEventListener('mouseenter', function(){
+    var key = p.dataset.key;
+    var tip = document.querySelector('.tooltip[data-tip-for="'+key+'"]');
+    if (tip) tip.style.display = 'block';
+  });
+  p.addEventListener('mouseleave', function(){
+    var key = p.dataset.key;
+    var tip = document.querySelector('.tooltip[data-tip-for="'+key+'"]');
+    if (tip) tip.style.display = 'none';
+  });
   p.addEventListener('click', function(){
     var key = p.dataset.key;
-    renderTask(key);
+    openModalForPoint(key);
   });
 });
+
+document.getElementById('modal-close').addEventListener('click', function(){
+  document.getElementById('modal').style.display = 'none';
+});
+
+updateProgress();
 </script>
 </body>
 </html>
