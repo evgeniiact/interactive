@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<meta name="google" content="notranslate" />
+<title>Где отбирать пробы на предприятии</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-silk: #f3fbf7;
+  --green-accent: #007760;
+  --green-gradient: linear-gradient(135deg, #19a86e, #007760);
+  --green-border: #19a86e;
+  --text-dark: #2c2c2c;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-silk);
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+}
+
+/* стартовый блок */
+#launch-block {
+  background: #ffffff;
+  border: 1px solid var(--green-border);
+  border-radius: 4px;
+  padding: 16px 18px 18px 18px;
+  width: 100%;
+  max-width: 560px;
+  box-shadow: 0 18px 40px rgba(0, 119, 96, 0.16);
+}
+
+#launch-block h2 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--green-accent);
+}
+
+.launch-subtitle {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-dark);
+}
+
+.launch-image {
+  margin-top: 10px;
+  border-radius: 6px;
+  background: #f3fbf7;
+  padding: 8px;
+}
+
+.launch-image img {
+  width: 100%;
+  display: block;
+  border-radius: 6px;
+}
+
+/* кнопка запуска */
+.btn-main {
+  margin-top: 12px;
+  font-family: 'Montserrat', sans-serif;
+  border-radius: 18px;
+  padding: 8px 22px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+  background: var(--green-gradient);
+  color: #ffffff;
+  box-shadow: 0 10px 22px rgba(0,119,96,0.25);
+}
+
+.btn-main:hover {
+  transform: translateY(-1px);
+}
+
+/* модалка с игрой */
+#game-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.45);
+  display: none;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+#game-wrapper {
+  width: 100%;
+  max-width: 1024px;
+  height: 90vh;
+  max-height: 680px;
+  background: #ffffff;
+  border-radius: 6px;
+  border: 1px solid var(--green-border);
+  box-shadow: 0 24px 60px rgba(0, 119, 96, 0.35);
+  display: flex;
+  flex-direction: column;
+  padding: 16px 18px 16px 18px;
+}
+
+/* шапка игры */
+.game-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(0,119,96,0.12);
+  padding-bottom: 6px;
+  margin-bottom: 8px;
+}
+
+.game-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--green-accent);
+}
+
+.game-subtitle {
+  font-size: 12px;
+  color: var(--text-dark);
+}
+
+.btn-close {
+  border-radius: 50%;
+  width: 26px;
+  height: 26px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 14px;
+}
+
+/* тело игры */
+.game-body {
+  flex: 1;
+  display: grid;
+  grid-template-columns: 2fr 1.4fr;
+  gap: 14px;
+  overflow: hidden;
+}
+
+/* поле с картинкой */
+.map-area {
+  border-radius: 8px;
+  border: 1px solid rgba(0,119,96,0.25);
+  background: #f3fbf7;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.map-wrapper {
+  flex: 1;
+  border-radius: 8px;
+  background: #ffffff;
+  position: relative;
+  overflow: hidden;
+}
+
+.map-bg {
+  position: absolute;
+  inset: 0;
+  background: url('plant-map.png') center/contain no-repeat;
+}
+
+/* кликабельные точки */
+.point {
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 2px solid #19a86e;
+  cursor: pointer;
+  box-shadow: 0 0 0 2px rgba(0,119,96,0.18);
+}
+.point:hover {
+  transform: translateY(-1px);
+}
+.point::after {
+  content: '';
+  position: absolute;
+  left: 4px;
+  top: 3px;
+  width: 7px;
+  height: 9px;
+  border-right: 2px solid #19a86e;
+  border-bottom: 2px solid #19a86e;
+  transform: rotate(35deg);
+}
+
+/* маленькие подписи */
+.label {
+  position: absolute;
+  font-size: 11px;
+  background: rgba(255,255,255,0.9);
+  padding: 2px 4px;
+  border-radius: 4px;
+  border: 1px solid rgba(0,0,0,0.08);
+}
+
+/* правая панель */
+.side-panel {
+  border-radius: 8px;
+  border: 1px solid rgba(0,119,96,0.2);
+  background: #f7faf9;
+  padding: 8px 10px;
+  display: flex;
+  flex-direction: column;
+}
+
+.task-title {
+  font-weight: 600;
+  margin-bottom: 4px;
+  font-size: 12px;
+}
+
+.task-text {
+  font-size: 12px;
+}
+
+.task-options {
+  list-style: none;
+  padding: 0;
+  margin: 6px 0 0 0;
+}
+
+.task-option {
+  padding: 6px 7px;
+  border-radius: 6px;
+  border: 1px solid #e0e0e0;
+  margin-bottom: 4px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.task-option:hover {
+  background: #f0f7f3;
+}
+
+.task-option.correct {
+  border-color: #19a86e;
+  background: #e7f7ee;
+}
+
+.task-option.wrong {
+  border-color: #c0392b;
+  background: #fff3f1;
+}
+
+/* прогресс */
+.blocks {
+  margin-top: 8px;
+  padding-top: 6px;
+  border-top: 1px solid rgba(0,119,96,0.2);
+  font-size: 11px;
+}
+
+.blocks-title {
+  font-weight: 600;
+  color: var(--green-accent);
+  margin-bottom: 3px;
+}
+
+.block-item {
+  margin-bottom: 2px;
+}
+
+.block-item.collected::before {
+  content: '● ';
+  color: #19a86e;
+}
+
+/* комментарий */
+.comment {
+  margin-top: 6px;
+  font-size: 11px;
+  min-height: 18px;
+}
+
+.comment_ok {
+  color: var(--green-accent);
+}
+</style>
+</head>
+<body>
+<div id="launch-block">
+  <h2>Где вы возьмете пробу</h2>
+  <div class="launch-subtitle">
+    На плане предприятия отметьте точки отбора и решите, что записать в акте, чтобы его не разнес надзор.
+  </div>
+  <div class="launch-image">
+    <img src="plant-map.png" alt="План предприятия" />
+  </div>
+  <button class="btn-main" id="btn-open">Открыть план предприятия</button>
+</div>
+
+<div id="game-modal">
+  <div id="game-wrapper">
+    <div class="game-header">
+      <div>
+        <div class="game-title">План предприятия</div>
+        <div class="game-subtitle">Нажимайте на точки, выбирайте ответы и собирайте грамотные акты отбора проб.</div>
+      </div>
+      <button class="btn-close" id="btn-close">×</button>
+    </div>
+
+    <div class="game-body">
+      <!-- карта -->
+      <div class="map-area">
+        <div class="map-wrapper">
+          <div class="map-bg"></div>
+
+          <!-- позиции подобраны под схему; при желании можно подкорректировать проценты -->
+
+          <!-- труба источника выбросов -->
+          <div class="point" data-key="stack" style="left:20%; top:24%;"></div>
+          <div class="label" style="left:5%; top:18%;">Источник выброса</div>
+
+          <!-- сброс в реку -->
+          <div class="point" data-key="outfall" style="right:14%; bottom:18%;"></div>
+          <div class="label" style="right:4%; bottom:30%;">Сброс сточных вод в реку</div>
+
+          <!-- колодец сточных вод -->
+          <div class="point" data-key="well" style="left:60%; bottom:25%;"></div>
+          <div class="label" style="left:54%; bottom:34%;">Контрольный колодец</div>
+
+          <!-- граница СЗЗ (одна из метеомачт на контуре) -->
+          <div class="point" data-key="szz" style="left:52%; top:18%;"></div>
+          <div class="label" style="left:48%; top:10%;">Граница СЗЗ</div>
+
+          <!-- площадка с отходами НП -->
+          <div class="point" data-key="soil" style="left:30%; bottom:28%;"></div>
+          <div class="label" style="left:22%; bottom:38%;">Площадка отходов НП</div>
+
+          <!-- доп. интерактивные элементы без вопросов (подсказки) -->
+          <div class="point" data-key="hint-lab" style="left:66%; top:40%; width:14px; height:14px;"></div>
+          <div class="label" style="left:64%; top:34%;">Лаборатория (логистика, но не точка отбора)</div>
+
+          <div class="point" data-key="hint-yard" style="left:18%; top:48%; width:14px; height:14px;"></div>
+          <div class="label" style="left:4%; top:52%;">Производственная площадка (здесь отбор не делают без обоснования)</div>
+        </div>
+      </div>
+
+      <!-- правая панель -->
+      <div class="side-panel">
+        <div id="task">
+          <div class="task-title">Выберите точку на плане.</div>
+          <div class="task-text">
+            Нажмите на зеленую метку. Для ключевых точек вы получите вопрос по отбору и оформлению акта. Для серых зон – короткий комментарий, почему отбор там не делают.
+          </div>
+        </div>
+
+        <div class="blocks">
+          <div class="blocks-title">Что вы уже проработали</div>
+          <div class="block-item" data-block="stack">Акт отбора проб из источника выброса</div>
+          <div class="block-item" data-block="outfall">Акт отбора проб при сбросе сточных вод в водный объект</div>
+          <div class="block-item" data-block="well">Акт отбора проб сточных вод в контрольном колодце</div>
+          <div class="block-item" data-block="szz">Акт отбора проб атмосферного воздуха на границе СЗЗ</div>
+          <div class="block-item" data-block="soil">Акт отбора проб почвы на площадке отходов НП</div>
+        </div>
+
+        <div class="comment" id="comment"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var modal = document.getElementById('game-modal');
+document.getElementById('btn-open').onclick = function() {
+  modal.style.display = 'flex';
+};
+document.getElementById('btn-close').onclick = function() {
+  modal.style.display = 'none';
+};
+
+var tasks = {
+  stack: {
+    title: 'Источник выброса',
+    text: 'Вы отбираете пробу из стационарного источника выбросов. Инспектор придет с протоколом ГВС. Что обязательно зафиксировать в акте?',
+    options: [
+      {
+        text: 'Номер источника и точки отбора по схеме ГВС, высоту отбора, вид топлива, нагрузку на источник, температуру и влажность ГВС в момент отбора.',
+        correct: true,
+        feedback: 'Так режим можно сверить с НДВ и требованиями методик измерений.'
+      },
+      {
+        text: 'Только номер источника и что он работал в «номинальном режиме», без числовых параметров.',
+        correct: false,
+        feedback: 'Без высоты, координат точки и нагрузки режим не подтвержден.'
+      }
+    ],
+    block: 'stack'
+  },
+  outfall: {
+    title: 'Сброс в реку',
+    text: 'Берете пробы в створе выпуска сточных вод в реку. Как лучше описать точку отбора и условия в акте?',
+    options: [
+      {
+        text: 'Номер выпуска по схеме, координаты по ГСК‑2011, тип сброса, глубину и расстояние от устья до точки, состояние реки (уровень, течение, лед, ветровой нагон) на момент отбора.',
+        correct: true,
+        feedback: 'Так можно воспроизвести точку и связать результат с гидрологическими условиями.'
+      },
+      {
+        text: '«Сброс сточных вод в реку на участке предприятия, отбор у устья выпуска, река без запаха».',
+        correct: false,
+        feedback: 'Здесь нет координат и описания режима водного объекта – акт легко оспорить.'
+      }
+    ],
+    block: 'outfall'
+  },
+  well: {
+    title: 'Контрольный колодец',
+    text: 'Вы контролируете эффективность очистных и берете пробы в контрольном колодце. В чем главная ошибка при оформлении акта?',
+    options: [
+      {
+        text: 'Указать только, что колодец «перед очистными», без номера по схеме, глубины воды, режима работы очистных и интервала усреднения пробы.',
+        correct: true,
+        feedback: 'Без этих данных нельзя доказать, что проба репрезентативна для фактического режима.'
+      },
+      {
+        text: 'Дополнительно к номеру колодца описать глубину, способ усреднения, время начала и конца отбора и режим работы очистных.',
+        correct: false,
+        feedback: 'Так как раз и нужно делать – это не ошибка, а желаемый вариант.'
+      }
+    ],
+    block: 'well'
+  },
+  szz: {
+    title: 'Граница СЗЗ',
+    text: 'Вы отбираете воздух на границе санитарно‑защитной зоны. Как корректно привязать точку и режим работы предприятия?',
+    options: [
+      {
+        text: 'Прописать координаты точки по ГСК‑2011, высоту отбора, продолжительность отбора, список работающих источников и их нагрузки, а также количественные метеопараметры (скорость и направление ветра, температуру, давление, влажность).',
+        correct: true,
+        feedback: 'Так результат можно связать с конкретной метеоситуацией и режимом источников.'
+      },
+      {
+        text: 'Ограничиться формулировкой «точка на границе СЗЗ со стороны жилой застройки, ветер южный».',
+        correct: false,
+        feedback: 'Без координат, высоты и чисел по метео данные не выдержат спора с надзором.'
+      }
+    ],
+    block: 'szz'
+  },
+  soil: {
+    title: 'Площадка отходов нефтепродуктов',
+    text: 'Вы берете пробы почвы у площадки хранения отходов НП. Какой вариант схемы отбора будет корректным для акта?',
+    options: [
+      {
+        text: 'Нанести на схему границы площадки и точки отбора вдоль направления возможного растекания, указать глубины и тип проб (точечные/объединенные), массу объединенной пробы и код каждой емкости.',
+        correct: true,
+        feedback: 'Такая схема позволит повторить отбор и доказать, что вы захватили зону загрязнения.'
+      },
+      {
+        text: 'Взять одну пробу «в самом темном пятне» и в акте ограничиться описанием «наиболее загрязненное место».',
+        correct: false,
+        feedback: 'Без схемы и глубин пробу легко признать нерепрезентативной.'
+      }
+    ],
+    block: 'soil'
+  }
+};
+
+// подсказочные точки без полноценного задания
+var hints = {
+  'hint-lab': 'Лаборатория – важна для логистики и хранения проб, но место официального отбора фиксируется на выбросе, сбросе, в колодце, на СЗЗ или площадке.',
+  'hint-yard': 'Производственная площадка сама по себе не является точкой отбора, если это не закреплено в программе ПЭК и методиках.'
+};
+
+var collected = {
+  stack: false,
+  outfall: false,
+  well: false,
+  szz: false,
+  soil: false
+};
+
+function renderTask(key) {
+  var taskEl = document.getElementById('task');
+  var commentEl = document.getElementById('comment');
+  commentEl.textContent = '';
+  commentEl.className = 'comment';
+
+  taskEl.innerHTML = '';
+
+  // если это подсказка
+  if (hints[key]) {
+    var t = document.createElement('div');
+    t.className = 'task-title';
+    t.textContent = 'Подсказка по точке';
+    taskEl.appendChild(t);
+
+    var d = document.createElement('div');
+    d.className = 'task-text';
+    d.textContent = hints[key];
+    taskEl.appendChild(d);
+    return;
+  }
+
+  var task = tasks[key];
+
+  var title = document.createElement('div');
+  title.className = 'task-title';
+  title.textContent = task.title;
+  taskEl.appendChild(title);
+
+  var text = document.createElement('div');
+  text.className = 'task-text';
+  text.textContent = task.text;
+  taskEl.appendChild(text);
+
+  var list = document.createElement('ul');
+  list.className = 'task-options';
+
+  task.options.forEach(function(opt, idx) {
+    var li = document.createElement('li');
+    li.className = 'task-option';
+    li.textContent = opt.text;
+    li.addEventListener('click', function() {
+      handleAnswer(key, idx, li);
+    });
+    list.appendChild(li);
+  });
+
+  taskEl.appendChild(list);
+}
+
+function handleAnswer(key, idx, liEl) {
+  var task = tasks[key];
+  var opt = task.options[idx];
+  var commentEl = document.getElementById('comment');
+
+  liEl.parentElement.querySelectorAll('.task-option').forEach(function(o){
+    o.classList.remove('correct','wrong');
+  });
+
+  if (opt.correct) {
+    liEl.classList.add('correct');
+    collected[task.block] = true;
+    document.querySelector('.block-item[data-block="'+task.block+'"]').classList.add('collected');
+    commentEl.textContent = opt.feedback;
+    commentEl.className = 'comment comment_ok';
+  } else {
+    liEl.classList.add('wrong');
+    commentEl.textContent = opt.feedback;
+    commentEl.className = 'comment';
+  }
+}
+
+document.querySelectorAll('.point').forEach(function(p){
+  p.addEventListener('click', function(){
+    var key = p.dataset.key;
+    renderTask(key);
+  });
+});
+</script>
+</body>
+</html>
