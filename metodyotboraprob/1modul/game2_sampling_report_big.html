@@ -42,7 +42,7 @@ body {
   flex-direction: column;
 }
 
-/* шапка и прогресс */
+/* шапка и прогресс по точкам */
 header {
   padding: 10px 14px 6px 14px;
   border-bottom: 1px solid rgba(0,119,96,0.12);
@@ -61,19 +61,35 @@ h2 {
   color: var(--text-dark);
 }
 
-.progress-bar {
+/* прогресс-бар по точкам */
+.progress-row {
   margin-top: 8px;
-  height: 6px;
-  border-radius: 999px;
-  background: #e4f2ec;
-  overflow: hidden;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 10px;
 }
 
-.progress-fill {
-  height: 100%;
-  width: 0;
-  background: var(--green-gradient);
-  transition: width 0.25s;
+.progress-row span.label {
+  color: #557267;
+}
+
+.progress-dots {
+  display: flex;
+  gap: 4px;
+}
+
+.progress-dot {
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  border: 2px solid #b3c7bd;
+  background: #ffffff;
+}
+
+.progress-dot.done {
+  border-color: var(--green-accent);
+  background: #19a86e;
 }
 
 /* основное поле */
@@ -92,7 +108,6 @@ h2 {
   overflow: hidden;
 }
 
-/* картинка схемы */
 .map-wrapper img {
   width: 100%;
   height: 100%;
@@ -100,7 +115,7 @@ h2 {
   display: block;
 }
 
-/* точки */
+/* точки на схеме */
 .point {
   position: absolute;
   width: 18px;
@@ -111,10 +126,13 @@ h2 {
   cursor: pointer;
   box-shadow: 0 0 0 2px rgba(0,119,96,0.18);
   transform: translate(-50%, -50%);
+  transition: transform 0.15s, background 0.15s, border-color 0.15s;
 }
+
 .point:hover {
   transform: translate(-50%, -52%);
 }
+
 .point::after {
   content: '';
   position: absolute;
@@ -127,32 +145,15 @@ h2 {
   transform: rotate(35deg);
 }
 
-/* всплывающие подсказки у точек */
-.tooltip {
-  position: absolute;
-  padding: 4px 6px;
-  border-radius: 4px;
-  background: rgba(255,255,255,0.96);
-  border: 1px solid rgba(0,0,0,0.18);
-  font-size: 11px;
-  max-width: 180px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.12);
-  transform: translate(-50%, -110%);
-  display: none;
-  z-index: 3;
+.point.done {
+  background: #19a86e;
+  border-color: #004f3f;
 }
-.tooltip::after {
-  content: '';
-  position: absolute;
-  left: 50%;
-  bottom: -6px;
-  transform: translateX(-50%);
-  border-width: 6px 6px 0 6px;
-  border-style: solid;
-  border-color: rgba(0,0,0,0.18) transparent transparent transparent;
+.point.done::after {
+  border-color: #ffffff;
 }
 
-/* модальное окно для выбора и вопросов */
+/* модальное окно */
 .modal {
   position: absolute;
   inset: 0;
@@ -195,6 +196,11 @@ h2 {
   font-size: 13px;
 }
 
+.step-indicator {
+  font-size: 10px;
+  color: #557267;
+}
+
 .modal-body {
   margin-top: 8px;
 }
@@ -204,6 +210,7 @@ h2 {
   margin-bottom: 6px;
 }
 
+/* множественный выбор */
 .options {
   list-style: none;
   padding: 0;
@@ -216,10 +223,31 @@ h2 {
   border: 1px solid #e0e0e0;
   margin-bottom: 4px;
   cursor: pointer;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
 }
 
 .option:hover {
   background: #f0f7f3;
+}
+
+.option-checkbox {
+  width: 14px;
+  height: 14px;
+  margin-top: 2px;
+  border-radius: 3px;
+  border: 1px solid #9ba8a2;
+  flex-shrink: 0;
+}
+
+.option.selected .option-checkbox {
+  background: #19a86e;
+  border-color: #19a86e;
+}
+
+.option-text {
+  flex: 1;
 }
 
 .option.correct {
@@ -232,20 +260,34 @@ h2 {
   background: #fff3f1;
 }
 
+/* кнопка проверки в модалке */
+.modal-actions {
+  margin-top: 6px;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.btn-check {
+  font-family: 'Montserrat', sans-serif;
+  border-radius: 14px;
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+  background: var(--green-gradient);
+  color: #ffffff;
+}
+
+/* подвал модалки */
 .modal-footer {
-  margin-top: 8px;
+  margin-top: 6px;
   font-size: 11px;
   min-height: 18px;
 }
 
 .modal-footer_ok {
   color: var(--green-accent);
-}
-
-/* маленький бейдж-прогресс под заголовком модалки */
-.step-indicator {
-  font-size: 10px;
-  color: #557267;
 }
 </style>
 </head>
@@ -254,10 +296,17 @@ h2 {
   <header>
     <h2>Где и как вы возьмете пробу</h2>
     <div class="subtitle">
-      Нажмите на объект на схеме. Сначала выберите вид пробы, потом – как оформить отбор в акте.
+      Нажмите на объект. Сначала выберите тип пробы, потом – ключевые строки акта отбора.
     </div>
-    <div class="progress-bar">
-      <div class="progress-fill" id="progress-fill"></div>
+    <div class="progress-row">
+      <span class="label">Точки пройдены</span>
+      <div class="progress-dots">
+        <div class="progress-dot" data-dot="stack" title="Источник выброса"></div>
+        <div class="progress-dot" data-dot="outfall" title="Сброс в реку"></div>
+        <div class="progress-dot" data-dot="well" title="Колодец"></div>
+        <div class="progress-dot" data-dot="szz" title="Граница СЗЗ"></div>
+        <div class="progress-dot" data-dot="soil" title="Почва у отходов НП"></div>
+      </div>
     </div>
   </header>
 
@@ -265,35 +314,12 @@ h2 {
     <div class="map-wrapper" id="map">
       <img src="plant-map.png" alt="План предприятия" />
 
-      <!-- труба источника выбросов -->
-      <div class="point" data-key="stack" style="left:23%; top:26%;"></div>
-      <div class="tooltip" data-tip-for="stack">
-        Дымовая труба. Здесь контролируете выбросы в атмосферу.
-      </div>
-
-      <!-- сброс в реку -->
+      <!-- координаты под картинку -->
+      <div class="point" data-key="stack"   style="left:23%; top:26%;"></div>
       <div class="point" data-key="outfall" style="left:74%; top:68%;"></div>
-      <div class="tooltip" data-tip-for="outfall">
-        Выпуск в реку. Контроль сточных вод при сбросе.
-      </div>
-
-      <!-- колодец сточных вод -->
-      <div class="point" data-key="well" style="left:62%; top:57%;"></div>
-      <div class="tooltip" data-tip-for="well">
-        Контрольный колодец перед очистными или после них.
-      </div>
-
-      <!-- граница СЗЗ (мачта на контуре) -->
-      <div class="point" data-key="szz" style="left:66%; top:20%;"></div>
-      <div class="tooltip" data-tip-for="szz">
-        Граница санитарно-защитной зоны. Здесь отбираете воздух.
-      </div>
-
-      <!-- площадка с отходами нефтепродуктов -->
-      <div class="point" data-key="soil" style="left:36%; top:60%;"></div>
-      <div class="tooltip" data-tip-for="soil">
-        Площадка отходов НП. Здесь смотрите загрязнение почвы.
-      </div>
+      <div class="point" data-key="well"    style="left:62%; top:57%;"></div>
+      <div class="point" data-key="szz"     style="left:66%; top:20%;"></div>
+      <div class="point" data-key="soil"    style="left:36%; top:60%;"></div>
 
       <!-- модалка -->
       <div class="modal" id="modal">
@@ -306,6 +332,9 @@ h2 {
             <button class="modal-close" id="modal-close">×</button>
           </div>
           <div class="modal-body" id="modal-body"></div>
+          <div class="modal-actions">
+            <button class="btn-check" id="btn-check">Проверить</button>
+          </div>
           <div class="modal-footer" id="modal-footer"></div>
         </div>
       </div>
@@ -317,306 +346,397 @@ h2 {
 var state = {
   completed: { stack:false, outfall:false, well:false, szz:false, soil:false },
   currentPoint: null,
-  currentStep: 1 // 1 – выбор вида пробы, 2 – вопрос про оформление
+  currentStep: 1,
+  selectedIndexes: []
 };
 
+/* конфигурация по точкам */
 var tasks = {
   stack: {
     title: 'Источник выброса',
-    sampleQuestion: 'Какую пробу вы будете отбирать на этом объекте?',
+    sampleQuestion: 'Какую пробу вы планируете отбирать на трубе?',
+    // несколько вариантов, 2 правильных
     sampleOptions: [
       {
-        text: 'Газовую пробу отходящих газов на определение концентраций загрязняющих веществ по РД и ГОСТам.',
-        correct: true,
-        feedback: 'Верно. На трубе вы отбираете газовую пробу ГВС, а не воздух рабочей зоны.'
+        text: 'Газовую пробу отходящих газов на загрязняющие вещества по программе ПЭК.',
+        correct: true
       },
       {
-        text: 'Пробу воздуха рабочей зоны для оценки условий труда.',
-        correct: false,
-        feedback: 'Это другая задача. На трубе контролируете именно выброс.'
+        text: 'Пробу воздуха рабочей зоны у оператора площадки.',
+        correct: false
+      },
+      {
+        text: 'Газовую пробу на содержание кислорода и влаги для корректировки расчетов концентраций.',
+        correct: true
+      },
+      {
+        text: 'Пробу конденсата с внутренней стенки дымовой трубы.',
+        correct: false
       }
     ],
-    methodQuestion: 'Что обязательно зафиксировать в акте отбора пробы из источника выброса?',
+    methodQuestion: 'Какие элементы вы обязательно зафиксируете в акте отбора из источника выброса?',
     methodOptions: [
       {
-        text: 'Номер источника и точки по схеме ГВС, высоту отбора, вид топлива, нагрузку на источник, температуру и влажность ГВС во время отбора.',
-        correct: true,
-        feedback: 'Так режим можно сверить с НДВ и требованиями методик.'
+        text: 'Номер источника, схему и высоту точки отбора по ГВС.',
+        correct: true
       },
       {
-        text: 'Только номер источника и фразу «работал в номинальном режиме».',
-        correct: false,
-        feedback: 'Без высоты, координат точки и нагрузки режим не подтвержден.'
+        text: 'Режим работы: нагрузка, вид и расход топлива, наличие резервных агрегатов.',
+        correct: true
+      },
+      {
+        text: 'Координаты цеха в WGS‑84 без пересчета в ГСК‑2011.',
+        correct: false
+      },
+      {
+        text: 'Температуру и влажность ГВС, время начала и окончания отбора.',
+        correct: true
+      },
+      {
+        text: 'Только номер лабораторного протокола измерений.',
+        correct: false
       }
     ]
   },
   outfall: {
     title: 'Сброс в реку',
-    sampleQuestion: 'Какую пробу логично отбирать у выпуска в реку?',
+    sampleQuestion: 'Какие типы проб у устья выпуска вы считаете обоснованными?',
     sampleOptions: [
       {
-        text: 'Пробу сточной воды на соответствие нормативам по сбросам в водный объект.',
-        correct: true,
-        feedback: 'Да. Здесь контролируете качество сточной воды в точке сброса.'
+        text: 'Усредненную пробу сточных вод за период, соответствующий методике и режиму работы очистных.',
+        correct: true
       },
       {
-        text: 'Пробу донных отложений реки для геохимического мониторинга.',
-        correct: false,
-        feedback: 'Донные отложения – отдельная задача, не базовый контроль сброса.'
+        text: 'Разовую пробу воды в реке выше по течению от места сброса.',
+        correct: false
+      },
+      {
+        text: 'Фоновую пробу воды выше по течению и отдельную пробу смеси в створе разбавления.',
+        correct: true
+      },
+      {
+        text: 'Пробу воды только в середине реки без привязки к выпуску.',
+        correct: false
       }
     ],
-    methodQuestion: 'Как корректно описать точку и условия отбора в акте?',
+    methodQuestion: 'Что фиксируете в акте при отборе проб в точке сброса?',
     methodOptions: [
       {
-        text: 'Номер выпуска по схеме, координаты по ГСК‑2011, тип сброса, глубину и расстояние от устья, состояние реки (уровень, течение, лед, ветровой нагон) на момент отбора.',
-        correct: true,
-        feedback: 'Так можно воспроизвести отбор и связать результат с гидрологией.'
+        text: 'Номер выпуска и его координаты по ГСК‑2011, тип сброса.',
+        correct: true
       },
       {
-        text: 'Общее описание «сброс сточных вод в реку, отбор у устья, вода без запаха».',
-        correct: false,
-        feedback: 'Здесь нет координат и описания режима водного объекта – акт слабый.'
+        text: 'Состояние реки: уровень, скорость течения, ледовые условия.',
+        correct: true
+      },
+      {
+        text: 'Цвет и запах воды на глаз, без количественных параметров.',
+        correct: false
+      },
+      {
+        text: 'Интервал усреднения пробы и режим работы очистных в этот период.',
+        correct: true
+      },
+      {
+        text: 'Только ссылку на договор с лабораторией и номер акта.',
+        correct: false
       }
     ]
   },
   well: {
     title: 'Контрольный колодец',
-    sampleQuestion: 'Какую пробу вы возьмете в контрольном колодце?',
+    sampleQuestion: 'Как вы будете отбирать пробу в контрольном колодце?',
     sampleOptions: [
       {
-        text: 'Усредненную пробу сточных вод за расчетный интервал работы очистных.',
-        correct: true,
-        feedback: 'Так вы получаете репрезентативную пробу для режима работы сооружений.'
+        text: 'Формировать усредненную пробу из нескольких подотборов в течение расчетного времени.',
+        correct: true
       },
       {
-        text: 'Разовую пробу в момент максимального притока сточных вод.',
-        correct: false,
-        feedback: 'Разовая проба может не отражать средний режим, если методика требует усреднение.'
+        text: 'Снимать пробу сразу после проливки колодца насосом без выдержки.',
+        correct: false
+      },
+      {
+        text: 'Учитывать объем и скорость притока, чтобы не отбирать застоявшуюся воду.',
+        correct: true
+      },
+      {
+        text: 'Отбирать только поверхностный слой без погружения пробоотборника.',
+        correct: false
       }
     ],
-    methodQuestion: 'Какая ошибка в оформлении акта для этой точки критична?',
+    methodQuestion: 'Какие сведения обязательно должны попасть в акт?',
     methodOptions: [
       {
-        text: 'Не указать номер колодца по схеме, глубину воды, режим работы очистных и интервал усреднения пробы.',
-        correct: true,
-        feedback: 'Без этих данных нельзя доказать репрезентативность пробы.'
+        text: 'Номер колодца по схеме сети и его привязка к сооружениям.',
+        correct: true
       },
       {
-        text: 'Дополнительно описать погодные условия и температуру воздуха.',
-        correct: false,
-        feedback: 'Это допустимо и не делает акт хуже. Критичны как раз схема и режим работы очистных.'
+        text: 'Глубину воды и отметку места забора относительно дна.',
+        correct: true
+      },
+      {
+        text: 'Только указание «колодец перед очистными» без уточнений.',
+        correct: false
+      },
+      {
+        text: 'Интервал усреднения, время начала и окончания отбора.',
+        correct: true
+      },
+      {
+        text: 'Только перечень показателей, которые потом исследуют в лаборатории.',
+        correct: false
       }
     ]
   },
   szz: {
     title: 'Граница СЗЗ',
-    sampleQuestion: 'Какую пробу вы собираетесь взять на этой точке?',
+    sampleQuestion: 'Какие пробы уместно отбирать на этой точке?',
     sampleOptions: [
       {
         text: 'Пробу атмосферного воздуха на контролируемые загрязняющие вещества.',
-        correct: true,
-        feedback: 'Да. Это контроль на границе СЗЗ, а не внутри цеха.'
+        correct: true
       },
       {
-        text: 'Пробу осадков с поверхности земли после дождя.',
-        correct: false,
-        feedback: 'Осадки можно изучать отдельно, но базовый контроль – это воздух.'
+        text: 'Пробу воздуха в помещении лаборатории предприятия.',
+        correct: false
+      },
+      {
+        text: 'Суточную или сменную пробу воздуха с заданным объемом прокачки.',
+        correct: true
+      },
+      {
+        text: 'Пробу осадков с почвы после дождя без учета ветра.',
+        correct: false
       }
     ],
-    methodQuestion: 'Что важно зафиксировать в акте по отбору воздуха на границе СЗЗ?',
+    methodQuestion: 'Какие параметры вы внесете в акт по отбору воздуха на границе СЗЗ?',
     methodOptions: [
       {
-        text: 'Координаты точки по ГСК‑2011, высоту отбора, продолжительность отбора, список работающих источников и их нагрузки, количественные метеопараметры (скорость и направление ветра, температуру, давление, влажность).',
-        correct: true,
-        feedback: 'Так результат можно связать с конкретной метеоситуацией и режимом источников.'
+        text: 'Координаты точки по ГСК‑2011 и высоту отбора над уровнем земли.',
+        correct: true
       },
       {
-        text: 'Только фразу «точка на границе СЗЗ, ветер южный, пасмурно».',
-        correct: false,
-        feedback: 'Нужны координаты, высота и числовые значения метеопараметров.'
+        text: 'Скорость и направление ветра, температуру, давление, влажность.',
+        correct: true
+      },
+      {
+        text: 'Только словесное описание «со стороны жилой застройки, ветер слабый».',
+        correct: false
+      },
+      {
+        text: 'Перечень работающих в момент отбора источников и их нагрузки.',
+        correct: true
+      },
+      {
+        text: 'Только срок действия разрешения на выбросы без фактического режима.',
+        correct: false
       }
     ]
   },
   soil: {
     title: 'Площадка отходов НП',
-    sampleQuestion: 'Какую пробу вы будете отбирать на этой площадке?',
+    sampleQuestion: 'Какие пробы вы будете отбирать у площадки с отходами нефтепродуктов?',
     sampleOptions: [
       {
-        text: 'Пробу почвы вокруг площадки по схеме точечных и объединенных проб.',
-        correct: true,
-        feedback: 'Здесь оцениваете загрязнение грунта, а не только сам отход.'
+        text: 'Точечные пробы почвы по периметру площадки с последующим объединением.',
+        correct: true
       },
       {
-        text: 'Пробу нефти из контейнеров для проверки паспорта отхода.',
-        correct: false,
-        feedback: 'Это другая задача. Сейчас важно состояние почвы вокруг хранилища.'
+        text: 'Пробу почвы только в одной визуально загрязненной точке.',
+        correct: false
+      },
+      {
+        text: 'Контрольную пробу почвы вне зоны влияния площадки для сравнения.',
+        correct: true
+      },
+      {
+        text: 'Пробу сточной воды из ближайшего ливневого колодца вместо почвы.',
+        correct: false
       }
     ],
-    methodQuestion: 'Какой вариант схемы отбора правильно отражать в акте?',
+    methodQuestion: 'Что вы отразите в акте отбора проб почвы?',
     methodOptions: [
       {
-        text: 'Нанести на схему границы площадки и точки отбора вдоль направления стока, указать глубины, тип проб (точечные/объединенные), массу объединенной пробы и коды емкостей.',
-        correct: true,
-        feedback: 'Такая схема позволит повторить отбор и показать, что вы охватили зону возможного загрязнения.'
+        text: 'Схему площадки с координатами и расположением точек отбора.',
+        correct: true
       },
       {
-        text: 'Взять одну пробу «в самом темном пятне» и описать словами без координат.',
-        correct: false,
-        feedback: 'Без схемы и глубин пробы легко признать нерепрезентативными.'
+        text: 'Глубины отбора и тип пробы (точечная, объединенная).',
+        correct: true
+      },
+      {
+        text: 'Только описание «вблизи площадки отходов» без схемы.',
+        correct: false
+      },
+      {
+        text: 'Массу объединенных проб и коды контейнеров.',
+        correct: true
+      },
+      {
+        text: 'Только предполагаемую причину загрязнения без фактических параметров.',
+        correct: false
       }
     ]
   }
 };
 
-function updateProgress() {
-  var total = Object.keys(state.completed).length;
-  var done = Object.values(state.completed).filter(Boolean).length;
-  var percent = (done / total) * 100;
-  document.getElementById('progress-fill').style.width = percent + '%';
-}
+var modal = document.getElementById('modal');
+var modalTitle = document.getElementById('modal-title');
+var stepIndicator = document.getElementById('step-indicator');
+var modalBody = document.getElementById('modal-body');
+var modalFooter = document.getElementById('modal-footer');
+var btnCheck = document.getElementById('btn-check');
 
-function openModalForPoint(key) {
-  state.currentPoint = key;
+function openModal(pointKey) {
+  state.currentPoint = pointKey;
   state.currentStep = 1;
-  var modal = document.getElementById('modal');
-  var titleEl = document.getElementById('modal-title');
-  var stepEl = document.getElementById('step-indicator');
-  var bodyEl = document.getElementById('modal-body');
-  var footerEl = document.getElementById('modal-footer');
-
-  var cfg = tasks[key];
-
-  titleEl.textContent = cfg.title;
-  stepEl.textContent = 'Шаг 1 из 2 – выберите вид пробы';
-  footerEl.textContent = '';
-  footerEl.className = 'modal-footer';
-
-  bodyEl.innerHTML = '';
-  var q = document.createElement('div');
-  q.className = 'modal-question';
-  q.textContent = cfg.sampleQuestion;
-  bodyEl.appendChild(q);
-
-  var list = document.createElement('ul');
-  list.className = 'options';
-
-  cfg.sampleOptions.forEach(function(opt, idx) {
-    var li = document.createElement('li');
-    li.className = 'option';
-    li.textContent = opt.text;
-    li.addEventListener('click', function() {
-      handleSampleAnswer(key, idx, li);
-    });
-    list.appendChild(li);
-  });
-
-  bodyEl.appendChild(list);
+  state.selectedIndexes = [];
+  renderStep();
   modal.style.display = 'flex';
 }
 
-function handleSampleAnswer(key, idx, liEl) {
-  var cfg = tasks[key];
-  var opt = cfg.sampleOptions[idx];
-  var footerEl = document.getElementById('modal-footer');
+function renderStep() {
+  var cfg = tasks[state.currentPoint];
+  modalFooter.textContent = '';
+  modalFooter.className = 'modal-footer';
 
-  liEl.parentElement.querySelectorAll('.option').forEach(function(o){
-    o.classList.remove('correct','wrong');
-  });
+  modalTitle.textContent = cfg.title;
+  modalBody.innerHTML = '';
 
-  if (opt.correct) {
-    liEl.classList.add('correct');
-    footerEl.textContent = opt.feedback + ' Теперь разберемся с оформлением акта.';
-    footerEl.className = 'modal-footer modal-footer_ok';
-
-    // небольшая задержка и переход ко второму шагу
-    setTimeout(function() {
-      showMethodStep(key);
-    }, 800);
-  } else {
-    liEl.classList.add('wrong');
-    footerEl.textContent = opt.feedback;
-    footerEl.className = 'modal-footer';
-  }
-}
-
-function showMethodStep(key) {
-  state.currentStep = 2;
-  var cfg = tasks[key];
-  var stepEl = document.getElementById('step-indicator');
-  var bodyEl = document.getElementById('modal-body');
-  var footerEl = document.getElementById('modal-footer');
-
-  stepEl.textContent = 'Шаг 2 из 2 – как оформить отбор';
-  footerEl.textContent = '';
-  footerEl.className = 'modal-footer';
-
-  bodyEl.innerHTML = '';
   var q = document.createElement('div');
   q.className = 'modal-question';
-  q.textContent = cfg.methodQuestion;
-  bodyEl.appendChild(q);
+
+  var optionsData;
+
+  if (state.currentStep === 1) {
+    stepIndicator.textContent = 'Шаг 1 из 2 – выберите типы проб';
+    q.textContent = cfg.sampleQuestion;
+    optionsData = cfg.sampleOptions;
+  } else {
+    stepIndicator.textContent = 'Шаг 2 из 2 – выберите, что отразить в акте';
+    q.textContent = cfg.methodQuestion;
+    optionsData = cfg.methodOptions;
+  }
+
+  modalBody.appendChild(q);
 
   var list = document.createElement('ul');
   list.className = 'options';
 
-  cfg.methodOptions.forEach(function(opt, idx) {
+  optionsData.forEach(function(opt, index) {
     var li = document.createElement('li');
     li.className = 'option';
-    li.textContent = opt.text;
+    li.dataset.index = index;
+
+    var box = document.createElement('div');
+    box.className = 'option-checkbox';
+
+    var text = document.createElement('div');
+    text.className = 'option-text';
+    text.textContent = opt.text;
+
+    li.appendChild(box);
+    li.appendChild(text);
+
     li.addEventListener('click', function() {
-      handleMethodAnswer(key, idx, li);
+      toggleSelect(li);
     });
+
     list.appendChild(li);
   });
 
-  bodyEl.appendChild(list);
+  modalBody.appendChild(list);
 }
 
-function handleMethodAnswer(key, idx, liEl) {
-  var cfg = tasks[key];
-  var opt = cfg.methodOptions[idx];
-  var footerEl = document.getElementById('modal-footer');
-
-  liEl.parentElement.querySelectorAll('.option').forEach(function(o){
-    o.classList.remove('correct','wrong');
-  });
-
-  if (opt.correct) {
-    liEl.classList.add('correct');
-    state.completed[key] = true;
-    updateProgress();
-    footerEl.textContent = opt.feedback + ' Этот объект вы проработали.';
-    footerEl.className = 'modal-footer modal-footer_ok';
+function toggleSelect(li) {
+  var idx = parseInt(li.dataset.index, 10);
+  var pos = state.selectedIndexes.indexOf(idx);
+  if (pos === -1) {
+    state.selectedIndexes.push(idx);
+    li.classList.add('selected');
   } else {
-    liEl.classList.add('wrong');
-    footerEl.textContent = opt.feedback;
-    footerEl.className = 'modal-footer';
+    state.selectedIndexes.splice(pos, 1);
+    li.classList.remove('selected');
   }
 }
 
-/* обработчики */
-document.querySelectorAll('.point').forEach(function(p){
-  p.addEventListener('mouseenter', function(){
-    var key = p.dataset.key;
-    var tip = document.querySelector('.tooltip[data-tip-for="'+key+'"]');
-    if (tip) tip.style.display = 'block';
+btnCheck.addEventListener('click', function() {
+  if (!state.currentPoint) return;
+  if (state.selectedIndexes.length === 0) {
+    modalFooter.textContent = 'Выберите хотя бы один вариант.';
+    modalFooter.className = 'modal-footer';
+    return;
+  }
+
+  var cfg = tasks[state.currentPoint];
+  var optionsData = state.currentStep === 1 ? cfg.sampleOptions : cfg.methodOptions;
+
+  var listEls = modalBody.querySelectorAll('.option');
+
+  var anyWrong = false;
+  var missedCorrect = false;
+
+  optionsData.forEach(function(opt, index) {
+    var li = Array.from(listEls).find(function(el){ return parseInt(el.dataset.index,10) === index; });
+    var selected = state.selectedIndexes.indexOf(index) !== -1;
+
+    li.classList.remove('correct','wrong');
+
+    if (selected && opt.correct) {
+      li.classList.add('correct');
+    }
+    if (selected && !opt.correct) {
+      li.classList.add('wrong');
+      anyWrong = true;
+    }
+    if (!selected && opt.correct) {
+      missedCorrect = true;
+    }
   });
-  p.addEventListener('mouseleave', function(){
-    var key = p.dataset.key;
-    var tip = document.querySelector('.tooltip[data-tip-for="'+key+'"]');
-    if (tip) tip.style.display = 'none';
-  });
-  p.addEventListener('click', function(){
-    var key = p.dataset.key;
-    openModalForPoint(key);
-  });
+
+  if (!anyWrong && !missedCorrect) {
+    // все правильные выбраны
+    if (state.currentStep === 1) {
+      modalFooter.textContent = 'Типы проб выбраны корректно. Теперь оформим акт для этой точки.';
+      modalFooter.className = 'modal-footer modal-footer_ok';
+      // переход ко второму шагу
+      setTimeout(function() {
+        state.currentStep = 2;
+        state.selectedIndexes = [];
+        renderStep();
+      }, 800);
+    } else {
+      modalFooter.textContent = 'Вы отметили все важные элементы акта. Точка зачтена.';
+      modalFooter.className = 'modal-footer modal-footer_ok';
+      state.completed[state.currentPoint] = true;
+      updatePointStatus(state.currentPoint);
+    }
+  } else {
+    if (state.currentStep === 1) {
+      modalFooter.textContent = 'Пересмотрите выбор. Для этой точки нужны именно те пробы, которые обеспечивают репрезентативность.';
+    } else {
+      modalFooter.textContent = 'Какие то важные строки акта вы пропустили или добавили лишние. Попробуйте еще раз.';
+    }
+    modalFooter.className = 'modal-footer';
+  }
 });
 
 document.getElementById('modal-close').addEventListener('click', function(){
-  document.getElementById('modal').style.display = 'none';
+  modal.style.display = 'none';
 });
 
-updateProgress();
+document.querySelectorAll('.point').forEach(function(p) {
+  p.addEventListener('click', function() {
+    openModal(p.dataset.key);
+  });
+});
+
+function updatePointStatus(key) {
+  var dot = document.querySelector('.progress-dot[data-dot="'+key+'"]');
+  if (dot) dot.classList.add('done');
+  var point = document.querySelector('.point[data-key="'+key+'"]');
+  if (point) point.classList.add('done');
+}
 </script>
 </body>
 </html>
