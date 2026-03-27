@@ -1,306 +1,268 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<title>Где пригодятся результаты отбора проб</title>
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+  <meta charset="UTF-8">
+  <title>Где пригодятся результаты отбора проб</title>
+  <style>
+    body {
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background-color: #f5f7f5;
+      color: #222;
+      margin: 0;
+      padding: 0;
+    }
 
-:root {
-  --bg-silk: #f3fbf7;
-  --green-accent: #007760;
-  --green-gradient: linear-gradient(135deg, #19a86e, #007760);
-  --green-border: #19a86e;
-  --text-dark: #2c2c2c;
-  --muted: #5e746b;
-}
+    .page {
+      max-width: 900px;
+      margin: 40px auto;
+      padding: 0 20px 60px;
+    }
 
-* { box-sizing: border-box; }
+    h1 {
+      font-size: 26px;
+      margin-bottom: 10px;
+      color: #1f4f2b;
+    }
 
-body {
-  margin: 0;
-  padding: 0;
-  background: var(--bg-silk);
-  font-family: 'Montserrat', sans-serif;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-}
+    .intro {
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 24px;
+    }
 
-#app {
-  width: 560px;
-  min-height: 720px;
-  background: #ffffff;
-  border: 1px solid var(--green-border);
-  border-radius: 4px;
-  box-shadow: 0 18px 40px rgba(0, 119, 96, 0.16);
-  overflow: hidden;
-  display: flex;
-  flex-direction: column;
-}
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+      gap: 16px;
+    }
 
-/* шапка */
-header {
-  padding: 12px 16px 8px 16px;
-  border-bottom: 1px solid rgba(0,119,96,0.12);
-}
+    .card {
+      background-color: #ffffff;
+      border-radius: 10px;
+      border: 1px solid #d6e4d8;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.04);
+      padding: 16px 16px 10px;
+      cursor: pointer;
+      position: relative;
+      overflow: hidden;
+      transition: box-shadow 0.2s ease, transform 0.15s ease, border-color 0.2s ease, background-color 0.2s ease;
+    }
 
-h1 {
-  margin: 0;
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--green-accent);
-}
+    .card:hover {
+      box-shadow: 0 8px 18px rgba(0,0,0,0.08);
+      transform: translateY(-2px);
+      border-color: #54a368;
+      background-color: #f7fbf8;
+    }
 
-.subtitle {
-  margin-top: 4px;
-  font-size: 12px;
-  color: var(--text-dark);
-}
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 6px;
+    }
 
-/* основная область */
-.main {
-  flex: 1;
-  padding: 10px 14px 14px 14px;
-}
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: #225c31;
+    }
 
-/* панель кнопок */
-.tabs {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-  margin-bottom: 10px;
-}
+    .pill {
+      font-size: 12px;
+      padding: 3px 8px;
+      border-radius: 999px;
+      background-color: #e3f4e7;
+      color: #245c33;
+      border: 1px solid #c4e4cc;
+    }
 
-.tab-btn {
-  flex: 1 1 calc(50% - 6px);
-  min-width: 120px;
-  border-radius: 14px;
-  padding: 6px 8px;
-  font-size: 11px;
-  font-weight: 600;
-  border: 1px solid rgba(0,119,96,0.35);
-  background: #f7faf9;
-  color: var(--muted);
-  cursor: pointer;
-  text-align: left;
-  transition: background 0.12s, border-color 0.12s, box-shadow 0.12s, transform 0.12s;
-}
+    .card-subtitle {
+      font-size: 14px;
+      color: #4a4a4a;
+      margin-bottom: 8px;
+    }
 
-.tab-btn span {
-  display: block;
-  font-weight: 500;
-  font-size: 10px;
-  color: var(--muted);
-}
+    .toggle-icon {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      border: 1px solid #54a368;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 14px;
+      color: #54a368;
+      flex-shrink: 0;
+      margin-left: 8px;
+      transition: transform 0.2s ease, background-color 0.2s ease, color 0.2s ease;
+    }
 
-.tab-btn strong {
-  display: block;
-  font-weight: 600;
-  font-size: 11px;
-  color: var(--text-dark);
-  margin-bottom: 1px;
-}
+    .card:hover .toggle-icon {
+      background-color: #54a368;
+      color: #ffffff;
+    }
 
-.tab-btn:hover {
-  background: #f2fbf6;
-  transform: translateY(-1px);
-  box-shadow: 0 6px 12px rgba(0,119,96,0.15);
-}
+    .card.expanded .toggle-icon {
+      transform: rotate(90deg);
+      background-color: #54a368;
+      color: #ffffff;
+    }
 
-.tab-btn.active {
-  border-color: var(--green-border);
-  background: #e7f7ee;
-  color: var(--green-accent);
-  box-shadow: 0 6px 14px rgba(0,119,96,0.18);
-}
+    .card-content {
+      font-size: 14px;
+      line-height: 1.5;
+      color: #333;
+      max-height: 0;
+      opacity: 0;
+      margin-top: 0;
+      transition: max-height 0.25s ease, opacity 0.25s ease, margin-top 0.25s ease;
+    }
 
-/* блок с содержимым */
-.content {
-  margin-top: 4px;
-  padding: 10px 10px;
-  border-radius: 10px;
-  border: 1px solid rgba(0,119,96,0.25);
-  background: #f7faf9;
-}
+    .card.expanded .card-content {
+      max-height: 300px;
+      opacity: 1;
+      margin-top: 8px;
+    }
 
-.content-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--green-accent);
-  margin-bottom: 4px;
-}
+    .highlight {
+      color: #1f7135;
+      font-weight: 500;
+    }
 
-.content-tag {
-  font-size: 10px;
-  color: var(--muted);
-  margin-bottom: 6px;
-}
+    .hint-bar {
+      margin-top: 24px;
+      padding: 10px 14px;
+      font-size: 13px;
+      border-radius: 8px;
+      background: linear-gradient(90deg, #e9f6ec, #f7fbf8);
+      border: 1px solid #cfe5d4;
+      color: #30563a;
+    }
 
-.content-body {
-  font-size: 12px;
-  color: var(--text-dark);
-  line-height: 1.45;
-}
+    .hint-bar strong {
+      font-weight: 600;
+    }
 
-.content-body p {
-  margin: 0 0 6px 0;
-}
-
-.content-body p:last-child {
-  margin-bottom: 0;
-}
-
-/* блок "что будет, если данных нет" */
-.risk-block {
-  margin-top: 8px;
-  padding: 7px 8px;
-  border-radius: 8px;
-  background: #fff3f1;
-  border: 1px solid #e29b8f;
-  font-size: 11px;
-  color: #a23d2c;
-}
-
-/* напоминание */
-.footer-note {
-  margin-top: 10px;
-  padding: 7px 8px;
-  border-radius: 8px;
-  background: #f0faf4;
-  border: 1px solid rgba(0,119,96,0.2);
-  font-size: 11px;
-  color: var(--text-dark);
-}
-</style>
+    @media (max-width: 600px) {
+      .page {
+        margin-top: 24px;
+        padding-bottom: 40px;
+      }
+    }
+  </style>
 </head>
 <body>
-<div id="app">
-  <header>
-    <h1>Где пригодятся результаты отбора проб</h1>
-    <div class="subtitle">
-      Нажмите на кнопку и посмотрите, как одни и те же данные работают в разных задачах эколога.
-    </div>
-  </header>
+<div class="page">
+  <h1>Где пригодятся результаты отбора проб</h1>
 
-  <div class="main">
-    <div class="tabs">
-      <button class="tab-btn active" data-key="pec">
-        <strong>Программа ПЭК</strong>
-        <span>как данные помогают настроить контроль</span>
-      </button>
-      <button class="tab-btn" data-key="nvoc">
-        <strong>Плата за НВОС</strong>
-        <span>как данные влияют на деньги</span>
-      </button>
-      <button class="tab-btn" data-key="plan">
-        <strong>Плановая проверка</strong>
-        <span>как смотрит инспектор</span>
-      </button>
-      <button class="tab-btn" data-key="complaint">
-        <strong>Проверка по жалобе</strong>
-        <span>как защищать позицию</span>
-      </button>
-      <button class="tab-btn" data-key="incident">
-        <strong>Инцидент и авария</strong>
-        <span>как считать ущерб</span>
-      </button>
+  <p class="intro">
+    Результаты измерений для эколога это доказательства, а не строки в отчете. Ниже шесть ситуаций, где качество отбора проб влияет на деньги, отчетность и проверки.
+  </p>
+
+  <div class="cards-grid">
+
+    <!-- ПЭК -->
+    <div class="card" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Программа ПЭК</div>
+          <div class="card-subtitle">Основание для точек и периодичности контроля.</div>
+        </div>
+        <div class="toggle-icon">›</div>
+      </div>
+      <div class="card-content">
+        Программу ПЭК строят на реальных данных о воздействии предприятия. Чем точнее отбор проб и чем надежнее результаты, тем обоснованнее программа. Это снижает риск предписаний и дополнительных требований от надзорных органов.
+      </div>
     </div>
 
-    <div class="content">
-      <div class="content-title" id="content-title"></div>
-      <div class="content-tag" id="content-tag"></div>
-      <div class="content-body" id="content-body"></div>
-      <div class="risk-block" id="risk-block"></div>
+    <!-- НВОС и отчетность -->
+    <div class="card" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Плата за НВОС и отчетность</div>
+          <div class="card-subtitle">База для расчетов и годового отчета по ПЭК.</div>
+        </div>
+        <div class="toggle-icon">›</div>
+      </div>
+      <div class="card-content">
+        Результаты анализов лежат в основе расчета платы за негативное воздействие. Если пробы отобраны с нарушениями или лаборатория не аккредитована по нужным показателям, контролер вправе не принять эти данные. Тогда плату считают не по факту, а по нормативам, как правило дороже. Те же результаты попадают в ежегодный отчет об организации и результатах ПЭК, и недостоверные или неполные данные делают этот отчет уязвимым при проверке.
+      </div>
     </div>
 
-    <div class="footer-note">
-      Запомните простую мысль. Результаты отбора проб – это ваша доказательная база. В спокойные периоды вы собираете данные, а в проверках и инцидентах опираетесь на них как на аргументы.
+    <!-- Плановая проверка -->
+    <div class="card" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Плановая проверка</div>
+          <div class="card-subtitle">Инспектор оценивает не только цифры.</div>
+        </div>
+        <div class="toggle-icon">›</div>
+      </div>
+      <div class="card-content">
+        На плановой проверке инспектор смотрит не только на значения показателей, но и на то, как их получили. Он проверяет протокол отбора, акт, сведения о лаборатории, сверяет точки с программой ПЭК. Если документы оформлены с нарушениями или точки отбора не совпадают с программой, результаты анализов могут не засчитать.
+      </div>
     </div>
+
+    <!-- Внеплановая проверка -->
+    <div class="card" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Внеплановая проверка по жалобе</div>
+          <div class="card-subtitle">Аргументы вместо устных объяснений.</div>
+        </div>
+        <div class="toggle-icon">›</div>
+      </div>
+      <div class="card-content">
+        Жалоба соседей или ведомства может быстро перейти в внеплановую проверку. Свежие, правильно оформленные результаты измерений по средам позволяют экологу показать, что предприятие работает в пределах нормативов. Без таких данных любые устные объяснения выглядят неубедительно.
+      </div>
+    </div>
+
+    <!-- Инциденты -->
+    <div class="card" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Производственные инциденты</div>
+          <div class="card-subtitle">Фоновое состояние до аварии.</div>
+        </div>
+        <div class="toggle-icon">›</div>
+      </div>
+      <div class="card-content">
+        После разлива, аварийного выброса и других нештатных ситуаций решающую роль играют фоновые данные. Результаты регулярного мониторинга показывают, каким было состояние среды до инцидента. От этого зависит расчет ущерба и размер возможных штрафов.
+      </div>
+    </div>
+
+    <!-- Обобщение -->
+    <div class="card" onclick="toggleCard(this)">
+      <div class="card-header">
+        <div>
+          <div class="card-title">Зачем это экологу</div>
+          <div class="card-subtitle">Результаты как доказательная база.</div>
+        </div>
+        <div class="toggle-icon">›</div>
+      </div>
+      <div class="card-content">
+        Для эколога результаты отбора проб это доказательная база. На них опираются при расчете платы за НВОС, подтверждают выполнение программы ПЭК, защищают позицию предприятия на проверках и при разбирательствах. Если пробы отобраны с нарушениями, эта база не работает.
+      </div>
+    </div>
+
+  </div>
+
+  <div class="hint-bar">
+    <strong>Как работать с блоком.</strong> Откройте по очереди карточки и посмотрите, где в вашей практике уже используются результаты отбора проб. Отметьте для себя ситуации, где сейчас доказательная база слабее всего.
   </div>
 </div>
 
 <script>
-var data = {
-  pec: {
-    title: 'Программа ПЭК: на чем строится контроль',
-    tag: 'Планирование и оптимизация производственного экоконтроля',
-    text: [
-      'Программу ПЭК строят на реальных данных о воздействии, а не на ощущениях и «как у соседей». Чем точнее вы отбираете пробы и чем надежнее лабораторные результаты, тем увереннее можно убирать лишние точки и добавлять важные.',
-      'Обоснованная программа ПЭК показывает, что предприятие контролирует именно свои риски, а не заполняет шаблон. Надзору проще принять такую программу, потому что за каждым пунктом стоят измерения, а не формулировки ради отчета.'
-    ],
-    risk: 'Если у вас нет внятных результатов отбора проб, программу ПЭК чаще заполняют «на всякий случай». Возникает лишний объем контроля, дополнительные расходы и риск, что инспектор потребует переписать программу после проверки.'
-  },
-  nvoc: {
-    title: 'Плата за НВОС и отчетность: где цифры превращаются в деньги',
-    tag: 'Расчеты, аккредитация лаборатории и устойчивость отчетов',
-    text: [
-      'Результаты анализов лежат в основе расчета платы за НВОС. Если пробы отбирали с нарушениями или лаборатория не аккредитована по нужным показателям, контролер вправе не принять эти данные и пересчитать плату по нормативам.',
-      'Те же результаты попадают в ежегодный отчет об организации и результатах ПЭК. Когда данные полные и хорошо оформлены, отчет выглядит цельно: инспектор видит связь между программой, отборами и расчетами.'
-    ],
-    risk: 'Если данные по пробам слабые или спорные, плату могут считать «по максимуму», а отчет по ПЭК легко раскритиковать. Вы тратите время и деньги на перепроверки, вместо того чтобы нормально управлять воздействием.'
-  },
-  plan: {
-    title: 'Плановая проверка: как инспектор читает ваши данные',
-    tag: 'Протоколы отбора, акты и соответствие программе ПЭК',
-    text: [
-      'При плановой проверке инспектор смотрит не только цифры в протоколах, но и путь, по которому вы к ним пришли. Его интересуют протокол отбора, акт, сведения о лаборатории и соответствие точек программе ПЭК.',
-      'Когда отбор организован по программе, акты заполнены без «дыр», а лаборатория понятна и аккредитована, у инспектора меньше поводов не доверять результатам. Проверка проходит спокойнее, потому что видно, что система контроля реально работает.'
-    ],
-    risk: 'Если точки в актах не совпадают с программой, документы заполнены как попало, а про лабораторию трудно что‑то показать, инспектору проще не засчитывать результаты и делать выводы по формальным признакам, а не по вашим данным.'
-  },
-  complaint: {
-    title: 'Проверка по жалобе: как данные помогают держать удар',
-    tag: 'Жалобы соседей и внезапные визиты надзора',
-    text: [
-      'Жалоба жильцов или другого ведомства легко превращается во внеплановую проверку. В этот момент выигрывает тот, у кого под рукой есть свежие, правильно оформленные результаты измерений по спорным точкам.',
-      'Когда вы показываете акты отбора и протоколы с понятной логикой точек, инспектор видит, что предприятие не игнорирует свои риски. Даже если проблема есть, у вас есть база, от которой можно оттолкнуться в диалоге.'
-    ],
-    risk: 'Без нормальных данных любые устные объяснения звучат слабо. В глазах проверяющего предприятие выглядит как «кто ничего не меряет», и тогда проще считать, что жалоба обоснована полностью.'
-  },
-  incident: {
-    title: 'Инцидент и авария: зачем нужны фоновые данные',
-    tag: 'Регулярный мониторинг как страховка на черный день',
-    text: [
-      'После разлива, аварийного выброса или другого нештатного события важны не только измерения «после», но и фоновые данные «до». Регулярный отбор проб показывает, в каком состоянии были воздух, вода и почва до инцидента.',
-      'На основе этих фоновых значений считают ущерб и размер штрафов. Чем лучше вы документировали обычный режим, тем точнее можно отделить влияние аварии от уже существующего загрязнения и не брать на себя чужой фон.'
-    ],
-    risk: 'Если фоновых данных нет, любой рост концентраций легко записывают на ваше предприятие. Тогда вы платите и за свои последствия, и за то, что в среде было до инцидента, просто потому что доказать обратное нечем.'
+  function toggleCard(card) {
+    const isExpanded = card.classList.contains('expanded');
+    // можно оставить одновременное раскрытие нескольких карточек
+    if (isExpanded) {
+      card.classList.remove('expanded');
+    } else {
+      card.classList.add('expanded');
+    }
   }
-};
-
-var buttons = document.querySelectorAll('.tab-btn');
-var titleEl = document.getElementById('content-title');
-var tagEl = document.getElementById('content-tag');
-var bodyEl = document.getElementById('content-body');
-var riskEl = document.getElementById('risk-block');
-
-function render(key) {
-  var item = data[key];
-  titleEl.textContent = item.title;
-  tagEl.textContent = item.tag;
-  bodyEl.innerHTML = '';
-  item.text.forEach(function(t){
-    var p = document.createElement('p');
-    p.textContent = t;
-    bodyEl.appendChild(p);
-  });
-  riskEl.textContent = item.risk;
-}
-
-buttons.forEach(function(btn){
-  btn.addEventListener('click', function() {
-    var key = btn.getAttribute('data-key');
-    buttons.forEach(function(b){ b.classList.remove('active'); });
-    btn.classList.add('active');
-    render(key);
-  });
-});
-
-// стартовый экран
-render('pec');
 </script>
 </body>
 </html>
