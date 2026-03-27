@@ -1,582 +1,566 @@
-<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
-<html>
+<!doctype html>
+<html lang="ru">
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
-  <meta http-equiv="Content-Style-Type" content="text/css">
-  <title></title>
-  <meta name="Generator" content="Cocoa HTML Writer">
-  <meta name="CocoaVersion" content="2685.5">
-  <style type="text/css">
-    p.p1 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica}
-    p.p2 {margin: 0.0px 0.0px 0.0px 0.0px; font: 12.0px Helvetica; min-height: 14.0px}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>Где пригодятся результаты отбора проб</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-silk: #f3fbf7;
+  --green-accent: #007760;
+  --green-gradient: linear-gradient(135deg, #19a86e, #007760);
+  --green-border: #19a86e;
+  --text-dark: #2c2c2c;
+  --muted: #5e746b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 0;
+  background: var(--bg-silk);
+  font-family: 'Montserrat', sans-serif;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+}
+
+#app {
+  width: 560px;
+  min-height: 720px;
+  background: #ffffff;
+  border: 1px solid var(--green-border);
+  border-radius: 4px;
+  box-shadow: 0 18px 40px rgba(0, 119, 96, 0.16);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+}
+
+/* шапка */
+header {
+  padding: 12px 16px 8px 16px;
+  border-bottom: 1px solid rgba(0,119,96,0.12);
+}
+
+h1 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--green-accent);
+}
+
+.subtitle {
+  margin-top: 4px;
+  font-size: 12px;
+  color: var(--text-dark);
+}
+
+/* основная область */
+.main {
+  flex: 1;
+  padding: 10px 14px 14px 14px;
+}
+
+/* панель прогресса */
+.progress {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.progress-bar {
+  flex: 1;
+  height: 5px;
+  border-radius: 3px;
+  margin-left: 8px;
+  background: #e0ece5;
+  overflow: hidden;
+}
+
+.progress-bar-inner {
+  height: 100%;
+  width: 0%;
+  background: var(--green-gradient);
+}
+
+/* сетка карточек */
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+}
+
+.card {
+  position: relative;
+  border-radius: 8px;
+  border: 1px solid rgba(0,119,96,0.25);
+  background: #f7faf9;
+  padding: 8px 8px 10px 8px;
+  cursor: pointer;
+  overflow: hidden;
+  transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s, background 0.12s;
+}
+
+.card:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 16px rgba(0,119,96,0.15);
+  border-color: var(--green-border);
+  background: #f2fbf6;
+}
+
+.card.done {
+  border-color: var(--green-accent);
+  box-shadow: 0 6px 14px rgba(0,119,96,0.18);
+  background: #e7f7ee;
+}
+
+.card-title {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-dark);
+  margin-bottom: 4px;
+}
+
+.card-tag {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 999px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--green-accent);
+  background: rgba(0,119,96,0.06);
+}
+
+.card-status {
+  position: absolute;
+  right: 6px;
+  bottom: 6px;
+  font-size: 9px;
+  font-weight: 600;
+  color: var(--muted);
+}
+
+.card-status::before {
+  content: '';
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  margin-right: 3px;
+  background: #c4d4ce;
+}
+
+.card.done .card-status {
+  color: var(--green-accent);
+}
+
+.card.done .card-status::before {
+  background: #19a86e;
+}
+
+/* модалка */
+.modal {
+  position: absolute;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 10;
+}
+
+.modal-inner {
+  width: 92%;
+  max-width: 520px;
+  background: #ffffff;
+  border-radius: 10px;
+  border: 1px solid var(--green-border);
+  box-shadow: 0 24px 52px rgba(0,119,96,0.32);
+  padding: 12px 16px 14px 16px;
+  font-size: 12px;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.modal-title-block {
+  flex: 1;
+}
+
+.modal-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--green-accent);
+}
+
+.modal-chip {
+  margin-top: 3px;
+  display: inline-block;
+  padding: 2px 7px;
+  border-radius: 999px;
+  border: 1px solid rgba(0,119,96,0.25);
+  font-size: 10px;
+  color: var(--muted);
+}
+
+.modal-close {
+  border-radius: 50%;
+  width: 22px;
+  height: 22px;
+  border: 1px solid rgba(0,0,0,0.15);
+  background: #ffffff;
+  cursor: pointer;
+  font-size: 13px;
+}
+
+.modal-body {
+  margin-top: 8px;
+  line-height: 1.4;
+  color: var(--text-dark);
+}
+
+.modal-body p {
+  margin: 0 0 6px 0;
+}
+
+.modal-body p:last-child {
+  margin-bottom: 0;
+}
+
+/* подсвеченный фрагмент */
+.highlight {
+  border-left: 2px solid var(--green-accent);
+  padding-left: 6px;
+  margin-top: 4px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+/* кнопки внизу модалки */
+.modal-actions {
+  margin-top: 10px;
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.btn {
+  font-family: 'Montserrat', sans-serif;
+  border-radius: 16px;
+  padding: 5px 14px;
+  font-size: 11px;
+  font-weight: 600;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-main {
+  background: var(--green-gradient);
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background: #ffffff;
+  color: var(--green-accent);
+  border: 1px solid var(--green-accent);
+}
+
+/* финальный блок */
+.final-note {
+  margin-top: 10px;
+  padding: 8px 10px;
+  border-radius: 8px;
+  background: #f0faf4;
+  border: 1px solid rgba(0,119,96,0.2);
+  font-size: 11px;
+  color: var(--text-dark);
+  display: none;
+}
+</style>
 </head>
 <body>
-<p class="p1">&lt;!doctype html&gt;</p>
-<p class="p1">&lt;html lang="ru"&gt;</p>
-<p class="p1">&lt;head&gt;</p>
-<p class="p1">&lt;meta charset="UTF-8" /&gt;</p>
-<p class="p1">&lt;meta name="viewport"</p>
-<p class="p1"><span class="Apple-converted-space">      </span>content="width=device-width, initial-scale=1.0, maximum-scale=1.0" /&gt;</p>
-<p class="p1">&lt;title&gt;Где пригодятся результаты отбора проб&lt;/title&gt;</p>
-<p class="p1">&lt;style&gt;</p>
-<p class="p1">@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&amp;display=swap');</p>
-<p class="p2"><br></p>
-<p class="p1">:root {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>--bg-silk: #f3fbf7;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>--green-accent: #007760;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>--green-gradient: linear-gradient(135deg, #19a86e, #007760);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>--green-border: #19a86e;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>--text-dark: #2c2c2c;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>--muted: #5e746b;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">* { box-sizing: border-box; }</p>
-<p class="p2"><br></p>
-<p class="p1">body {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>margin: 0;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>padding: 0;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: var(--bg-silk);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-family: 'Montserrat', sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>align-items: flex-start;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">#app {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>width: 560px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>min-height: 720px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: #ffffff;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border: 1px solid var(--green-border);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border-radius: 4px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>box-shadow: 0 18px 40px rgba(0, 119, 96, 0.16);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>overflow: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>flex-direction: column;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">/* шапка */</p>
-<p class="p1">header {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>padding: 12px 16px 8px 16px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border-bottom: 1px solid rgba(0,119,96,0.12);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">h1 {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>margin: 0;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-size: 16px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-weight: 700;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>color: var(--green-accent);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.subtitle {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>margin-top: 4px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-size: 12px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>color: var(--text-dark);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">/* основная область */</p>
-<p class="p1">.main {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>flex: 1;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>padding: 10px 14px 14px 14px;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">/* панель прогресса */</p>
-<p class="p1">.progress {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>justify-content: space-between;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>margin-bottom: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-size: 11px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>color: var(--muted);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.progress-bar {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>flex: 1;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>height: 5px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border-radius: 3px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>margin-left: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: #e0ece5;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>overflow: hidden;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.progress-bar-inner {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>height: 100%;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>width: 0%;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: var(--green-gradient);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">/* сетка карточек */</p>
-<p class="p1">.cards-grid {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>display: grid;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>grid-template-columns: 1fr 1fr;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>gap: 8px;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.card {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>position: relative;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border-radius: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border: 1px solid rgba(0,119,96,0.25);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: #f7faf9;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>padding: 8px 8px 10px 8px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>overflow: hidden;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>transition: transform 0.12s, box-shadow 0.12s, border-color 0.12s, background 0.12s;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.card:hover {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>transform: translateY(-1px);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>box-shadow: 0 8px 16px rgba(0,119,96,0.15);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border-color: var(--green-border);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: #f2fbf6;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.card.done {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border-color: var(--green-accent);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>box-shadow: 0 6px 14px rgba(0,119,96,0.18);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: #e7f7ee;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.card-title {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-size: 12px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>color: var(--text-dark);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>margin-bottom: 4px;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.card-tag {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>display: inline-block;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>padding: 2px 6px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border-radius: 999px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-size: 9px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>color: var(--green-accent);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: rgba(0,119,96,0.06);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.card-status {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>right: 6px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>bottom: 6px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-size: 9px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>color: var(--muted);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.card-status::before {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>content: '';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>display: inline-block;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>width: 7px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>height: 7px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border-radius: 50%;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>margin-right: 3px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: #c4d4ce;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.card.done .card-status {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>color: var(--green-accent);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.card.done .card-status::before {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: #19a86e;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">/* модалка */</p>
-<p class="p1">.modal {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>position: absolute;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>inset: 0;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: rgba(0,0,0,0.35);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>display: none;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>align-items: center;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>justify-content: center;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>z-index: 10;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.modal-inner {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>width: 92%;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>max-width: 520px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: #ffffff;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border-radius: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border: 1px solid var(--green-border);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>box-shadow: 0 24px 52px rgba(0,119,96,0.32);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>padding: 12px 16px 14px 16px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-size: 12px;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.modal-header {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>justify-content: space-between;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>align-items: flex-start;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>gap: 10px;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.modal-title-block {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>flex: 1;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.modal-title {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-size: 14px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-weight: 700;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>color: var(--green-accent);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.modal-chip {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>margin-top: 3px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>display: inline-block;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>padding: 2px 7px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border-radius: 999px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border: 1px solid rgba(0,119,96,0.25);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-size: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>color: var(--muted);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.modal-close {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border-radius: 50%;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>width: 22px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>height: 22px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border: 1px solid rgba(0,0,0,0.15);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: #ffffff;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>cursor: pointer;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-size: 13px;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.modal-body {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>margin-top: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>line-height: 1.4;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>color: var(--text-dark);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.modal-body p {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>margin: 0 0 6px 0;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.modal-body p:last-child {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>margin-bottom: 0;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">/* подсвеченный фрагмент */</p>
-<p class="p1">.highlight {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border-left: 2px solid var(--green-accent);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>padding-left: 6px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>margin-top: 4px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-size: 11px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>color: var(--muted);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">/* кнопки внизу модалки */</p>
-<p class="p1">.modal-actions {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>margin-top: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>display: flex;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>justify-content: flex-end;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>gap: 8px;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.btn {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-family: 'Montserrat', sans-serif;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border-radius: 16px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>padding: 5px 14px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-size: 11px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-weight: 600;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border: none;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>cursor: pointer;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.btn-main {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: var(--green-gradient);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>color: #ffffff;</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">.btn-secondary {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: #ffffff;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>color: var(--green-accent);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border: 1px solid var(--green-accent);</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">/* финальный блок */</p>
-<p class="p1">.final-note {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>margin-top: 10px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>padding: 8px 10px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border-radius: 8px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>background: #f0faf4;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>border: 1px solid rgba(0,119,96,0.2);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>font-size: 11px;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>color: var(--text-dark);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>display: none;</p>
-<p class="p1">}</p>
-<p class="p1">&lt;/style&gt;</p>
-<p class="p1">&lt;/head&gt;</p>
-<p class="p1">&lt;body&gt;</p>
-<p class="p1">&lt;div id="app"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;header&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;h1&gt;Где пригодятся результаты отбора проб&lt;/h1&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="subtitle"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>Нажмите на ситуацию и посмотрите, как реальные данные помогают экологу защищать предприятие.</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/header&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="main"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="progress"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;span id="progress-label"&gt;Открыто ситуаций: 0 из 5&lt;/span&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="progress-bar"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="progress-bar-inner" id="progress-bar-inner"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="cards-grid"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="card" data-key="pec"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-title"&gt;Программа ПЭК&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-tag"&gt;Планирование контроля&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-status"&gt;Не изучено&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="card" data-key="nvoc"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-title"&gt;Плата за НВОС&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-tag"&gt;Деньги и отчеты&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-status"&gt;Не изучено&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="card" data-key="plan"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-title"&gt;Плановая проверка&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-tag"&gt;Инспектор и документы&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-status"&gt;Не изучено&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="card" data-key="complaint"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-title"&gt;Проверка по жалобе&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-tag"&gt;Конфликт с соседями&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-status"&gt;Не изучено&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="card" data-key="incident"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-title"&gt;Инцидент и авария&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-tag"&gt;Фон и ущерб&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="card-status"&gt;Не изучено&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="final-note" id="final-note"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>Вы посмотрели все ключевые ситуации. Теперь вы видите, что результаты отбора проб – это не «цифры для отчета», а доказательства, на которые вы опираетесь в программах, расчетах, проверках и при авариях.</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;!-- модалка с описанием ситуации --&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;div class="modal" id="modal"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;div class="modal-inner"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="modal-header"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;div class="modal-title-block"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="modal-title" id="modal-title"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">          </span>&lt;div class="modal-chip" id="modal-chip"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;button class="modal-close" id="modal-close"&gt;×&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="modal-body" id="modal-body"&gt;&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;div class="modal-actions"&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;button class="btn btn-secondary" id="modal-prev"&gt;Назад&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">        </span>&lt;button class="btn btn-main" id="modal-next"&gt;Дальше&lt;/button&gt;</p>
-<p class="p1"><span class="Apple-converted-space">      </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>&lt;/div&gt;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>&lt;/div&gt;</p>
-<p class="p1">&lt;/div&gt;</p>
-<p class="p2"><br></p>
-<p class="p1">&lt;script&gt;</p>
-<p class="p1">var scenarios = {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>pec: {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>title: 'При разработке и корректировке программы ПЭК',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>chip: 'Программа производственного контроля',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>parts: [</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{</p>
-<p class="p1"><span class="Apple-converted-space">        </span>text: 'Программу ПЭК строят не по ощущениям, а на реальных данных о воздействии. Чем точнее вы отбираете пробы и чем надежнее лабораторные результаты, тем крепче основа для программы.',</p>
-<p class="p1"><span class="Apple-converted-space">        </span>hint: 'На старте карьеры экологи часто «перестраховываются» и закладывают лишние точки и показатели. Качественные данные помогают убрать лишнее и оставить только то, что реально нужно контролировать.'</p>
-<p class="p1"><span class="Apple-converted-space">      </span>},</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{</p>
-<p class="p1"><span class="Apple-converted-space">        </span>text: 'Обоснованная программа снижает риск предписаний и дополнительных требований от надзора. Проверяющий видит, что вы опираетесь на измерения, а не копируете чужие ПЭК и не подменяете контроль формальными актами.',</p>
-<p class="p1"><span class="Apple-converted-space">        </span>hint: 'Здесь результаты отбора проб работают как аргумент: «мы смотрели, вот данные, поэтому программу составили так». Без этих аргументов инспектору проще навязать дополнительные точки и анализы.'</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>]</p>
-<p class="p1"><span class="Apple-converted-space">  </span>},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>nvoc: {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>title: 'При расчете платы за НВОС и отчетности',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>chip: 'Деньги и юридические риски',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>parts: [</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{</p>
-<p class="p1"><span class="Apple-converted-space">        </span>text: 'Результаты анализов лежат в основе расчета платы за НВОС. Если пробы отобраны с нарушениями или лаборатория не аккредитована по нужным показателям, контролер вправе не принять эти данные.',</p>
-<p class="p1"><span class="Apple-converted-space">        </span>hint: 'В этом случае расчет могут пересчитать по нормативам или укрупненным коэффициентам. Для предприятия это почти всегда дороже, чем платить по реальным результатам измерений.'</p>
-<p class="p1"><span class="Apple-converted-space">      </span>},</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{</p>
-<p class="p1"><span class="Apple-converted-space">        </span>text: 'Те же результаты попадают в ежегодный отчет об организации и результатах ПЭК. Недостоверные или неполные данные делают отчет уязвимым на проверке: инспектор легко находит несостыковки и задает вопросы.',</p>
-<p class="p1"><span class="Apple-converted-space">        </span>hint: 'Когда вы продумываете отбор проб, помните: вы работаете не только «на сегодня», но и на будущие проверки отчетности. Хорошие данные один раз снимают много вопросов в будущем.'</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>]</p>
-<p class="p1"><span class="Apple-converted-space">  </span>},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>plan: {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>title: 'При плановой проверке',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>chip: 'Работа с инспектором',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>parts: [</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{</p>
-<p class="p1"><span class="Apple-converted-space">        </span>text: 'При плановой проверке инспектор смотрит не только цифры в протоколе, но и путь, по которому вы к ним пришли. Его интересуют протокол отбора, акт, сведения о лаборатории и точки на плане предприятия.',</p>
-<p class="p1"><span class="Apple-converted-space">        </span>hint: 'Если отбор организован по программе ПЭК, а документы оформлены аккуратно, инспектору сложнее придраться к самим результатам. Он видит, что система контроля на предприятии работает осознанно.'</p>
-<p class="p1"><span class="Apple-converted-space">      </span>},</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{</p>
-<p class="p1"><span class="Apple-converted-space">        </span>text: 'Если документы оформлены с нарушениями или точки в актах не совпадают с программой, инспектор может не засчитать результаты анализов. Тогда итог проверки опирается не на ваши данные, а на формальные расчеты и нормативы.',</p>
-<p class="p1"><span class="Apple-converted-space">        </span>hint: 'В этой ситуации страдает и экология, и экономика: предприятие платит больше, а вы тратите время на переписку и исправление документации вместо развития системы контроля.'</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>]</p>
-<p class="p1"><span class="Apple-converted-space">  </span>},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>complaint: {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>title: 'При внеплановой проверке по жалобе',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>chip: 'Жалобы и защита позиции',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>parts: [</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{</p>
-<p class="p1"><span class="Apple-converted-space">        </span>text: 'Жалоба соседей или другого ведомства часто приводит к внеплановой проверке. В этот момент выигрывает тот, у кого под рукой есть свежие, правильно оформленные результаты измерений по ключевым точкам.',</p>
-<p class="p1"><span class="Apple-converted-space">        </span>hint: 'Если вы можете сразу показать акты отбора, протоколы лаборатории и объяснить, как выбирали точки, ваши слова приобретают вес. Проверяющий видит, что предприятие не прячется от контроля.'</p>
-<p class="p1"><span class="Apple-converted-space">      </span>},</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{</p>
-<p class="p1"><span class="Apple-converted-space">        </span>text: 'Без таких данных любые устные объяснения выглядят неубедительно. Инспектору проще считать, что предприятие нарушает требования, а ответственность придется доказывать уже в другом формате.',</p>
-<p class="p1"><span class="Apple-converted-space">        </span>hint: 'Результаты отбора проб в этой ситуации работают как щит. Они не отменяют проверку, но дают вам аргументы и показывают, что экологическая служба реально ведет контроль, а не только заполняет отчеты.'</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>]</p>
-<p class="p1"><span class="Apple-converted-space">  </span>},</p>
-<p class="p1"><span class="Apple-converted-space">  </span>incident: {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>title: 'При производственных инцидентах',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>chip: 'Аварии и фоновые данные',</p>
-<p class="p1"><span class="Apple-converted-space">    </span>parts: [</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{</p>
-<p class="p1"><span class="Apple-converted-space">        </span>text: 'После разлива, аварийного выброса или другого инцидента важны не только данные «после», но и фон до события. Результаты регулярного мониторинга показывают, каким было состояние среды до аварии.',</p>
-<p class="p1"><span class="Apple-converted-space">        </span>hint: 'Если фонов нет, инспектору и суду проще считать, что все ухудшения связаны с вашим инцидентом. Фоновые данные помогают отделить последствия аварии от уже существующего загрязнения.'</p>
-<p class="p1"><span class="Apple-converted-space">      </span>},</p>
-<p class="p1"><span class="Apple-converted-space">      </span>{</p>
-<p class="p1"><span class="Apple-converted-space">        </span>text: 'От фоновых данных зависят расчет ущерба и размер штрафов. Чем лучше вы документировали состояние воздуха, воды и почвы в обычном режиме, тем точнее можно оценить реальный вклад аварии.',</p>
-<p class="p1"><span class="Apple-converted-space">        </span>hint: 'Регулярный отбор проб в спокойные периоды – это инвестиция в защиту предприятия на случай нештатных ситуаций. В кризисный момент у вас уже есть база, на которую можно опереться.'</p>
-<p class="p1"><span class="Apple-converted-space">      </span>}</p>
-<p class="p1"><span class="Apple-converted-space">    </span>]</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p1">};</p>
-<p class="p2"><br></p>
-<p class="p1">var state = {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>opened: { pec:false, nvoc:false, plan:false, complaint:false, incident:false },</p>
-<p class="p1"><span class="Apple-converted-space">  </span>currentKey: null,</p>
-<p class="p1"><span class="Apple-converted-space">  </span>currentPart: 0</p>
-<p class="p1">};</p>
-<p class="p2"><br></p>
-<p class="p1">var cards = document.querySelectorAll('.card');</p>
-<p class="p1">var modal = document.getElementById('modal');</p>
-<p class="p1">var modalTitle = document.getElementById('modal-title');</p>
-<p class="p1">var modalChip = document.getElementById('modal-chip');</p>
-<p class="p1">var modalBody = document.getElementById('modal-body');</p>
-<p class="p1">var modalClose = document.getElementById('modal-close');</p>
-<p class="p1">var modalPrev = document.getElementById('modal-prev');</p>
-<p class="p1">var modalNext = document.getElementById('modal-next');</p>
-<p class="p1">var progressLabel = document.getElementById('progress-label');</p>
-<p class="p1">var progressBarInner = document.getElementById('progress-bar-inner');</p>
-<p class="p1">var finalNote = document.getElementById('final-note');</p>
-<p class="p2"><br></p>
-<p class="p1">cards.forEach(function(card){</p>
-<p class="p1"><span class="Apple-converted-space">  </span>card.addEventListener('click', function() {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>var key = card.getAttribute('data-key');</p>
-<p class="p1"><span class="Apple-converted-space">    </span>openScenario(key);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>});</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">modalClose.addEventListener('click', function() {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>modal.style.display = 'none';</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">modalPrev.addEventListener('click', function() {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if (!state.currentKey) return;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if (state.currentPart &gt; 0) {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>state.currentPart -= 1;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>renderModal();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">modalNext.addEventListener('click', function() {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if (!state.currentKey) return;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>var parts = scenarios[state.currentKey].parts;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if (state.currentPart &lt; parts.length - 1) {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>state.currentPart += 1;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>renderModal();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>// конец сценария</p>
-<p class="p1"><span class="Apple-converted-space">    </span>state.opened[state.currentKey] = true;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>updateCards();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>updateProgress();</p>
-<p class="p1"><span class="Apple-converted-space">    </span>modal.style.display = 'none';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p1">});</p>
-<p class="p2"><br></p>
-<p class="p1">function openScenario(key) {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>state.currentKey = key;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>state.currentPart = 0;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>renderModal();</p>
-<p class="p1"><span class="Apple-converted-space">  </span>modal.style.display = 'flex';</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">function renderModal() {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>var sc = scenarios[state.currentKey];</p>
-<p class="p1"><span class="Apple-converted-space">  </span>var part = sc.parts[state.currentPart];</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>modalTitle.textContent = sc.title;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>modalChip.textContent = sc.chip;</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>modalBody.innerHTML = '';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>var p1 = document.createElement('p');</p>
-<p class="p1"><span class="Apple-converted-space">  </span>p1.textContent = part.text;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>modalBody.appendChild(p1);</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>if (part.hint) {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>var div = document.createElement('div');</p>
-<p class="p1"><span class="Apple-converted-space">    </span>div.className = 'highlight';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>div.textContent = part.hint;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>modalBody.appendChild(div);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>// кнопки назад/дальше</p>
-<p class="p1"><span class="Apple-converted-space">  </span>if (state.currentPart === 0) {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>modalPrev.disabled = true;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>modalPrev.style.opacity = '0.5';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>modalPrev.disabled = false;</p>
-<p class="p1"><span class="Apple-converted-space">    </span>modalPrev.style.opacity = '1';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>if (state.currentPart === sc.parts.length - 1) {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>modalNext.textContent = 'Закрыть ситуацию';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>modalNext.textContent = 'Дальше';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">function updateCards() {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>cards.forEach(function(card) {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>var key = card.getAttribute('data-key');</p>
-<p class="p1"><span class="Apple-converted-space">    </span>var status = card.querySelector('.card-status');</p>
-<p class="p1"><span class="Apple-converted-space">    </span>if (state.opened[key]) {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>card.classList.add('done');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>status.textContent = 'Просмотрено';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>} else {</p>
-<p class="p1"><span class="Apple-converted-space">      </span>card.classList.remove('done');</p>
-<p class="p1"><span class="Apple-converted-space">      </span>status.textContent = 'Не изучено';</p>
-<p class="p1"><span class="Apple-converted-space">    </span>}</p>
-<p class="p1"><span class="Apple-converted-space">  </span>});</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">function updateProgress() {</p>
-<p class="p1"><span class="Apple-converted-space">  </span>var keys = Object.keys(state.opened);</p>
-<p class="p1"><span class="Apple-converted-space">  </span>var done = keys.filter(function(k){ return state.opened[k]; }).length;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>var total = keys.length;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>progressLabel.textContent = 'Открыто ситуаций: ' + done + ' из ' + total;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>var percent = (done / total) * 100;</p>
-<p class="p1"><span class="Apple-converted-space">  </span>progressBarInner.style.width = percent + '%';</p>
-<p class="p2"><br></p>
-<p class="p1"><span class="Apple-converted-space">  </span>if (done === total) {</p>
-<p class="p1"><span class="Apple-converted-space">    </span>finalNote.style.display = 'block';</p>
-<p class="p1"><span class="Apple-converted-space">  </span>}</p>
-<p class="p1">}</p>
-<p class="p2"><br></p>
-<p class="p1">// инициализация</p>
-<p class="p1">updateCards();</p>
-<p class="p1">updateProgress();</p>
-<p class="p1">&lt;/script&gt;</p>
-<p class="p1">&lt;/body&gt;</p>
-<p class="p1">&lt;/html&gt;</p>
+<div id="app">
+  <header>
+    <h1>Где пригодятся результаты отбора проб</h1>
+    <div class="subtitle">
+      Нажмите на ситуацию и посмотрите, как реальные данные помогают экологу защищать предприятие.
+    </div>
+  </header>
+
+  <div class="main">
+    <div class="progress">
+      <span id="progress-label">Открыто ситуаций: 0 из 5</span>
+      <div class="progress-bar">
+        <div class="progress-bar-inner" id="progress-bar-inner"></div>
+      </div>
+    </div>
+
+    <div class="cards-grid">
+      <div class="card" data-key="pec">
+        <div class="card-title">Программа ПЭК</div>
+        <div class="card-tag">Планирование контроля</div>
+        <div class="card-status">Не изучено</div>
+      </div>
+
+      <div class="card" data-key="nvoc">
+        <div class="card-title">Плата за НВОС</div>
+        <div class="card-tag">Деньги и отчеты</div>
+        <div class="card-status">Не изучено</div>
+      </div>
+
+      <div class="card" data-key="plan">
+        <div class="card-title">Плановая проверка</div>
+        <div class="card-tag">Инспектор и документы</div>
+        <div class="card-status">Не изучено</div>
+      </div>
+
+      <div class="card" data-key="complaint">
+        <div class="card-title">Проверка по жалобе</div>
+        <div class="card-tag">Конфликт с соседями</div>
+        <div class="card-status">Не изучено</div>
+      </div>
+
+      <div class="card" data-key="incident">
+        <div class="card-title">Инцидент и авария</div>
+        <div class="card-tag">Фон и ущерб</div>
+        <div class="card-status">Не изучено</div>
+      </div>
+    </div>
+
+    <div class="final-note" id="final-note">
+      Вы посмотрели все ключевые ситуации. Теперь вы видите, что результаты отбора проб – это не «цифры для отчета», а доказательства, на которые вы опираетесь в программах, расчетах, проверках и при авариях.
+    </div>
+  </div>
+
+  <!-- модалка с описанием ситуации -->
+  <div class="modal" id="modal">
+    <div class="modal-inner">
+      <div class="modal-header">
+        <div class="modal-title-block">
+          <div class="modal-title" id="modal-title"></div>
+          <div class="modal-chip" id="modal-chip"></div>
+        </div>
+        <button class="modal-close" id="modal-close">×</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+      <div class="modal-actions">
+        <button class="btn btn-secondary" id="modal-prev">Назад</button>
+        <button class="btn btn-main" id="modal-next">Дальше</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+var scenarios = {
+  pec: {
+    title: 'При разработке и корректировке программы ПЭК',
+    chip: 'Программа производственного контроля',
+    parts: [
+      {
+        text: 'Программу ПЭК строят не по ощущениям, а на реальных данных о воздействии. Чем точнее вы отбираете пробы и чем надежнее лабораторные результаты, тем крепче основа для программы.',
+        hint: 'На старте карьеры экологи часто «перестраховываются» и закладывают лишние точки и показатели. Качественные данные помогают убрать лишнее и оставить только то, что реально нужно контролировать.'
+      },
+      {
+        text: 'Обоснованная программа снижает риск предписаний и дополнительных требований от надзора. Проверяющий видит, что вы опираетесь на измерения, а не копируете чужие ПЭК и не подменяете контроль формальными актами.',
+        hint: 'Здесь результаты отбора проб работают как аргумент: «мы смотрели, вот данные, поэтому программу составили так». Без этих аргументов инспектору проще навязать дополнительные точки и анализы.'
+      }
+    ]
+  },
+  nvoc: {
+    title: 'При расчете платы за НВОС и отчетности',
+    chip: 'Деньги и юридические риски',
+    parts: [
+      {
+        text: 'Результаты анализов лежат в основе расчета платы за НВОС. Если пробы отобраны с нарушениями или лаборатория не аккредитована по нужным показателям, контролер вправе не принять эти данные.',
+        hint: 'В этом случае расчет могут пересчитать по нормативам или укрупненным коэффициентам. Для предприятия это почти всегда дороже, чем платить по реальным результатам измерений.'
+      },
+      {
+        text: 'Те же результаты попадают в ежегодный отчет об организации и результатах ПЭК. Недостоверные или неполные данные делают отчет уязвимым на проверке: инспектор легко находит несостыковки и задает вопросы.',
+        hint: 'Когда вы продумываете отбор проб, помните: вы работаете не только «на сегодня», но и на будущие проверки отчетности. Хорошие данные один раз снимают много вопросов в будущем.'
+      }
+    ]
+  },
+  plan: {
+    title: 'При плановой проверке',
+    chip: 'Работа с инспектором',
+    parts: [
+      {
+        text: 'При плановой проверке инспектор смотрит не только цифры в протоколе, но и путь, по которому вы к ним пришли. Его интересуют протокол отбора, акт, сведения о лаборатории и точки на плане предприятия.',
+        hint: 'Если отбор организован по программе ПЭК, а документы оформлены аккуратно, инспектору сложнее придраться к самим результатам. Он видит, что система контроля на предприятии работает осознанно.'
+      },
+      {
+        text: 'Если документы оформлены с нарушениями или точки в актах не совпадают с программой, инспектор может не засчитать результаты анализов. Тогда итог проверки опирается не на ваши данные, а на формальные расчеты и нормативы.',
+        hint: 'В этой ситуации страдает и экология, и экономика: предприятие платит больше, а вы тратите время на переписку и исправление документации вместо развития системы контроля.'
+      }
+    ]
+  },
+  complaint: {
+    title: 'При внеплановой проверке по жалобе',
+    chip: 'Жалобы и защита позиции',
+    parts: [
+      {
+        text: 'Жалоба соседей или другого ведомства часто приводит к внеплановой проверке. В этот момент выигрывает тот, у кого под рукой есть свежие, правильно оформленные результаты измерений по ключевым точкам.',
+        hint: 'Если вы можете сразу показать акты отбора, протоколы лаборатории и объяснить, как выбирали точки, ваши слова приобретают вес. Проверяющий видит, что предприятие не прячется от контроля.'
+      },
+      {
+        text: 'Без таких данных любые устные объяснения выглядят неубедительно. Инспектору проще считать, что предприятие нарушает требования, а ответственность придется доказывать уже в другом формате.',
+        hint: 'Результаты отбора проб в этой ситуации работают как щит. Они не отменяют проверку, но дают вам аргументы и показывают, что экологическая служба реально ведет контроль, а не только заполняет отчеты.'
+      }
+    ]
+  },
+  incident: {
+    title: 'При производственных инцидентах',
+    chip: 'Аварии и фоновые данные',
+    parts: [
+      {
+        text: 'После разлива, аварийного выброса или другого инцидента важны не только данные «после», но и фон до события. Результаты регулярного мониторинга показывают, каким было состояние среды до аварии.',
+        hint: 'Если фонов нет, инспектору и суду проще считать, что все ухудшения связаны с вашим инцидентом. Фоновые данные помогают отделить последствия аварии от уже существующего загрязнения.'
+      },
+      {
+        text: 'От фоновых данных зависят расчет ущерба и размер штрафов. Чем лучше вы документировали состояние воздуха, воды и почвы в обычном режиме, тем точнее можно оценить реальный вклад аварии.',
+        hint: 'Регулярный отбор проб в спокойные периоды – это инвестиция в защиту предприятия на случай нештатных ситуаций. В кризисный момент у вас уже есть база, на которую можно опереться.'
+      }
+    ]
+  }
+};
+
+var state = {
+  opened: { pec:false, nvoc:false, plan:false, complaint:false, incident:false },
+  currentKey: null,
+  currentPart: 0
+};
+
+var cards = document.querySelectorAll('.card');
+var modal = document.getElementById('modal');
+var modalTitle = document.getElementById('modal-title');
+var modalChip = document.getElementById('modal-chip');
+var modalBody = document.getElementById('modal-body');
+var modalClose = document.getElementById('modal-close');
+var modalPrev = document.getElementById('modal-prev');
+var modalNext = document.getElementById('modal-next');
+var progressLabel = document.getElementById('progress-label');
+var progressBarInner = document.getElementById('progress-bar-inner');
+var finalNote = document.getElementById('final-note');
+
+cards.forEach(function(card){
+  card.addEventListener('click', function() {
+    var key = card.getAttribute('data-key');
+    openScenario(key);
+  });
+});
+
+modalClose.addEventListener('click', function() {
+  modal.style.display = 'none';
+});
+
+modalPrev.addEventListener('click', function() {
+  if (!state.currentKey) return;
+  if (state.currentPart > 0) {
+    state.currentPart -= 1;
+    renderModal();
+  }
+});
+
+modalNext.addEventListener('click', function() {
+  if (!state.currentKey) return;
+  var parts = scenarios[state.currentKey].parts;
+  if (state.currentPart < parts.length - 1) {
+    state.currentPart += 1;
+    renderModal();
+  } else {
+    // конец сценария
+    state.opened[state.currentKey] = true;
+    updateCards();
+    updateProgress();
+    modal.style.display = 'none';
+  }
+});
+
+function openScenario(key) {
+  state.currentKey = key;
+  state.currentPart = 0;
+  renderModal();
+  modal.style.display = 'flex';
+}
+
+function renderModal() {
+  var sc = scenarios[state.currentKey];
+  var part = sc.parts[state.currentPart];
+
+  modalTitle.textContent = sc.title;
+  modalChip.textContent = sc.chip;
+
+  modalBody.innerHTML = '';
+  var p1 = document.createElement('p');
+  p1.textContent = part.text;
+  modalBody.appendChild(p1);
+
+  if (part.hint) {
+    var div = document.createElement('div');
+    div.className = 'highlight';
+    div.textContent = part.hint;
+    modalBody.appendChild(div);
+  }
+
+  // кнопки назад/дальше
+  if (state.currentPart === 0) {
+    modalPrev.disabled = true;
+    modalPrev.style.opacity = '0.5';
+  } else {
+    modalPrev.disabled = false;
+    modalPrev.style.opacity = '1';
+  }
+
+  if (state.currentPart === sc.parts.length - 1) {
+    modalNext.textContent = 'Закрыть ситуацию';
+  } else {
+    modalNext.textContent = 'Дальше';
+  }
+}
+
+function updateCards() {
+  cards.forEach(function(card) {
+    var key = card.getAttribute('data-key');
+    var status = card.querySelector('.card-status');
+    if (state.opened[key]) {
+      card.classList.add('done');
+      status.textContent = 'Просмотрено';
+    } else {
+      card.classList.remove('done');
+      status.textContent = 'Не изучено';
+    }
+  });
+}
+
+function updateProgress() {
+  var keys = Object.keys(state.opened);
+  var done = keys.filter(function(k){ return state.opened[k]; }).length;
+  var total = keys.length;
+  progressLabel.textContent = 'Открыто ситуаций: ' + done + ' из ' + total;
+  var percent = (done / total) * 100;
+  progressBarInner.style.width = percent + '%';
+
+  if (done === total) {
+    finalNote.style.display = 'block';
+  }
+}
+
+// инициализация
+updateCards();
+updateProgress();
+</script>
 </body>
 </html>
