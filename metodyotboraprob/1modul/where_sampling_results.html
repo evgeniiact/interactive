@@ -1,323 +1,425 @@
 <!doctype html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>lab-results-interactive</title>
-  <style>
-    :root {
-      --bg: #ffffff;
-      --card: #f4faf6;
-      --card-active: #e6f4ea;
-      --border: #cfe3d6;
-      --text: #183126;
-      --muted: #4b6758;
-      --accent: #2f7d57;
-      --accent-dark: #256447;
-      --overlay: rgba(17, 39, 28, 0.34);
-      --shadow: 0 10px 28px rgba(39, 84, 58, 0.12);
-      --radius: 18px;
-    }
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<title>lab-results-interactive</title>
+<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #ffffff;
+  --surface: #f5fbf7;
+  --surface-2: #eef8f2;
+  --line: rgba(0,119,96,0.18);
+  --line-strong: rgba(0,119,96,0.32);
+  --text: #20312b;
+  --muted: #5c756c;
+  --accent: #007760;
+  --accent-2: #19a86e;
+  --accent-soft: rgba(25,168,110,0.10);
+  --shadow: 0 14px 32px rgba(0,119,96,0.12);
+  --shadow-strong: 0 24px 56px rgba(0,119,96,0.18);
+}
 
-    * { box-sizing: border-box; }
+* { box-sizing: border-box; }
+html, body { margin: 0; padding: 0; background: #ffffff; }
+body {
+  font-family: 'Satoshi', Arial, sans-serif;
+  color: var(--text);
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  min-height: 100vh;
+}
 
-    html, body {
-      margin: 0;
-      width: 100%;
-      min-height: 100%;
-      background: var(--bg);
-      font-family: Inter, Arial, sans-serif;
-      color: var(--text);
-    }
+#app {
+  position: relative;
+  width: 560px;
+  height: 800px;
+  background: var(--bg);
+  overflow: hidden;
+}
 
-    body {
-      display: flex;
-      align-items: flex-start;
-      justify-content: center;
-      padding: 12px;
-    }
+.panel {
+  position: absolute;
+  inset: 0;
+  padding: 28px 22px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 12px;
+}
 
-    .app {
-      width: 560px;
-      height: 800px;
-      min-width: 560px;
-      max-width: 560px;
-      min-height: 800px;
-      max-height: 800px;
-      background: #fff;
-      overflow: hidden;
-      position: relative;
-    }
+.info-btn {
+  position: relative;
+  width: 100%;
+  min-height: 112px;
+  border: 1px solid var(--line);
+  border-radius: 22px;
+  background:
+    linear-gradient(180deg, rgba(255,255,255,0.96), rgba(245,251,247,0.98)),
+    linear-gradient(135deg, rgba(25,168,110,0.05), rgba(0,119,96,0.08));
+  box-shadow: var(--shadow);
+  padding: 18px 18px 18px 20px;
+  text-align: left;
+  cursor: pointer;
+  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
+}
 
-    .panel {
-      width: 100%;
-      height: 100%;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-      padding: 12px;
-    }
+.info-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 18px 38px rgba(0,119,96,0.16);
+  border-color: var(--line-strong);
+}
 
-    .card-btn {
-      width: 100%;
-      min-height: 108px;
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      background: var(--card);
-      color: var(--text);
-      text-align: left;
-      padding: 18px 20px;
-      font-size: 21px;
-      line-height: 1.2;
-      font-weight: 700;
-      display: flex;
-      align-items: center;
-      justify-content: flex-start;
-      transition: background-color .18s ease, border-color .18s ease, transform .18s ease, box-shadow .18s ease;
-      box-shadow: 0 3px 10px rgba(39, 84, 58, 0.04);
-    }
+.info-btn:active {
+  transform: translateY(0);
+}
 
-    .card-btn:hover {
-      background: #eef8f1;
-      border-color: #b8d3c1;
-      transform: translateY(-1px);
-      box-shadow: var(--shadow);
-    }
+.info-btn.active {
+  border-color: rgba(0,119,96,0.42);
+  background:
+    linear-gradient(180deg, rgba(242,252,247,0.98), rgba(232,248,239,0.98)),
+    linear-gradient(135deg, rgba(25,168,110,0.08), rgba(0,119,96,0.10));
+}
 
-    .card-btn:active {
-      transform: translateY(0);
-    }
+.info-btn::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 16px;
+  bottom: 16px;
+  width: 4px;
+  border-radius: 4px;
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+  opacity: 0.85;
+}
 
-    .card-btn.is-active {
-      background: var(--card-active);
-      border-color: #9fc8ad;
-      box-shadow: var(--shadow);
-    }
+.btn-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
 
-    .overlay {
-      position: absolute;
-      inset: 0;
-      background: var(--overlay);
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .2s ease;
-    }
+.btn-title {
+  font-size: 20px;
+  line-height: 1.1;
+  font-weight: 700;
+  color: var(--accent);
+}
 
-    .overlay.is-open {
-      opacity: 1;
-      pointer-events: auto;
-    }
+.btn-icon {
+  width: 38px;
+  height: 38px;
+  border-radius: 999px;
+  flex: 0 0 auto;
+  display: grid;
+  place-items: center;
+  color: var(--accent);
+  background: var(--accent-soft);
+  border: 1px solid rgba(0,119,96,0.10);
+  transition: transform 180ms ease, background 180ms ease;
+}
 
-    .modal {
-      position: absolute;
-      left: 50%;
-      top: 50%;
-      transform: translate(-50%, -48%);
-      width: calc(100% - 36px);
-      max-width: 524px;
-      max-height: 690px;
-      background: #ffffff;
-      border: 1px solid #d6e7dc;
-      border-radius: 22px;
-      box-shadow: 0 18px 48px rgba(18, 45, 31, 0.22);
-      padding: 20px 20px 18px;
-      opacity: 0;
-      pointer-events: none;
-      transition: opacity .2s ease, transform .2s ease;
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      gap: 12px;
-    }
+.info-btn.active .btn-icon {
+  transform: rotate(45deg);
+  background: rgba(25,168,110,0.16);
+}
 
-    .modal.is-open {
-      opacity: 1;
-      pointer-events: auto;
-      transform: translate(-50%, -50%);
-    }
+.btn-note {
+  margin-top: 10px;
+  font-size: 14px;
+  line-height: 1.35;
+  color: var(--muted);
+  max-width: 420px;
+}
 
-    .modal-head {
-      display: flex;
-      align-items: flex-start;
-      justify-content: space-between;
-      gap: 12px;
-    }
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: rgba(12, 34, 28, 0.30);
+  backdrop-filter: blur(5px);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 22px;
+}
 
-    .modal-title {
-      margin: 0;
-      font-size: 22px;
-      line-height: 1.2;
-      font-weight: 800;
-      color: var(--accent-dark);
-      max-width: 420px;
-    }
+.overlay.open {
+  display: flex;
+  animation: fadeIn 180ms ease;
+}
 
-    .close-btn {
-      flex: 0 0 auto;
-      width: 38px;
-      height: 38px;
-      border-radius: 999px;
-      border: 1px solid #d4e2d8;
-      background: #f8fbf9;
-      font-size: 24px;
-      line-height: 1;
-      color: var(--muted);
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-    }
+.popup {
+  width: 100%;
+  max-width: 476px;
+  min-height: 320px;
+  max-height: 640px;
+  background: #ffffff;
+  border: 1px solid rgba(0,119,96,0.18);
+  border-radius: 26px;
+  box-shadow: var(--shadow-strong);
+  padding: 22px 22px 18px;
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  animation: riseIn 220ms ease;
+}
 
-    .close-btn:hover {
-      background: #eef6f1;
-      color: var(--accent-dark);
-    }
+.popup-text,
+.popup-risk {
+  max-height: 220px;
+  overflow-y: auto;
+}
 
-    .modal-body {
-      overflow: auto;
-      padding-right: 6px;
-    }
+.popup-close {
+  position: absolute;
+  right: 16px;
+  top: 16px;
+  width: 38px;
+  height: 38px;
+  border: 1px solid rgba(0,119,96,0.14);
+  border-radius: 999px;
+  background: #ffffff;
+  color: var(--accent);
+  font-size: 20px;
+  line-height: 1;
+  cursor: pointer;
+}
 
-    .modal-body p {
-      margin: 0 0 12px;
-      font-size: 17px;
-      line-height: 1.5;
-      color: var(--text);
-    }
+.popup-kicker {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  width: fit-content;
+  padding: 6px 10px;
+  border-radius: 999px;
+  background: var(--surface);
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+}
 
-    .modal-body p:last-child {
-      margin-bottom: 0;
-    }
+.popup-kicker::before {
+  content: '';
+  width: 8px;
+  height: 8px;
+  border-radius: 999px;
+  background: linear-gradient(180deg, var(--accent-2), var(--accent));
+}
 
-    .modal-body::-webkit-scrollbar {
-      width: 8px;
-    }
+.popup-title {
+  margin-top: 14px;
+  padding-right: 46px;
+  font-size: 24px;
+  line-height: 1.15;
+  font-weight: 700;
+  color: var(--accent);
+}
 
-    .modal-body::-webkit-scrollbar-thumb {
-      background: #c8dbcf;
-      border-radius: 999px;
-    }
-  </style>
+.popup-text {
+  margin-top: 14px;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.popup-risk {
+  margin-top: 16px;
+  padding: 14px 16px;
+  border-radius: 18px;
+  background: var(--surface-2);
+  border: 1px solid rgba(0,119,96,0.10);
+}
+
+.popup-risk-title {
+  font-size: 12px;
+  line-height: 1.2;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: var(--muted);
+}
+
+.popup-risk-text {
+  margin-top: 8px;
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--text);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes riseIn {
+  from { opacity: 0; transform: translateY(14px) scale(0.985); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+</style>
 </head>
 <body>
-  <div class="app" aria-label="Интерактив о значении результатов лабораторных исследований">
+  <div id="app">
     <div class="panel">
-      <button class="card-btn" data-key="pek">При разработке и корректировке программы ПЭК</button>
-      <button class="card-btn" data-key="fees">При расчете платы за негативное воздействие и отчетности</button>
-      <button class="card-btn" data-key="planned">При плановой проверке</button>
-      <button class="card-btn" data-key="complaint">При внеплановой проверке по жалобе</button>
-      <button class="card-btn" data-key="incident">При производственных инцидентах</button>
+      <button class="info-btn" data-key="pec" aria-label="Программа ПЭК">
+        <div class="btn-top">
+          <div class="btn-title">Программа ПЭК</div>
+          <div class="btn-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="btn-note">Помогает обосновать точки, показатели и частоту контроля.</div>
+      </button>
+
+      <button class="info-btn" data-key="nvos" aria-label="Плата за НВОС и отчетность">
+        <div class="btn-top">
+          <div class="btn-title">Плата за НВОС</div>
+          <div class="btn-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="btn-note">Влияет на расчеты, отчетность и устойчивость данных на проверке.</div>
+      </button>
+
+      <button class="info-btn" data-key="plan" aria-label="Плановая проверка">
+        <div class="btn-top">
+          <div class="btn-title">Плановая проверка</div>
+          <div class="btn-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="btn-note">Инспектор оценивает не только цифры, но и путь их получения.</div>
+      </button>
+
+      <button class="info-btn" data-key="complaint" aria-label="Проверка по жалобе">
+        <div class="btn-top">
+          <div class="btn-title">Проверка по жалобе</div>
+          <div class="btn-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="btn-note">Свежие данные помогают быстро подтвердить позицию предприятия.</div>
+      </button>
+
+      <button class="info-btn" data-key="incident" aria-label="Инцидент и авария">
+        <div class="btn-top">
+          <div class="btn-title">Инцидент и авария</div>
+          <div class="btn-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+              <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+              <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="btn-note">Фоновые измерения помогают точнее оценить последствия аварии.</div>
+      </button>
     </div>
 
-    <div class="overlay" id="overlay"></div>
-
-    <div class="modal" id="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div class="modal-head">
-        <h2 class="modal-title" id="modalTitle"></h2>
-        <button class="close-btn" id="closeBtn" aria-label="Закрыть окно">×</button>
+    <div class="overlay" id="overlay" aria-hidden="true">
+      <div class="popup" role="dialog" aria-modal="true" aria-labelledby="popup-title">
+        <button class="popup-close" id="popupClose" aria-label="Закрыть">×</button>
+        <div class="popup-kicker">Где пригодятся результаты отбора проб</div>
+        <div class="popup-title" id="popup-title"></div>
+        <div class="popup-text" id="popup-text"></div>
+        <div class="popup-risk">
+          <div class="popup-risk-title">Если данных нет или они слабо оформлены</div>
+          <div class="popup-risk-text" id="popup-risk"></div>
+        </div>
       </div>
-      <div class="modal-body" id="modalBody"></div>
     </div>
   </div>
 
-  <script>
-    const content = {
-      pek: {
-        title: 'При разработке и корректировке программы ПЭК',
-        text: [
-          'Программу ПЭК составляют под конкретный объект. Для этого используют данные инвентаризации, сведения о технологии, информацию о сырье и оборудовании, а также результаты предыдущего контроля.',
-          'Измерения помогают понять, какие вещества и факторы надо контролировать, где отбирать пробы и как часто проводить контроль.',
-          'Если пробы отобраны грамотно, а результаты оформлены без ошибок, программу легче обосновать. Тогда ниже риск замечаний, предписаний и требований включить лишние точки или показатели.'
-        ]
-      },
-      fees: {
-        title: 'При расчете платы за негативное воздействие и отчетности',
-        text: [
-          'Результаты анализов используют не только для внутреннего контроля. Они нужны и для расчетов, и для отчетных документов.',
-          'Важно не просто получить цифры, а подтвердить, как именно их получили. Для этого должны быть правильно выбраны точки отбора, соблюден порядок отбора проб, оформлены акты и протоколы, а лаборатория должна иметь аккредитацию по нужным показателям.',
-          'Если эти условия не выполнены, результаты могут признать ненадежными. Тогда предприятие теряет сильную доказательную базу при защите расчетов и отчетности.'
-        ]
-      },
-      planned: {
-        title: 'При плановой проверке',
-        text: [
-          'На плановой проверке инспектор смотрит не только итоговые значения. Он проверяет всю цепочку получения результата.',
-          'Ему важно, где отбирали пробу, совпадает ли точка с программой ПЭК, кто выполнял отбор, как оформлены акт и протокол, какая лаборатория проводила анализ и входит ли нужный показатель в ее область аккредитации.',
-          'Если в этой цепочке есть ошибки, результаты могут не принять как надлежащее подтверждение. Поэтому для эколога важны не только анализы, но и вся сопроводительная документация.'
-        ]
-      },
-      complaint: {
-        title: 'При внеплановой проверке по жалобе',
-        text: [
-          'Внеплановая проверка часто начинается без запаса времени. Жалоба жителей, организаций или органов власти может потребовать быстро показать, что контроль ведется регулярно.',
-          'Если у эколога на руках есть свежие измерения, акты отбора проб, протоколы и сведения о лаборатории, он может сразу подтвердить, что предприятие не действует вслепую.',
-          'Это не отменяет проверку, но делает позицию предприятия устойчивее. Если таких данных нет, объяснения выглядят слабо.'
-        ]
-      },
-      incident: {
-        title: 'При производственных инцидентах',
-        text: [
-          'После разлива, аварийного выброса или другой нештатной ситуации особенно важны фоновые данные. Они показывают, в каком состоянии были воздух, вода или почва до инцидента.',
-          'Без таких данных трудно отделить последствия аварии от того воздействия, которое уже существовало раньше.',
-          'Если регулярный мониторинг выстроен правильно, у предприятия есть точка отсчета. На ее основе проще оценить последствия, рассчитать ущерб и снизить риск завышенных выводов со стороны проверяющих.'
-        ]
-      }
-    };
+<script>
+const data = {
+  pec: {
+    title: 'При разработке и корректировке программы ПЭК',
+    text: 'Программу ПЭК составляют под конкретный объект. Для этого используют инвентаризацию источников, сведения о технологии, результаты предыдущего контроля. Надежные измерения помогают выбрать реальные точки, показатели и периодичность, а не переписывать программу после замечаний.',
+    risk: 'Если измерения случайные или слабо оформлены, программу приходится закладывать с большим запасом и чаще корректировать по требованию надзора.'
+  },
+  nvos: {
+    title: 'При расчете платы за НВОС и отчетности',
+    text: 'Результаты анализов используют для расчета платы за НВОС и в отчете о ПЭК. Чтобы данные приняли, важно, как их получили: кто отбирал пробу, по какой методике работали, есть ли у лаборатории аккредитация по нужным показателям, корректно ли оформлены акты и протоколы.',
+    risk: 'Если требования не соблюдены, контролер может не учесть результаты и опереться на нормативы. Платежи вырастут, а отчет станет уязвимым на проверке.'
+  },
+  plan: {
+    title: 'При плановой проверке',
+    text: 'На плановой проверке инспектор смотрит не только итоговые цифры. Его интересует вся цепочка: соответствует ли точка программе ПЭК, совпадают ли документы между собой, кто и как отбирал пробу, какая лаборатория проводила анализ.',
+    risk: 'Если в этой цепочке есть разрывы или противоречия, результаты анализов могут не принять в качестве надежного подтверждения.'
+  },
+  complaint: {
+    title: 'При внеплановой проверке по жалобе',
+    text: 'При жалобе у предприятия мало времени на подготовку. Свежие, правильно оформленные измерения помогают сразу показать, что контроль ведется регулярно и работа идет в пределах установленных норм.',
+    risk: 'Если таких данных нет, позицию приходится защищать устно. Это выглядит слабо и почти не влияет на выводы проверяющих.'
+  },
+  incident: {
+    title: 'При производственных инцидентах',
+    text: 'После разлива, аварийного выброса или другой нештатной ситуации особенно важны фоновые данные. Они показывают, каким было состояние среды до инцидента, и помогают отделить новое загрязнение от уже существующего.',
+    risk: 'Без фоновых измерений сложнее обосновать масштаб последствий и защитить предприятие от завышенных расчетов ущерба.'
+  }
+};
 
-    const buttons = Array.from(document.querySelectorAll('.card-btn'));
-    const overlay = document.getElementById('overlay');
-    const modal = document.getElementById('modal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalBody = document.getElementById('modalBody');
-    const closeBtn = document.getElementById('closeBtn');
+const buttons = Array.from(document.querySelectorAll('.info-btn'));
+const overlay = document.getElementById('overlay');
+const popupTitle = document.getElementById('popup-title');
+const popupText = document.getElementById('popup-text');
+const popupRisk = document.getElementById('popup-risk');
+const popupClose = document.getElementById('popupClose');
+let activeKey = null;
 
-    let activeKey = null;
+function closePopup() {
+  activeKey = null;
+  overlay.classList.remove('open');
+  overlay.setAttribute('aria-hidden', 'true');
+  buttons.forEach(btn => btn.classList.remove('active'));
+}
 
-    function renderContent(key) {
-      const item = content[key];
-      modalTitle.textContent = item.title;
-      modalBody.innerHTML = item.text.map(par => `<p>${par}</p>`).join('');
+function openPopup(key) {
+  const item = data[key];
+  if (!item) return;
+  activeKey = key;
+  popupTitle.textContent = item.title;
+  popupText.textContent = item.text;
+  popupRisk.textContent = item.risk;
+  overlay.classList.add('open');
+  overlay.setAttribute('aria-hidden', 'false');
+  buttons.forEach(btn => btn.classList.toggle('active', btn.dataset.key === key));
+}
+
+buttons.forEach(btn => {
+  btn.addEventListener('click', () => {
+    const key = btn.dataset.key;
+    if (activeKey === key) {
+      closePopup();
+    } else {
+      openPopup(key);
     }
+  });
+});
 
-    function setActiveButton(key) {
-      buttons.forEach(btn => {
-        btn.classList.toggle('is-active', btn.dataset.key === key);
-      });
-    }
+popupClose.addEventListener('click', closePopup);
+overlay.addEventListener('click', (e) => {
+  if (e.target === overlay) closePopup();
+});
 
-    function openModal(key) {
-      activeKey = key;
-      renderContent(key);
-      setActiveButton(key);
-      overlay.classList.add('is-open');
-      modal.classList.add('is-open');
-    }
-
-    function closeModal() {
-      activeKey = null;
-      setActiveButton(null);
-      overlay.classList.remove('is-open');
-      modal.classList.remove('is-open');
-    }
-
-    buttons.forEach(btn => {
-      btn.addEventListener('click', () => {
-        const key = btn.dataset.key;
-        if (activeKey === key) {
-          closeModal();
-          return;
-        }
-        openModal(key);
-      });
-    });
-
-    closeBtn.addEventListener('click', closeModal);
-    overlay.addEventListener('click', closeModal);
-
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape' && activeKey) {
-        closeModal();
-      }
-    });
-  </script>
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') closePopup();
+});
+</script>
 </body>
 </html>
