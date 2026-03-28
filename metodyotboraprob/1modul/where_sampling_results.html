@@ -1,425 +1,499 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
-<title>lab-results-interactive</title>
-<link href="https://api.fontshare.com/v2/css?f[]=satoshi@400,500,700&display=swap" rel="stylesheet">
-<style>
-:root {
-  --bg: #ffffff;
-  --surface: #f5fbf7;
-  --surface-2: #eef8f2;
-  --line: rgba(0,119,96,0.18);
-  --line-strong: rgba(0,119,96,0.32);
-  --text: #20312b;
-  --muted: #5c756c;
-  --accent: #007760;
-  --accent-2: #19a86e;
-  --accent-soft: rgba(25,168,110,0.10);
-  --shadow: 0 14px 32px rgba(0,119,96,0.12);
-  --shadow-strong: 0 24px 56px rgba(0,119,96,0.18);
-}
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Интерактив ПЭК</title>
+  <style>
+    :root {
+      --bg: #ffffff;
+      --card: #f4faf6;
+      --card-hover: #ecf7f0;
+      --card-active: #dff0e5;
+      --text: #173326;
+      --muted: #4b6a59;
+      --border: #cfe2d5;
+      --accent: #2f7d57;
+      --accent-dark: #226546;
+      --shadow: 0 14px 40px rgba(20, 54, 36, 0.10);
+      --overlay: rgba(20, 36, 28, 0.16);
+      --radius: 22px;
+      --radius-sm: 16px;
+      --transition: 180ms ease;
+    }
 
-* { box-sizing: border-box; }
-html, body { margin: 0; padding: 0; background: #ffffff; }
-body {
-  font-family: 'Satoshi', Arial, sans-serif;
-  color: var(--text);
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  min-height: 100vh;
-}
+    * {
+      box-sizing: border-box;
+    }
 
-#app {
-  position: relative;
-  width: 560px;
-  height: 800px;
-  background: var(--bg);
-  overflow: hidden;
-}
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      background: #ffffff;
+      font-family: Inter, Arial, sans-serif;
+      color: var(--text);
+    }
 
-.panel {
-  position: absolute;
-  inset: 0;
-  padding: 28px 22px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  gap: 12px;
-}
+    body {
+      display: grid;
+      place-items: start center;
+      min-height: 100vh;
+      padding: 16px;
+    }
 
-.info-btn {
-  position: relative;
-  width: 100%;
-  min-height: 112px;
-  border: 1px solid var(--line);
-  border-radius: 22px;
-  background:
-    linear-gradient(180deg, rgba(255,255,255,0.96), rgba(245,251,247,0.98)),
-    linear-gradient(135deg, rgba(25,168,110,0.05), rgba(0,119,96,0.08));
-  box-shadow: var(--shadow);
-  padding: 18px 18px 18px 20px;
-  text-align: left;
-  cursor: pointer;
-  transition: transform 180ms ease, box-shadow 180ms ease, border-color 180ms ease, background 180ms ease;
-}
+    .interactive {
+      position: relative;
+      width: 560px;
+      height: 800px;
+      background: var(--bg);
+      overflow: hidden;
+      border-radius: 24px;
+    }
 
-.info-btn:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 18px 38px rgba(0,119,96,0.16);
-  border-color: var(--line-strong);
-}
+    .stack {
+      position: absolute;
+      inset: 0;
+      padding: 18px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
 
-.info-btn:active {
-  transform: translateY(0);
-}
+    .card-btn {
+      appearance: none;
+      border: 1px solid var(--border);
+      background: var(--card);
+      color: var(--text);
+      border-radius: var(--radius);
+      padding: 18px 20px;
+      text-align: left;
+      cursor: pointer;
+      min-height: 92px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 14px;
+      transition:
+        background var(--transition),
+        border-color var(--transition),
+        transform var(--transition),
+        box-shadow var(--transition);
+      box-shadow: 0 4px 14px rgba(35, 85, 59, 0.04);
+    }
 
-.info-btn.active {
-  border-color: rgba(0,119,96,0.42);
-  background:
-    linear-gradient(180deg, rgba(242,252,247,0.98), rgba(232,248,239,0.98)),
-    linear-gradient(135deg, rgba(25,168,110,0.08), rgba(0,119,96,0.10));
-}
+    .card-btn:hover {
+      background: var(--card-hover);
+      border-color: #bdd6c6;
+      transform: translateY(-1px);
+    }
 
-.info-btn::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 16px;
-  bottom: 16px;
-  width: 4px;
-  border-radius: 4px;
-  background: linear-gradient(180deg, var(--accent-2), var(--accent));
-  opacity: 0.85;
-}
+    .card-btn:active {
+      transform: translateY(0);
+    }
 
-.btn-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-}
+    .card-btn.is-active {
+      background: var(--card-active);
+      border-color: #9dc8ad;
+      box-shadow: 0 10px 20px rgba(35, 85, 59, 0.08);
+    }
 
-.btn-title {
-  font-size: 20px;
-  line-height: 1.1;
-  font-weight: 700;
-  color: var(--accent);
-}
+    .card-btn__text {
+      display: flex;
+      flex-direction: column;
+      gap: 6px;
+      min-width: 0;
+    }
 
-.btn-icon {
-  width: 38px;
-  height: 38px;
-  border-radius: 999px;
-  flex: 0 0 auto;
-  display: grid;
-  place-items: center;
-  color: var(--accent);
-  background: var(--accent-soft);
-  border: 1px solid rgba(0,119,96,0.10);
-  transition: transform 180ms ease, background 180ms ease;
-}
+    .card-btn__title {
+      font-size: 20px;
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: -0.01em;
+    }
 
-.info-btn.active .btn-icon {
-  transform: rotate(45deg);
-  background: rgba(25,168,110,0.16);
-}
+    .card-btn__hint {
+      font-size: 14px;
+      line-height: 1.35;
+      color: var(--muted);
+    }
 
-.btn-note {
-  margin-top: 10px;
-  font-size: 14px;
-  line-height: 1.35;
-  color: var(--muted);
-  max-width: 420px;
-}
+    .card-btn__icon {
+      flex: 0 0 auto;
+      width: 42px;
+      height: 42px;
+      border-radius: 50%;
+      display: grid;
+      place-items: center;
+      background: #ffffff;
+      border: 1px solid #d7e7dc;
+      color: var(--accent);
+    }
 
-.overlay {
-  position: absolute;
-  inset: 0;
-  background: rgba(12, 34, 28, 0.30);
-  backdrop-filter: blur(5px);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  padding: 22px;
-}
+    .modal-layer {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+    }
 
-.overlay.open {
-  display: flex;
-  animation: fadeIn 180ms ease;
-}
+    .modal-layer.is-open {
+      pointer-events: auto;
+    }
 
-.popup {
-  width: 100%;
-  max-width: 476px;
-  min-height: 320px;
-  max-height: 640px;
-  background: #ffffff;
-  border: 1px solid rgba(0,119,96,0.18);
-  border-radius: 26px;
-  box-shadow: var(--shadow-strong);
-  padding: 22px 22px 18px;
-  position: relative;
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  animation: riseIn 220ms ease;
-}
+    .overlay {
+      position: absolute;
+      inset: 0;
+      background: var(--overlay);
+      opacity: 0;
+      transition: opacity var(--transition);
+    }
 
-.popup-text,
-.popup-risk {
-  max-height: 220px;
-  overflow-y: auto;
-}
+    .modal-layer.is-open .overlay {
+      opacity: 1;
+    }
 
-.popup-close {
-  position: absolute;
-  right: 16px;
-  top: 16px;
-  width: 38px;
-  height: 38px;
-  border: 1px solid rgba(0,119,96,0.14);
-  border-radius: 999px;
-  background: #ffffff;
-  color: var(--accent);
-  font-size: 20px;
-  line-height: 1;
-  cursor: pointer;
-}
+    .modal {
+      position: absolute;
+      left: 16px;
+      top: 16px;
+      width: 528px;
+      height: 744px;
+      background: #ffffff;
+      border: 1px solid #d7e7dc;
+      border-radius: 24px;
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(8px) scale(0.985);
+      transition:
+        opacity var(--transition),
+        transform var(--transition);
+    }
 
-.popup-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  width: fit-content;
-  padding: 6px 10px;
-  border-radius: 999px;
-  background: var(--surface);
-  color: var(--muted);
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.01em;
-}
+    .modal-layer.is-open .modal {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
 
-.popup-kicker::before {
-  content: '';
-  width: 8px;
-  height: 8px;
-  border-radius: 999px;
-  background: linear-gradient(180deg, var(--accent-2), var(--accent));
-}
+    .modal__head {
+      flex: 0 0 auto;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+      gap: 16px;
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid #e3efe7;
+      background: #ffffff;
+    }
 
-.popup-title {
-  margin-top: 14px;
-  padding-right: 46px;
-  font-size: 24px;
-  line-height: 1.15;
-  font-weight: 700;
-  color: var(--accent);
-}
+    .modal__title-wrap {
+      min-width: 0;
+    }
 
-.popup-text {
-  margin-top: 14px;
-  font-size: 16px;
-  line-height: 1.5;
-  color: var(--text);
-}
+    .modal__eyebrow {
+      font-size: 12px;
+      line-height: 1.2;
+      font-weight: 700;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 8px;
+    }
 
-.popup-risk {
-  margin-top: 16px;
-  padding: 14px 16px;
-  border-radius: 18px;
-  background: var(--surface-2);
-  border: 1px solid rgba(0,119,96,0.10);
-}
+    .modal__title {
+      margin: 0;
+      font-size: 25px;
+      line-height: 1.14;
+      letter-spacing: -0.02em;
+      font-weight: 800;
+      color: var(--text);
+    }
 
-.popup-risk-title {
-  font-size: 12px;
-  line-height: 1.2;
-  font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  color: var(--muted);
-}
+    .modal__close {
+      appearance: none;
+      border: 1px solid #d7e7dc;
+      background: #f7fbf8;
+      color: var(--accent-dark);
+      width: 44px;
+      height: 44px;
+      border-radius: 50%;
+      cursor: pointer;
+      display: grid;
+      place-items: center;
+      flex: 0 0 auto;
+      transition:
+        background var(--transition),
+        border-color var(--transition),
+        transform var(--transition);
+    }
 
-.popup-risk-text {
-  margin-top: 8px;
-  font-size: 14px;
-  line-height: 1.45;
-  color: var(--text);
-}
+    .modal__close:hover {
+      background: #eef7f1;
+      border-color: #bdd6c6;
+    }
 
-@keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
-}
+    .modal__body {
+      flex: 1 1 auto;
+      overflow-y: auto;
+      padding: 18px 20px 24px;
+      scrollbar-width: thin;
+      scrollbar-color: #b9d2c3 transparent;
+    }
 
-@keyframes riseIn {
-  from { opacity: 0; transform: translateY(14px) scale(0.985); }
-  to { opacity: 1; transform: translateY(0) scale(1); }
-}
-</style>
+    .modal__body::-webkit-scrollbar {
+      width: 8px;
+    }
+
+    .modal__body::-webkit-scrollbar-thumb {
+      background: #bfd6c8;
+      border-radius: 999px;
+    }
+
+    .modal__body p {
+      margin: 0 0 14px;
+      font-size: 16px;
+      line-height: 1.55;
+      color: #204031;
+    }
+
+    .modal__body p:last-child {
+      margin-bottom: 0;
+    }
+
+    .modal__body strong {
+      color: #143325;
+    }
+
+    @media (max-width: 620px) {
+      body {
+        padding: 0;
+      }
+
+      .interactive {
+        width: 100vw;
+        height: 100vh;
+        border-radius: 0;
+      }
+
+      .modal {
+        left: 12px;
+        top: 12px;
+        width: calc(100% - 24px);
+        height: calc(100% - 24px);
+      }
+
+      .stack {
+        padding: 14px;
+      }
+
+      .card-btn {
+        min-height: 88px;
+      }
+
+      .card-btn__title {
+        font-size: 18px;
+      }
+
+      .modal__title {
+        font-size: 22px;
+      }
+
+      .modal__body p {
+        font-size: 15px;
+      }
+    }
+  </style>
 </head>
 <body>
-  <div id="app">
-    <div class="panel">
-      <button class="info-btn" data-key="pec" aria-label="Программа ПЭК">
-        <div class="btn-top">
-          <div class="btn-title">Программа ПЭК</div>
-          <div class="btn-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-        </div>
-        <div class="btn-note">Помогает обосновать точки, показатели и частоту контроля.</div>
+  <div class="interactive" id="interactive">
+    <div class="stack">
+      <button class="card-btn" type="button" data-key="pek">
+        <span class="card-btn__text">
+          <span class="card-btn__title">Разработка и корректировка программы ПЭК</span>
+          <span class="card-btn__hint">Что дают корректные данные для программы контроля</span>
+        </span>
+        <span class="card-btn__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M5 19h14M7 16V8m5 8V5m5 11v-6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </span>
       </button>
 
-      <button class="info-btn" data-key="nvos" aria-label="Плата за НВОС и отчетность">
-        <div class="btn-top">
-          <div class="btn-title">Плата за НВОС</div>
-          <div class="btn-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-        </div>
-        <div class="btn-note">Влияет на расчеты, отчетность и устойчивость данных на проверке.</div>
+      <button class="card-btn" type="button" data-key="nvos">
+        <span class="card-btn__text">
+          <span class="card-btn__title">Расчет платы за НВОС и отчетность</span>
+          <span class="card-btn__hint">Почему важны доказательные результаты измерений</span>
+        </span>
+        <span class="card-btn__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M12 3v18M7 8h7a3 3 0 0 1 0 6H9a3 3 0 0 0 0 6h8" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
       </button>
 
-      <button class="info-btn" data-key="plan" aria-label="Плановая проверка">
-        <div class="btn-top">
-          <div class="btn-title">Плановая проверка</div>
-          <div class="btn-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-        </div>
-        <div class="btn-note">Инспектор оценивает не только цифры, но и путь их получения.</div>
+      <button class="card-btn" type="button" data-key="plan">
+        <span class="card-btn__text">
+          <span class="card-btn__title">Плановая проверка</span>
+          <span class="card-btn__hint">Что инспектор оценивает кроме итоговых цифр</span>
+        </span>
+        <span class="card-btn__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M9 11l3 3L22 4M21 12v7a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V5a1 1 0 0 1 1-1h11" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
       </button>
 
-      <button class="info-btn" data-key="complaint" aria-label="Проверка по жалобе">
-        <div class="btn-top">
-          <div class="btn-title">Проверка по жалобе</div>
-          <div class="btn-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-        </div>
-        <div class="btn-note">Свежие данные помогают быстро подтвердить позицию предприятия.</div>
+      <button class="card-btn" type="button" data-key="complaint">
+        <span class="card-btn__text">
+          <span class="card-btn__title">Внеплановая проверка по жалобе</span>
+          <span class="card-btn__hint">Как быстро подтвердить, что контроль велся системно</span>
+        </span>
+        <span class="card-btn__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
       </button>
 
-      <button class="info-btn" data-key="incident" aria-label="Инцидент и авария">
-        <div class="btn-top">
-          <div class="btn-title">Инцидент и авария</div>
-          <div class="btn-icon" aria-hidden="true">
-            <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
-              <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-              <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-            </svg>
-          </div>
-        </div>
-        <div class="btn-note">Фоновые измерения помогают точнее оценить последствия аварии.</div>
+      <button class="card-btn" type="button" data-key="incident">
+        <span class="card-btn__text">
+          <span class="card-btn__title">Производственные инциденты</span>
+          <span class="card-btn__hint">Зачем нужны фоновые данные до аварийной ситуации</span>
+        </span>
+        <span class="card-btn__icon" aria-hidden="true">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+            <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0zM12 9v4m0 4h.01" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </span>
       </button>
     </div>
 
-    <div class="overlay" id="overlay" aria-hidden="true">
-      <div class="popup" role="dialog" aria-modal="true" aria-labelledby="popup-title">
-        <button class="popup-close" id="popupClose" aria-label="Закрыть">×</button>
-        <div class="popup-kicker">Где пригодятся результаты отбора проб</div>
-        <div class="popup-title" id="popup-title"></div>
-        <div class="popup-text" id="popup-text"></div>
-        <div class="popup-risk">
-          <div class="popup-risk-title">Если данных нет или они слабо оформлены</div>
-          <div class="popup-risk-text" id="popup-risk"></div>
+    <div class="modal-layer" id="modalLayer" aria-hidden="true">
+      <div class="overlay" id="overlay"></div>
+
+      <section class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+        <div class="modal__head">
+          <div class="modal__title-wrap">
+            <div class="modal__eyebrow">Когда это важно</div>
+            <h2 class="modal__title" id="modalTitle"></h2>
+          </div>
+
+          <button class="modal__close" type="button" id="closeModal" aria-label="Закрыть окно">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+              <path d="M18 6L6 18M6 6l12 12" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            </svg>
+          </button>
         </div>
-      </div>
+
+        <div class="modal__body" id="modalBody"></div>
+      </section>
     </div>
   </div>
 
-<script>
-const data = {
-  pec: {
-    title: 'При разработке и корректировке программы ПЭК',
-    text: 'Программу ПЭК составляют под конкретный объект. Для этого используют инвентаризацию источников, сведения о технологии, результаты предыдущего контроля. Надежные измерения помогают выбрать реальные точки, показатели и периодичность, а не переписывать программу после замечаний.',
-    risk: 'Если измерения случайные или слабо оформлены, программу приходится закладывать с большим запасом и чаще корректировать по требованию надзора.'
-  },
-  nvos: {
-    title: 'При расчете платы за НВОС и отчетности',
-    text: 'Результаты анализов используют для расчета платы за НВОС и в отчете о ПЭК. Чтобы данные приняли, важно, как их получили: кто отбирал пробу, по какой методике работали, есть ли у лаборатории аккредитация по нужным показателям, корректно ли оформлены акты и протоколы.',
-    risk: 'Если требования не соблюдены, контролер может не учесть результаты и опереться на нормативы. Платежи вырастут, а отчет станет уязвимым на проверке.'
-  },
-  plan: {
-    title: 'При плановой проверке',
-    text: 'На плановой проверке инспектор смотрит не только итоговые цифры. Его интересует вся цепочка: соответствует ли точка программе ПЭК, совпадают ли документы между собой, кто и как отбирал пробу, какая лаборатория проводила анализ.',
-    risk: 'Если в этой цепочке есть разрывы или противоречия, результаты анализов могут не принять в качестве надежного подтверждения.'
-  },
-  complaint: {
-    title: 'При внеплановой проверке по жалобе',
-    text: 'При жалобе у предприятия мало времени на подготовку. Свежие, правильно оформленные измерения помогают сразу показать, что контроль ведется регулярно и работа идет в пределах установленных норм.',
-    risk: 'Если таких данных нет, позицию приходится защищать устно. Это выглядит слабо и почти не влияет на выводы проверяющих.'
-  },
-  incident: {
-    title: 'При производственных инцидентах',
-    text: 'После разлива, аварийного выброса или другой нештатной ситуации особенно важны фоновые данные. Они показывают, каким было состояние среды до инцидента, и помогают отделить новое загрязнение от уже существующего.',
-    risk: 'Без фоновых измерений сложнее обосновать масштаб последствий и защитить предприятие от завышенных расчетов ущерба.'
-  }
-};
+  <script>
+    const content = {
+      pek: {
+        title: 'При разработке и корректировке программы ПЭК',
+        paragraphs: [
+          'Программу ПЭК составляют под конкретный объект, а не по шаблону. Для этого используют данные инвентаризации источников воздействия, сведения о технологии, сырье, оборудовании и результаты предыдущего производственного контроля.',
+          'Результаты измерений нужны здесь как основание для решений. По ним определяют, какие показатели реально контролировать, где ставить точки отбора проб и как часто проводить контроль.',
+          'Если отбор проб организован корректно, а результаты оформлены без ошибок, программу легче обосновать при проверке. Это снижает риск замечаний, предписаний и требований включить лишние точки или показатели.'
+        ]
+      },
+      nvos: {
+        title: 'При расчете платы за НВОС и отчетности',
+        paragraphs: [
+          'Результаты анализов важны не только для внутреннего контроля. Их используют при расчете платы за негативное воздействие и при подготовке отчетности, поэтому к ним предъявляют формальные требования.',
+          'Важно не просто получить цифры, а подтвердить, как их получили. Для этого нужны корректный отбор проб, акты, протоколы и лаборатория, у которой есть аккредитация по нужным показателям.',
+          'Если данные получены с нарушениями или оформлены слабо, их могут не принять как доказательные. Тогда предприятие теряет сильную позицию при защите расчетов и отчетности.'
+        ]
+      },
+      plan: {
+        title: 'При плановой проверке',
+        paragraphs: [
+          'На плановой проверке инспектор смотрит не только итоговые значения. Он проверяет всю цепочку получения результата.',
+          'Ему важно, где отбирали пробу, совпадает ли точка с программой ПЭК, кто выполнял отбор, как оформлены документы и какая лаборатория проводила анализ.',
+          'Если точки не совпадают с программой, а акты и протоколы оформлены с нарушениями, результаты могут не зачесть. Поэтому для эколога важны не только анализы, но и вся сопроводительная документация.'
+        ]
+      },
+      complaint: {
+        title: 'При внеплановой проверке по жалобе',
+        paragraphs: [
+          'Во внеплановой проверке времени на подготовку почти нет. Если поступила жалоба, экологу нужно быстро показать, что предприятие контролирует воздействие регулярно, а не только в момент конфликта.',
+          'В такой ситуации особенно важны свежие результаты измерений, акты отбора проб, протоколы и сведения о лаборатории. Эти документы показывают, что контроль велся системно и по установленному порядку.',
+          'Если документов нет или они оформлены слабо, устные объяснения работают плохо. В спорной ситуации решают не общие слова, а результаты измерений и документы.'
+        ]
+      },
+      incident: {
+        title: 'При производственных инцидентах',
+        paragraphs: [
+          'После разлива, аварийного выброса или другой нештатной ситуации особенно важны фоновые данные. Они показывают, в каком состоянии были воздух, вода или почва до инцидента.',
+          'Без таких данных трудно отделить последствия аварии от прежнего воздействия объекта. Из-за этого сложнее оценить масштаб изменений, рассчитать ущерб и защитить позицию предприятия.',
+          'Если регулярный мониторинг выстроен правильно, у предприятия есть точка отсчета. Она помогает точнее оценить последствия инцидента и снизить риск завышенных выводов со стороны проверяющих.'
+        ]
+      }
+    };
 
-const buttons = Array.from(document.querySelectorAll('.info-btn'));
-const overlay = document.getElementById('overlay');
-const popupTitle = document.getElementById('popup-title');
-const popupText = document.getElementById('popup-text');
-const popupRisk = document.getElementById('popup-risk');
-const popupClose = document.getElementById('popupClose');
-let activeKey = null;
+    const buttons = Array.from(document.querySelectorAll('.card-btn'));
+    const modalLayer = document.getElementById('modalLayer');
+    const modalTitle = document.getElementById('modalTitle');
+    const modalBody = document.getElementById('modalBody');
+    const closeModalBtn = document.getElementById('closeModal');
+    const overlay = document.getElementById('overlay');
 
-function closePopup() {
-  activeKey = null;
-  overlay.classList.remove('open');
-  overlay.setAttribute('aria-hidden', 'true');
-  buttons.forEach(btn => btn.classList.remove('active'));
-}
+    let activeKey = null;
 
-function openPopup(key) {
-  const item = data[key];
-  if (!item) return;
-  activeKey = key;
-  popupTitle.textContent = item.title;
-  popupText.textContent = item.text;
-  popupRisk.textContent = item.risk;
-  overlay.classList.add('open');
-  overlay.setAttribute('aria-hidden', 'false');
-  buttons.forEach(btn => btn.classList.toggle('active', btn.dataset.key === key));
-}
-
-buttons.forEach(btn => {
-  btn.addEventListener('click', () => {
-    const key = btn.dataset.key;
-    if (activeKey === key) {
-      closePopup();
-    } else {
-      openPopup(key);
+    function renderModal(key) {
+      const item = content[key];
+      modalTitle.textContent = item.title;
+      modalBody.innerHTML = item.paragraphs.map(p => `<p>${p}</p>`).join('');
+      modalBody.scrollTop = 0;
     }
-  });
-});
 
-popupClose.addEventListener('click', closePopup);
-overlay.addEventListener('click', (e) => {
-  if (e.target === overlay) closePopup();
-});
+    function setActiveButton(key) {
+      buttons.forEach(btn => {
+        btn.classList.toggle('is-active', btn.dataset.key === key);
+      });
+    }
 
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') closePopup();
-});
-</script>
+    function openModal(key) {
+      activeKey = key;
+      renderModal(key);
+      setActiveButton(key);
+      modalLayer.classList.add('is-open');
+      modalLayer.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeModal() {
+      activeKey = null;
+      setActiveButton(null);
+      modalLayer.classList.remove('is-open');
+      modalLayer.setAttribute('aria-hidden', 'true');
+    }
+
+    buttons.forEach(btn => {
+      btn.addEventListener('click', () => {
+        const key = btn.dataset.key;
+
+        if (activeKey === key) {
+          closeModal();
+          return;
+        }
+
+        openModal(key);
+      });
+    });
+
+    closeModalBtn.addEventListener('click', closeModal);
+    overlay.addEventListener('click', closeModal);
+
+    document.addEventListener('keydown', e => {
+      if (e.key === 'Escape' && activeKey) {
+        closeModal();
+      }
+    });
+  </script>
 </body>
 </html>
