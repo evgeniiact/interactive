@@ -1,0 +1,703 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<meta name="google" content="notranslate" />
+<title>Определите, требует ли ситуация действий эколога</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-silk: #f3fbf7;
+  --green-accent: #007760;
+  --green-accent-2: #19a86e;
+  --green-gradient: linear-gradient(135deg, #19a86e, #007760);
+  --green-border: #19a86e;
+  --text-dark: #2c2c2c;
+  --muted: #5d6a65;
+  --soft: #e7f6ef;
+  --error: #c0392b;
+  --ok: #1e9150;
+  --warn: #d48a00;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-silk);
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  color: var(--text-dark);
+}
+
+#deck-app {
+  background: #ffffff;
+  border: 1px solid var(--green-border);
+  border-radius: 4px;
+  padding: 16px 18px 20px 18px;
+  width: 100%;
+  max-width: 620px;
+  max-height: 900px;
+  box-shadow: 0 18px 40px rgba(0, 119, 96, 0.16);
+  overflow: hidden;
+}
+
+header {
+  text-align: left;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(0,119,96,0.12);
+  padding-bottom: 8px;
+}
+
+h2 {
+  color: var(--green-accent);
+  font-size: 16px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.deck-subtitle {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-dark);
+  line-height: 1.45;
+}
+
+.wa-cardsdeck {
+  font-size: 12px;
+}
+
+.wa-cardsdeck__stack-wrapper {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-bottom: 14px;
+  gap: 16px;
+}
+
+.wa-cardsdeck__arrow-btn {
+  width: 24px;
+  height: 24px;
+  border-radius: 50%;
+  border: 1px solid rgba(0,0,0,0.12);
+  background: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: 16px;
+  color: #555;
+  transition: 0.2s;
+  user-select: none;
+}
+
+.wa-cardsdeck__arrow-btn:hover {
+  background: #f3fbf7;
+  border-color: var(--green-accent);
+  color: var(--green-accent);
+}
+
+.wa-cardsdeck__stack {
+  position: relative;
+  width: 320px;
+  height: 200px;
+  overflow: hidden;
+}
+
+.wa-cardsdeck__stack-card {
+  position: absolute;
+  top: 12px;
+  left: 0;
+  right: 0;
+  margin: 0 auto;
+  width: 100%;
+  height: 176px;
+  border-radius: 12px;
+  border: 1px solid #dfe8e3;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+  padding: 14px 14px;
+  font-size: 12px;
+  text-align: left;
+  display: flex;
+  align-items: flex-start;
+  justify-content: flex-start;
+  cursor: move;
+  line-height: 1.45;
+}
+
+.wa-cardsdeck__stack-card.bg-1 {
+  transform: translateY(6px) scale(0.98);
+  opacity: 0.6;
+}
+
+.wa-cardsdeck__stack-card.bg-2 {
+  transform: translateY(12px) scale(0.96);
+  opacity: 0.4;
+}
+
+.wa-cardsdeck__stack-card.main {
+  z-index: 3;
+  opacity: 1;
+}
+
+.wa-cardsdeck__stack-empty {
+  width: 320px;
+  height: 176px;
+  border-radius: 12px;
+  border: 1px dashed rgba(0,119,96,0.3);
+  background: #f7faf9;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 12px;
+  color: #777;
+  text-align: center;
+  line-height: 1.45;
+  padding: 16px;
+}
+
+.card-out-up {
+  animation: cardOutUp 0.3s forwards;
+}
+
+.card-in-back {
+  animation: cardInBack 0.3s forwards;
+}
+
+@keyframes cardOutUp {
+  0%   { transform: translateY(0) scale(1); opacity: 1; }
+  40%  { transform: translateY(-28px) scale(1.04); opacity: 1; }
+  100% { transform: translateY(16px) scale(0.96); opacity: 0.4; }
+}
+
+@keyframes cardInBack {
+  0%   { transform: translateY(-24px) scale(1.03); opacity: 0; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+.wa-cardsdeck__columns-wrapper {
+  position: relative;
+}
+
+.wa-cardsdeck__details-popup {
+  position: absolute;
+  left: 50%;
+  top: -4px;
+  transform: translate(-50%, -100%);
+  width: min(92%, 520px);
+  background: #ffffff;
+  border-radius: 8px;
+  border: 1px solid rgba(0,119,96,0.35);
+  box-shadow: 0 10px 26px rgba(0,119,96,0.2);
+  padding: 8px 10px;
+  font-size: 11px;
+  color: var(--text-dark);
+  z-index: 5;
+  line-height: 1.45;
+}
+
+.wa-cardsdeck__details-popup::after {
+  content: "";
+  position: absolute;
+  left: 50%;
+  bottom: -6px;
+  transform: translateX(-50%);
+  border-width: 6px 6px 0 6px;
+  border-style: solid;
+  border-color: rgba(0,119,96,0.35) transparent transparent transparent;
+}
+
+.wa-cardsdeck__columns {
+  margin-top: 4px;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.wa-cardsdeck-column__title {
+  font-size: 11px;
+  letter-spacing: 0.02em;
+  color: #527a6b;
+  margin-bottom: 4px;
+  text-align: center;
+  font-weight: 700;
+  line-height: 1.35;
+}
+
+.wa-cardsdeck-column__body {
+  min-height: 110px;
+  max-height: 240px;
+  padding: 6px;
+  border-radius: 8px;
+  background: #f7faf9;
+  border: 1px dashed rgba(0,119,96,0.25);
+  overflow-y: auto;
+  transition: 0.2s;
+}
+
+.wa-cardsdeck-column__body.drag-over {
+  background: #ecf7f2;
+  border-color: var(--green-accent);
+}
+
+.wa-cardsdeck-column-card {
+  border-radius: 8px;
+  border: 1px solid #e0e0e0;
+  background: #ffffff;
+  font-size: 11px;
+  color: var(--text-dark);
+  box-shadow: 0 3px 10px rgba(0,119,96,0.08);
+  padding: 7px 8px;
+  margin-bottom: 6px;
+  cursor: move;
+  line-height: 1.4;
+  transition: 0.2s;
+}
+
+.wa-cardsdeck-column-card:last-child { margin-bottom: 0; }
+
+.wa-cardsdeck-column-card.correct {
+  border-color: var(--ok);
+  box-shadow: 0 0 0 1px rgba(30,145,80,0.45);
+}
+
+.wa-cardsdeck-column-card.incorrect {
+  border-color: var(--error);
+  box-shadow: 0 0 0 1px rgba(192,57,43,0.4);
+}
+
+.wa-cardsdeck-column-card.partial {
+  border-color: var(--warn);
+  box-shadow: 0 0 0 1px rgba(212,138,0,0.4);
+}
+
+.wa-cardsdeck-column-card.clickable:hover {
+  background: var(--soft);
+}
+
+.wa-cardsdeck__footer {
+  margin-top: 14px;
+  text-align: center;
+}
+
+.wa-cardsdeck__btn-check,
+.wa-cardsdeck__btn-reset {
+  font-family: 'Montserrat', sans-serif;
+  background: var(--green-gradient);
+  border-radius: 18px;
+  padding: 8px 20px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  box-shadow: 0 10px 22px rgba(0,119,96,0.25);
+  border: none;
+  color: #ffffff;
+  cursor: pointer;
+  margin: 0 4px;
+}
+
+.wa-cardsdeck__btn-reset {
+  background: #f0f4f3;
+  color: var(--green-accent);
+  box-shadow: none;
+}
+
+.wa-cardsdeck__btn-check:hover,
+.wa-cardsdeck__btn-reset:hover {
+  transform: translateY(-1px);
+}
+
+.wa-cardsdeck__comment {
+  font-size: 11px;
+  color: var(--text-dark);
+  margin-top: 8px;
+  min-height: 18px;
+  text-align: left;
+  line-height: 1.45;
+}
+
+.wa-cardsdeck__comment_success { color: #007760; }
+.wa-cardsdeck__comment_error { color: #c0392b; }
+
+@media (max-width: 620px) {
+  .wa-cardsdeck__columns {
+    grid-template-columns: 1fr;
+  }
+  .wa-cardsdeck__stack {
+    width: 100%;
+    max-width: 320px;
+  }
+  .wa-cardsdeck__stack-wrapper {
+    gap: 10px;
+  }
+}
+</style>
+</head>
+<body>
+<div id="deck-app">
+  <header>
+    <h2>Это изменение для эколога или нет</h2>
+    <div class="deck-subtitle">
+      Перетащите карточку в подходящую колонку. После проверки карточки подсветятся по периметру. Когда распределите все правильно, нажмите на любую карточку и откройте полезный комментарий.
+    </div>
+  </header>
+
+  <div class="wa-cardsdeck">
+    <div class="wa-cardsdeck__stack-wrapper">
+      <div class="wa-cardsdeck__arrow-btn" id="prev-card">&lt;</div>
+      <div class="wa-cardsdeck__stack" id="stack"></div>
+      <div class="wa-cardsdeck__arrow-btn" id="next-card">&gt;</div>
+    </div>
+
+    <div class="wa-cardsdeck__columns-wrapper">
+      <div class="wa-cardsdeck__columns">
+        <div class="wa-cardsdeck-column" data-column="action">
+          <div class="wa-cardsdeck-column__title">Требует действий эколога</div>
+          <div class="wa-cardsdeck-column__body"></div>
+        </div>
+        <div class="wa-cardsdeck-column" data-column="clarify">
+          <div class="wa-cardsdeck-column__title">Сначала нужно уточнение</div>
+          <div class="wa-cardsdeck-column__body"></div>
+        </div>
+        <div class="wa-cardsdeck-column" data-column="none">
+          <div class="wa-cardsdeck-column__title">Действий не требуется</div>
+          <div class="wa-cardsdeck-column__body"></div>
+        </div>
+      </div>
+      <div class="wa-cardsdeck__details-popup" id="details" style="display:none;">
+        <div id="details-body"></div>
+      </div>
+    </div>
+
+    <div class="wa-cardsdeck__footer">
+      <button class="wa-cardsdeck__btn-check" id="check-btn">Проверить</button>
+      <button class="wa-cardsdeck__btn-reset" id="reset-btn">Сбросить</button>
+      <div class="wa-cardsdeck__comment" id="comment"></div>
+    </div>
+  </div>
+</div>
+
+<script>
+var allCards = [
+  {
+    id: 'c1',
+    text: 'У компании изменился юридический адрес. Производственные площадки и фактический адрес объекта НВОС не менялись.',
+    correctColumn: 'action'
+  },
+  {
+    id: 'c2',
+    text: 'Производство перенесло участок подготовки сырья в другое здание на соседней территории. В ЕГРЮЛ изменений пока нет.',
+    correctColumn: 'action'
+  },
+  {
+    id: 'c3',
+    text: 'Сменился генеральный директор. Адреса площадок, собственник, состав оборудования и сырья не менялись.',
+    correctColumn: 'none'
+  },
+  {
+    id: 'c4',
+    text: 'В регионе изменили административно-территориальное деление. Для площадки присвоены новые ОКТМО и ОКАТО.',
+    correctColumn: 'action'
+  },
+  {
+    id: 'c5',
+    text: 'На котельной вместо одного вида топлива начали использовать другой. Производство считает, что режим работы не изменился.',
+    correctColumn: 'clarify'
+  },
+  {
+    id: 'c6',
+    text: 'Отдел кадров изменил оргструктуру. Площадки, реквизиты и процессы не менялись.',
+    correctColumn: 'none'
+  },
+  {
+    id: 'c7',
+    text: 'Компания сменила название. Собственник, адрес объекта и технологические процессы остались прежними.',
+    correctColumn: 'action'
+  },
+  {
+    id: 'c8',
+    text: 'На действующей площадке запустили новый цех с отдельным оборудованием и новыми источниками выбросов.',
+    correctColumn: 'action'
+  },
+  {
+    id: 'c9',
+    text: 'Производство сообщает, что закупило новое сырье, но состав выбросов и сбросов еще не проверяли.',
+    correctColumn: 'clarify'
+  }
+];
+
+var commentsById = {
+  c1: 'Юридический адрес входит в сведения о юрлице. Проверьте, какие документы нужно скорректировать или переоформить, и не забудьте про актуализацию сведений об объекте НВОС.',
+  c2: 'Перенос участка на другую территорию меняет фактическое размещение части объекта НВОС. Дальше нужно проверить инвентаризацию, проекты и разрешительные документы.',
+  c3: 'Смена директора сама по себе не меняет сведения об объекте НВОС и не запускает переоформление экологических разрешений. Отдельную экологическую процедуру здесь не открывают.',
+  c4: 'Новые наименование территории, ОКТМО и ОКАТО нужно применять в документах. Это рабочий сигнал проверить, где сведения уже требуют актуализации.',
+  c5: 'Смена топлива не всегда сразу означает пересмотр документов, но почти всегда требует проверки. Сначала уточните состав и объем выбросов и сравните их с действующей документацией.',
+  c6: 'Изменение оргструктуры не влияет на адрес, собственника, параметры объекта НВОС и разрешения. Эколог учитывает это только в рабочих процессах, если нужно обновить внутренние шаблоны.',
+  c7: 'Смена названия тянет работу с реквизитами в документах. Нужно разделить документы на те, где достаточно внести изменения, и те, которые подлежат переоформлению.',
+  c8: 'Новый цех почти всегда означает проверку всей цепочки документов. Обычно начинают с инвентаризации и оценки, меняются ли проекты, программы и разрешения.',
+  c9: 'Новое сырье может изменить состав воздействия. До проверки нельзя считать изменение безопасным для документации, поэтому сначала соберите технические данные и сравните их с текущими нормативами.'
+};
+
+var placedCards = {};
+var currentIndex = 0;
+var draggedCardId = null;
+var isAnimating = false;
+var gameCompleted = false;
+
+function shuffle(array) {
+  for (var i = array.length - 1; i > 0; i--) {
+    var j = Math.floor(Math.random() * (i + 1));
+    var tmp = array[i]; array[i] = array[j]; array[j] = tmp;
+  }
+}
+
+function getRemainingCards() {
+  return allCards.filter(function(c){ return !placedCards[c.id]; });
+}
+
+function buildStackContent(remaining, animateIn) {
+  var stackEl = document.getElementById('stack');
+  var mainCard = remaining[currentIndex];
+  var prevCard = remaining[currentIndex - 1];
+  var nextCard = remaining[currentIndex + 1];
+
+  if (nextCard) {
+    var nextEl = document.createElement('div');
+    nextEl.className = 'wa-cardsdeck__stack-card bg-2';
+    nextEl.textContent = nextCard.text;
+    stackEl.appendChild(nextEl);
+  }
+  if (prevCard) {
+    var prevEl = document.createElement('div');
+    prevEl.className = 'wa-cardsdeck__stack-card bg-1';
+    prevEl.textContent = prevCard.text;
+    stackEl.appendChild(prevEl);
+  }
+
+  var mainEl = document.createElement('div');
+  mainEl.className = 'wa-cardsdeck__stack-card main';
+  if (animateIn) {
+    mainEl.classList.add('card-in-back');
+    setTimeout(function(){ mainEl.classList.remove('card-in-back'); }, 300);
+  }
+  mainEl.textContent = mainCard.text;
+  mainEl.dataset.cardId = mainCard.id;
+  mainEl.draggable = true;
+  mainEl.addEventListener('dragstart', function(e){
+    draggedCardId = mainCard.id;
+    e.dataTransfer.effectAllowed = 'move';
+  });
+  mainEl.addEventListener('dragend', function(){ draggedCardId = null; });
+  stackEl.appendChild(mainEl);
+}
+
+function renderStack(direction) {
+  var stackEl = document.getElementById('stack');
+  var remaining = getRemainingCards();
+  if (remaining.length === 0) {
+    stackEl.innerHTML = '';
+    var empty = document.createElement('div');
+    empty.className = 'wa-cardsdeck__stack-empty';
+    empty.textContent = 'Все карточки распределены. Нажмите «Проверить». После верного ответа сможете открыть комментарий к каждой карточке.';
+    stackEl.appendChild(empty);
+    return;
+  }
+  if (currentIndex >= remaining.length) currentIndex = 0;
+  if (currentIndex < 0) currentIndex = remaining.length - 1;
+
+  var oldMain = stackEl.querySelector('.wa-cardsdeck__stack-card.main');
+  if (oldMain && direction) {
+    isAnimating = true;
+    oldMain.classList.add('card-out-up');
+    setTimeout(function(){
+      stackEl.innerHTML = '';
+      buildStackContent(remaining, true);
+      isAnimating = false;
+    }, 300);
+  } else {
+    stackEl.innerHTML = '';
+    buildStackContent(remaining, false);
+  }
+}
+
+function createColumnCard(cardData) {
+  var cardEl = document.createElement('div');
+  cardEl.className = 'wa-cardsdeck-column-card';
+  cardEl.textContent = cardData.text;
+  cardEl.dataset.cardId = cardData.id;
+  cardEl.draggable = true;
+  cardEl.addEventListener('dragstart', function(e2){
+    draggedCardId = cardData.id;
+    e2.dataTransfer.effectAllowed = 'move';
+  });
+  cardEl.addEventListener('dragend', function(){ draggedCardId = null; });
+  return cardEl;
+}
+
+function initColumnsDnD() {
+  var bodies = document.querySelectorAll('.wa-cardsdeck-column__body');
+  bodies.forEach(function(body){
+    body.addEventListener('dragover', function(e){
+      e.preventDefault();
+      body.classList.add('drag-over');
+    });
+    body.addEventListener('dragleave', function(){
+      body.classList.remove('drag-over');
+    });
+    body.addEventListener('drop', function(e){
+      e.preventDefault();
+      body.classList.remove('drag-over');
+      if (!draggedCardId) return;
+      document.getElementById('details').style.display = 'none';
+
+      var columnId = body.parentElement.dataset.column;
+      var oldColumn = placedCards[draggedCardId];
+      if (oldColumn) {
+        var oldBody = document.querySelector('.wa-cardsdeck-column[data-column="'+oldColumn+'"] .wa-cardsdeck-column__body');
+        if (oldBody) {
+          var oldEl = oldBody.querySelector('.wa-cardsdeck-column-card[data-card-id="'+draggedCardId+'"]');
+          if (oldEl) oldBody.removeChild(oldEl);
+        }
+      }
+
+      placedCards[draggedCardId] = columnId;
+      var cardData = allCards.find(function(c){ return c.id === draggedCardId; });
+      if (!cardData) return;
+      body.appendChild(createColumnCard(cardData));
+      currentIndex += 1;
+      clearMarks();
+      renderStack('next');
+    });
+  });
+}
+
+function clearMarks() {
+  document.querySelectorAll('.wa-cardsdeck-column-card').forEach(function(el){
+    el.classList.remove('correct','incorrect','partial','clickable');
+    el.onclick = null;
+  });
+}
+
+function attachCardClickForComments() {
+  document.querySelectorAll('.wa-cardsdeck-column__body').forEach(function(body){
+    body.querySelectorAll('.wa-cardsdeck-column-card').forEach(function(cardEl){
+      cardEl.classList.add('clickable');
+      cardEl.onclick = function() {
+        if (!gameCompleted) return;
+        var id = cardEl.dataset.cardId;
+        var text = commentsById[id] || '';
+        if (!text) return;
+        var details = document.getElementById('details');
+        var bodyEl = document.getElementById('details-body');
+        bodyEl.textContent = text;
+        details.style.display = 'block';
+      };
+    });
+  });
+}
+
+function buildFeedback() {
+  var correctCount = 0;
+  var placedCount = 0;
+  allCards.forEach(function(card){
+    if (placedCards[card.id]) placedCount += 1;
+    if (placedCards[card.id] === card.correctColumn) correctCount += 1;
+  });
+
+  if (placedCount < allCards.length) {
+    return {
+      text: 'Не все карточки распределены. Разложите все ситуации по колонкам и проверьте еще раз.',
+      cls: 'wa-cardsdeck__comment wa-cardsdeck__comment_error'
+    };
+  }
+
+  if (correctCount === allCards.length) {
+    return {
+      text: 'Верно. Вы определили все ситуации правильно. Нажмите на любую карточку и откройте комментарий с практической пользой.',
+      cls: 'wa-cardsdeck__comment wa-cardsdeck__comment_success'
+    };
+  }
+
+  return {
+    text: 'Есть неточности. Красная рамка показывает ошибку, желтая – ситуацию, где вы выбрали «нужно уточнение» не там, где нужно. Исправьте раскладку и проверьте снова.',
+    cls: 'wa-cardsdeck__comment wa-cardsdeck__comment_error'
+  };
+}
+
+function checkAnswers() {
+  clearMarks();
+  document.getElementById('details').style.display = 'none';
+  document.getElementById('details-body').innerHTML = '';
+  gameCompleted = false;
+
+  allCards.forEach(function(card){
+    var placed = placedCards[card.id];
+    if (!placed) return;
+    var body = document.querySelector('.wa-cardsdeck-column[data-column="'+placed+'"] .wa-cardsdeck-column__body');
+    if (!body) return;
+    var el = body.querySelector('.wa-cardsdeck-column-card[data-card-id="'+card.id+'"]');
+    if (!el) return;
+
+    if (placed === card.correctColumn) {
+      el.classList.add('correct');
+    } else if (placed === 'clarify' || card.correctColumn === 'clarify') {
+      el.classList.add('partial');
+    } else {
+      el.classList.add('incorrect');
+    }
+  });
+
+  var feedback = buildFeedback();
+  var commentEl = document.getElementById('comment');
+  commentEl.textContent = feedback.text;
+  commentEl.className = feedback.cls;
+
+  var allPlaced = allCards.every(function(card){ return !!placedCards[card.id]; });
+  var allCorrect = allCards.every(function(card){ return placedCards[card.id] === card.correctColumn; });
+
+  if (allPlaced && allCorrect) {
+    gameCompleted = true;
+    attachCardClickForComments();
+  }
+}
+
+function resetGame() {
+  placedCards = {};
+  currentIndex = 0;
+  draggedCardId = null;
+  gameCompleted = false;
+  shuffle(allCards);
+  document.getElementById('comment').textContent = '';
+  document.getElementById('comment').className = 'wa-cardsdeck__comment';
+  document.getElementById('details').style.display = 'none';
+  document.getElementById('details-body').innerHTML = '';
+  document.querySelectorAll('.wa-cardsdeck-column__body').forEach(function(b){ b.innerHTML=''; });
+  renderStack();
+}
+
+document.addEventListener('DOMContentLoaded', function(){
+  shuffle(allCards);
+  renderStack();
+  initColumnsDnD();
+
+  document.getElementById('prev-card').addEventListener('click', function(){
+    if (isAnimating || getRemainingCards().length === 0) return;
+    currentIndex -= 1;
+    renderStack('prev');
+  });
+  document.getElementById('next-card').addEventListener('click', function(){
+    if (isAnimating || getRemainingCards().length === 0) return;
+    currentIndex += 1;
+    renderStack('next');
+  });
+  document.getElementById('check-btn').addEventListener('click', checkAnswers);
+  document.getElementById('reset-btn').addEventListener('click', resetGame);
+});
+</script>
+</body>
+</html>
