@@ -1,0 +1,600 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<meta name="google" content="notranslate" />
+<title>Определите, что делать экологу</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-silk: #f3fbf7;
+  --green-accent: #007760;
+  --green-accent-2: #19a86e;
+  --green-gradient: linear-gradient(135deg, #19a86e, #007760);
+  --green-border: #19a86e;
+  --text-dark: #2c2c2c;
+  --muted: #5d6a65;
+  --soft: #e7f6ef;
+  --error: #c0392b;
+  --ok: #1e9150;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-silk);
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  color: var(--text-dark);
+}
+
+#app {
+  background: #ffffff;
+  border: 1px solid var(--green-border);
+  border-radius: 4px;
+  padding: 16px 18px 20px 18px;
+  width: 100%;
+  max-width: 720px;
+  box-shadow: 0 18px 40px rgba(0, 119, 96, 0.16);
+}
+
+header {
+  text-align: left;
+  margin-bottom: 12px;
+  border-bottom: 1px solid rgba(0,119,96,0.12);
+  padding-bottom: 8px;
+}
+
+h2 {
+  color: var(--green-accent);
+  font-size: 16px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-dark);
+  line-height: 1.45;
+}
+
+.progress-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin: 10px 0 12px;
+}
+
+.progress-text {
+  font-size: 11px;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.progress-bar {
+  flex: 1;
+  height: 8px;
+  background: #edf5f1;
+  border-radius: 999px;
+  overflow: hidden;
+  border: 1px solid rgba(0,119,96,0.12);
+}
+
+.progress-fill {
+  height: 100%;
+  width: 0%;
+  background: var(--green-gradient);
+  transition: width 0.25s ease;
+}
+
+.case-card {
+  border: 1px solid #dfe8e3;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+  padding: 16px;
+}
+
+.case-label {
+  display: inline-block;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  color: var(--green-accent);
+  background: #eef8f4;
+  border: 1px solid rgba(0,119,96,0.12);
+  border-radius: 999px;
+  padding: 5px 8px;
+  margin-bottom: 10px;
+}
+
+.case-block {
+  margin-bottom: 12px;
+}
+
+.case-title {
+  font-size: 11px;
+  color: #527a6b;
+  font-weight: 700;
+  margin-bottom: 5px;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.case-text {
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.answers {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+}
+
+.answer-btn {
+  text-align: left;
+  border-radius: 10px;
+  border: 1px solid #dde7e2;
+  background: #ffffff;
+  padding: 10px 12px;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  line-height: 1.35;
+  cursor: pointer;
+  color: var(--text-dark);
+  transition: 0.2s;
+}
+
+.answer-btn:hover {
+  background: #f7fbf9;
+  border-color: var(--green-accent);
+}
+
+.answer-btn.selected {
+  border-color: var(--green-accent);
+  box-shadow: 0 0 0 1px rgba(0,119,96,0.25);
+  background: #f3fbf7;
+}
+
+.answer-btn.correct {
+  border-color: var(--ok);
+  box-shadow: 0 0 0 1px rgba(30,145,80,0.4);
+  background: #f2fbf6;
+}
+
+.answer-btn.incorrect {
+  border-color: var(--error);
+  box-shadow: 0 0 0 1px rgba(192,57,43,0.35);
+  background: #fff5f4;
+}
+
+.answer-btn.disabled {
+  cursor: default;
+}
+
+.feedback {
+  margin-top: 12px;
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  display: none;
+}
+
+.feedback.ok {
+  display: block;
+  background: #f2fbf6;
+  border: 1px solid rgba(30,145,80,0.25);
+}
+
+.feedback.bad {
+  display: block;
+  background: #fff5f4;
+  border: 1px solid rgba(192,57,43,0.22);
+}
+
+.feedback-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 14px;
+}
+
+.btn {
+  font-family: 'Montserrat', sans-serif;
+  border-radius: 18px;
+  padding: 8px 18px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--green-gradient);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(0,119,96,0.25);
+}
+
+.btn-secondary {
+  background: #f0f4f3;
+  color: var(--green-accent);
+}
+
+.btn:disabled {
+  opacity: 0.45;
+  cursor: default;
+  box-shadow: none;
+}
+
+.summary {
+  display: none;
+  border: 1px solid #dfe8e3;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 8px 20px rgba(0,0,0,0.05);
+  padding: 16px;
+}
+
+.summary h3 {
+  margin: 0 0 8px;
+  color: var(--green-accent);
+  font-size: 15px;
+}
+
+.summary p {
+  margin: 0 0 10px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.summary-list {
+  display: grid;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.summary-item {
+  border-radius: 10px;
+  border: 1px solid #dde7e2;
+  background: #fafdfb;
+  overflow: hidden;
+}
+
+.summary-head {
+  width: 100%;
+  background: transparent;
+  border: none;
+  padding: 10px 12px;
+  text-align: left;
+  font-family: 'Montserrat', sans-serif;
+  font-size: 12px;
+  cursor: pointer;
+  color: var(--text-dark);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.summary-head:hover {
+  background: #f3fbf7;
+}
+
+.summary-head strong {
+  color: var(--green-accent);
+}
+
+.summary-arrow {
+  color: var(--green-accent);
+  font-size: 14px;
+  line-height: 1;
+  transition: transform 0.2s ease;
+  flex: 0 0 auto;
+}
+
+.summary-item.open .summary-arrow {
+  transform: rotate(180deg);
+}
+
+.summary-body {
+  display: none;
+  padding: 0 12px 12px 12px;
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.summary-item.open .summary-body {
+  display: block;
+}
+
+@media (max-width: 640px) {
+  .answers {
+    grid-template-columns: 1fr;
+  }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h2>Что делать экологу с документами</h2>
+    <div class="subtitle">
+      По каждой ситуации выберите одно действие по конкретному документу. После ответа вы получите комментарий по сути и перейдете к следующей карточке.
+    </div>
+  </header>
+
+  <div id="quiz-view">
+    <div class="progress-wrap">
+      <div class="progress-text" id="progress-text">Карточка 1 из 10</div>
+      <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+    </div>
+
+    <div class="case-card">
+      <div class="case-label">Ситуационная задача</div>
+
+      <div class="case-block">
+        <div class="case-title">Ситуация</div>
+        <div class="case-text" id="situation"></div>
+      </div>
+
+      <div class="case-block">
+        <div class="case-title">Документ или процедура</div>
+        <div class="case-text" id="document"></div>
+      </div>
+
+      <div class="answers" id="answers"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div class="nav">
+      <button class="btn btn-secondary" id="prev-btn">Назад</button>
+      <div>
+        <button class="btn btn-secondary" id="reset-btn">Сбросить</button>
+        <button class="btn btn-primary" id="check-btn">Проверить</button>
+        <button class="btn btn-primary" id="next-btn" style="display:none;">Далее</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="summary" id="summary-view">
+    <h3>Интерактив завершен</h3>
+    <p id="summary-text"></p>
+    <div class="summary-list" id="summary-list"></div>
+    <div class="nav" style="margin-top:14px; justify-content:flex-end;">
+      <button class="btn btn-secondary" id="restart-btn">Пройти заново</button>
+    </div>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    situation: 'У компании изменился юридический адрес. Фактический адрес объекта НВОС не менялся.',
+    document: 'Сведения об объекте НВОС в государственном реестре.',
+    options: ['Внести изменения', 'Переоформить', 'Оформить новый документ', 'Актуализировать сведения', 'Ничего не делать'],
+    correct: 'Актуализировать сведения',
+    comment: 'При смене юридического адреса сведения об объекте НВОС в госреестре нужно актуализировать. Это отдельное действие, не переоформление разрешения.'
+  },
+  {
+    situation: 'У компании изменился юридический адрес. Фактический адрес объекта НВОС не менялся.',
+    document: 'КЭР.',
+    options: ['Внести изменения', 'Переоформить', 'Оформить новый документ', 'Ничего не делать'],
+    correct: 'Переоформить',
+    comment: 'При смене юридического адреса КЭР подлежит переоформлению. Это не новая заявка на новый объект, а переоформление действующего разрешения.'
+  },
+  {
+    situation: 'У компании изменился юридический адрес. Фактический адрес объекта НВОС не менялся.',
+    document: 'ДВОС.',
+    options: ['Внести изменения', 'Переоформить', 'Подать новую', 'Ничего не делать'],
+    correct: 'Внести изменения',
+    comment: 'При смене юридического адреса в ДВОС вносят изменения. Новую декларацию подают уже при смене фактического адреса объекта.'
+  },
+  {
+    situation: 'Производственная площадка переехала по другому фактическому адресу. Юрлицо осталось тем же.',
+    document: 'КЭР.',
+    options: ['Внести изменения', 'Переоформить', 'Оформить новый документ', 'Ничего не делать'],
+    correct: 'Оформить новый документ',
+    comment: 'При смене фактического адреса объекта НВОС для КЭР действует логика нового оформления. Это ключевое различие между юрадресом и фактическим адресом.'
+  },
+  {
+    situation: 'Производственная площадка переехала по другому фактическому адресу.',
+    document: 'Инвентаризация выбросов и сбросов.',
+    options: ['Внести изменения', 'Провести новую', 'Ничего не делать'],
+    correct: 'Провести новую',
+    comment: 'Если меняется фактическое расположение объекта, прежняя инвентаризация уже не описывает реальные условия работы. Для новой площадки нужна новая инвентаризация.'
+  },
+  {
+    situation: 'Компания сменила название. Адрес и собственник объекта НВОС не изменились.',
+    document: 'Паспорт отхода I–IV класса опасности.',
+    options: ['Внести изменения', 'Переоформить', 'Ничего не делать'],
+    correct: 'Переоформить',
+    comment: 'В паспорта отходов нельзя просто вносить изменения. При смене наименования организации их нужно переоформлять и утверждать заново.'
+  },
+  {
+    situation: 'Компания сменила название. Технологические процессы и сырье не менялись.',
+    document: 'Проекты НДВ, НДС, НООЛР.',
+    options: ['Внести изменения', 'Переоформить', 'Разработать новые', 'Ничего не делать'],
+    correct: 'Внести изменения',
+    comment: 'Если процессы и сырье не менялись, в проектах меняют общие сведения о предприятии, титульные листы и справки. Новые проекты в такой ситуации не разрабатывают.'
+  },
+  {
+    situation: 'Сменился собственник объекта НВОС.',
+    document: 'СЭЗ на проекты НДВ и НДС.',
+    options: ['Внести изменения', 'Переоформить', 'Получить новое', 'Ничего не делать'],
+    correct: 'Переоформить',
+    comment: 'При смене собственника СЭЗ подлежат переоформлению. Это один из документов, которые нужно включить в план действий до подачи заявки на КЭР.'
+  },
+  {
+    situation: 'Сменился собственник объекта НВОС.',
+    document: 'Договор водопользования.',
+    options: ['Ничего не делать', 'Переоформить с передачей прав', 'Заключить новый', 'Уведомить'],
+    correct: 'Переоформить с передачей прав',
+    comment: 'Для договора водопользования при смене собственника действует отдельная логика – переоформление с передачей прав.'
+  },
+  {
+    situation: 'Изменились наименование организации, адрес и банковские реквизиты.',
+    document: 'Взаимодействие с ФЭО и региональным оператором по ТКО.',
+    options: ['Ничего не делать', 'Переоформить', 'Уведомить', 'Актуализировать сведения'],
+    correct: 'Уведомить',
+    comment: 'При изменении наименования, адреса и банковских реквизитов ФЭО и регионального оператора нужно письменно уведомлять. Это отдельный блок работы.'
+  }
+];
+
+let current = 0;
+let answers = new Array(questions.length).fill(null);
+let checked = new Array(questions.length).fill(false);
+
+const progressText = document.getElementById('progress-text');
+const progressFill = document.getElementById('progress-fill');
+const situationEl = document.getElementById('situation');
+const documentEl = document.getElementById('document');
+const answersEl = document.getElementById('answers');
+const feedbackEl = document.getElementById('feedback');
+const checkBtn = document.getElementById('check-btn');
+const nextBtn = document.getElementById('next-btn');
+const prevBtn = document.getElementById('prev-btn');
+const resetBtn = document.getElementById('reset-btn');
+const quizView = document.getElementById('quiz-view');
+const summaryView = document.getElementById('summary-view');
+const summaryText = document.getElementById('summary-text');
+const summaryList = document.getElementById('summary-list');
+const restartBtn = document.getElementById('restart-btn');
+
+function renderQuestion() {
+  const q = questions[current];
+  progressText.textContent = 'Карточка ' + (current + 1) + ' из ' + questions.length;
+  progressFill.style.width = ((current + 1) / questions.length) * 100 + '%';
+  situationEl.textContent = q.situation;
+  documentEl.textContent = q.document;
+  answersEl.innerHTML = '';
+  feedbackEl.className = 'feedback';
+  feedbackEl.style.display = 'none';
+  feedbackEl.innerHTML = '';
+
+  q.options.forEach(option => {
+    const btn = document.createElement('button');
+    btn.className = 'answer-btn';
+    btn.textContent = option;
+    btn.type = 'button';
+
+    if (answers[current] === option) btn.classList.add('selected');
+
+    if (checked[current]) {
+      btn.classList.add('disabled');
+      if (option === q.correct) btn.classList.add('correct');
+      if (answers[current] === option && option !== q.correct) btn.classList.add('incorrect');
+    } else {
+      btn.addEventListener('click', () => {
+        answers[current] = option;
+        renderQuestion();
+      });
+    }
+
+    answersEl.appendChild(btn);
+  });
+
+  if (checked[current]) {
+    const good = answers[current] === q.correct;
+    feedbackEl.className = 'feedback ' + (good ? 'ok' : 'bad');
+    feedbackEl.style.display = 'block';
+    feedbackEl.innerHTML = '<div class="feedback-title">' + (good ? 'Верно' : 'Нужно поправить') + '</div>' + q.comment;
+  }
+
+  prevBtn.disabled = current === 0;
+  checkBtn.style.display = checked[current] ? 'none' : 'inline-block';
+  nextBtn.style.display = checked[current] ? 'inline-block' : 'none';
+  nextBtn.textContent = current === questions.length - 1 ? 'Результат' : 'Далее';
+}
+
+function checkAnswer() {
+  if (!answers[current]) return;
+  checked[current] = true;
+  renderQuestion();
+}
+
+function goNext() {
+  if (current === questions.length - 1) {
+    renderSummary();
+    return;
+  }
+  current += 1;
+  renderQuestion();
+}
+
+function goPrev() {
+  if (current > 0) {
+    current -= 1;
+    renderQuestion();
+  }
+}
+
+function resetQuiz() {
+  current = 0;
+  answers = new Array(questions.length).fill(null);
+  checked = new Array(questions.length).fill(false);
+  summaryView.style.display = 'none';
+  quizView.style.display = 'block';
+  renderQuestion();
+}
+
+function renderSummary() {
+  quizView.style.display = 'none';
+  summaryView.style.display = 'block';
+
+  let correctCount = 0;
+  questions.forEach((q, i) => {
+    if (answers[i] === q.correct) correctCount += 1;
+  });
+
+  summaryText.textContent = 'Вы завершили интерактив и отработали навык выбора действий по документам при изменениях в компании. Правильных ответов: ' + correctCount + ' из ' + questions.length + '.';
+  summaryList.innerHTML = '';
+
+  questions.forEach((q, i) => {
+    const item = document.createElement('div');
+    item.className = 'summary-item';
+    item.innerHTML = '<button class="summary-head" type="button">' +
+      '<span><strong>Ситуация ' + (i + 1) + '.</strong> ' + q.situation + '</span>' +
+      '<span class="summary-arrow">⌄</span>' +
+      '</button>' +
+      '<div class="summary-body">' +
+      '<div><strong>Документ.</strong> ' + q.document + '</div>' +
+      '<div style="margin-top:4px;"><strong>Верное действие.</strong> ' + q.correct + '</div>' +
+      '<div style="margin-top:4px;">' + q.comment + '</div>' +
+      '</div>';
+    summaryList.appendChild(item);
+  });
+
+  summaryList.querySelectorAll('.summary-head').forEach(btn => {
+    btn.addEventListener('click', () => {
+      btn.parentElement.classList.toggle('open');
+    });
+  });
+}
+
+checkBtn.addEventListener('click', checkAnswer);
+nextBtn.addEventListener('click', goNext);
+prevBtn.addEventListener('click', goPrev);
+resetBtn.addEventListener('click', resetQuiz);
+restartBtn.addEventListener('click', resetQuiz);
+
+renderQuestion();
+</script>
+</body>
+</html>
