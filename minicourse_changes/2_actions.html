@@ -336,7 +336,7 @@ h2 {
   <header>
     <h2>Что делать экологу с документами</h2>
     <div class="subtitle">
-      По каждой ситуации выберите одно действие по конкретному документу. После ответа вы получите комментарий по сути и перейдете к следующей карточке.
+      По каждой ситуации выберите одно действие по конкретному документу. После ответа вы получите комментарий по сути. Чтобы перейти дальше, нужно решить карточку правильно.
     </div>
   </header>
 
@@ -368,6 +368,7 @@ h2 {
       <div>
         <button class="btn btn-secondary" id="reset-btn">Начать заново</button>
         <button class="btn btn-primary" id="check-btn">Проверить</button>
+        <button class="btn btn-primary" id="retry-btn" style="display:none;">Ответить заново</button>
         <button class="btn btn-primary" id="next-btn" style="display:none;">Далее</button>
       </div>
     </div>
@@ -479,6 +480,7 @@ const answersEl = document.getElementById('answers');
 const feedbackEl = document.getElementById('feedback');
 const checkBtn = document.getElementById('check-btn');
 const nextBtn = document.getElementById('next-btn');
+const retryBtn = document.getElementById('retry-btn');
 const prevBtn = document.getElementById('prev-btn');
 const resetBtn = document.getElementById('reset-btn');
 const quizView = document.getElementById('quiz-view');
@@ -507,9 +509,13 @@ function renderQuestion() {
     if (answers[current] === option) btn.classList.add('selected');
 
     if (checked[current]) {
+      // после проверки запрещаем менять ответ, пока не нажата «Ответить заново»
       btn.classList.add('disabled');
-      if (option === q.correct) btn.classList.add('correct');
-      if (answers[current] === option && option !== q.correct) btn.classList.add('incorrect');
+      if (answers[current] === option) {
+        const good = answers[current] === q.correct;
+        if (good) btn.classList.add('correct');
+        else btn.classList.add('incorrect');
+      }
     } else {
       btn.addEventListener('click', () => {
         answers[current] = option;
@@ -529,18 +535,47 @@ function renderQuestion() {
   }
 
   prevBtn.disabled = current === 0;
-  checkBtn.disabled = !answers[current];
-  checkBtn.style.display = checked[current] ? 'none' : 'inline-block';
 
-  const canGoNext = checked[current] && answers[current] === q.correct;
-  nextBtn.style.display = canGoNext ? 'inline-block' : 'none';
-  nextBtn.disabled = !canGoNext;
-  nextBtn.textContent = current === questions.length - 1 ? 'Результат' : 'Далее';
+  // если вопрос еще не проверен
+  if (!checked[current]) {
+    checkBtn.disabled = !answers[current];
+    checkBtn.style.display = 'inline-block';
+    retryBtn.style.display = 'none';
+    nextBtn.style.display = 'none';
+    nextBtn.disabled = true;
+  } else {
+    const good = answers[current] === q.correct;
+    if (good) {
+      // правильный ответ – можно идти дальше
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'none';
+      nextBtn.style.display = 'inline-block';
+      nextBtn.disabled = false;
+      nextBtn.textContent = current === questions.length - 1 ? 'Результат' : 'Далее';
+    } else {
+      // неправильный ответ – только «Ответить заново»
+      checkBtn.style.display = 'none';
+      nextBtn.style.display = 'none';
+      nextBtn.disabled = true;
+      retryBtn.style.display = 'inline-block';
+      retryBtn.disabled = false;
+    }
+  }
 }
 
 function checkAnswer() {
   if (!answers[current]) return;
   checked[current] = true;
+  renderQuestion();
+}
+
+function retryQuestion() {
+  const q = questions[current];
+  checked[current] = false;
+  // сбрасываем выбранный ответ, чтобы ученик осознанно выбрал новый
+  answers[current] = null;
+  feedbackEl.style.display = 'none';
+  feedbackEl.innerHTML = '';
   renderQuestion();
 }
 
@@ -604,6 +639,7 @@ function renderSummary() {
 }
 
 checkBtn.addEventListener('click', checkAnswer);
+retryBtn.addEventListener('click', retryQuestion);
 nextBtn.addEventListener('click', goNext);
 prevBtn.addEventListener('click', goPrev);
 resetBtn.addEventListener('click', resetQuiz);
