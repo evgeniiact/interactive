@@ -1,0 +1,843 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0" />
+<meta name="google" content="notranslate" />
+<title>Игра: типы экологических документов</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
+
+:root {
+  --bg-silk: #f3fbf7;
+  --green-accent: #007760;
+  --green-accent-2: #19a86e;
+  --green-gradient: linear-gradient(135deg, #19a86e, #007760);
+  --green-border: #19a86e;
+  --text-dark: #2c2c2c;
+  --muted: #5d6a65;
+  --soft: #e7f6ef;
+  --error: #c0392b;
+  --ok: #1e9150;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  font-family: 'Montserrat', sans-serif;
+  background-color: var(--bg-silk);
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+  color: var(--text-dark);
+}
+
+#app {
+  background: #ffffff;
+  border: 1px solid var(--green-border);
+  border-radius: 4px;
+  padding: 16px 18px 20px 18px;
+  width: 100%;
+  max-width: 780px;
+  box-shadow: 0 18px 40px rgba(0, 119, 96, 0.16);
+  position: relative;
+  overflow: hidden;
+}
+
+header {
+  text-align: left;
+  margin-bottom: 10px;
+  border-bottom: 1px solid rgba(0,119,96,0.12);
+  padding-bottom: 8px;
+}
+
+h2 {
+  color: var(--green-accent);
+  font-size: 16px;
+  margin: 0;
+  font-weight: 700;
+}
+
+.subtitle {
+  margin-top: 6px;
+  font-size: 12px;
+  color: var(--text-dark);
+  line-height: 1.45;
+}
+
+.controls {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-top: 10px;
+}
+
+.btn {
+  font-family: 'Montserrat', sans-serif;
+  border-radius: 18px;
+  padding: 8px 16px;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  border: none;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background: var(--green-gradient);
+  color: #fff;
+  box-shadow: 0 10px 22px rgba(0,119,96,0.25);
+}
+
+.btn-secondary {
+  background: #f0f4f3;
+  color: var(--green-accent);
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: default;
+  box-shadow: none;
+}
+
+.timer-wrap {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.timer-bar {
+  position: relative;
+  flex: 1;
+  height: 8px;
+  border-radius: 999px;
+  background: #edf5f1;
+  overflow: hidden;
+  border: 1px solid rgba(0,119,96,0.12);
+}
+
+.timer-fill {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  width: 100%;
+  background: var(--green-gradient);
+  transition: width 0.1s linear;
+}
+
+.mode-label {
+  font-size: 11px;
+  color: var(--green-accent);
+  font-weight: 600;
+}
+
+.playfield {
+  position: relative;
+  margin-top: 14px;
+  border-radius: 14px;
+  border: 1px dashed rgba(0,119,96,0.25);
+  background: radial-gradient(circle at top left, #f3fbf7 0, #ffffff 45%, #f0f6f3 100%);
+  height: 260px;
+  overflow: hidden;
+}
+
+.doc-bubble {
+  position: absolute;
+  min-width: 92px;
+  max-width: 140px;
+  padding: 8px 10px;
+  border-radius: 999px;
+  background: #ffffff;
+  border: 1px solid #dde7e2;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.06);
+  font-size: 11px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  color: var(--text-dark);
+  transition: transform 0.1s ease, box-shadow 0.1s ease, border-color 0.1s ease, background 0.1s ease;
+}
+
+.doc-bubble span {
+  pointer-events: none;
+}
+
+.doc-bubble:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 18px rgba(0,0,0,0.12);
+}
+
+.doc-bubble.correct-hit {
+  background: #f2fbf6;
+  border-color: var(--ok);
+}
+
+.doc-bubble.wrong-hit {
+  background: #fff5f4;
+  border-color: var(--error);
+}
+
+.doc-bubble.faded {
+  opacity: 0.2;
+}
+
+.info-bar {
+  margin-top: 8px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.score {
+  font-weight: 600;
+  color: var(--green-accent);
+}
+
+.hint {
+  font-size: 11px;
+  color: #4c5d57;
+}
+
+#overlay {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(circle at top, rgba(243,251,247,0.96), rgba(230,244,237,0.98));
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.overlay-card {
+  background: #ffffff;
+  border-radius: 14px;
+  border: 1px solid #dde7e2;
+  padding: 16px;
+  width: min(620px, 100% - 24px);
+  max-height: calc(100% - 32px);
+  box-shadow: 0 18px 40px rgba(0,0,0,0.16);
+  display: flex;
+  flex-direction: column;
+}
+
+.overlay-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+
+.overlay-header h3 {
+  margin: 0;
+  font-size: 14px;
+  color: var(--green-accent);
+}
+
+.overlay-body {
+  flex: 1;
+  overflow: auto;
+  padding-right: 4px;
+}
+
+.doc-list {
+  display: grid;
+  gap: 8px;
+}
+
+.doc-item {
+  border-radius: 10px;
+  border: 1px solid #dde7e2;
+  background: #fafdfb;
+  padding: 8px 10px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 10px;
+}
+
+.doc-item-main {
+  font-size: 12px;
+}
+
+.doc-item-name {
+  font-weight: 600;
+  color: var(--green-accent);
+}
+
+.doc-item-type {
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.doc-item-actions {
+  flex-shrink: 0;
+}
+
+.doc-item-actions button {
+  font-family: 'Montserrat', sans-serif;
+  font-size: 11px;
+  border-radius: 999px;
+  border: none;
+  padding: 6px 10px;
+  cursor: pointer;
+  background: #eef8f4;
+  color: var(--green-accent);
+}
+
+.badge-correct {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #e6f7ee;
+  color: var(--ok);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.badge-wrong {
+  display: inline-block;
+  padding: 2px 6px;
+  border-radius: 999px;
+  background: #fff0ec;
+  color: var(--error);
+  font-size: 10px;
+  font-weight: 600;
+}
+
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+
+.modal {
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #dde7e2;
+  box-shadow: 0 18px 40px rgba(0,0,0,0.35);
+  width: min(560px, 100% - 24px);
+  max-height: calc(100% - 32px);
+  padding: 14px 16px 16px 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+
+.modal-title {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--green-accent);
+}
+
+.modal-close {
+  border: none;
+  background: transparent;
+  font-size: 18px;
+  cursor: pointer;
+  color: var(--muted);
+}
+
+.modal-body {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text-dark);
+  overflow: auto;
+}
+
+.modal-body p {
+  margin: 0 0 6px;
+}
+
+.modal-body p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 640px) {
+  .playfield {
+    height: 230px;
+  }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <header>
+    <h2>Типы экологических документов</h2>
+    <div class="subtitle">
+      В каждом раунде ловите только документы нужного типа. Кликайте по пузырям с названиями документов, пока идет таймер, затем разберите результаты.
+    </div>
+  </header>
+
+  <div class="controls">
+    <div>
+      <div class="mode-label" id="mode-label">Выберите тип документа и начните раунд</div>
+    </div>
+    <div class="timer-wrap">
+      <span id="timer-text">00:00</span>
+      <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
+    </div>
+    <div>
+      <button class="btn btn-secondary" id="fullscreen-btn">Во весь экран</button>
+      <button class="btn btn-secondary" id="cycle-mode-btn">Сменить тип</button>
+      <button class="btn btn-primary" id="start-btn">Старт</button>
+    </div>
+  </div>
+
+  <div class="playfield" id="playfield"></div>
+
+  <div class="info-bar">
+    <div class="hint" id="hint">Выберите тип документа и нажмите «Старт».</div>
+    <div class="score" id="score">Попаданий: 0 | Ошибок: 0</div>
+  </div>
+
+  <div id="overlay">
+    <div class="overlay-card">
+      <div class="overlay-header">
+        <h3 id="overlay-title">Результаты раунда</h3>
+        <button class="btn btn-secondary" id="overlay-close">Закрыть</button>
+      </div>
+      <div class="overlay-body">
+        <div class="hint" id="overlay-hint"></div>
+        <div class="doc-list" id="doc-list"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="modal-title"></div>
+        <button class="modal-close" id="modal-close">×</button>
+      </div>
+      <div class="modal-body" id="modal-body"></div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="type-modal-backdrop">
+    <div class="modal">
+      <div class="modal-header">
+        <div class="modal-title" id="type-modal-title"></div>
+        <button class="modal-close" id="type-modal-close">×</button>
+      </div>
+      <div class="modal-body" id="type-modal-body"></div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const types = ['разрешительный', 'учетный', 'проектный', 'отчетный'];
+const typeSummaries = {
+  'разрешительный': 'Разрешительные документы дают предприятию право работать с объектами и ресурсами: воздействовать на окружающую среду, забирать воду, сбрасывать стоки, эксплуатировать объект НВОС. Это КЭР, решения о предоставлении водного объекта, договоры водопользования, санитарно-эпидемиологические заключения и другие документы, без которых деятельность становится незаконной. Для эколога это зона наибольшего риска: просроченное или неактуальное разрешение напрямую ведет к претензиям и штрафам. При изменении реквизитов, адреса или собственника такие документы либо переоформляют, либо оформляют заново – поэтому важно четко понимать, какие из них относятся к разрешительным.',
+  'учетный': 'Учетные документы фиксируют состояние предприятия и его объектов, но сами по себе не дают разрешений и не устанавливают нормативы. Это сведения об объекте НВОС в госреестре, паспорта ГОУ, программы производственного экологического контроля и другая база, которая описывает, что и как устроено на площадке. Для эколога учетная документация – фундамент: на нее опираются разрешения, проекты и отчетность. Любые изменения в адресах, собственниках, оборудовании сначала отражают в учете, иначе остальные документы начинают расходиться с фактом.',
+  'проектный': 'Проектные документы описывают, как предприятие должно работать с точки зрения нормативов и параметров воздействия. Это проекты НДВ и НДС, программы повышения экологической эффективности, ПНООЛР и паспорта отходов как результат инженерной проработки свойств. В проектах рассчитывают и обосновывают допустимые значения, которые потом попадают в КЭР, ДВОС и другие разрешения. При изменении технологий, сырья, площадок или состава отходов в первую очередь пересматривают именно проектную документацию.',
+  'отчетный': 'Отчетные документы показывают контролирующим органам, как предприятие выполняет свои обязательства и какие фактические параметры воздействия имеет. Это ДВОС и другие формы экологической отчетности, где сходятся данные учета, проектов и измерений. Для эколога отчетность – финальная точка цепочки: если учет и проектные решения некорректны, отчет автоматически становится слабым местом при проверке. При изменениях в реквизитах или параметрах объекта НВОС сначала приводят в порядок разрешительную, учетную и проектную часть, а уже потом обновляют отчетность.'
+};
+
+const documents = [
+  {
+    code: 'КЭР',
+    name: 'Комплексное экологическое разрешение',
+    type: 'разрешительный',
+    comment: 'КЭР объединяет в одном документе ограничения по выбросам, сбросам и обращению с отходами для объекта НВОС. Это ключевое разрешение для предприятий I категории, без него объект не может легально работать.'
+  },
+  {
+    code: 'ДВОС',
+    name: 'Декларация о воздействии на окружающую среду',
+    type: 'отчетный',
+    comment: 'ДВОС описывает воздействие предприятия на окружающую среду по объекту НВОС. Ее подают по объектам определенных категорий, опираясь на инвентаризации и проектную документацию.'
+  },
+  {
+    code: 'ППЭЭ',
+    name: 'Программа повышения экологической эффективности',
+    type: 'проектный',
+    comment: 'ППЭЭ – это программа мероприятий по снижению негативного воздействия. Ее разрабатывают, чтобы обосновать постепенное достижение нормативов и получить или переоформить КЭР.'
+  },
+  {
+    code: 'ПЭК',
+    name: 'Программа производственного экологического контроля',
+    type: 'учетный',
+    comment: 'ПЭК описывает, какие показатели и с какой периодичностью предприятие контролирует по выбросам, сбросам и отходам. Это основа внутреннего экологического контроля и связи с разрешительными документами.'
+  },
+  {
+    code: 'НДВ',
+    name: 'Проект нормативов допустимых выбросов',
+    type: 'проектный',
+    comment: 'Проект НДВ – это расчетный документ, в котором обосновывают нормативы выбросов для источников предприятия. На его основе выдают КЭР или разрешения на выбросы.'
+  },
+  {
+    code: 'НДС',
+    name: 'Проект нормативов допустимых сбросов',
+    type: 'проектный',
+    comment: 'Проект НДС устанавливает допустимые сбросы загрязняющих веществ в водные объекты. Он нужен для оформления разрешительной документации по водопользованию и КЭР.'
+  },
+  {
+    code: 'Паспорт отхода',
+    name: 'Паспорт отхода I–IV класса опасности',
+    type: 'проектный',
+    comment: 'Паспорт отхода фиксирует состав, свойства и класс опасности отхода. Это результат исследований, который используют во всех процедурах по обращению с этим отходом. При смене реквизитов организации паспорта отходов переоформляют.'
+  },
+  {
+    code: 'Паспорт ГОУ',
+    name: 'Паспорт газоочистной установки',
+    type: 'учетный',
+    comment: 'Паспорт ГОУ содержит характеристики газоочистной или пылеулавливающей установки. Это технический учетный документ, который подтверждает наличие и параметры оборудования на источнике выбросов.'
+  },
+  {
+    code: 'СЭЗ',
+    name: 'Санитарно-эпидемиологическое заключение на проекты НДВ, НДС, ЗСО',
+    type: 'разрешительный',
+    comment: 'СЭЗ подтверждает, что проект нормативов соответствует санитарным требованиям. Без него нельзя утвердить проект НДВ или НДС и оформить часть разрешительных документов.'
+  },
+  {
+    code: 'Сведения НВОС',
+    name: 'Сведения об объекте НВОС в государственном реестре',
+    type: 'учетный',
+    comment: 'Сведения об объекте НВОС в реестре фиксируют адрес, собственника и ключевые характеристики объекта. Это элемент государственного учета: при смене реквизитов данные нужно актуализировать.'
+  },
+  {
+    code: 'Договор водопользования',
+    name: 'Договор водопользования',
+    type: 'разрешительный',
+    comment: 'Договор водопользования оформляют при заборе воды или сбросе стоков в водный объект. Это разрешительный документ в форме договора с уполномоченным органом.'
+  },
+  {
+    code: 'Решение на водный объект',
+    name: 'Решение о предоставлении водного объекта в пользование',
+    type: 'разрешительный',
+    comment: 'Решение о предоставлении водного объекта в пользование – форма разрешения на использование водного объекта. Его переоформляют при смене реквизитов и собственника.'
+  }
+];
+
+let currentTypeIndex = 0;
+let currentRoundType = types[currentTypeIndex];
+
+const modeLabelEl = document.getElementById('mode-label');
+const hintEl = document.getElementById('hint');
+const playfieldEl = document.getElementById('playfield');
+const timerTextEl = document.getElementById('timer-text');
+const timerFillEl = document.getElementById('timer-fill');
+const scoreEl = document.getElementById('score');
+const startBtn = document.getElementById('start-btn');
+const cycleModeBtn = document.getElementById('cycle-mode-btn');
+const fullscreenBtn = document.getElementById('fullscreen-btn');
+const overlayEl = document.getElementById('overlay');
+const overlayTitleEl = document.getElementById('overlay-title');
+const overlayHintEl = document.getElementById('overlay-hint');
+const overlayCloseBtn = document.getElementById('overlay-close');
+const docListEl = document.getElementById('doc-list');
+const modalBackdropEl = document.getElementById('modal-backdrop');
+const modalTitleEl = document.getElementById('modal-title');
+const modalBodyEl = document.getElementById('modal-body');
+const modalCloseBtn = document.getElementById('modal-close');
+const typeModalBackdropEl = document.getElementById('type-modal-backdrop');
+const typeModalTitleEl = document.getElementById('type-modal-title');
+const typeModalBodyEl = document.getElementById('type-modal-body');
+const typeModalCloseBtn = document.getElementById('type-modal-close');
+
+let timerId = null;
+let spawnId = null;
+let remainingMs = 30000;
+let roundActive = false;
+let hits = [];
+
+function updateModeLabel() {
+  modeLabelEl.textContent = 'Раунд: ловим документы типа "' + currentRoundType + '"';
+  let text = '';
+  if (currentRoundType === 'разрешительный') {
+    text = 'Кликайте по документам, которые дают право осуществлять деятельность (разрешения, решения, договоры на использование ресурсов).';
+  } else if (currentRoundType === 'учетный') {
+    text = 'Кликайте по документам, которые фиксируют сведения об объекте, оборудовании и контроле, без установления нормативов.';
+  } else if (currentRoundType === 'проектный') {
+    text = 'Кликайте по документам, где рассчитывают нормативы и описывают свойства отходов и выбросов.';
+  } else if (currentRoundType === 'отчетный') {
+    text = 'Кликайте по документам, в которых предприятие отчитывается о своем воздействии перед государством.';
+  }
+  hintEl.textContent = text;
+}
+
+function cycleMode() {
+  if (roundActive) return;
+  currentTypeIndex = (currentTypeIndex + 1) % types.length;
+  currentRoundType = types[currentTypeIndex];
+  updateModeLabel();
+}
+
+function resetRoundState() {
+  clearInterval(timerId);
+  clearInterval(spawnId);
+  timerId = null;
+  spawnId = null;
+  remainingMs = 30000;
+  roundActive = false;
+  hits = [];
+  timerTextEl.textContent = '00:30';
+  timerFillEl.style.width = '100%';
+  playfieldEl.innerHTML = '';
+  scoreEl.textContent = 'Попаданий: 0 | Ошибок: 0';
+}
+
+function startRound() {
+  if (roundActive) return;
+  resetRoundState();
+  roundActive = true;
+  startBtn.disabled = true;
+  cycleModeBtn.disabled = true;
+
+  const start = Date.now();
+  const duration = remainingMs;
+
+  timerId = setInterval(() => {
+    const elapsed = Date.now() - start;
+    remainingMs = Math.max(duration - elapsed, 0);
+    const sec = Math.ceil(remainingMs / 1000);
+    timerTextEl.textContent = '00:' + (sec < 10 ? '0' + sec : sec);
+    timerFillEl.style.width = (remainingMs / duration * 100) + '%';
+    if (remainingMs <= 0) {
+      endRound();
+    }
+  }, 100);
+
+  spawnId = setInterval(spawnBubble, 900);
+}
+
+function endRound() {
+  if (!roundActive) return;
+  roundActive = false;
+  clearInterval(timerId);
+  clearInterval(spawnId);
+  timerId = null;
+  spawnId = null;
+  startBtn.disabled = false;
+  cycleModeBtn.disabled = false;
+  Array.from(playfieldEl.children).forEach(b => b.classList.add('faded'));
+  openTypeModal();
+  showResults();
+}
+
+function spawnBubble() {
+  const doc = documents[Math.floor(Math.random() * documents.length)];
+  const bubble = document.createElement('div');
+  bubble.className = 'doc-bubble';
+  bubble.dataset.code = doc.code;
+  bubble.dataset.type = doc.type;
+
+  const span = document.createElement('span');
+  span.textContent = doc.code;
+  bubble.appendChild(span);
+
+  const fieldRect = playfieldEl.getBoundingClientRect();
+  const maxLeft = fieldRect.width - 140;
+  const maxTop = fieldRect.height - 40;
+  const left = Math.random() * maxLeft;
+  const top = Math.random() * maxTop;
+  bubble.style.left = left + 'px';
+  bubble.style.top = top + 'px';
+
+  const driftX = (Math.random() * 2 - 1) * 30;
+  const driftY = (Math.random() * 2 - 1) * 20;
+  bubble.animate([
+    { transform: 'translate(0, 0)' },
+    { transform: 'translate(' + driftX + 'px, ' + driftY + 'px)' },
+    { transform: 'translate(0, 0)' }
+  ], {
+    duration: 4000 + Math.random() * 2000,
+    iterations: Infinity
+  });
+
+  bubble.addEventListener('click', () => handleBubbleClick(bubble, doc));
+
+  playfieldEl.appendChild(bubble);
+
+  setTimeout(() => {
+    if (playfieldEl.contains(bubble)) {
+      playfieldEl.removeChild(bubble);
+    }
+  }, 6000);
+}
+
+function handleBubbleClick(bubble, doc) {
+  if (!roundActive) return;
+  const isTarget = doc.type === currentRoundType;
+  hits.push({
+    code: doc.code,
+    type: doc.type,
+    expected: currentRoundType,
+    correct: isTarget,
+    source: 'click'
+  });
+  bubble.classList.add(isTarget ? 'correct-hit' : 'wrong-hit');
+  bubble.classList.add('disabled');
+  bubble.style.pointerEvents = 'none';
+
+  updateScore();
+}
+
+function updateScore() {
+  const correct = hits.filter(h => h.correct).length;
+  const wrong = hits.filter(h => !h.correct).length;
+  scoreEl.textContent = 'Попаданий: ' + correct + ' | Ошибок: ' + wrong;
+}
+
+function showResults() {
+  const roundDocs = documents.map(doc => {
+    const clickHits = hits.filter(h => h.code === doc.code);
+    const clickedCorrect = clickHits.some(h => h.correct);
+    const clickedWrong = clickHits.some(h => !h.correct);
+    const isTarget = doc.type === currentRoundType;
+    return {
+      doc,
+      clickedCorrect,
+      clickedWrong,
+      isTarget
+    };
+  });
+
+  overlayTitleEl.textContent = 'Результаты раунда: тип "' + currentRoundType + '"';
+
+  const totalTargets = roundDocs.filter(d => d.isTarget).length;
+  const caughtTargets = roundDocs.filter(d => d.isTarget && d.clickedCorrect).length;
+
+  overlayHintEl.textContent = 'Вы поймали ' + caughtTargets + ' из ' + totalTargets + ' документов нужного типа. Нажмите «Комментарий», чтобы вспомнить назначение каждого документа.';
+
+  docListEl.innerHTML = '';
+
+  roundDocs.forEach(item => {
+    const { doc, clickedCorrect, clickedWrong, isTarget } = item;
+    const row = document.createElement('div');
+    row.className = 'doc-item';
+
+    const main = document.createElement('div');
+    main.className = 'doc-item-main';
+    const nameLine = document.createElement('div');
+    nameLine.className = 'doc-item-name';
+    nameLine.textContent = doc.code + ' – ' + doc.name;
+    const typeLine = document.createElement('div');
+    typeLine.className = 'doc-item-type';
+    typeLine.textContent = 'Тип: ' + doc.type;
+    main.appendChild(nameLine);
+    main.appendChild(typeLine);
+
+    const actions = document.createElement('div');
+    actions.className = 'doc-item-actions';
+
+    const status = document.createElement('div');
+    if (clickedCorrect && isTarget) {
+      const badge = document.createElement('span');
+      badge.className = 'badge-correct';
+      badge.textContent = 'верно выбрали';
+      status.appendChild(badge);
+    } else if (!clickedCorrect && isTarget) {
+      const badge = document.createElement('span');
+      badge.className = 'badge-wrong';
+      badge.textContent = 'пропустили';
+      status.appendChild(badge);
+    } else if (clickedWrong && !isTarget) {
+      const badge = document.createElement('span');
+      badge.className = 'badge-wrong';
+      badge.textContent = 'лишний документ';
+      status.appendChild(badge);
+    }
+
+    const btn = document.createElement('button');
+    btn.type = 'button';
+    btn.textContent = 'Комментарий';
+    btn.addEventListener('click', () => openModal(doc));
+
+    actions.appendChild(status);
+    actions.appendChild(btn);
+
+    row.appendChild(main);
+    row.appendChild(actions);
+    docListEl.appendChild(row);
+  });
+
+  overlayEl.style.display = 'flex';
+}
+
+function openModal(doc) {
+  modalTitleEl.textContent = doc.code + ' – ' + doc.name;
+  modalBodyEl.innerHTML = '';
+
+  const p1 = document.createElement('p');
+  p1.textContent = doc.comment;
+  const p2 = document.createElement('p');
+  p2.textContent = 'Тип документа: ' + doc.type + '. Это поможет вам дальше в уроке быстрее ориентироваться, какие изменения влияют на этот документ и как с ним работать.';
+
+  modalBodyEl.appendChild(p1);
+  modalBodyEl.appendChild(p2);
+
+  modalBackdropEl.style.display = 'flex';
+}
+
+function closeModal() {
+  modalBackdropEl.style.display = 'none';
+}
+
+function openTypeModal() {
+  const text = typeSummaries[currentRoundType] || '';
+  typeModalTitleEl.textContent = 'Что такое документы типа "' + currentRoundType + '"';
+  typeModalBodyEl.innerHTML = '';
+  const p = document.createElement('p');
+  p.textContent = text;
+  typeModalBodyEl.appendChild(p);
+  typeModalBackdropEl.style.display = 'flex';
+}
+
+function closeTypeModal() {
+  typeModalBackdropEl.style.display = 'none';
+}
+
+function closeOverlay() {
+  overlayEl.style.display = 'none';
+}
+
+function toggleFullscreen() {
+  const elem = document.documentElement;
+  if (!document.fullscreenElement) {
+    if (elem.requestFullscreen) elem.requestFullscreen();
+  } else {
+    if (document.exitFullscreen) document.exitFullscreen();
+  }
+}
+
+startBtn.addEventListener('click', startRound);
+cycleModeBtn.addEventListener('click', cycleMode);
+overlayCloseBtn.addEventListener('click', closeOverlay);
+modalCloseBtn.addEventListener('click', closeModal);
+modalBackdropEl.addEventListener('click', (e) => {
+  if (e.target === modalBackdropEl) closeModal();
+});
+
+typeModalCloseBtn.addEventListener('click', closeTypeModal);
+typeModalBackdropEl.addEventListener('click', (e) => {
+  if (e.target === typeModalBackdropEl) closeTypeModal();
+});
+
+fullscreenBtn.addEventListener('click', toggleFullscreen);
+
+updateModeLabel();
+resetRoundState();
+</script>
+</body>
+</html>
