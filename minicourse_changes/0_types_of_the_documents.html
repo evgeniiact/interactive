@@ -45,22 +45,6 @@ body {
   overflow: hidden;
 }
 
-/* режим «крупный формат» – примерно половина экрана по ширине и высоте */
-#app.large {
-  position: fixed;
-  width: 70vw;
-  max-width: none;
-  height: 70vh;
-  left: 50%;
-  top: 50%;
-  transform: translate(-50%, -50%);
-  z-index: 50;
-}
-
-#app.large .playfield {
-  height: calc(70vh - 190px);
-}
-
 header {
   text-align: left;
   margin-bottom: 10px;
@@ -392,13 +376,6 @@ h2 {
 }
 
 @media (max-width: 640px) {
-  #app.large {
-    width: 90vw;
-    height: 70vh;
-  }
-  #app.large .playfield {
-    height: calc(70vh - 190px);
-  }
   .playfield {
     height: 230px;
   }
@@ -423,7 +400,6 @@ h2 {
       <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
     </div>
     <div>
-      <button class="btn btn-secondary" id="fullscreen-btn">Увеличить</button>
       <button class="btn btn-secondary" id="cycle-mode-btn">Сменить тип</button>
       <button class="btn btn-primary" id="start-btn">Старт</button>
     </div>
@@ -565,7 +541,6 @@ const documents = [
 let currentTypeIndex = 0;
 let currentRoundType = types[currentTypeIndex];
 
-const appEl = document.getElementById('app');
 const modeLabelEl = document.getElementById('mode-label');
 const hintEl = document.getElementById('hint');
 const playfieldEl = document.getElementById('playfield');
@@ -574,7 +549,6 @@ const timerFillEl = document.getElementById('timer-fill');
 const scoreEl = document.getElementById('score');
 const startBtn = document.getElementById('start-btn');
 const cycleModeBtn = document.getElementById('cycle-mode-btn');
-const fullscreenBtn = document.getElementById('fullscreen-btn');
 const overlayEl = document.getElementById('overlay');
 const overlayTitleEl = document.getElementById('overlay-title');
 const overlayHintEl = document.getElementById('overlay-hint');
@@ -599,13 +573,13 @@ function updateModeLabel() {
   modeLabelEl.textContent = 'Раунд: ловим документы типа "' + currentRoundType + '"';
   let text = '';
   if (currentRoundType === 'разрешительный') {
-    text = 'Ловите только разрешительные документы: КЭР, СЭЗ, договоры и решения, которые дают право вести деятельность.';
+    text = 'Ловите только разрешительные документы: КЭР, ДВОС, ПЭК, договоры и решения, которые дают право вести деятельность.';
   } else if (currentRoundType === 'учетный') {
-    text = 'Ловите только учетные документы: сведения НВОС, паспорта ГОУ, программы контроля и другие документы учета.';
+    text = 'Ловите только учетные документы: сведения НВОС, паспорта ГОУ и отходов и другие документы учета.';
   } else if (currentRoundType === 'проектный') {
-    text = 'Ловите только проектные документы: НДВ, НДС, ППЭЭ, паспорта отходов и другие расчетные документы.';
+    text = 'Ловите только проектные документы: НДВ, НДС, ППЭЭ и другие расчетные документы.';
   } else if (currentRoundType === 'отчетный') {
-    text = 'Ловите только отчетные документы: ДВОС и другие формы, по которым предприятие отчитывается перед государством.';
+    text = 'Ловите только отчетные документы: отчет по ПЭК, 2-ТП (воздух) и другие формы отчетности.';
   }
   hintEl.textContent = text + ' После раунда вы увидите, что вы пропустили и какие документы были лишними.';
 }
@@ -859,11 +833,6 @@ function closeOverlay() {
   overlayEl.style.display = 'none';
 }
 
-function toggleLarge() {
-  const isLarge = appEl.classList.toggle('large');
-  fullscreenBtn.textContent = isLarge ? 'Свернуть' : 'Увеличить';
-}
-
 startBtn.addEventListener('click', startRound);
 cycleModeBtn.addEventListener('click', cycleMode);
 overlayCloseBtn.addEventListener('click', closeOverlay);
@@ -876,8 +845,6 @@ typeModalCloseBtn.addEventListener('click', closeTypeModal);
 typeModalBackdropEl.addEventListener('click', (e) => {
   if (e.target === typeModalBackdropEl) closeTypeModal();
 });
-
-fullscreenBtn.addEventListener('click', toggleLarge);
 
 updateModeLabel();
 resetRoundState();
