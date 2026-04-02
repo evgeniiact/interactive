@@ -19,7 +19,6 @@
   --soft: #e7f6ef;
   --error: #c0392b;
   --ok: #1e9150;
-  --warn: #d48a00;
 }
 
 * { box-sizing: border-box; }
@@ -215,7 +214,7 @@ h2 {
 .wa-cardsdeck__columns {
   margin-top: 4px;
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: 8px;
 }
 
@@ -269,11 +268,6 @@ h2 {
 .wa-cardsdeck-column-card.incorrect {
   border-color: var(--error);
   box-shadow: 0 0 0 1px rgba(192,57,43,0.4);
-}
-
-.wa-cardsdeck-column-card.partial {
-  border-color: var(--warn);
-  box-shadow: 0 0 0 1px rgba(212,138,0,0.4);
 }
 
 .wa-cardsdeck-column-card.clickable:hover {
@@ -360,10 +354,6 @@ h2 {
           <div class="wa-cardsdeck-column__title">Требует действий эколога</div>
           <div class="wa-cardsdeck-column__body"></div>
         </div>
-        <div class="wa-cardsdeck-column" data-column="clarify">
-          <div class="wa-cardsdeck-column__title">Сначала нужно уточнение</div>
-          <div class="wa-cardsdeck-column__body"></div>
-        </div>
         <div class="wa-cardsdeck-column" data-column="none">
           <div class="wa-cardsdeck-column__title">Действий не требуется</div>
           <div class="wa-cardsdeck-column__body"></div>
@@ -407,7 +397,7 @@ var allCards = [
   {
     id: 'c5',
     text: 'На котельной вместо одного вида топлива начали использовать другой. Производство считает, что режим работы не изменился.',
-    correctColumn: 'clarify'
+    correctColumn: 'action'
   },
   {
     id: 'c6',
@@ -427,7 +417,7 @@ var allCards = [
   {
     id: 'c9',
     text: 'Производство сообщает, что закупило новое сырье, но состав выбросов и сбросов еще не проверяли.',
-    correctColumn: 'clarify'
+    correctColumn: 'action'
   }
 ];
 
@@ -436,11 +426,11 @@ var commentsById = {
   c2: 'Перенос участка на другую территорию меняет фактическое размещение части объекта НВОС. Дальше нужно проверить инвентаризацию, проекты и разрешительные документы.',
   c3: 'Смена директора сама по себе не меняет сведения об объекте НВОС и не запускает переоформление экологических разрешений. Отдельную экологическую процедуру здесь не открывают.',
   c4: 'Новые наименование территории, ОКТМО и ОКАТО нужно применять в документах. Это сигнал проверить, где сведения уже требуют актуализации.',
-  c5: 'Смена топлива не всегда сразу означает пересмотр документов, но почти всегда требует проверки. Сначала уточните состав и объем выбросов и сравните их с действующей документацией.',
+  c5: 'Смена топлива почти всегда повод проверить документы. Сначала проверьте состав и объем выбросов и сравните их с действующей документацией.',
   c6: 'Изменение оргструктуры не влияет на адрес, собственника, параметры объекта НВОС и разрешения. Эколог учитывает это только в рабочих процессах, если нужно обновить внутренние шаблоны.',
   c7: 'Смена названия тянет работу с реквизитами в документах. Нужно разделить документы на те, где достаточно внести изменения, и те, которые подлежат переоформлению.',
   c8: 'Новый цех почти всегда означает проверку всей цепочки документов. Обычно начинают с инвентаризации и оценки, меняются ли проекты, программы и разрешения.',
-  c9: 'Новое сырье может изменить состав воздействия. До проверки нельзя считать изменение безопасным для документации, поэтому сначала соберите технические данные и сравните их с текущими нормативами.'
+  c9: 'Новое сырье может изменить состав воздействия. Пока вы не проверили состав и объем, изменения в документации отложить нельзя – сначала собирают данные и сравнивают с действующими нормативами.'
 };
 
 var placedCards = {};
@@ -578,7 +568,7 @@ function initColumnsDnD() {
 
 function clearMarks() {
   document.querySelectorAll('.wa-cardsdeck-column-card').forEach(function(el){
-    el.classList.remove('correct','incorrect','partial','clickable');
+    el.classList.remove('correct','incorrect','clickable');
     el.onclick = null;
   });
 }
@@ -624,7 +614,7 @@ function buildFeedback() {
   }
 
   return {
-    text: 'Есть неточности. Красная рамка показывает ошибку, желтая – ситуацию, где «нужно уточнение». Исправьте раскладку и проверьте снова.',
+    text: 'Есть неточности. Красная рамка показывает ошибку. Исправьте раскладку и проверьте снова.',
     cls: 'wa-cardsdeck__comment wa-cardsdeck__comment_error'
   };
 }
@@ -645,8 +635,6 @@ function checkAnswers() {
 
     if (placed === card.correctColumn) {
       el.classList.add('correct');
-    } else if (placed === 'clarify' || card.correctColumn === 'clarify') {
-      el.classList.add('partial');
     } else {
       el.classList.add('incorrect');
     }
