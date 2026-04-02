@@ -38,11 +38,27 @@ body {
   border: 1px solid var(--green-border);
   border-radius: 4px;
   padding: 16px 18px 20px 18px;
-  width: 100%;
+  width: min(780px, 90vw);
   max-width: 780px;
   box-shadow: 0 18px 40px rgba(0, 119, 96, 0.16);
   position: relative;
   overflow: hidden;
+}
+
+/* режим «крупный формат» – примерно половина экрана по ширине и высоте */
+#app.large {
+  position: fixed;
+  width: 50vw;
+  max-width: none;
+  height: 50vh;
+  left: 50%;
+  top: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 50;
+}
+
+#app.large .playfield {
+  height: calc(50vh - 180px);
 }
 
 header {
@@ -280,6 +296,7 @@ h2 {
 
 .doc-item-actions {
   flex-shrink: 0;
+  text-align: right;
 }
 
 .doc-item-actions button {
@@ -301,6 +318,7 @@ h2 {
   color: var(--ok);
   font-size: 10px;
   font-weight: 600;
+  margin-bottom: 4px;
 }
 
 .badge-wrong {
@@ -311,6 +329,7 @@ h2 {
   color: var(--error);
   font-size: 10px;
   font-weight: 600;
+  margin-bottom: 4px;
 }
 
 .modal-backdrop {
@@ -320,7 +339,7 @@ h2 {
   display: none;
   align-items: center;
   justify-content: center;
-  z-index: 20;
+  z-index: 60;
 }
 
 .modal {
@@ -373,6 +392,13 @@ h2 {
 }
 
 @media (max-width: 640px) {
+  #app.large {
+    width: 90vw;
+    height: 70vh;
+  }
+  #app.large .playfield {
+    height: calc(70vh - 190px);
+  }
   .playfield {
     height: 230px;
   }
@@ -397,7 +423,7 @@ h2 {
       <div class="timer-bar"><div class="timer-fill" id="timer-fill"></div></div>
     </div>
     <div>
-      <button class="btn btn-secondary" id="fullscreen-btn">Во весь экран</button>
+      <button class="btn btn-secondary" id="fullscreen-btn">Увеличить</button>
       <button class="btn btn-secondary" id="cycle-mode-btn">Сменить тип</button>
       <button class="btn btn-primary" id="start-btn">Старт</button>
     </div>
@@ -406,7 +432,7 @@ h2 {
   <div class="playfield" id="playfield"></div>
 
   <div class="info-bar">
-    <div class="hint" id="hint">Выберите тип документа и нажмите «Старт».</div>
+    <div class="hint" id="hint">Выберите тип документа: разрешительный, учетный, проектный или отчетный и нажмите «Старт».</div>
     <div class="score" id="score">Попаданий: 0 | Ошибок: 0</div>
   </div>
 
@@ -447,6 +473,7 @@ h2 {
 
 <script>
 const types = ['разрешительный', 'учетный', 'проектный', 'отчетный'];
+
 const typeSummaries = {
   'разрешительный': 'Разрешительные документы дают предприятию право работать с объектами и ресурсами: воздействовать на окружающую среду, забирать воду, сбрасывать стоки, эксплуатировать объект НВОС. Это КЭР, решения о предоставлении водного объекта, договоры водопользования, санитарно-эпидемиологические заключения и другие документы, без которых деятельность становится незаконной. Для эколога это зона наибольшего риска: просроченное или неактуальное разрешение напрямую ведет к претензиям и штрафам. При изменении реквизитов, адреса или собственника такие документы либо переоформляют, либо оформляют заново – поэтому важно четко понимать, какие из них относятся к разрешительным.',
   'учетный': 'Учетные документы фиксируют состояние предприятия и его объектов, но сами по себе не дают разрешений и не устанавливают нормативы. Это сведения об объекте НВОС в госреестре, паспорта ГОУ, программы производственного экологического контроля и другая база, которая описывает, что и как устроено на площадке. Для эколога учетная документация – фундамент: на нее опираются разрешения, проекты и отчетность. Любые изменения в адресах, собственниках, оборудовании сначала отражают в учете, иначе остальные документы начинают расходиться с фактом.',
@@ -532,6 +559,7 @@ const documents = [
 let currentTypeIndex = 0;
 let currentRoundType = types[currentTypeIndex];
 
+const appEl = document.getElementById('app');
 const modeLabelEl = document.getElementById('mode-label');
 const hintEl = document.getElementById('hint');
 const playfieldEl = document.getElementById('playfield');
@@ -565,15 +593,15 @@ function updateModeLabel() {
   modeLabelEl.textContent = 'Раунд: ловим документы типа "' + currentRoundType + '"';
   let text = '';
   if (currentRoundType === 'разрешительный') {
-    text = 'Кликайте по документам, которые дают право осуществлять деятельность (разрешения, решения, договоры на использование ресурсов).';
+    text = 'Ловите только разрешительные документы: КЭР, СЭЗ, договоры и решения, которые дают право вести деятельность.';
   } else if (currentRoundType === 'учетный') {
-    text = 'Кликайте по документам, которые фиксируют сведения об объекте, оборудовании и контроле, без установления нормативов.';
+    text = 'Ловите только учетные документы: сведения НВОС, паспорта ГОУ, программы контроля и другие документы учета.';
   } else if (currentRoundType === 'проектный') {
-    text = 'Кликайте по документам, где рассчитывают нормативы и описывают свойства отходов и выбросов.';
+    text = 'Ловите только проектные документы: НДВ, НДС, ППЭЭ, паспорта отходов и другие расчетные документы.';
   } else if (currentRoundType === 'отчетный') {
-    text = 'Кликайте по документам, в которых предприятие отчитывается о своем воздействии перед государством.';
+    text = 'Ловите только отчетные документы: ДВОС и другие формы, по которым предприятие отчитывается перед государством.';
   }
-  hintEl.textContent = text;
+  hintEl.textContent = text + ' После раунда вы увидите, что вы пропустили и какие документы были лишними.';
 }
 
 function cycleMode() {
@@ -647,8 +675,8 @@ function spawnBubble() {
   bubble.appendChild(span);
 
   const fieldRect = playfieldEl.getBoundingClientRect();
-  const maxLeft = fieldRect.width - 140;
-  const maxTop = fieldRect.height - 40;
+  const maxLeft = Math.max(fieldRect.width - 140, 20);
+  const maxTop = Math.max(fieldRect.height - 40, 20);
   const left = Math.random() * maxLeft;
   const top = Math.random() * maxTop;
   bubble.style.left = left + 'px';
@@ -718,7 +746,11 @@ function showResults() {
   const totalTargets = roundDocs.filter(d => d.isTarget).length;
   const caughtTargets = roundDocs.filter(d => d.isTarget && d.clickedCorrect).length;
 
-  overlayHintEl.textContent = 'Вы поймали ' + caughtTargets + ' из ' + totalTargets + ' документов нужного типа. Нажмите «Комментарий», чтобы вспомнить назначение каждого документа.';
+  overlayHintEl.textContent =
+    'Навигация по статусам. «Верно выбрали» – вы кликнули по документу нужного типа. ' +
+    '«Пропустили» – документ был нужного типа, но вы его не выбрали. ' +
+    '«Лишний документ» – вы кликнули по документу, который не относится к этому типу. ' +
+    'Вы поймали ' + caughtTargets + ' из ' + totalTargets + ' нужных документов.';
 
   docListEl.innerHTML = '';
 
@@ -757,6 +789,13 @@ function showResults() {
       badge.className = 'badge-wrong';
       badge.textContent = 'лишний документ';
       status.appendChild(badge);
+    } else {
+      const badge = document.createElement('span');
+      badge.className = 'badge-wrong';
+      badge.style.background = '#f5faf8';
+      badge.style.color = '#5d6a65';
+      badge.textContent = 'не участвовал в раунде';
+      status.appendChild(badge);
     }
 
     const btn = document.createElement('button');
@@ -782,7 +821,9 @@ function openModal(doc) {
   const p1 = document.createElement('p');
   p1.textContent = doc.comment;
   const p2 = document.createElement('p');
-  p2.textContent = 'Тип документа: ' + doc.type + '. Это поможет вам дальше в уроке быстрее ориентироваться, какие изменения влияют на этот документ и как с ним работать.';
+  p2.textContent =
+    'Тип документа: ' + doc.type +
+    '. Важно помнить, к какому типу относится документ: от этого зависит, как изменения в компании повлияют на работу эколога с этим документом.';
 
   modalBodyEl.appendChild(p1);
   modalBodyEl.appendChild(p2);
@@ -812,13 +853,9 @@ function closeOverlay() {
   overlayEl.style.display = 'none';
 }
 
-function toggleFullscreen() {
-  const elem = document.documentElement;
-  if (!document.fullscreenElement) {
-    if (elem.requestFullscreen) elem.requestFullscreen();
-  } else {
-    if (document.exitFullscreen) document.exitFullscreen();
-  }
+function toggleLarge() {
+  const isLarge = appEl.classList.toggle('large');
+  fullscreenBtn.textContent = isLarge ? 'Свернуть' : 'Увеличить';
 }
 
 startBtn.addEventListener('click', startRound);
@@ -834,7 +871,7 @@ typeModalBackdropEl.addEventListener('click', (e) => {
   if (e.target === typeModalBackdropEl) closeTypeModal();
 });
 
-fullscreenBtn.addEventListener('click', toggleFullscreen);
+fullscreenBtn.addEventListener('click', toggleLarge);
 
 updateModeLabel();
 resetRoundState();
