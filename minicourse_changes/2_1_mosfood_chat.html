@@ -1,0 +1,1737 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="google" content="notranslate" />
+  <title>МосФуд - рабочая переписка эколога</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #eef7f2;
+      --panel: #ffffff;
+      --panel-soft: #f6fbf8;
+      --line: #d6e8dd;
+      --line-strong: #bdd8c8;
+      --text: #20322a;
+      --muted: #61756b;
+      --green: #0c7a5a;
+      --green-2: #12936c;
+      --green-3: #dff5ea;
+      --green-4: #edf9f2;
+      --danger: #b94a48;
+      --warning: #a4681b;
+      --shadow: 0 18px 48px rgba(13, 73, 49, 0.10);
+      --shadow-soft: 0 8px 24px rgba(13, 73, 49, 0.08);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --radius-xs: 10px;
+    }
+
+    * { box-sizing: border-box; }
+
+    html, body {
+      margin: 0;
+      min-height: 100%;
+      font-family: 'Inter', sans-serif;
+      background:
+        radial-gradient(circle at top left, rgba(18,147,108,0.10), transparent 28%),
+        radial-gradient(circle at right, rgba(12,122,90,0.10), transparent 24%),
+        linear-gradient(180deg, #eff8f3 0%, #edf5f1 100%);
+      color: var(--text);
+    }
+
+    body {
+      padding: 0;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+    }
+
+    .shell {
+      max-width: 560px;
+      margin: 0 auto;
+    }
+
+    .topbar {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 18px;
+      padding: 10px 14px;
+      border: 1px solid rgba(12,122,90,0.14);
+      background: rgba(255,255,255,0.7);
+      backdrop-filter: blur(12px);
+      border-radius: 16px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .brand-mark {
+      width: 44px;
+      height: 44px;
+      border-radius: 14px;
+      background: linear-gradient(135deg, var(--green-2), var(--green));
+      position: relative;
+      box-shadow: inset 0 1px 0 rgba(255,255,255,0.25);
+      flex: 0 0 auto;
+    }
+
+    .brand-mark::before,
+    .brand-mark::after {
+      content: '';
+      position: absolute;
+      background: rgba(255,255,255,0.95);
+      border-radius: 999px;
+    }
+
+    .brand-mark::before {
+      width: 18px;
+      height: 18px;
+      left: 13px;
+      top: 8px;
+      transform: rotate(-32deg);
+      clip-path: ellipse(52% 70% at 50% 50%);
+    }
+
+    .brand-mark::after {
+      width: 3px;
+      height: 16px;
+      left: 21px;
+      top: 19px;
+    }
+
+    .brand-title {
+      font-size: 17px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+    }
+
+    .brand-subtitle {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .topmeta {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .chip {
+      border: 1px solid rgba(12,122,90,0.12);
+      background: #fff;
+      color: var(--muted);
+      border-radius: 999px;
+      padding: 8px 12px;
+      font-size: 12px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+
+    /* fixed viewport */
+    .viewport {
+      width:560px;
+      height:800px;
+      overflow:hidden;
+      border-radius:24px;
+      box-shadow: 0 18px 48px rgba(13,73,49,0.28);
+      border:1px solid rgba(12,122,90,0.16);
+      background:rgba(255,255,255,0.96);
+    }
+
+    .layout {
+      width: 560px;
+      height: 800px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 18px;
+      min-height: calc(100vh - 120px);
+    }
+
+    .sidebar,
+    .monitor {
+      border-radius: 24px;
+      overflow: hidden;
+      box-shadow: var(--shadow);
+      border: 1px solid rgba(12,122,90,0.12);
+      background: rgba(255,255,255,0.82);
+      backdrop-filter: blur(18px);
+    }
+
+    .sidebar {
+      display: flex;
+      flex-direction: column;
+      min-height: 780px;
+    }
+
+    .panel-head {
+      padding: 18px 18px 14px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(237,249,242,0.95), rgba(255,255,255,0.92));
+    }
+
+    .panel-kicker {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.10em;
+      color: var(--green);
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .panel-title {
+      font-size: 18px;
+      font-weight: 800;
+      line-height: 1.2;
+      letter-spacing: -0.02em;
+      margin: 0;
+    }
+
+    .panel-text {
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .stats {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding: 16px 18px;
+    }
+
+    .stat {
+      padding: 12px;
+      border-radius: 16px;
+      background: linear-gradient(180deg, #ffffff, #f5fbf7);
+      border: 1px solid var(--line);
+    }
+
+    .stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+      font-weight: 700;
+    }
+
+    .stat-value {
+      font-size: 22px;
+      line-height: 1;
+      font-weight: 800;
+      color: var(--green);
+    }
+
+    .stat-note {
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 6px;
+    }
+
+    .progress-box {
+      padding: 0 18px 18px;
+    }
+
+    .progress-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 8px;
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 600;
+    }
+
+    .progress-track {
+      height: 10px;
+      background: #e7f1ec;
+      border-radius: 999px;
+      overflow: hidden;
+      border: 1px solid rgba(12,122,90,0.08);
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--green-2), var(--green));
+      border-radius: 999px;
+      transition: width 0.3s ease;
+    }
+
+    .queue {
+      padding: 0 12px 14px;
+      overflow: auto;
+      flex: 1;
+    }
+
+    .queue-item {
+      position: relative;
+      display: grid;
+      grid-template-columns: 42px 1fr;
+      gap: 10px;
+      padding: 12px;
+      border-radius: 16px;
+      border: 1px solid transparent;
+      margin-bottom: 10px;
+      background: rgba(246,251,248,0.85);
+      cursor: pointer;
+      transition: 0.2s ease;
+    }
+
+    .queue-item:hover {
+      transform: translateY(-1px);
+      border-color: rgba(12,122,90,0.16);
+      background: #fff;
+    }
+
+    .queue-item.active {
+      border-color: rgba(12,122,90,0.24);
+      background: linear-gradient(180deg, #ffffff, #f3fbf6);
+      box-shadow: inset 0 0 0 1px rgba(12,122,90,0.06);
+    }
+
+    .queue-item.done::after {
+      content: '✓';
+      position: absolute;
+      right: 10px;
+      top: 10px;
+      width: 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
+      border-radius: 999px;
+      background: var(--green-3);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+    }
+
+    .avatar {
+      width: 42px;
+      height: 42px;
+      border-radius: 14px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 12px;
+      font-weight: 800;
+      letter-spacing: 0.03em;
+    }
+
+    .avatar.legal { background: linear-gradient(135deg, #0d8f65, #0c7a5a); }
+    .avatar.prod { background: linear-gradient(135deg, #4c9f79, #2c825d); }
+    .avatar.hr { background: linear-gradient(135deg, #7ba98f, #4d8a6d); }
+    .avatar.ops { background: linear-gradient(135deg, #4d8f8d, #2d7170); }
+    .avatar.own { background: linear-gradient(135deg, #5e8d4e, #3f6d31); }
+
+    .queue-title {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.35;
+      padding-right: 28px;
+    }
+
+    .queue-meta {
+      margin-top: 4px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .monitor {
+      display: flex;
+      flex-direction: column;
+      min-height: 780px;
+      position: relative;
+      background:
+        linear-gradient(180deg, rgba(255,255,255,0.96), rgba(248,252,249,0.98)),
+        radial-gradient(circle at top right, rgba(18,147,108,0.10), transparent 26%);
+    }
+
+    .monitor-head {
+      padding: 18px 22px;
+      border-bottom: 1px solid var(--line);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      background: linear-gradient(180deg, rgba(237,249,242,0.92), rgba(255,255,255,0.92));
+    }
+
+    .monitor-title {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      min-width: 0;
+    }
+
+    .signal {
+      width: 12px;
+      height: 12px;
+      border-radius: 999px;
+      background: #1bb978;
+      box-shadow: 0 0 0 6px rgba(27,185,120,0.13);
+      flex: 0 0 auto;
+    }
+
+    .monitor-name {
+      font-size: 17px;
+      font-weight: 800;
+      line-height: 1.2;
+    }
+
+    .monitor-sub {
+      margin-top: 3px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .monitor-tools {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      justify-content: flex-end;
+    }
+
+    .tool-btn {
+      border: 1px solid rgba(12,122,90,0.12);
+      background: #fff;
+      color: var(--green);
+      border-radius: 12px;
+      padding: 10px 12px;
+      font-size: 12px;
+      font-weight: 700;
+      cursor: pointer;
+    }
+
+    .tool-btn:hover {
+      background: var(--green-4);
+    }
+
+    .chat-wrap {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) 320px;
+      min-height: 0;
+      flex: 1;
+    }
+
+    .chat-main {
+      border-right: 1px solid var(--line);
+      display: flex;
+      flex-direction: column;
+      min-width: 0;
+    }
+
+    .chat-stream {
+      flex: 1;
+      overflow: auto;
+      padding: 24px 24px 20px;
+      background:
+        linear-gradient(180deg, rgba(250,253,251,0.9), rgba(246,251,248,0.9));
+    }
+
+    .day-sep {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: rgba(255,255,255,0.88);
+      border: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 11px;
+      font-weight: 700;
+      margin: 0 auto 20px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .bubble-row {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 18px;
+      align-items: flex-end;
+    }
+
+    .bubble-row.system {
+      justify-content: center;
+    }
+
+    .bubble-row.user {
+      justify-content: flex-end;
+    }
+
+    .bubble-avatar {
+      width: 38px;
+      height: 38px;
+      border-radius: 12px;
+      display: grid;
+      place-items: center;
+      color: #fff;
+      font-size: 11px;
+      font-weight: 800;
+      flex: 0 0 auto;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .bubble-stack {
+      max-width: min(720px, 82%);
+    }
+
+    .bubble-head {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 6px;
+      font-size: 12px;
+    }
+
+    .bubble-name {
+      font-weight: 800;
+    }
+
+    .bubble-role {
+      color: var(--muted);
+    }
+
+    .bubble-time {
+      color: #8ca096;
+      margin-left: auto;
+      white-space: nowrap;
+    }
+
+    .bubble {
+      padding: 16px 18px;
+      border-radius: 20px;
+      font-size: 15px;
+      line-height: 1.55;
+      border: 1px solid rgba(12,122,90,0.10);
+      box-shadow: var(--shadow-soft);
+      position: relative;
+      white-space: pre-line;
+    }
+
+    .bubble.incoming {
+      background: #fff;
+      border-top-left-radius: 8px;
+    }
+
+    .bubble.incoming::before {
+      content: '';
+      position: absolute;
+      left: -7px;
+      bottom: 10px;
+      width: 16px;
+      height: 16px;
+      background: #fff;
+      border-left: 1px solid rgba(12,122,90,0.10);
+      border-bottom: 1px solid rgba(12,122,90,0.10);
+      transform: rotate(45deg);
+      border-bottom-left-radius: 4px;
+    }
+
+    .bubble.outgoing {
+      background: linear-gradient(180deg, #e8f8ef, #dff4e8);
+      border-color: rgba(12,122,90,0.15);
+      border-top-right-radius: 8px;
+    }
+
+    .bubble.outgoing::before {
+      content: '';
+      position: absolute;
+      right: -7px;
+      bottom: 10px;
+      width: 16px;
+      height: 16px;
+      background: #e4f6eb;
+      border-right: 1px solid rgba(12,122,90,0.15);
+      border-top: 1px solid rgba(12,122,90,0.15);
+      transform: rotate(45deg);
+      border-top-right-radius: 4px;
+    }
+
+    .system-note {
+      max-width: 540px;
+      padding: 10px 14px;
+      border-radius: 999px;
+      background: rgba(12,122,90,0.08);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 700;
+      text-align: center;
+      border: 1px solid rgba(12,122,90,0.10);
+    }
+
+    .composer {
+      padding: 18px 20px 20px;
+      border-top: 1px solid var(--line);
+      background: rgba(255,255,255,0.95);
+    }
+
+    .composer-label {
+      font-size: 12px;
+      color: var(--muted);
+      font-weight: 700;
+      margin-bottom: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+    }
+
+    .answers {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 10px;
+    }
+
+    .answer {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff, #f8fcf9);
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 14px;
+      line-height: 1.45;
+      color: var(--text);
+      cursor: pointer;
+      transition: 0.18s ease;
+      position: relative;
+    }
+
+    .answer:hover {
+      border-color: rgba(12,122,90,0.22);
+      transform: translateY(-1px);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .answer.selected {
+      border-color: rgba(12,122,90,0.35);
+      background: linear-gradient(180deg, #f0fbf5, #e9f8f0);
+      box-shadow: inset 0 0 0 1px rgba(12,122,90,0.08);
+    }
+
+    .answer.correct {
+      border-color: rgba(12,122,90,0.45);
+      background: linear-gradient(180deg, #ecfaf2, #dcf4e6);
+    }
+
+    .answer.incorrect {
+      border-color: rgba(185,74,72,0.35);
+      background: linear-gradient(180deg, #fff8f7, #feefee);
+    }
+
+    .answer-tag {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 11px;
+      font-weight: 800;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 6px;
+    }
+
+    .answer-title {
+      font-weight: 800;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .answer-text {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .action-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-top: 14px;
+      flex-wrap: wrap;
+    }
+
+    .btn-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+    }
+
+    .btn {
+      border: none;
+      border-radius: 14px;
+      padding: 12px 16px;
+      font-size: 13px;
+      font-weight: 800;
+      cursor: pointer;
+      transition: 0.18s ease;
+    }
+
+    .btn:disabled {
+      opacity: 0.45;
+      cursor: default;
+    }
+
+    .btn-primary {
+      background: linear-gradient(135deg, var(--green-2), var(--green));
+      color: #fff;
+      box-shadow: 0 12px 28px rgba(12,122,90,0.22);
+    }
+
+    .btn-primary:hover:not(:disabled) {
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: #fff;
+      color: var(--green);
+      border: 1px solid rgba(12,122,90,0.14);
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+      background: var(--green-4);
+    }
+
+    .feedback-side {
+      padding: 22px;
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      background: linear-gradient(180deg, rgba(248,252,249,0.94), rgba(240,248,244,0.98));
+    }
+
+    .decision-card,
+    .feedback-card,
+    .hint-card {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: rgba(255,255,255,0.92);
+      padding: 16px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .card-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      font-weight: 800;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    .decision-value {
+      font-size: 16px;
+      line-height: 1.35;
+      font-weight: 800;
+    }
+
+    .decision-sub {
+      margin-top: 8px;
+      font-size: 13px;
+      line-height: 1.5;
+      color: var(--muted);
+    }
+
+    .feedback-card {
+      display: none;
+    }
+
+    .feedback-card.show {
+      display: block;
+    }
+
+    .feedback-card.ok {
+      border-color: rgba(12,122,90,0.18);
+      background: linear-gradient(180deg, #f4fcf7, #ecf8f1);
+    }
+
+    .feedback-card.bad {
+      border-color: rgba(185,74,72,0.18);
+      background: linear-gradient(180deg, #fffafa, #fdf1f0);
+    }
+
+    .feedback-title {
+      font-size: 15px;
+      font-weight: 800;
+      margin-bottom: 8px;
+    }
+
+    .feedback-text {
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--text);
+    }
+
+    .hint-card ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 13px;
+      line-height: 1.5;
+    }
+
+    .hint-card li + li {
+      margin-top: 6px;
+    }
+
+    .summary {
+      display: none;
+      padding: 26px;
+      height: 100%;
+      overflow: auto;
+      background: linear-gradient(180deg, rgba(252,255,253,0.98), rgba(242,249,245,0.98));
+    }
+
+    .summary.show {
+      display: block;
+    }
+
+    .summary-head {
+      max-width: 860px;
+      margin-bottom: 18px;
+    }
+
+    .summary-kicker {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      background: var(--green-3);
+      color: var(--green);
+      font-size: 12px;
+      font-weight: 800;
+      margin-bottom: 12px;
+    }
+
+    .summary h2 {
+      margin: 0;
+      font-size: 28px;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .summary p {
+      margin: 10px 0 0;
+      max-width: 720px;
+      font-size: 15px;
+      line-height: 1.6;
+      color: var(--muted);
+    }
+
+    .summary-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 14px;
+      margin: 18px 0 24px;
+    }
+
+    .summary-stat {
+      border-radius: 18px;
+      padding: 18px;
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .summary-stat .num {
+      font-size: 30px;
+      line-height: 1;
+      font-weight: 800;
+      color: var(--green);
+      margin-bottom: 8px;
+    }
+
+    .summary-stat .txt {
+      font-size: 13px;
+      color: var(--muted);
+      line-height: 1.45;
+    }
+
+    .review-list {
+      display: grid;
+      gap: 12px;
+    }
+
+    .review-item {
+      border-radius: 18px;
+      background: #fff;
+      border: 1px solid var(--line);
+      box-shadow: var(--shadow-soft);
+      overflow: hidden;
+    }
+
+    .review-head {
+      width: 100%;
+      padding: 16px 18px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 14px;
+      text-align: left;
+      background: #fff;
+      border: none;
+      cursor: pointer;
+    }
+
+    .review-head:hover {
+      background: var(--panel-soft);
+    }
+
+    .review-title {
+      font-size: 14px;
+      line-height: 1.45;
+      font-weight: 700;
+    }
+
+    .review-status {
+      flex: 0 0 auto;
+      font-size: 12px;
+      font-weight: 800;
+      border-radius: 999px;
+      padding: 7px 10px;
+    }
+
+    .review-status.ok {
+      background: var(--green-3);
+      color: var(--green);
+    }
+
+    .review-status.bad {
+      background: #fbe7e6;
+      color: var(--danger);
+    }
+
+    .review-body {
+      display: none;
+      padding: 0 18px 18px;
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--muted);
+    }
+
+    .review-item.open .review-body {
+      display: block;
+    }
+
+    .review-body strong {
+      color: var(--text);
+    }
+
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(14, 32, 24, 0.44);
+      backdrop-filter: blur(8px);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 100;
+      padding: 20px;
+    }
+
+    .modal {
+      width: min(760px, 100%);
+      background: linear-gradient(180deg, #ffffff, #f7fbf8);
+      border-radius: 24px;
+      border: 1px solid rgba(12,122,90,0.16);
+      box-shadow: 0 28px 80px rgba(10, 38, 27, 0.28);
+      overflow: hidden;
+    }
+
+    .modal-head {
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, rgba(223,245,234,0.82), rgba(255,255,255,0.92));
+    }
+
+    .modal-head h3 {
+      margin: 0;
+      font-size: 24px;
+      line-height: 1.1;
+      letter-spacing: -0.03em;
+    }
+
+    .modal-head p {
+      margin: 10px 0 0;
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--muted);
+      max-width: 640px;
+    }
+
+    .modal-body {
+      padding: 22px 24px 24px;
+      display: grid;
+      grid-template-columns: 1.1fr 0.9fr;
+      gap: 16px;
+    }
+
+    .rule-box,
+    .steps-box {
+      border-radius: 18px;
+      border: 1px solid var(--line);
+      background: #fff;
+      padding: 18px;
+    }
+
+    .rule-box h4,
+    .steps-box h4 {
+      margin: 0 0 10px;
+      font-size: 13px;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--green);
+    }
+
+    .rule-box p {
+      margin: 0 0 10px;
+      font-size: 14px;
+      line-height: 1.55;
+      color: var(--text);
+    }
+
+    .steps-box ol {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--text);
+      font-size: 14px;
+      line-height: 1.55;
+    }
+
+    .steps-box li + li {
+      margin-top: 8px;
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      padding: 0 24px 24px;
+      flex-wrap: wrap;
+    }
+
+    .modal-note {
+      font-size: 12px;
+      color: var(--muted);
+      max-width: 420px;
+    }
+
+    .hidden {
+      display: none !important;
+    }
+
+    @media (max-width: 1140px) {
+      /* fixed viewport */
+    .viewport {
+      width:560px;
+      height:800px;
+      overflow:hidden;
+      border-radius:24px;
+      box-shadow: 0 18px 48px rgba(13,73,49,0.28);
+      border:1px solid rgba(12,122,90,0.16);
+      background:rgba(255,255,255,0.96);
+    }
+
+    .layout {
+        grid-template-columns: 1fr;
+      }
+
+      .sidebar,
+      .monitor {
+        min-height: auto;
+      }
+
+      .chat-wrap {
+        grid-template-columns: 1fr;
+      }
+
+      .chat-main {
+        border-right: none;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .feedback-side {
+        min-height: 280px;
+      }
+    }
+
+    @media (max-width: 760px) {
+      body {
+        padding: 12px;
+      }
+
+      .topbar,
+      .monitor-head {
+        padding: 14px;
+      }
+
+      /* fixed viewport */
+    .viewport {
+      width:560px;
+      height:800px;
+      overflow:hidden;
+      border-radius:24px;
+      box-shadow: 0 18px 48px rgba(13,73,49,0.28);
+      border:1px solid rgba(12,122,90,0.16);
+      background:rgba(255,255,255,0.96);
+    }
+
+    .layout {
+        gap: 14px;
+      }
+
+      .stats,
+      .summary-grid {
+        grid-template-columns: 1fr;
+      }
+
+      .bubble-stack {
+        max-width: 100%;
+      }
+
+      .chat-stream {
+        padding: 18px 14px 16px;
+      }
+
+      .composer,
+      .feedback-side,
+      .summary,
+      .panel-head,
+      .progress-box {
+        padding-left: 14px;
+        padding-right: 14px;
+      }
+
+      .queue {
+        padding-left: 10px;
+        padding-right: 10px;
+      }
+
+      .modal-body {
+        grid-template-columns: 1fr;
+        padding: 16px;
+      }
+
+      .modal-head,
+      .modal-actions {
+        padding-left: 16px;
+        padding-right: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark" aria-hidden="true"></div>
+        <div>
+          <div class="brand-title">Рабочая переписка эколога</div>
+          <div class="brand-subtitle">Микрокурс по действиям при изменениях в реквизитах и собственности</div>
+        </div>
+      </div>
+      <div class="topmeta">
+        <div class="chip">Предприятие – «МосФуд»</div>
+      </div>
+    </div>
+
+    <div class="viewport">
+    <div class="layout">
+      <aside class="sidebar">
+        <div class="panel-head">
+          <div class="panel-kicker">Интерактив 1</div>
+          <h1 class="panel-title">Лента входящих сообщений</h1>
+          <div class="panel-text">Вы работаете экологом «МосФуд». На экране появляются сообщения от коллег. По каждому выберите первое рабочее действие.</div>
+        </div>
+
+        <div class="stats">
+          <div class="stat">
+            <div class="stat-label">Сообщений</div>
+            <div class="stat-value" id="totalCount">10</div>
+            <div class="stat-note">Полная смена входящих</div>
+          </div>
+          <div class="stat">
+            <div class="stat-label">Точность</div>
+            <div class="stat-value" id="scoreValue">0%</div>
+            <div class="stat-note">Считается после проверки</div>
+          </div>
+        </div>
+
+        <div class="progress-box">
+          <div class="progress-row">
+            <span id="progressText">Карточка 1 из 10</span>
+            <span id="progressMini">0 решено</span>
+          </div>
+          <div class="progress-track">
+            <div class="progress-fill" id="progressFill"></div>
+          </div>
+        </div>
+
+        <div class="queue" id="queue"></div>
+      </aside>
+
+      <section class="monitor">
+        <div id="quizView" style="display:flex; flex-direction:column; min-height:780px;">
+          <div class="monitor-head">
+            <div class="monitor-title">
+              <div class="signal"></div>
+              <div>
+                <div class="monitor-name" id="monitorName">Внутренняя переписка «МосФуд»</div>
+                <div class="monitor-sub" id="monitorSub">Оцените сообщение и примите первое действие</div>
+              </div>
+            </div>
+            <div class="monitor-tools">
+              <button class="tool-btn" id="helpBtn" type="button">Правила</button>
+              <button class="tool-btn" id="restartTopBtn" type="button">Сбросить</button>
+            </div>
+          </div>
+
+          <div class="chat-wrap">
+            <div class="chat-main">
+              <div class="chat-stream" id="chatStream"></div>
+
+              <div class="composer">
+                <div class="composer-label">Ваше решение</div>
+                <div class="answers" id="answers"></div>
+                <div class="action-row">
+                  <button class="btn btn-secondary" id="prevBtn" type="button">Назад</button>
+                  <div class="btn-group">
+                    <button class="btn btn-secondary" id="resetBtn" type="button">Начать заново</button>
+                    <button class="btn btn-primary" id="checkBtn" type="button">Проверить</button>
+                    <button class="btn btn-primary hidden" id="retryBtn" type="button">Ответить заново</button>
+                    <button class="btn btn-primary hidden" id="nextBtn" type="button">Дальше</button>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <aside class="feedback-side">
+              <div class="decision-card">
+                <div class="card-label">Текущее сообщение</div>
+                <div class="decision-value" id="decisionTitle">Оцените входящую новость</div>
+                <div class="decision-sub" id="decisionSub">Сначала прочитайте сообщение в переписке. Затем выберите первое рабочее действие эколога.</div>
+              </div>
+
+              <div class="feedback-card" id="feedbackCard">
+                <div class="feedback-title" id="feedbackTitle"></div>
+                <div class="feedback-text" id="feedbackText"></div>
+              </div>
+
+              <div class="hint-card">
+                <div class="card-label">Как принимать решение</div>
+                <ul>
+                  <li>Реагировать сразу – если изменение точно затрагивает экодокументы.</li>
+                  <li>Сначала запросить уточнение – если без деталей нельзя выбрать дальнейшие действия.</li>
+                  <li>Передать без экодействий – если новость не влияет на документы эколога.</li>
+                </ul>
+              </div>
+            </aside>
+          </div>
+        </div>
+
+        <div class="summary" id="summaryView">
+          <div class="summary-head">
+            <div class="summary-kicker">Интерактив завершен</div>
+            <h2>Вы отработали первый шаг эколога – реакцию на входящую новость</h2>
+            <p>Ниже разбор по всем сообщениям. Смотрите, где вы правильно определили первое действие, а где поспешили или, наоборот, не включились в работу вовремя.</p>
+          </div>
+
+          <div class="summary-grid">
+            <div class="summary-stat">
+              <div class="num" id="sumCorrect">0</div>
+              <div class="txt">правильных решений из 10</div>
+            </div>
+            <div class="summary-stat">
+              <div class="num" id="sumAccuracy">0%</div>
+              <div class="txt">точность по всей ленте</div>
+            </div>
+            <div class="summary-stat">
+              <div class="num" id="sumNeedCheck">0</div>
+              <div class="txt">карточек с ответом «сначала запросить уточнение»</div>
+            </div>
+          </div>
+
+          <div class="btn-group" style="margin-bottom:18px;">
+            <button class="btn btn-secondary" id="restartSummaryBtn" type="button">Пройти заново</button>
+          </div>
+
+          <div class="review-list" id="reviewList"></div>
+        </div>
+      </section>
+    </div>
+    </div>
+  </div>
+
+  <div class="modal-backdrop" id="startModal">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal-head">
+        <div class="panel-kicker">Перед началом</div>
+        <h3 id="modalTitle">Как проходить интерактив</h3>
+        <p>На экране вы увидите рабочую переписку по предприятию «МосФуд». Каждое сообщение – это новая ситуация из реальной практики эколога.</p>
+      </div>
+      <div class="modal-body">
+        <div class="rule-box">
+          <h4>Что вы тренируете</h4>
+          <p>Выбираете не конечную юридическую процедуру, а первое рабочее действие эколога после входящего сообщения.</p>
+          <p>Это помогает быстро решать, когда нужно сразу запускать работу по документам, когда сначала собирать детали, а когда не тратить время на лишние действия.</p>
+        </div>
+        <div class="steps-box">
+          <h4>Три варианта ответа</h4>
+          <ol>
+            <li><strong>Реагировать сразу</strong> – если изменение точно задевает экодокументы.</li>
+            <li><strong>Сначала запросить уточнение</strong> – если без деталей нельзя выбрать правильное действие.</li>
+            <li><strong>Передать без экодействий</strong> – если новость не влияет на документы эколога.</li>
+          </ol>
+        </div>
+      </div>
+      <div class="modal-actions">
+        <div class="modal-note">После каждого ответа вы увидите короткий разбор. Перейти дальше можно только после правильного решения.</div>
+        <button class="btn btn-primary" id="startBtn" type="button">Начать интерактив</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const questions = [
+      {
+        sender: 'Юридический отдел',
+        role: 'legal',
+        short: 'Новый юридический адрес в ЕГРЮЛ',
+        time: '09:12',
+        intro: 'Сообщение от юриста',
+        message: 'В ЕГРЮЛ зарегистрирован новый юридический адрес компании «МосФуд». Завод и площадка НВОС работают по прежнему фактическому адресу.',
+        options: [
+          { key: 'react', title: 'Реагировать сразу', text: 'Изменение точно затрагивает экодокументы и сведения по объекту НВОС.' },
+          { key: 'clarify', title: 'Сначала запросить уточнение', text: 'Нужно собрать детали перед запуском работы.' },
+          { key: 'pass', title: 'Передать без экодействий', text: 'Новость не влияет на пакет документов эколога.' }
+        ],
+        correct: 'react',
+        correctTitle: 'Верно. Нужно включаться сразу.',
+        comment: 'Юридический адрес входит в реквизиты организации. Эти данные используются в ДВОС, проектах, ПЭК и сведениях об объекте НВОС, поэтому экологу нужно сразу проверять пакет документов и планировать актуализацию сведений.'
+      },
+      {
+        sender: 'Начальник склада',
+        role: 'ops',
+        short: 'Склад переехал в соседнее здание',
+        time: '10:04',
+        intro: 'Сообщение от склада',
+        message: 'Перенесли склад готовой продукции в соседнее здание на той же производственной площадке.',
+        options: [
+          { key: 'react', title: 'Реагировать сразу', text: 'Изменение точно требует работы с документами уже сейчас.' },
+          { key: 'clarify', title: 'Сначала запросить уточнение', text: 'Нужно понять, затронуты ли источники, отходы, вентиляция и стоки.' },
+          { key: 'pass', title: 'Передать без экодействий', text: 'Можно не включаться, это хозяйственный вопрос.' }
+        ],
+        correct: 'clarify',
+        correctTitle: 'Верно. Сначала собираем детали.',
+        comment: 'По одной фразе нельзя понять, изменились ли источники выбросов, вентиляция, отходы или стоки. Эколог уже включается в работу, но его первое действие – запросить уточнение, а не сразу запускать переоформление документов.'
+      },
+      {
+        sender: 'Производство',
+        role: 'prod',
+        short: 'Участок подготовки сырья перенесли',
+        time: '10:47',
+        intro: 'Сообщение от начальника производства',
+        message: 'Участок подготовки сырья перенесли в другое здание на соседней территории. В ЕГРЮЛ пока ничего не меняли.',
+        options: [
+          { key: 'react', title: 'Реагировать сразу', text: 'Нужно сразу проверять инвентаризацию, проекты, ПЭК и ДВОС.' },
+          { key: 'clarify', title: 'Сначала запросить уточнение', text: 'Можно пока не спешить и только собрать общие данные.' },
+          { key: 'pass', title: 'Передать без экодействий', text: 'Изменение не влияет на документы эколога.' }
+        ],
+        correct: 'react',
+        correctTitle: 'Верно. Изменение уже затрагивает экологический контур.',
+        comment: 'Меняется фактическое размещение части объекта НВОС и, вероятно, схема выбросов, отходов или стоков. Это прямая причина сразу включиться в проверку инвентаризации, проектов, ПЭК и ДВОС.'
+      },
+      {
+        sender: 'Отдел кадров',
+        role: 'hr',
+        short: 'Сменился генеральный директор',
+        time: '11:16',
+        intro: 'Сообщение от кадров',
+        message: 'Сменился генеральный директор. Собственник, адрес завода, состав оборудования и сырья не менялись.',
+        options: [
+          { key: 'react', title: 'Реагировать сразу', text: 'Надо немедленно запускать работу по переоформлению экодокументов.' },
+          { key: 'clarify', title: 'Сначала запросить уточнение', text: 'Нужно проверить, не влияет ли смена директора на объект НВОС.' },
+          { key: 'pass', title: 'Передать без экодействий', text: 'Экологическая процедура не требуется.' }
+        ],
+        correct: 'pass',
+        correctTitle: 'Верно. Экодействий не требуется.',
+        comment: 'Смена директора сама по себе не меняет параметры объекта НВОС и не запускает переоформление разрешительных документов. При необходимости обновляют доверенности и подписи, но это не отдельная экологическая процедура.'
+      },
+      {
+        sender: 'Юридический отдел',
+        role: 'legal',
+        short: 'Новые ОКТМО и ОКАТО',
+        time: '11:42',
+        intro: 'Сообщение от юриста',
+        message: 'В регионе изменилось административно-территориальное деление. Для площадки завода присвоены новые ОКТМО и ОКАТО.',
+        options: [
+          { key: 'react', title: 'Реагировать сразу', text: 'Нужно проверить, где обновить сведения и реквизиты.' },
+          { key: 'clarify', title: 'Сначала запросить уточнение', text: 'Пока недостаточно данных, экологу рано включаться.' },
+          { key: 'pass', title: 'Передать без экодействий', text: 'Это бухгалтерский вопрос, экодокументы не затронуты.' }
+        ],
+        correct: 'react',
+        correctTitle: 'Верно. Это рабочий сигнал для эколога.',
+        comment: 'Новые ОКТМО, ОКАТО и наименование территории нужно использовать в учетных и разрешительных документах. Экологу нужно сразу проверить, где сведения уже надо актуализировать.'
+      },
+      {
+        sender: 'Юридический отдел',
+        role: 'legal',
+        short: 'Компания сменила название',
+        time: '12:08',
+        intro: 'Сообщение от юриста',
+        message: 'Компания «МосФуд» сменила название. Юридический адрес, собственник и площадка НВОС остались прежними.',
+        options: [
+          { key: 'react', title: 'Реагировать сразу', text: 'Нужно определить, какие документы корректировать, переоформлять и актуализировать.' },
+          { key: 'clarify', title: 'Сначала запросить уточнение', text: 'Пока недостаточно информации для действий.' },
+          { key: 'pass', title: 'Передать без экодействий', text: 'Название не влияет на экодокументы.' }
+        ],
+        correct: 'react',
+        correctTitle: 'Верно. Смена названия сразу попадает в работу эколога.',
+        comment: 'Смена наименования меняет реквизиты юридического лица в документах. Нужно сразу разделить пакет на документы для внесения изменений, переоформления и актуализации сведений.'
+      },
+      {
+        sender: 'Главный инженер',
+        role: 'ops',
+        short: 'Часть оборудования передали дочке',
+        time: '13:21',
+        intro: 'Сообщение от главного инженера',
+        message: 'Часть оборудования цеха передана на баланс дочерней компании, но эксплуатация и режим работы на площадке не менялись.',
+        options: [
+          { key: 'react', title: 'Реагировать сразу', text: 'Нужно сразу переоформлять все документы на новый контур собственности.' },
+          { key: 'clarify', title: 'Сначала запросить уточнение', text: 'Нужно понять, меняется ли собственник объекта НВОС, пользователь площадки или только учет имущества.' },
+          { key: 'pass', title: 'Передать без экодействий', text: 'Это внутренний бухгалтерский вопрос без последствий для экологии.' }
+        ],
+        correct: 'clarify',
+        correctTitle: 'Верно. Сначала уточняем юридическую суть изменения.',
+        comment: 'По сообщению неясно, меняется ли собственник объекта НВОС, пользователь площадки или только внутренний баланс имущества. Пока это не выяснено, первым шагом эколога будет запрос уточнений.'
+      },
+      {
+        sender: 'Юридический отдел',
+        role: 'legal',
+        short: 'Продали здание склада',
+        time: '14:03',
+        intro: 'Сообщение от юриста',
+        message: 'Продали здание склада другой компании, при этом «МосФуд» заключил новый договор аренды и продолжает пользоваться зданием под тот же склад.',
+        options: [
+          { key: 'react', title: 'Реагировать сразу', text: 'Нужно немедленно запускать полное переоформление пакета документов.' },
+          { key: 'clarify', title: 'Сначала запросить уточнение', text: 'Нужно проверить, связано ли здание с объектом НВОС, отходами, выбросами или водопользованием.' },
+          { key: 'pass', title: 'Передать без экодействий', text: 'Смена собственника здания не касается эколога.' }
+        ],
+        correct: 'clarify',
+        correctTitle: 'Верно. Без деталей нельзя выбрать правильное действие.',
+        comment: 'Нужно понять, входит ли это здание в контур объекта НВОС и влияет ли оно на обращение с отходами, выбросы или водопользование. До этого запускать переоформление документов рано.'
+      },
+      {
+        sender: 'HR',
+        role: 'hr',
+        short: 'Обновили оргструктуру',
+        time: '14:36',
+        intro: 'Сообщение от HR',
+        message: 'Объединили два отдела и обновили оргструктуру. Реквизиты компании и площадки НВОС не менялись.',
+        options: [
+          { key: 'react', title: 'Реагировать сразу', text: 'Нужно корректировать экодокументы в связи с новой оргструктурой.' },
+          { key: 'clarify', title: 'Сначала запросить уточнение', text: 'Нужно выяснить, не затронут ли объект НВОС.' },
+          { key: 'pass', title: 'Передать без экодействий', text: 'Это внутреннее организационное изменение без работы по экодокументам.' }
+        ],
+        correct: 'pass',
+        correctTitle: 'Верно. Это фон для эколога.',
+        comment: 'Внутренняя оргструктура не влияет на адрес, собственника, параметры объекта НВОС и условия разрешительных документов. По экологическому пакету отдельные действия не требуются.'
+      },
+      {
+        sender: 'Собственник',
+        role: 'own',
+        short: 'Готовят продажу имущественного комплекса',
+        time: '15:12',
+        intro: 'Сообщение от собственника',
+        message: 'Принято решение продать весь имущественный комплекс завода «МосФуд» другой компании. Сделка готовится, производство пока работает в обычном режиме.',
+        options: [
+          { key: 'react', title: 'Реагировать сразу', text: 'Нужно заранее готовить перечень документов на переоформление и актуализацию.' },
+          { key: 'clarify', title: 'Сначала запросить уточнение', text: 'Пока можно не включаться, достаточно дождаться сделки.' },
+          { key: 'pass', title: 'Передать без экодействий', text: 'До завершения сделки работа эколога не нужна.' }
+        ],
+        correct: 'react',
+        correctTitle: 'Верно. Эколог должен включаться заранее.',
+        comment: 'Планируется смена собственника объекта НВОС и, возможно, водопользователя. Экологу нужно заранее подготовить перечень документов для актуализации и переоформления, чтобы не потерять время после сделки.'
+      }
+    ];
+
+    const queueEl = document.getElementById('queue');
+    const chatStream = document.getElementById('chatStream');
+    const answersEl = document.getElementById('answers');
+    const feedbackCard = document.getElementById('feedbackCard');
+    const feedbackTitle = document.getElementById('feedbackTitle');
+    const feedbackText = document.getElementById('feedbackText');
+    const decisionTitle = document.getElementById('decisionTitle');
+    const decisionSub = document.getElementById('decisionSub');
+    const progressText = document.getElementById('progressText');
+    const progressMini = document.getElementById('progressMini');
+    const progressFill = document.getElementById('progressFill');
+    const scoreValue = document.getElementById('scoreValue');
+    const checkBtn = document.getElementById('checkBtn');
+    const retryBtn = document.getElementById('retryBtn');
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    const resetBtn = document.getElementById('resetBtn');
+    const restartTopBtn = document.getElementById('restartTopBtn');
+    const helpBtn = document.getElementById('helpBtn');
+    const startModal = document.getElementById('startModal');
+    const startBtn = document.getElementById('startBtn');
+    const quizView = document.getElementById('quizView');
+    const summaryView = document.getElementById('summaryView');
+    const reviewList = document.getElementById('reviewList');
+    const sumCorrect = document.getElementById('sumCorrect');
+    const sumAccuracy = document.getElementById('sumAccuracy');
+    const sumNeedCheck = document.getElementById('sumNeedCheck');
+    const restartSummaryBtn = document.getElementById('restartSummaryBtn');
+
+    let current = 0;
+    let selected = new Array(questions.length).fill(null);
+    let checked = new Array(questions.length).fill(false);
+
+    function getAvatarLabel(role) {
+      const map = { legal: 'ЮР', prod: 'ПР', hr: 'HR', ops: 'ИН', own: 'СОБ' };
+      return map[role] || 'MF';
+    }
+
+    function getActionTitle(key) {
+      if (key === 'react') return 'Реагировать сразу';
+      if (key === 'clarify') return 'Сначала запросить уточнение';
+      return 'Передать без экодействий';
+    }
+
+    function renderQueue() {
+      queueEl.innerHTML = '';
+      questions.forEach((q, i) => {
+        const item = document.createElement('button');
+        item.type = 'button';
+        item.className = 'queue-item' + (i === current ? ' active' : '') + (checked[i] && selected[i] === q.correct ? ' done' : '');
+        item.innerHTML = `
+          <div class="avatar ${q.role}">${getAvatarLabel(q.role)}</div>
+          <div>
+            <div class="queue-title">${q.short}</div>
+            <div class="queue-meta">${q.sender} • ${q.time}</div>
+          </div>
+        `;
+        item.addEventListener('click', () => {
+          current = i;
+          render();
+        });
+        queueEl.appendChild(item);
+      });
+    }
+
+    function renderChat() {
+      const q = questions[current];
+      const chosen = selected[current];
+      const chosenLabel = chosen ? getActionTitle(chosen) : 'Ответ еще не выбран';
+
+      chatStream.innerHTML = `
+        <div style="display:flex; justify-content:center;">
+          <div class="day-sep">Рабочая переписка • карточка ${current + 1}</div>
+        </div>
+        <div class="bubble-row system">
+          <div class="system-note">${q.intro}</div>
+        </div>
+        <div class="bubble-row">
+          <div class="bubble-avatar avatar ${q.role}">${getAvatarLabel(q.role)}</div>
+          <div class="bubble-stack">
+            <div class="bubble-head">
+              <span class="bubble-name">${q.sender}</span>
+              <span class="bubble-role">внутренний канал</span>
+              <span class="bubble-time">${q.time}</span>
+            </div>
+            <div class="bubble incoming">${q.message}</div>
+          </div>
+        </div>
+        <div class="bubble-row user">
+          <div class="bubble-stack">
+            <div class="bubble-head">
+              <span class="bubble-name">Вы</span>
+              <span class="bubble-role">эколог</span>
+              <span class="bubble-time">сейчас</span>
+            </div>
+            <div class="bubble outgoing">${chosenLabel}</div>
+          </div>
+        </div>
+      `;
+    }
+
+    function renderAnswers() {
+      const q = questions[current];
+      answersEl.innerHTML = '';
+      q.options.forEach(option => {
+        const btn = document.createElement('button');
+        btn.type = 'button';
+        btn.className = 'answer';
+        if (selected[current] === option.key) btn.classList.add('selected');
+        if (checked[current]) {
+          if (option.key === q.correct) btn.classList.add('correct');
+          if (selected[current] === option.key && option.key !== q.correct) btn.classList.add('incorrect');
+        }
+        btn.innerHTML = `
+          <div class="answer-tag">Первое действие</div>
+          <div class="answer-title">${option.title}</div>
+          <div class="answer-text">${option.text}</div>
+        `;
+        if (!checked[current]) {
+          btn.addEventListener('click', () => {
+            selected[current] = option.key;
+            render();
+          });
+        }
+        answersEl.appendChild(btn);
+      });
+    }
+
+    function renderFeedback() {
+      const q = questions[current];
+      decisionTitle.textContent = q.short;
+      decisionSub.textContent = 'Определите первое рабочее действие эколога по этому сообщению.';
+
+      if (!checked[current]) {
+        feedbackCard.className = 'feedback-card';
+        feedbackTitle.textContent = '';
+        feedbackText.textContent = '';
+        return;
+      }
+
+      const ok = selected[current] === q.correct;
+      feedbackCard.className = 'feedback-card show ' + (ok ? 'ok' : 'bad');
+      feedbackTitle.textContent = ok ? q.correctTitle : 'Нужно поправить решение';
+      feedbackText.textContent = ok ? q.comment : 'Неправильный первый шаг. ' + q.comment;
+    }
+
+    function renderProgress() {
+      const solved = checked.filter(Boolean).length;
+      const correct = questions.filter((q, i) => selected[i] === q.correct).length;
+      progressText.textContent = `Карточка ${current + 1} из ${questions.length}`;
+      progressMini.textContent = `${solved} решено`;
+      progressFill.style.width = `${((current + 1) / questions.length) * 100}%`;
+      scoreValue.textContent = `${Math.round((correct / questions.length) * 100)}%`;
+      prevBtn.disabled = current === 0;
+    }
+
+    function renderButtons() {
+      const q = questions[current];
+      checkBtn.classList.toggle('hidden', checked[current]);
+      retryBtn.classList.toggle('hidden', !(checked[current] && selected[current] !== q.correct));
+      nextBtn.classList.toggle('hidden', !(checked[current] && selected[current] === q.correct));
+      checkBtn.disabled = !selected[current];
+      nextBtn.textContent = current === questions.length - 1 ? 'К результату' : 'Дальше';
+    }
+
+    function renderSummary() {
+      quizView.style.display = 'none';
+      summaryView.classList.add('show');
+      const correct = questions.filter((q, i) => selected[i] === q.correct).length;
+      const needCheck = selected.filter(v => v === 'clarify').length;
+      sumCorrect.textContent = String(correct);
+      sumAccuracy.textContent = `${Math.round((correct / questions.length) * 100)}%`;
+      sumNeedCheck.textContent = String(needCheck);
+      reviewList.innerHTML = '';
+
+      questions.forEach((q, i) => {
+        const ok = selected[i] === q.correct;
+        const item = document.createElement('div');
+        item.className = 'review-item';
+        item.innerHTML = `
+          <button class="review-head" type="button">
+            <div class="review-title">${i + 1}. ${q.message}</div>
+            <div class="review-status ${ok ? 'ok' : 'bad'}">${ok ? 'Верно' : 'Ошибка'}</div>
+          </button>
+          <div class="review-body">
+            <p><strong>Ваш ответ.</strong> ${getActionTitle(selected[i])}</p>
+            <p><strong>Верное действие.</strong> ${getActionTitle(q.correct)}</p>
+            <p><strong>Почему.</strong> ${q.comment}</p>
+          </div>
+        `;
+        item.querySelector('.review-head').addEventListener('click', () => {
+          item.classList.toggle('open');
+        });
+        reviewList.appendChild(item);
+      });
+    }
+
+    function render() {
+      if (summaryView.classList.contains('show')) return;
+      renderQueue();
+      renderChat();
+      renderAnswers();
+      renderFeedback();
+      renderProgress();
+      renderButtons();
+    }
+
+    function checkAnswer() {
+      if (!selected[current]) return;
+      checked[current] = true;
+      render();
+    }
+
+    function retry() {
+      checked[current] = false;
+      selected[current] = null;
+      render();
+    }
+
+    function next() {
+      if (current === questions.length - 1) {
+        renderSummary();
+        return;
+      }
+      current += 1;
+      render();
+    }
+
+    function prev() {
+      if (current > 0) {
+        current -= 1;
+        render();
+      }
+    }
+
+    function resetAll() {
+      current = 0;
+      selected = new Array(questions.length).fill(null);
+      checked = new Array(questions.length).fill(false);
+      summaryView.classList.remove('show');
+      quizView.style.display = 'flex';
+      render();
+    }
+
+    checkBtn.addEventListener('click', checkAnswer);
+    retryBtn.addEventListener('click', retry);
+    nextBtn.addEventListener('click', next);
+    prevBtn.addEventListener('click', prev);
+    resetBtn.addEventListener('click', resetAll);
+    restartTopBtn.addEventListener('click', resetAll);
+    restartSummaryBtn.addEventListener('click', resetAll);
+    helpBtn.addEventListener('click', () => startModal.classList.remove('hidden'));
+    startBtn.addEventListener('click', () => startModal.classList.add('hidden'));
+    startModal.addEventListener('click', (e) => {
+      if (e.target === startModal) startModal.classList.add('hidden');
+    });
+
+    render();
+  </script>
+</body>
+</html>
