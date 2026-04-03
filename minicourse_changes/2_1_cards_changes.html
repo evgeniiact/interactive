@@ -1,0 +1,632 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1.0" />
+<title>Интерактив: какие документы менять экологу</title>
+<style>
+:root{
+  --bg:#eef7f2;
+  --panel:#ffffff;
+  --line:#d6e8dd;
+  --text:#20322a;
+  --muted:#61756b;
+  --green:#0c7a5a;
+  --green-2:#12936c;
+  --green-soft:#e3f5eb;
+  --danger:#b94a48;
+  --shadow:0 18px 48px rgba(13,73,49,0.22);
+}
+
+*{box-sizing:border-box;}
+
+html,body{
+  margin:0;
+  padding:0;
+  height:100%;
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  background:radial-gradient(circle at top,rgba(18,147,108,0.10),transparent 55%),#eaf3ee;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:var(--text);
+}
+
+.viewport{
+  width:820px;
+  height:760px;
+  border-radius:24px;
+  background:linear-gradient(180deg,#fdfefe,#f2f8f4);
+  box-shadow:var(--shadow);
+  border:1px solid rgba(12,122,90,0.20);
+  overflow:hidden;
+  display:flex;
+  flex-direction:column;
+}
+
+.topbar{
+  height:60px;
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  padding:10px 16px;
+  border-bottom:1px solid var(--line);
+  background:linear-gradient(180deg,#f3faf6,#ffffff);
+}
+
+.brand{display:flex;align-items:center;gap:10px;}
+.brand-mark{
+  width:30px;height:30px;border-radius:12px;
+  background:linear-gradient(135deg,var(--green-2),var(--green));
+}
+.brand-title{font-size:14px;font-weight:700;}
+.brand-sub{font-size:11px;color:var(--muted);}
+
+.topmeta{display:flex;align-items:center;gap:8px;}
+.chip{
+  font-size:11px;
+  padding:5px 9px;
+  border-radius:999px;
+  border:1px solid rgba(12,122,90,0.14);
+  background:#fff;
+  color:var(--muted);
+}
+
+.main{
+  flex:1;
+  display:flex;
+  padding:10px 12px 12px;
+  gap:10px;
+}
+
+/* left info */
+
+.left{
+  width:40%;
+  border-radius:18px;
+  background:#f7fbf9;
+  border:1px solid var(--line);
+  padding:12px 14px;
+  display:flex;
+  flex-direction:column;
+}
+
+.case-tabs{
+  display:flex;
+  gap:6px;
+  margin-bottom:10px;
+}
+
+.tab-btn{
+  flex:1;
+  border-radius:999px;
+  border:1px solid var(--line);
+  background:#fff;
+  font-size:11px;
+  padding:6px 8px;
+  cursor:pointer;
+  color:var(--muted);
+}
+.tab-btn.active{
+  border-color:rgba(12,122,90,0.6);
+  background:var(--green-soft);
+  color:var(--green);
+  font-weight:600;
+}
+
+.case-title{font-size:14px;font-weight:700;margin-bottom:6px;}
+.case-text{font-size:13px;color:var(--muted);margin-bottom:10px;}
+
+.case-goal-title{font-size:11px;font-weight:700;color:var(--green);margin-bottom:4px;text-transform:uppercase;letter-spacing:.06em;}
+.case-goal-text{font-size:12px;color:var(--muted);margin-bottom:10px;}
+
+.status-box{
+  margin-top:auto;
+  border-radius:12px;
+  border:1px dashed rgba(12,122,90,0.25);
+  padding:8px 10px;
+  font-size:11px;
+  color:var(--muted);
+}
+
+/* right interactive */
+
+.right{
+  flex:1;
+  border-radius:18px;
+  background:#ffffff;
+  border:1px solid var(--line);
+  padding:10px 12px;
+  display:flex;
+  flex-direction:column;
+}
+
+.right-header{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:6px;
+}
+.right-title{font-size:13px;font-weight:700;}
+.right-meta{font-size:11px;color:var(--muted);}
+
+.table-wrap{
+  flex:1;
+  overflow:auto;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#fdfefe;
+}
+
+table{
+  width:100%;
+  border-collapse:collapse;
+  font-size:13px;
+}
+thead{
+  background:#f4faf7;
+}
+th,td{
+  border-bottom:1px solid #e0ece5;
+  padding:6px 8px;
+  vertical-align:top;
+}
+th:first-child,td:first-child{width:38%;}
+th:nth-child(2),td:nth-child(2){width:28%;}
+th:nth-child(3),td:nth-child(3){width:34%;}
+
+th{font-size:11px;text-transform:uppercase;letter-spacing:.06em;color:var(--muted);}
+
+.doc-name{font-weight:600;}
+
+select{
+  width:100%;
+  font-size:13px;
+  border-radius:8px;
+  border:1px solid #d1e3da;
+  padding:5px 6px;
+  background:#fff;
+}
+
+.feedback{
+  font-size:11px;
+  color:var(--muted);
+}
+
+.feedback.ok{color:var(--green);}
+.feedback.err{color:var(--danger);}
+
+/* bottom controls */
+
+.controls{
+  margin-top:8px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+}
+
+.btn{
+  border-radius:12px;
+  padding:8px 12px;
+  font-size:13px;
+  font-weight:700;
+  border:none;
+  cursor:pointer;
+}
+.btn-primary{
+  background:linear-gradient(135deg,var(--green-2),var(--green));
+  color:#fff;
+}
+.btn-secondary{
+  background:#fff;
+  color:var(--green);
+  border:1px solid rgba(12,122,90,0.22);
+}
+.btn:disabled{
+  opacity:.4;
+  cursor:default;
+}
+
+.attempts{
+  font-size:11px;
+  color:var(--muted);
+}
+
+.model-answer{
+  margin-top:8px;
+  border-radius:12px;
+  border:1px dashed rgba(12,122,90,0.35);
+  background:#f4faf7;
+  padding:8px 10px;
+  font-size:12px;
+  color:var(--muted);
+  display:none;
+}
+
+.model-answer strong{color:var(--text);}
+
+/* toast */
+
+.toast{
+  position:absolute;
+  left:50%;
+  bottom:16px;
+  transform:translateX(-50%);
+  padding:8px 12px;
+  border-radius:999px;
+  font-size:12px;
+  background:rgba(0,0,0,0.75);
+  color:#fff;
+  opacity:0;
+  pointer-events:none;
+  transition:.2s ease;
+}
+.toast.show{opacity:1;}
+</style>
+</head>
+<body>
+<div class="viewport">
+  <div class="topbar">
+    <div class="brand">
+      <div class="brand-mark"></div>
+      <div>
+        <div class="brand-title">Какие разрешения переоформить экологу</div>
+        <div class="brand-sub">Интерактив на отработку выбора документов</div>
+      </div>
+    </div>
+    <div class="topmeta">
+      <div class="chip">Практический модуль</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="left">
+      <div class="case-tabs">
+        <button class="tab-btn active" data-case="1" type="button">Кейс 1</button>
+        <button class="tab-btn" data-case="2" type="button">Кейс 2</button>
+        <button class="tab-btn" data-case="3" type="button">Кейс 3</button>
+      </div>
+      <div id="caseInfo">
+        <div class="case-title" id="caseTitle"></div>
+        <div class="case-text" id="caseText"></div>
+        <div class="case-goal-title">Цель шага</div>
+        <div class="case-goal-text" id="caseGoal"></div>
+      </div>
+      <div class="status-box" id="statusBox">
+        Попыток: <span id="statusAttempts">0</span>. Сначала попробуйте сами. После второй попытки система покажет эталонный ответ с пояснениями по блокам документов.
+      </div>
+    </div>
+
+    <div class="right">
+      <div class="right-header">
+        <div>
+          <div class="right-title">Выберите действия по блокам документов</div>
+          <div class="right-meta">Одни и те же пять блоков во всех кейсах. Действия меняются в зависимости от ситуации.</div>
+        </div>
+        <div class="attempts" id="attemptsInfo">Попытка 0 из 2</div>
+      </div>
+
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>Блок документов</th>
+              <th>Ваше действие</th>
+              <th>Короткий разбор</th>
+            </tr>
+          </thead>
+          <tbody id="rowsBody">
+          </tbody>
+        </table>
+      </div>
+
+      <div class="controls">
+        <button class="btn btn-secondary" type="button" id="resetBtn">Сбросить ответы</button>
+        <div style="display:flex;align-items:center;gap:8px;">
+          <button class="btn btn-secondary" type="button" id="showModelBtn" disabled>Показать эталон</button>
+          <button class="btn btn-primary" type="button" id="checkBtn">Проверить</button>
+        </div>
+      </div>
+
+      <div class="model-answer" id="modelBox">
+        <strong>Эталонный ответ по кейсу.</strong>
+        <div id="modelText"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+</div>
+
+<script>
+const DOC_BLOCKS=[
+  'Сведения и документы по объекту НВОС',
+  'Экологическое разрешение/лицензии',
+  'Разрешения по выбросам и сбросам',
+  'Договоры по водопользованию и отходам',
+  'Внутренние приказы и положения'
+];
+
+// 0 = переоформить, 1 = уведомить, 2 = не трогать
+const CASES={
+  1:{
+    title:'Кейс 1. Изменение юрадреса и наименования',
+    text:'У компании новый юридический адрес и уточненное полное наименование. ОГРН и ИНН те же. Объект НВОС и фактическая площадка не менялись. С какими документами вы работаете и как.',
+    goal:'Собрать минимальный набор действий по блокам документов при изменении реквизитов без изменения объекта.',
+    correct:[0,0,0,1,0],
+    feedback:{
+      0:{
+        0:'Правильно. Объект НВОС должен содержать актуальные реквизиты организации.',
+        1:'Слишком мягко. Здесь обычно требуют переоформления сведений об объекте.',
+        2:'Ошибка. Игнорировать смену реквизитов в сведениях об объекте рискованно.'
+      },
+      1:{
+        0:'Верно. Экологическое разрешение/лицензии должны совпадать с выпиской.',
+        1:'Недостаточно. В разрешении реквизиты входят в условия, нужно переоформление.',
+        2:'Ошибка. Разрешение останется на старые реквизиты.'
+      },
+      2:{
+        0:'Верно. Разрешения по выбросам и сбросам должны быть на актуальные реквизиты.',
+        1:'Слишком мягко. Чаще требуется внести изменения в разрешения.',
+        2:'Ошибка. На проверке увидят расхождение с регистрационными данными.'
+      },
+      3:{
+        0:'Жестковато. Часто достаточно уведомить или оформить допсоглашение по условиям.',
+        1:'Разумно. Обычно достаточно уведомления или допсоглашения по договору.',
+        2:'Слишком мягко. Договоры стоит хотя бы уведомить и проверить условия.'
+      },
+      4:{
+        0:'Верно. Внутренние приказы и положения нужно обновить под новые реквизиты.',
+        1:'Мягко. Формального уведомления нет, лучше выпустить новые приказы.',
+        2:'Ошибка. Внутренние документы останутся на старые реквизиты.'
+      }
+    },
+    model:'При изменении реквизитов без изменений объекта обычно переоформляют сведения и документы по объекту НВОС, экологическое разрешение/лицензии и ключевые разрешения по выбросам и сбросам. Договоры по водопользованию и отходам в большинстве случаев достаточно уведомить и при необходимости оформить допсоглашение. Внутренние приказы и положения лучше обновить, но это можно сделать как второй очередью после внешних документов.'
+  },
+  2:{
+    title:'Кейс 2. Смена собственника, оператор тот же',
+    text:'Компания вошла в новую группу. Юридическое лицо и объект НВОС те же. Меняется конечный собственник и структура владения. Оператор по разрешениям остается прежним. Какие действия вы выберете по блокам документов.',
+    goal:'Отработать выбор, когда главное – корректно отразить нового собственника и группу, не запуская лишнее переоформление.',
+    correct:[1,1,1,1,0],
+    feedback:{
+      0:{
+        0:'Жестко. Чаще достаточно уведомить, что изменился собственник.',
+        1:'Верно. Важно сообщить об изменении собственника, оператор тот же.',
+        2:'Слишком мягко. Лучше уведомить, чтобы сведения были актуальны.'
+      },
+      1:{
+        0:'Жестковато. Обычно достаточно уведомления по условиям разрешения.',
+        1:'Верно. Оператор тот же, но информацию о собственнике нужно актуализировать.',
+        2:'Слишком мягко. Разрешение останется на старую структуру владения.'
+      },
+      2:{
+        0:'Жестко. Оператор не меняется, обычно хватает уведомления, если оно требуется.',
+        1:'Верно. При смене собственника оператор уведомляет по требованиям разрешения.',
+        2:'Слишком мягко. В ряде регламентов уведомление желательно.'
+      },
+      3:{
+        0:'Жестко. Оператор тот же, обычно достаточно уведомить контрагентов.',
+        1:'Верно. Договоры должны знать о смене собственника, но сторона та же.',
+        2:'Слишком мягко. Риски на аудите, что договоры не отражают новую группу.'
+      },
+      4:{
+        0:'Верно. Внутренние приказы и положения стоит обновить под новую структуру.',
+        1:'Мягко. По факту приказы переписывают, а не просто уведомляют.',
+        2:'Ошибка. Внутренняя ответственность останется на старую структуру.'
+      }
+    },
+    model:'При смене собственника без смены оператора вы в основном уведомляете. По сведениям об объекте, экологическому разрешению и разрешениям по выбросам и сбросам важно сообщить о новой структуре собственника, если это предусмотрено регламентами. Договоры по воде и отходам уведомляете по условиям. Внутренние приказы и положения обновляете, чтобы ответственность совпадала с реальной структурой группы.'
+  },
+  3:{
+    title:'Кейс 3. Смена оператора по объекту',
+    text:'Объект НВОС и все экодеятельности передают другому юридическому лицу внутри группы. Оператор по разрешениям меняется. Какие действия вы выберете по блокам документов.',
+    goal:'Отработать ситуацию, когда нужно менять субъекта по разрешениям и договорам, а не только уведомлять.',
+    correct:[0,0,0,0,0],
+    feedback:{
+      0:{
+        0:'Верно. Объект НВОС должен быть оформлен на нового оператора.',
+        1:'Недостаточно. Здесь меняется оператор, нужно переоформление.',
+        2:'Ошибка. Формально объект останется за старой компанией.'
+      },
+      1:{
+        0:'Верно. Экологическое разрешение/лицензии нужно переоформить или получать заново.',
+        1:'Мягко. При смене оператора разрешение на старого субъекта не подходит.',
+        2:'Ошибка. Эксплуатант объекта будет отличаться от данных в разрешении.'
+      },
+      2:{
+        0:'Верно. Разрешения по выбросам и сбросам должны перейти к новому оператору.',
+        1:'Слишком мягко. Здесь обычно требуется переоформление.',
+        2:'Ошибка. Право на выбросы/сбросы останется за старым юрлицом.'
+      },
+      3:{
+        0:'Верно. Договоры по воде и отходам переоформляют или заключают новые.',
+        1:'Недостаточно. Смена оператора требует смены стороны в договорах.',
+        2:'Ошибка. Фактический пользователь ресурса не будет совпадать с договором.'
+      },
+      4:{
+        0:'Верно. Внутренние приказы переписывают под нового оператора и ответственное лицо.',
+        1:'Мягко. Обычно формируют новые приказы, а не просто «уведомляют».',
+        2:'Ошибка. Формально ответственность останется за старой единицей.'
+      }
+    },
+    model:'При смене оператора по объекту вы фактически меняете субъект по всей цепочке документов. Объект НВОС, экологическое разрешение/лицензии и разрешения по выбросам и сбросам переоформляете на нового оператора. Договоры по водопользованию и отходам переоформляете или заключаете заново. Внутренние приказы и положения переписываете под новый контур ответственности.'
+  }
+};
+
+const actions=[
+  'Переоформить документ',
+  'Уведомить орган или контрагента',
+  'Не трогать документ'
+];
+
+let currentCase=1;
+let attempts=0;
+const rowsBody=document.getElementById('rowsBody');
+const caseTitle=document.getElementById('caseTitle');
+const caseText=document.getElementById('caseText');
+const caseGoal=document.getElementById('caseGoal');
+const attemptsInfo=document.getElementById('attemptsInfo');
+const statusAttempts=document.getElementById('statusAttempts');
+const modelBox=document.getElementById('modelBox');
+const modelText=document.getElementById('modelText');
+const showModelBtn=document.getElementById('showModelBtn');
+const checkBtn=document.getElementById('checkBtn');
+const resetBtn=document.getElementById('resetBtn');
+const toast=document.getElementById('toast');
+
+function showToast(text){
+  toast.textContent=text;
+  toast.classList.add('show');
+  setTimeout(()=>toast.classList.remove('show'),1800);
+}
+
+function renderCase(){
+  const data=CASES[currentCase];
+  caseTitle.textContent=data.title;
+  caseText.textContent=data.text;
+  caseGoal.textContent=data.goal;
+  attempts=0;
+  updateAttempts();
+  modelBox.style.display='none';
+  showModelBtn.disabled=true;
+
+  rowsBody.innerHTML='';
+  DOC_BLOCKS.forEach((name,idx)=>{
+    const tr=document.createElement('tr');
+
+    const tdName=document.createElement('td');
+    tdName.innerHTML='<div class="doc-name">'+name+'</div>';
+    tr.appendChild(tdName);
+
+    const tdAction=document.createElement('td');
+    const select=document.createElement('select');
+    select.dataset.index=idx;
+    const optEmpty=document.createElement('option');
+    optEmpty.value='';
+    optEmpty.textContent='Выберите действие';
+    select.appendChild(optEmpty);
+    actions.forEach((label,val)=>{
+      const opt=document.createElement('option');
+      opt.value=String(val);
+      opt.textContent=label;
+      select.appendChild(opt);
+    });
+    tdAction.appendChild(select);
+    tr.appendChild(tdAction);
+
+    const tdFb=document.createElement('td');
+    const span=document.createElement('div');
+    span.className='feedback';
+    span.id='fb_'+idx;
+    tdFb.appendChild(span);
+    tr.appendChild(tdFb);
+
+    rowsBody.appendChild(tr);
+  });
+}
+
+function updateAttempts(){
+  attemptsInfo.textContent='Попытка '+attempts+' из 2';
+  statusAttempts.textContent=attempts;
+}
+
+function getSelections(){
+  const selects=rowsBody.querySelectorAll('select');
+  const values=[];
+  for(const s of selects){
+    const v=s.value===''?null:parseInt(s.value,10);
+    values.push(v);
+  }
+  return values;
+}
+
+function allSelected(vals){
+  return vals.every(v=>v!==null);
+}
+
+function checkAnswers(){
+  const vals=getSelections();
+  if(!allSelected(vals)){
+    showToast('Заполните действия по всем блокам документов.');
+    return;
+  }
+  if(attempts>=2){
+    showToast('Попытки исчерпаны. Смотрите эталонный ответ.');
+    return;
+  }
+  attempts+=1;
+  updateAttempts();
+
+  const data=CASES[currentCase];
+  const correct=data.correct;
+  let allOk=true;
+
+  vals.forEach((v,idx)=>{
+    const fb=document.getElementById('fb_'+idx);
+    fb.textContent='';
+    fb.classList.remove('ok','err');
+    const isOk=v===correct[idx];
+    if(!isOk) allOk=false;
+    const fbText=data.feedback[idx][v];
+    fb.textContent=fbText;
+    fb.classList.add(isOk?'ok':'err');
+  });
+
+  if(allOk){
+    showToast('Отлично. Вы собрали корректный набор действий по этому кейсу.');
+    showModelBtn.disabled=false;
+    if(attempts===1){
+      modelText.textContent='Ваш выбор совпадает с эталоном. В реальной работе вы используете такую же логику под похожие изменения.';
+    }else{
+      modelText.textContent=data.model;
+    }
+  }else{
+    if(attempts<2){
+      showToast('Часть блоков выбрана неудачно. Попробуйте скорректировать ответы.');
+    }else{
+      showToast('Попытки исчерпаны. Система показывает эталон.');
+      showModelBtn.disabled=false;
+      modelText.textContent=data.model;
+      modelBox.style.display='block';
+    }
+  }
+}
+
+function resetAnswers(){
+  const selects=rowsBody.querySelectorAll('select');
+  selects.forEach(s=>s.value='');
+  const fbs=rowsBody.querySelectorAll('.feedback');
+  fbs.forEach(f=>{
+    f.textContent='';
+    f.classList.remove('ok','err');
+  });
+  attempts=0;
+  updateAttempts();
+  modelBox.style.display='none';
+  showModelBtn.disabled=true;
+}
+
+document.querySelectorAll('.tab-btn').forEach(btn=>{
+  btn.addEventListener('click',()=>{
+    const c=parseInt(btn.dataset.case,10);
+    if(c===currentCase) return;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.remove('active'));
+    btn.classList.add('active');
+    currentCase=c;
+    renderCase();
+  });
+});
+
+checkBtn.addEventListener('click',checkAnswers);
+resetBtn.addEventListener('click',resetAnswers);
+showModelBtn.addEventListener('click',()=>{
+  const data=CASES[currentCase];
+  modelText.textContent=data.model;
+  modelBox.style.display='block';
+});
+
+renderCase();
+</script>
+</body>
+</html>
