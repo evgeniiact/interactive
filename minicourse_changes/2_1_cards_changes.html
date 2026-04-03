@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1.0" />
-<title>Выберите документы для изменения</title>
+<title>Какие документы менять экологу</title>
 <style>
 :root{
   --bg:#eef7f2;
@@ -23,29 +23,31 @@
 html,body{
   margin:0;
   padding:0;
-  min-height:100%;
   font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
   background:#eaf3ee;
   color:var(--text);
 }
 
-/* контейнер по центру, но позволяет странице расти по высоте */
+/* страница центрируется по ширине, но свободно растет вниз */
 body{
   display:flex;
   justify-content:center;
 }
 
-.viewport{
+.wrapper{
   width:560px;
   max-width:100%;
+  margin:16px 0;
+}
+
+/* карточка интерактива */
+
+.viewport{
   border-radius:24px;
   background:linear-gradient(180deg,#fdfefe,#f2f8f4);
   box-shadow:var(--shadow);
   border:1px solid rgba(12,122,90,0.20);
   overflow:hidden;
-  display:flex;
-  flex-direction:column;
-  margin:16px 0;
 }
 
 /* top */
@@ -75,20 +77,32 @@ body{
   color:var(--muted);
 }
 
-/* main */
+/* content */
 
 .main{
-  display:flex;
-  flex-direction:column;
   padding:10px 12px 12px;
-  gap:8px;
 }
+
+/* мини-чеклист */
+
+.checklist{
+  margin-bottom:10px;
+  border-radius:16px;
+  background:#f7fbf9;
+  border:1px solid var(--line);
+  padding:10px 12px;
+}
+.checklist-title{font-size:12px;font-weight:700;color:var(--green);margin-bottom:4px;}
+.checklist-text{font-size:12px;color:var(--muted);}
+
+/* кейс */
 
 .case-box{
   border-radius:16px;
   background:#f7fbf9;
   border:1px solid var(--line);
   padding:10px 12px;
+  margin-top:8px;
 }
 .case-title{font-size:14px;font-weight:700;margin-bottom:4px;}
 .case-text{font-size:13px;color:var(--muted);margin-bottom:6px;}
@@ -98,13 +112,14 @@ body{
 }
 .case-goal-text{font-size:12px;color:var(--muted);}
 
+/* блоки */
+
 .blocks-box{
   border-radius:16px;
   background:#ffffff;
   border:1px solid var(--line);
   padding:10px 12px;
-  display:flex;
-  flex-direction:column;
+  margin-top:8px;
 }
 
 .blocks-header{
@@ -117,11 +132,7 @@ body{
 .blocks-meta{font-size:11px;color:var(--muted);}
 .attempts{font-size:11px;color:var(--muted);}
 
-/* list */
-
 .blocks-list{
-  max-height:380px;
-  overflow:auto;
   margin-bottom:8px;
 }
 
@@ -183,7 +194,7 @@ body{
   cursor:default;
 }
 
-/* model */
+/* модель и польза */
 
 .model-box{
   margin-top:8px;
@@ -196,6 +207,16 @@ body{
   display:none;
 }
 .model-box strong{color:var(--text);}
+
+.howto-box{
+  margin-top:8px;
+  border-radius:12px;
+  border:1px solid var(--line);
+  background:#ffffff;
+  padding:8px 10px;
+  font-size:12px;
+  color:var(--muted);
+}
 
 /* toast */
 
@@ -217,53 +238,71 @@ body{
 </style>
 </head>
 <body>
-<div class="viewport">
-  <div class="topbar">
-    <div class="brand">
-      <div class="brand-mark"></div>
-      <div>
-        <div class="brand-title">Какие документы менять экологу</div>
-        <div class="brand-sub">Интерактив: выберите нужные блоки</div>
-      </div>
-    </div>
-    <div class="chip">Практика</div>
-  </div>
-
-  <div class="main">
-    <div class="case-box">
-      <div class="case-title">Ситуация. Изменение реквизитов без изменения объекта</div>
-      <div class="case-text">
-        У компании новый юридический адрес и уточненное наименование. ОГРН и ИНН не менялись. Объект НВОС и фактическая площадка остались прежними.
-      </div>
-      <div class="case-goал-title">Задача</div>
-      <div class="case-goал-text">
-        Отметьте блоки документов, с которыми экологу нужно обязательно отработать сейчас. Остальные блоки можно перенести на второй этап или оставить без изменений.
-      </div>
-    </div>
-
-    <div class="blocks-box">
-      <div class="blocks-header">
+<div class="wrapper">
+  <div class="viewport">
+    <div class="topbar">
+      <div class="brand">
+        <div class="brand-mark"></div>
         <div>
-          <div class="blocks-title">Выберите нужные блоки документов</div>
-          <div class="blocks-meta">Поставьте галочку там, где в этой ситуации нужны действия по документам.</div>
-        </div>
-        <div class="attempts" id="attemptsInfo">Попытка 0 из 2</div>
-      </div>
-
-      <div class="blocks-list" id="blocksList"></div>
-
-      <div class="controls">
-        <button class="btn btn-secondary" id="restartBtn" type="button">Ответить заново</button>
-        <div style="display:flex;gap:6px;">
-          <button class="btn btn-secondary" id="resetBtn" type="button">Сбросить выбор</button>
-          <button class="btn btn-primary" id="checkBtn" type="button">Проверить</button>
+          <div class="brand-title">Какие документы менять экологу</div>
+          <div class="brand-sub">Интерактив: выберите нужные блоки</div>
         </div>
       </div>
+      <div class="chip">Практика</div>
+    </div>
 
-      <div class="model-box" id="modelBox">
-        <strong>Рекомендуемый набор блоков.</strong>
-        <div id="modelText"></div>
+    <div class="main">
+
+      <div class="checklist">
+        <div class="checklist-title">На что опираться в жизни</div>
+        <div class="checklist-text">
+          В реальной работе при изменении реквизитов проверьте три вещи. Первое: где фигурируют реквизиты организации во внешних реестрах. Второе: какие договоры завязаны на эти реквизиты. Третье: какие внутренние приказы и положения отсылают к старому наименованию или адресу.
+        </div>
       </div>
+
+      <div class="case-box">
+        <div class="case-title">Ситуация. Изменение реквизитов без изменения объекта</div>
+        <div class="case-text">
+          У компании новый юридический адрес и уточненное наименование. ОГРН и ИНН не менялись. Объект НВОС и фактическая площадка остались прежними.
+        </div>
+        <div class="case-goal-title">Задача</div>
+        <div class="case-goal-text">
+          Отметьте блоки документов, с которыми экологу нужно обязательно отработать сейчас. Остальные блоки можно перенести на второй этап или оставить без изменений.
+        </div>
+      </div>
+
+      <div class="blocks-box">
+        <div class="blocks-header">
+          <div>
+            <div class="blocks-title">Выберите нужные блоки документов</div>
+            <div class="blocks-meta">Поставьте галочку там, где в этой ситуации нужны действия по документам.</div>
+          </div>
+          <div class="attempts" id="attemptsInfo">Попытка 0 из 2</div>
+        </div>
+
+        <div class="blocks-list" id="blocksList"></div>
+
+        <div class="controls">
+          <button class="btn btn-secondary" id="restartBtn" type="button">Ответить заново</button>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-secondary" id="resetBtn" type="button">Сбросить выбор</button>
+            <button class="btn btn-primary" id="checkBtn" type="button">Проверить</button>
+          </div>
+        </div>
+
+        <div class="model-box" id="modelBox">
+          <strong>Рекомендуемый набор блоков.</strong>
+          <div id="modelText"></div>
+        </div>
+      </div>
+
+      <div class="howto-box">
+        <strong>Как использовать это задание в работе.</strong>
+        <div>
+          Сохраните для себя перечень блоков, которые вы отметили. При любом изменении реквизитов в компании начинайте планирование работы с этими же блоками: объект НВОС, эколицензии, разрешения, договоры, внутренние приказы. Так вы не забудете важные документы и сможете объяснить руководству, чем именно будете заниматься.
+        </div>
+      </div>
+
     </div>
   </div>
 </div>
@@ -418,7 +457,7 @@ function checkAnswers(){
 
   if(allOk){
     showToast('Вы выбрали полный набор блоков, с которыми стоит работать в этой ситуации.');
-    modelText.textContent='Ваш выбор совпадает с рекомендуемым. В похожих кейсах вы можете использовать этот перечень блоков как рабочий чек‑лист.';
+    modelText.textContent='Ваш выбор совпадает с рекомендуемым. В похожих кейсах используйте этот перечень блоков как рабочий чек‑лист.';
     modelBox.style.display='block';
   }else{
     if(attempts===1){
