@@ -210,7 +210,7 @@ html,body{
   color:#fff;
   opacity:0;
   pointer-events:none;
-  transition:.2s.ease;
+  transition:.2s ease;
 }
 .toast.show{opacity:1;}
 </style>
@@ -252,8 +252,11 @@ html,body{
       <div class="blocks-list" id="blocksList"></div>
 
       <div class="controls">
-        <button class="btn btn-secondary" id="resetBtn" type="button">Сбросить выбор</button>
-        <button class="btn btn-primary" id="checkBtn" type="button">Проверить</button>
+        <button class="btn btn-secondary" id="restartBtn" type="button">Ответить заново</button>
+        <div style="display:flex;gap:6px;">
+          <button class="btn btn-secondary" id="resetBtn" type="button">Сбросить выбор</button>
+          <button class="btn btn-primary" id="checkBtn" type="button">Проверить</button>
+        </div>
       </div>
 
       <div class="model-box" id="modelBox">
@@ -330,6 +333,7 @@ const modelBox=document.getElementById('modelBox');
 const modelText=document.getElementById('modelText');
 const checkBtn=document.getElementById('checkBtn');
 const resetBtn=document.getElementById('resetBtn');
+const restartBtn=document.getElementById('restartBtn');
 const toast=document.getElementById('toast');
 
 function showToast(text){
@@ -389,7 +393,7 @@ function getSelections(){
 
 function checkAnswers(){
   if(attempts>=2){
-    showToast('Вы уже использовали две попытки. Изучите рекомендованный набор блоков.');
+    showToast('Вы уже использовали две попытки. Нажмите «Ответить заново», чтобы пройти задание еще раз.');
     return;
   }
   attempts+=1;
@@ -427,7 +431,7 @@ function checkAnswers(){
   }
 }
 
-function resetAll(){
+function clearState(){
   const boxes=blocksList.querySelectorAll('input[type="checkbox"]');
   boxes.forEach(b=>b.checked=false);
   const fbs=blocksList.querySelectorAll('.block-feedback');
@@ -435,13 +439,24 @@ function resetAll(){
     f.textContent='';
     f.classList.remove('ok','err');
   });
-  attempts=0;
-  updateAttempts();
   modelBox.style.display='none';
 }
 
+function resetSelection(){
+  clearState();
+  // не сбрасываем attempts, ученик продолжает текущий цикл
+}
+
+function restartAll(){
+  clearState();
+  attempts=0;
+  updateAttempts();
+  showToast('Задание можно пройти заново с чистого листа.');
+}
+
 checkBtn.addEventListener('click',checkAnswers);
-resetBtn.addEventListener('click',resetAll);
+resetBtn.addEventListener('click',resetSelection);
+restartBtn.addEventListener('click',restartAll);
 
 renderBlocks();
 updateAttempts();
