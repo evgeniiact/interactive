@@ -216,6 +216,12 @@ h2 {
   display: grid;
   grid-template-columns: repeat(3, 1fr);
   gap: 8px;
+  align-items: stretch;
+}
+
+.wa-cardsdeck-column {
+  display: flex;
+  flex-direction: column;
 }
 
 .wa-cardsdeck-column__title {
@@ -226,9 +232,14 @@ h2 {
   text-align: center;
   font-weight: 700;
   line-height: 1.35;
+  min-height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .wa-cardsdeck-column__body {
+  flex: 1;
   min-height: 110px;
   max-height: 240px;
   padding: 6px;
@@ -383,7 +394,7 @@ h2 {
   <header>
     <h2>Определите, требует ли ситуация действий эколога</h2>
     <div class="deck-subtitle">
-      Пищевое производство «МосФуд»: один завод в Московской области, площадка НВОС II категории. Есть ДВОС, НДВ, НДС, программа ПЭК, паспорта отходов и ГОУ, сведения об объекте НВОС, договор водопользования и решение о предоставлении водного объекта. Вы – эколог этого предприятия.
+      Перетащите ситуацию в подходящую колонку. В конце вы поймете, когда эколог «МосФуда» действует сразу, когда собирает данные, а когда может не вмешиваться.
     </div>
   </header>
 
@@ -397,7 +408,7 @@ h2 {
     <div class="wa-cardsdeck__columns-wrapper">
       <div class="wa-cardsdeck__columns">
         <div class="wa-cardsdeck-column" data-column="action">
-          <div class="wa-cardsdeck-column__title">Изменение сразу требует действий эколога</div>
+          <div class="wa-cardsdeck-column__title">У эколога достаточно данных, можно приступать к изменениям документов</div>
           <div class="wa-cardsdeck-column__body"></div>
         </div>
         <div class="wa-cardsdeck-column" data-column="clarify">
@@ -424,16 +435,17 @@ h2 {
 
 <div class="rules-overlay" id="rulesOverlay" aria-hidden="true">
   <div class="rules-popup">
-    <h3 class="rules-title">Как работать с ситуациями «МосФуда»</h3>
-    <p>Ваша задача – перетащить каждую карточку в одну из трех колонок: изменение сразу требует ваших действий, сначала нужно собрать уточнения или можно ничего не делать.</p>
-    <p>Оценивайте ситуацию глазами эколога «МосФуда». Подумайте, затрагивает ли изменение ДВОС, НДВ, НДС, ПЭК, паспорта, сведения об объекте НВОС или водопользование.</p>
-    <p>Когда правильно разложите все карточки, нажмите на них – увидите комментарии экспертов, зачем или почему экологу здесь нужно подключаться.</p>
+    <h3 class="rules-title">Как работать с ситуациями</h3>
+    <p>Ваша задача – перетащить каждую ситуацию в одну из трех колонок: у эколога достаточно данных и можно приступать к изменениям документов, сначала нужно собрать уточнения или можно ничего не делать.</p>
+    <p>Оценивайте ситуацию глазами эколога «МосФуда». Думайте, затрагивает ли изменение ДВОС, НДВ, НДС, ПЭК, паспорта, сведения об объекте НВОС или документы по водопользованию.</p>
+    <p>Когда правильно разложите все карточки, нажмите на них – увидите комментарии экспертов и поймете, почему выбранная колонка верная.</p>
     <div class="rules-actions">
       <button class="rules-btn" id="rulesOk" type="button">Понятно, начать</button>
     </div>
   </div>
 </div>
 
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <script>
 var allCards = [
   {
@@ -478,21 +490,21 @@ var allCards = [
   },
   {
     id: 'c9',
-    text: 'Снабжение закупило новую добавку к рецептуре. Технолог говорит, что состав выбросов «теоретически может поменяться», но расчеты еще не делали.',
+    text: 'Снабжение закупило новую добавку к рецептуре. Технолог говорит, что состав выбросов теоретически может поменяться, но расчеты еще не делали.',
     correctColumn: 'clarify'
   }
 ];
 
 var commentsById = {
-  c1: 'Смена юридического адреса сразу попадает в зону ответственности эколога. Нужно проверить сведения об объекте НВОС в реестре, ДВОС, НДВ, НДС, ПЭК и документы по водопользованию и решить, где достаточно внести изменения, а где требуется переоформление.',
-  c2: 'Перенос части производства и вентиляции на соседний участок меняет фактическое размещение источников выбросов. Экологу нужно проверить инвентаризацию, НДВ, ДВОС и условия действующих разрешений.',
-  c3: 'Смена генерального директора сама по себе не меняет реквизиты юрлица и параметры объекта НВОС. Эколог подключится только при обновлении внутренних приказов и распределении ответственности, на разрешительные документы это не влияет.',
-  c4: 'Новые ОКТМО и ОКАТО – сигнал для актуализации сведений, где фигурируют коды территорий. Экологу нужно учесть это в сведениях об объекте НВОС и в документах, которые ссылаются на территориальные коды.',
-  c5: 'Переход на другое топливо может заметно изменить характеристики выбросов котельной. Сначала эколог собирает данные по режимам работы и составу выбросов, сравнивает их с НДВ и разрешениями, а уже по результатам решает, какие документы менять.',
-  c6: 'Изменение оргструктуры не затрагивает реквизиты юрлица, адрес площадки и параметры объекта НВОС. Эколог может обновить внутренние инструкции, но переоформлять разрешения и проекты не нужно.',
-  c7: 'Переименование компании меняет реквизиты во всех ключевых документах: ДВОС, НДВ, НДС, ПЭК, паспортах, сведениях НВОС и документах по водопользованию. Это изменение сразу требует планирования работ по актуализации и переоформлению.',
-  c8: 'Новый участок фасовки с вентиляцией и водоподготовкой – новые источники выбросов и сбросов. Экологу нужно проверить, как это влияет на ДВОС, НДВ, НДС, ПЭК и разрешения по воздуху и воде.',
-  c9: 'Новое сырье может изменить состав выбросов и сбросов. Сначала эколог запрашивает данные о составе и количестве, при необходимости проводит расчеты и измерения, а затем решает, нужно ли корректировать проекты и разрешительные документы.'
+  c1: 'Смена юридического адреса сразу попадает в зону ответственности эколога. Нужно посмотреть, какие документы «МосФуда» содержат юрадрес, и решить, где достаточно внести изменения, а где требуется переоформление.',
+  c2: 'Перенос части производства и вентиляции на соседний участок меняет фактическое размещение источников выбросов. Этого достаточно, чтобы начать проверку инвентаризации, НДВ, ДВОС и разрешений по воздуху.',
+  c3: 'Смена генерального директора не меняет реквизиты юрлица и параметры объекта НВОС. Эколог может учесть это в распределении ответственности, но документы по НВОС менять не нужно.',
+  c4: 'Новые ОКТМО и ОКАТО влияют на сведения об объекте и часть документов, где указаны территориальные коды. Эколог может сразу планировать актуализацию этих сведений.',
+  c5: 'Переход на дизельное топливо может сильно изменить выбросы котельной. Сначала нужны данные по режиму работы и составу выбросов, а уже потом решение, какие документы менять.',
+  c6: 'Изменение оргструктуры не затрагивает реквизиты юрлица, адрес площадки и параметры объекта НВОС. Экологу не нужно менять проекты и разрешения.',
+  c7: 'Переименование компании меняет реквизиты в ДВОС, НДВ, НДС, ПЭК, паспортах, сведениях НВОС и документах по водопользованию. Здесь можно сразу планировать работы по документам.',
+  c8: 'Новый участок фасовки с вентиляцией и водоподготовкой – новые источники выбросов и сбросов. Это прямой повод проверить ДВОС, НДВ, НДС, ПЭК и разрешения.',
+  c9: 'Новое сырье может изменить состав выбросов и сбросов. Сначала нужны данные по составу и объему, затем сравнение с действующими нормативами и решение по документам.'
 };
 
 var placedCards = {};
@@ -500,6 +512,7 @@ var currentIndex = 0;
 var draggedCardId = null;
 var isAnimating = false;
 var gameCompleted = false;
+var rulesShown = false;
 
 function shuffle(array) {
   for (var i = array.length - 1; i > 0; i--) {
@@ -543,6 +556,7 @@ function buildStackContent(remaining, animateIn) {
   mainEl.addEventListener('dragstart', function(e){
     draggedCardId = mainCard.id;
     e.dataTransfer.effectAllowed = 'move';
+    maybeShowRules();
   });
   mainEl.addEventListener('dragend', function(){ draggedCardId = null; });
   stackEl.appendChild(mainEl);
@@ -586,6 +600,7 @@ function createColumnCard(cardData) {
   cardEl.addEventListener('dragstart', function(e2){
     draggedCardId = cardData.id;
     e2.dataTransfer.effectAllowed = 'move';
+    maybeShowRules();
   });
   cardEl.addEventListener('dragend', function(){ draggedCardId = null; });
   return cardEl;
@@ -670,7 +685,7 @@ function buildFeedback() {
 
   if (correctCount === allCards.length) {
     return {
-      text: 'Все верно. Вы правильно оценили, когда экологу «МосФуда» нужно подключаться. Теперь нажмите на карточки и посмотрите комментарии.',
+      text: 'Все верно. Вы правильно оценили, когда экологу «МосФуда» нужно действовать. Теперь нажмите на карточки и посмотрите комментарии.',
       cls: 'wa-cardsdeck__comment wa-cardsdeck__comment_success'
     };
   }
@@ -682,6 +697,7 @@ function buildFeedback() {
 }
 
 function checkAnswers() {
+  maybeShowRules();
   clearMarks();
   document.getElementById('details').style.display = 'none';
   document.getElementById('details-body').innerHTML = '';
@@ -721,13 +737,31 @@ function resetGame() {
   currentIndex = 0;
   draggedCardId = null;
   gameCompleted = false;
-  shuffle(allCards);
   document.getElementById('comment').textContent = '';
   document.getElementById('comment').className = 'wa-cardsdeck__comment';
   document.getElementById('details').style.display = 'none';
   document.getElementById('details-body').innerHTML = '';
   document.querySelectorAll('.wa-cardsdeck-column__body').forEach(function(b){ b.innerHTML=''; });
+  shuffle(allCards);
   renderStack();
+}
+
+function openRules() {
+  var rulesOverlay=document.getElementById('rulesOverlay');
+  rulesOverlay.classList.add('open');
+  rulesOverlay.setAttribute('aria-hidden','false');
+}
+
+function closeRules() {
+  var rulesOverlay=document.getElementById('rulesOverlay');
+  rulesOverlay.classList.remove('open');
+  rulesOverlay.setAttribute('aria-hidden','true');
+}
+
+function maybeShowRules() {
+  if (rulesShown) return;
+  rulesShown = true;
+  openRules();
 }
 
 document.addEventListener('DOMContentLoaded', function(){
@@ -748,19 +782,11 @@ document.addEventListener('DOMContentLoaded', function(){
   document.getElementById('check-btn').addEventListener('click', checkAnswers);
   document.getElementById('reset-btn').addEventListener('click', resetGame);
 
-  var rulesOverlay=document.getElementById('rulesOverlay');
   var rulesOk=document.getElementById('rulesOk');
-  rulesOverlay.classList.add('open');
-  rulesOverlay.setAttribute('aria-hidden','false');
-  rulesOk.addEventListener('click',function(){
-    rulesOverlay.classList.remove('open');
-    rulesOverlay.setAttribute('aria-hidden','true');
-  });
+  var rulesOverlay=document.getElementById('rulesOverlay');
+  rulesOk.addEventListener('click',closeRules);
   rulesOverlay.addEventListener('click',function(e){
-    if(e.target===rulesOverlay){
-      rulesOverlay.classList.remove('open');
-      rulesOverlay.setAttribute('aria-hidden','true');
-    }
+    if(e.target===rulesOverlay)closeRules();
   });
 });
 </script>
