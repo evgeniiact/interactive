@@ -290,7 +290,6 @@
     </div>
 
     <div class="act-wrapper">
-      <!-- ВАЖНО: имя файла строго akt-otbora-prob.png -->
       <img src="akt-otbora-prob.png" class="act-img" alt="Акт отбора проб">
 
       <!-- зоны по строкам -->
@@ -339,12 +338,355 @@
   let dragSource = null;
   let stepSolved = {};
 
-  const steps = { /* здесь остаётся весь объект steps из предыдущей версии */ };
+  const steps = {
+    1:{
+      title:"Шапка: заказчик и объект",
+      text:"В шапке акта указаны заказчик и объект (площадка).",
+      hint:"Выберите, что вы проверите в шапке перед работой с остальными полями.",
+      type:"choices",
+      options:[
+        {id:"a",text:"Сверю наименование юрлица и адрес площадки с договором или приказом на ПЭК",correct:true,
+         good:"Акт однозначно относится к вашей площадке.",
+         risk:"Если объект в шапке другой, инспектор может считать, что пробы брали не у вас."},
+        {id:"b",text:"Проверю, что номер и дата договора совпадают с документами на работы лаборатории",correct:true,
+         good:"Акт связывается с конкретным заданием и программой отбора.",
+         risk:"Без этой связи лаборатория может представить акт как отдельный выезд без ваших требований."},
+        {id:"c",text:"Шапка неважна, главное правильно заполнить таблицу проб",correct:false,
+         risk:"Ошибки в шапке формальный повод ставить под сомнение весь акт."}
+      ]
+    },
+    2:{
+      title:"Тип среды и точка отбора",
+      text:"Вы отбираете сточные воды в точке «Выпуск В‑2» из программы ПЭК.",
+      hint:"Отметьте действия, которые помогут правильно описать тип среды и точку.",
+      type:"choices",
+      options:[
+        {id:"a",text:"Отмечу тип среды «вода» и перепишу название точки «Выпуск В‑2» в том же написании",correct:true,
+         good:"Акт совпадает с программой ПЭК и схемой объекта.",
+         risk:"Свободная формулировка вроде «канал возле забора» не доказывает, что пробу брали на В‑2."},
+        {id:"b",text:"Напишу «стоки перед сбросом», чтобы текст был понятнее без документов",correct:false,
+         risk:"Так сложно доказать, что точка согласована в разрешительных документах."},
+        {id:"c",text:"Тип среды можно не заполнять, и так видно, что речь о воде",correct:false,
+         risk:"Разные среды подчиняются разным методикам. Пустое поле разрушает эту связку."}
+      ]
+    },
+    3:{
+      title:"Координаты точки отбора",
+      text:"В строке «Координаты (ГСК‑2011)» указаны координаты точки.",
+      hint:"Отметьте, как вы проверите корректность координат.",
+      type:"choices",
+      options:[
+        {id:"a",text:"Сравню координаты с программой ПЭК или паспортом точки",correct:true,
+         good:"Вы убеждаетесь, что акт и программа описывают одну и ту же точку.",
+         risk:"Разные координаты позволяют заявить, что пробу брали в другом месте."},
+        {id:"b",text:"Проверю, что координаты действительно в ГСК‑2011, а не переписаны из WGS‑84",correct:true,
+         good:"Система координат совпадает с требованиями предприятия и лаборатории.",
+         risk:"Пересчет «на глаз» дает большую погрешность и ухудшает доказательную базу."},
+        {id:"c",text:"Если цифры есть, проверять ничего не буду",correct:false,
+         risk:"Формальное наличие координат не гарантирует правильную точку отбора."}
+      ]
+    },
+    4:{
+      title:"Дата, время и режим работы",
+      text:"Отбор выбросов провели в пусковом режиме, а в программе ПЭК указан номинальный.",
+      hint:"Отметьте действия, которые зафиксируют реальные условия отбора.",
+      type:"choices",
+      options:[
+        {id:"a",text:"Запишу фактический режим («пуск после ремонта») и уточню, учитывать ли эти результаты в ПЭК",correct:true,
+         good:"Вы честно описываете ситуацию и управляете отклонением.",
+         risk:"Несоответствие режима в акте и в журнале работы котла повод признать результаты недействительными."},
+        {id:"b",text:"Сверю время отбора с журналом работы оборудования",correct:true,
+         good:"Журнал подтверждает, что время в акте не придумано задним числом.",
+         risk:"Без такой проверки проще пропустить расхождение по режиму."},
+        {id:"c",text:"Оставлю режим и погоду пустыми, чтобы не акцентировать внимание на пуске",correct:false,
+         risk:"Пустые поля не скрывают факты – инспектор просто запросит журналы и увидит расхождение."}
+      ]
+    },
+    5:{
+      title:"Методика и пробоотборник",
+      text:"Нужно убедиться, что отбор проводят по нужному документу и исправным оборудованием.",
+      hint:"Перетащите карточки в таком порядке, в каком будете проверять этот блок.",
+      type:"order",
+      items:[
+        "Сверить номер и редакцию методики с программой ПЭК и областью аккредитации",
+        "Проверить тип пробоотборника и его заводской номер по техпаспортам",
+        "Сравнить дату поверки пробоотборника и средств измерений с датой отбора"
+      ],
+      correct:[0,1,2],
+      good:"Вы сначала проверяете документ, затем оборудование, затем дату поверки.",
+      risk:"Если смотреть только дату поверки, можно не заметить, что методика или прибор не входят в область аккредитации."
+    },
+    6:{
+      title:"Таблица «Сведения о пробах»",
+      text:"В таблице вы фиксируете каждую пробу воды, ее код, объем и консервацию.",
+      hint:"Отметьте, что проверите обязательно.",
+      type:"choices",
+      options:[
+        {id:"a",text:"Убедюсь, что у каждой пробы свой код тары и он совпадает с наклейкой на бутылке",correct:true,
+         good:"По коду можно восстановить путь пробы от отбора до протокола анализа.",
+         risk:"Одинаковые или перепутанные коды делают спор по результатам практически неразрешимым."},
+        {id:"b",text:"Проверю объем пробы и указание консерванта там, где он нужен по методике",correct:true,
+         good:"Эти поля показывают, что пробу отбирали и стабилизировали в нужном объеме и режиме.",
+         risk:"Недостаточный объем и отсутствие консерванта формальный повод не принимать результаты."},
+        {id:"c",text:"Считаю только количество строк в таблице, детали пусть ведет лаборатория",correct:false,
+         risk:"Без деталей по каждой пробе акт теряет доказательную силу."}
+      ]
+    },
+    7:{
+      title:"Меры сохранности пробы",
+      text:"Пробы сточных вод хранят в холодильнике до утра.",
+      hint:"Отметьте формулировки, которые показывают соблюдение условий хранения.",
+      type:"choices",
+      options:[
+        {id:"a",text:"Запишу: «Пробы охлаждены до +4 °C, хранятся в холодильнике, доставка в лабораторию в течение 12 часов»",correct:true,
+         good:"Вы показываете и температуру, и срок хранения в понятных цифрах.",
+         risk:"Без этих данных трудно доказать, что проба не изменила состав до анализа."},
+        {id:"b",text:"Напишу только «доставлено на следующий день»",correct:false,
+         risk:"Такая запись не показывает ни срок, ни температурный режим хранения."},
+        {id:"c",text:"Оставлю строку пустой, лаборатория все равно отвечает за транспортировку",correct:false,
+         risk:"При споре будут смотреть на акт, а не на устные договоренности."}
+      ]
+    },
+    8:{
+      title:"Цель отбора и отклонения",
+      text:"По выпуску выполняется ПЭК и контроль нормативов, но в этот выезд брали пробы только для ПЭК.",
+      hint:"Выберите, как честно зафиксировать цель и отклонения.",
+      type:"choices",
+      options:[
+        {id:"a",text:"Отмечу только «производственный контроль (ПЭК)» без галочки «контроль нормативов»",correct:true,
+         good:"Результаты ясно привязаны к одной задаче.",
+         risk:"Если отметить все цели сразу, акт будет слабым доказательством по любой из них."},
+        {id:"b",text:"Если фактический отбор отличался от плана, кратко опишу это в блоке «Отклонения»",correct:true,
+         good:"Вы показываете, что контролируете отклонения, а не скрываете их.",
+         risk:"Отсутствие записи об отклонении позволяет трактовать ситуацию как нарушение программы."},
+        {id:"c",text:"Оставлю цель и отклонения пустыми, чтобы акт можно было подшить к любому отчету",correct:false,
+         risk:"Пустые поля выглядят как формальный подход и вызывают вопросы у инспектора."}
+      ]
+    },
+    9:{
+      title:"Подписи сторон",
+      text:"В акте уже стоит подпись инженера лаборатории. Теперь нужно подписать акт со стороны заказчика.",
+      hint:"Отметьте, что вы проверите в блоке подписей.",
+      type:"choices",
+      options:[
+        {id:"a",text:"Сверю Ф.И.О. и должность представителя лаборатории с договором или доверенностью",correct:true,
+         good:"Так вы убеждаетесь, что акт подписал уполномоченный сотрудник лаборатории.",
+         risk:"Подпись неуполномоченного лица дает основания оспаривать акт."},
+        {id:"b",text:"Убедюсь, что в графе «Представитель заказчика» указан я или другое официально назначенное лицо",correct:true,
+         good:"Подпись уполномоченного представителя усиливает ваши позиции при споре.",
+         risk:"Если подпишется случайный сотрудник, инспектор может усомниться в действительности согласования условий отбора."},
+        {id:"c",text:"Если содержание акта меня устраивает, подпись любого сотрудника подойдет",correct:false,
+         risk:"Так акт превращается в документ с непонятным статусом и слабой юридической силой."}
+      ]
+    }
+  };
 
-  /* ради краткости я оставляю всю логику как раньше:
-     updateStatus, openRules, openStep, toggleOption,
-     drag handlers, checkAnswers, closePopup, навешивание обработчиков зон.
-     Просто вставь сюда тот же JS, который у тебя уже работал. */
+  function updateStatus(){
+    const label=document.getElementById("status-label");
+    const fill=document.getElementById("status-fill");
+    const percent=(correctBlocks/totalBlocks)*100;
+    fill.style.width=percent+"%";
+    label.textContent=correctBlocks+" из "+totalBlocks+" блоков заполнены без ошибок";
+    if(correctBlocks===totalBlocks){
+      document.getElementById("footer-text").textContent =
+        "Вы проработали все части акта: шапку, точку и координаты, режим работы, методику, таблицу проб, " +
+        "сохранность, цель отбора и подписи. В реальной работе идите по этим же блокам. " +
+        "Перед подписью задайте себе те же вопросы: совпадает ли объект и точка, понятны ли координаты, " +
+        "режим и условия отбора, указана ли методика и поверка, можно ли по кодам и объемам восстановить каждую пробу, " +
+        "прописаны ли меры сохранности и отклонения, стоят ли подписи именно тех людей, которые отвечают за отбор и результаты. " +
+        "Если на какой‑то вопрос ответ «нет», сначала исправьте акт, потом подписывайте.";
+    }
+  }
+
+  function openRules(){
+    document.getElementById("popup-title").textContent="Как работать с тренажером";
+    document.getElementById("popup-text").textContent=
+      "Этот тренажер помогает отработать чтение и заполнение ключевых блоков акта отбора проб. " +
+      "Нажимайте на отдельные строки акта. Для каждого блока выбирайте один или несколько вариантов ответа и нажимайте «Проверить».";
+    document.getElementById("popup-hint").textContent=
+      "Задание засчитывается только если вы выбрали все верные варианты и не выбрали ни одного неверного.";
+    document.getElementById("popup-options").innerHTML="";
+    const fb=document.getElementById("popup-feedback");
+    fb.style.display="none";
+    document.getElementById("check-btn").style.display="none";
+    document.getElementById("overlay").style.display="flex";
+  }
+
+  function openStep(stepId){
+    const step=steps[stepId];
+    if(!step) return;
+    currentStep=stepId;
+    selectedOptions.clear();
+    dragSource=null;
+
+    const zone=document.querySelector('.zone[data-step="'+stepId+'"]');
+    const h=document.getElementById("highlight");
+    if(zone){
+      h.style.display="block";
+      h.style.top=zone.offsetTop+"px";
+      h.style.left=zone.offsetLeft+"px";
+      h.style.width=zone.offsetWidth+"px";
+      h.style.height=zone.offsetHeight+"px";
+    }
+
+    document.getElementById("popup-title").textContent=step.title;
+    document.getElementById("popup-text").textContent=step.text;
+    document.getElementById("popup-hint").textContent=step.hint;
+
+    const optionsWrap=document.getElementById("popup-options");
+    optionsWrap.innerHTML="";
+    const fb=document.getElementById("popup-feedback");
+    fb.style.display="none";
+    fb.className="popup-feedback";
+
+    document.getElementById("check-btn").style.display="inline-block";
+
+    if(step.type==="choices"){
+      const list=document.createElement("div");
+      list.className="options-list";
+      step.options.forEach(opt=>{
+        const div=document.createElement("div");
+        div.className="option";
+        div.textContent=opt.text;
+        div.dataset.id=opt.id;
+        div.onclick=()=>toggleOption(opt.id,div);
+        list.appendChild(div);
+      });
+      optionsWrap.appendChild(list);
+    }
+
+    if(step.type==="order"){
+      const text=document.createElement("div");
+      text.className="order-text";
+      text.textContent="Перетащите карточки в том порядке, в каком будете проверять блок.";
+      optionsWrap.appendChild(text);
+
+      const list=document.createElement("div");
+      list.className="order-list";
+      step.items.forEach((t,idx)=>{
+        const card=document.createElement("div");
+        card.className="card";
+        card.textContent=(idx+1)+". "+t;
+        card.draggable=true;
+        card.dataset.index=idx;
+        card.addEventListener("dragstart",onDragStart);
+        card.addEventListener("dragover",onDragOver);
+        card.addEventListener("drop",onDrop);
+        list.appendChild(card);
+      });
+      optionsWrap.appendChild(list);
+    }
+
+    document.getElementById("overlay").style.display="flex";
+  }
+
+  function toggleOption(id,el){
+    if(selectedOptions.has(id)){
+      selectedOptions.delete(id);
+      el.classList.remove("selected");
+    } else {
+      selectedOptions.add(id);
+      el.classList.add("selected");
+    }
+  }
+
+  function onDragStart(e){
+    dragSource=e.target;
+    e.dataTransfer.effectAllowed="move";
+  }
+  function onDragOver(e){e.preventDefault();}
+  function onDrop(e){
+    e.preventDefault();
+    if(!dragSource || dragSource===e.target) return;
+    const parent=e.target.parentNode;
+    const nodes=Array.from(parent.children);
+    const srcIndex=nodes.indexOf(dragSource);
+    const tgtIndex=nodes.indexOf(e.target);
+    if(srcIndex<tgtIndex){
+      parent.insertBefore(dragSource,e.target.nextSibling);
+    }else{
+      parent.insertBefore(dragSource,e.target);
+    }
+  }
+
+  function checkAnswers(){
+    const step=steps[currentStep];
+    if(!step) return;
+    const fb=document.getElementById("popup-feedback");
+
+    if(step.type==="choices"){
+      if(selectedOptions.size===0){
+        fb.textContent="Отметьте один или несколько вариантов, затем нажмите «Проверить».";
+        fb.className="popup-feedback warn";
+        fb.style.display="block";
+        return;
+      }
+      let allCorrect=true;
+      let goodParts=[];
+      let riskParts=[];
+      step.options.forEach(opt=>{
+        const el=document.querySelector('.option[data-id="'+opt.id+'"]');
+        const chosen=selectedOptions.has(opt.id);
+        if(chosen && opt.correct){
+          el.classList.add("correct");
+          goodParts.push(opt.good);
+        } else if(chosen && !opt.correct){
+          el.classList.add("wrong");
+          allCorrect=false;
+          riskParts.push(opt.risk);
+        } else if(!chosen && opt.correct){
+          allCorrect=false;
+          riskParts.push("Вы не выбрали важное действие: "+opt.text.toLowerCase());
+        }
+      });
+      if(allCorrect){
+        fb.textContent=(goodParts.join(" ")+" ").trim()+
+          "Так вы делаете этот блок акта устойчивым к формальным претензиям.";
+        fb.className="popup-feedback success";
+        if(!stepSolved[currentStep]){
+          stepSolved[currentStep]=true;
+          correctBlocks++;
+          document.querySelector('.zone[data-step="'+currentStep+'"]').classList.add("done");
+          updateStatus();
+        }
+      } else {
+        fb.textContent=(riskParts.join(" ")+" ").trim()+
+          "В реальной проверке это может привести к тому, что акт или отдельные результаты не примут.";
+        fb.className="popup-feedback warn";
+      }
+      fb.style.display="block";
+    }
+
+    if(step.type==="order"){
+      const list=document.querySelector(".order-list");
+      const order=Array.from(list.children).map(c=>Number(c.dataset.index));
+      const correct=JSON.stringify(order)===JSON.stringify(step.correct);
+      if(correct){
+        fb.textContent=step.good+" Такой порядок удобно использовать как личный чек‑лист при общении с лабораторией.";
+        fb.className="popup-feedback success";
+        if(!stepSolved[currentStep]){
+          stepSolved[currentStep]=true;
+          correctBlocks++;
+          document.querySelector('.zone[data-step="'+currentStep+'"]').classList.add("done");
+          updateStatus();
+        }
+      } else {
+        fb.textContent=step.risk+" Переставьте карточки: сначала методика, потом оборудование, затем поверка.";
+        fb.className="popup-feedback warn";
+      }
+      fb.style.display="block";
+    }
+  }
+
+  function closePopup(){
+    document.getElementById("overlay").style.display="none";
+  }
+
+  document.querySelectorAll(".zone").forEach(z=>{
+    z.addEventListener("click",()=>openStep(Number(z.dataset.step)));
+  });
+
+  updateStatus();
 </script>
 </body>
 </html>
