@@ -49,7 +49,6 @@
       display:block;
     }
 
-    /* кликабельные зоны поверх акта */
     .hotspot {
       position:absolute;
       border:2px solid rgba(52,162,97,0.0);
@@ -88,14 +87,31 @@
       margin-bottom:5px;
       cursor:pointer;
     }
-    .field-input {
-      width:100%;
-      padding:6px 8px;
-      border-radius:4px;
-      border:1px solid #c3d5c9;
-      font-size:14px;
-      box-sizing:border-box;
+    .drag-area {
       margin-top:4px;
+      font-size:13px;
+    }
+    .chip {
+      display:inline-block;
+      padding:4px 8px;
+      margin:2px 4px 4px 0;
+      border-radius:12px;
+      border:1px solid #34a261;
+      background:#f5fbf8;
+      cursor:grab;
+      user-select:none;
+    }
+    .drop {
+      margin-top:6px;
+      padding:6px 8px;
+      border-radius:6px;
+      border:1px dashed #b5cbbd;
+      min-height:32px;
+    }
+    .drop.filled {
+      border-style:solid;
+      border-color:#34a261;
+      background:#e9f6ee;
     }
     .btn {
       margin-top:10px;
@@ -132,7 +148,6 @@
       color:#ffffff;
     }
 
-    /* всплывающие окна */
     .overlay {
       position:fixed;
       inset:0;
@@ -174,22 +189,18 @@
 
   <div class="intro">
     <b>Правила интерактива</b><br>
-    1) Сначала нажимайте на подсвеченные области акта на картинке слева.<br>
-    2) Справа выполняйте короткие задания по заполнению полей.<br>
-    3) Всплывающие окна подскажут, на что обращать внимание перед подписью.
+    1) Нажимайте на ключевые области акта на картинке слева.<br>
+    2) Справа выбирайте ответы или расставляйте шаги в правильном порядке.<br>
+    3) Всплывающие подсказки помогут понять, что важно проверить перед подписью.
   </div>
 
   <div class="layout">
     <div class="left">
       <img src="akt-otbora-prob.png" class="act-img" alt="Акт отбора проб">
 
-      <!-- координаты -->
       <div class="hotspot" data-popup="coords" style="top:205px;left:110px;width:430px;height:32px;"></div>
-      <!-- методика и поверка -->
       <div class="hotspot" data-popup="method" style="top:260px;left:20px;width:540px;height:32px;"></div>
-      <!-- таблица проб -->
       <div class="hotspot" data-popup="samples" style="top:305px;left:20px;width:540px;height:130px;"></div>
-      <!-- подписи -->
       <div class="hotspot" data-popup="sign" style="top:460px;left:20px;width:540px;height:80px;"></div>
     </div>
 
@@ -213,8 +224,7 @@
     <p>
       Если какой-то блок заполнен формально, инспектор будет опираться не на ваши пояснения, 
       а на документ с подписью. Перед реальной проверкой пройдите акт так же, как в этом задании: 
-      кликом по ключевым полям, вопросами к лаборатории и корректировкой текста до того, 
-      как поставить подпись.
+      кликом по ключевым полям, выбором правильных действий и уточнением спорных мест до подписи.
     </p>
   </div>
 </div>
@@ -230,41 +240,43 @@
 <script>
   const steps = [
     {
-      title:"Заполняем блок координат и точки",
-      text:"Представьте, что вы согласуете акт с лабораторией. Заполните кратко название точки и систему координат.",
-      type:"fields",
-      fields:[
-        {id:"pointName", label:"Точка отбора (как в программе ПЭК)", placeholder:"Например, К-1, выпуск №2", check:v=>v.length>3},
-        {id:"coordSys", label:"Система координат", placeholder:"Например, ГСК-2011", check:v=>/гск/i.test(v)}
-      ],
-      hint:"Если в акте указана другая система, чем в программе ПЭК, попросите лабораторию привести координаты к ГСК-2011 или оформить пересчет."
-    },
-    {
-      title:"Методика, оборудование, поверка",
-      text:"Вы согласовываете, по какому документу отбирают пробы и каким оборудованием. Выберите верные действия.",
+      title:"Место отбора и координаты",
+      text:"Вы согласуете с лабораторией, как описать точку отбора. Выберите, какие формулировки для акта корректны.",
       type:"choices",
       options:[
-        {id:"m1", label:"Сверю номер методики с договором или программой ПЭК", good:true},
-        {id:"m2", label:"Проверю тип и номер пробоотборника", good:true},
-        {id:"m3", label:"Сравню дату поверки с датой отбора проб", good:true},
-        {id:"m4", label:"Эти пункты считает лаборатория, можно не смотреть", bad:true}
+        {id:"c1", label:"«К-1, выпуск №2, сточные воды после очистки»", good:true},
+        {id:"c2", label:"«Рядом с трубой на заднем дворе»", bad:true},
+        {id:"c3", label:"«Точка №1» без привязки к схеме", bad:true},
+        {id:"c4", label:"«Координаты в системе ГСК-2011, схема прилагается»", good:true}
       ],
-      hintGood:"Так вы заранее убираете риск, что измерения признают недействительными из-за просроченной поверки или неверной методики.",
-      hintBad:"Ответственность разделенная. Если поверка просрочена, формально акт можно не принимать даже при хороших результатах."
+      hintGood:"Четкое название точки и система координат, совпадающая с программой ПЭК, позволяют однозначно доказать, где брали пробу.",
+      hintBad:"Размытые описания вроде «рядом с трубой» в спорной ситуации не помогут – инспектору нужна привязка к схеме и координатам."
+    },
+    {
+      title:"Методика и оборудование",
+      text:"Нужно расставить в правильном порядке действия по проверке блока «Методика – пробоотборник – поверка». Перетащите шаги.",
+      type:"order",
+      items:[
+        {id:"o1", label:"Сравнить дату поверки с датой отбора проб"},
+        {id:"o2", label:"Проверить тип и заводской номер пробоотборника"},
+        {id:"o3", label:"Сверить номер методики с программой ПЭК или договором"}
+      ],
+      correct:["o3","o2","o1"],
+      hint:"Сначала убеждаемся, что отбор ведут по той методике, которая заложена в документах. Затем смотрим оборудование и только после этого дату поверки."
     },
     {
       title:"Сведения о пробах и подписи",
-      text:"Нужно убедиться, что пробу можно однозначно отследить от отбора до протокола анализа. Заполните код тары и выберите, что проверите перед подписью.",
-      type:"mixed",
-      field:{id:"code", label:"Код тары для первой пробы", placeholder:"Например, W-01-2026", check:v=>v.length>4},
+      text:"Посмотрите на таблицу проб и подписи. Отметьте, что обязательно проверяете перед подписью акта.",
+      type:"choices",
       options:[
-        {id:"s1", label:"Сравню время начала и окончания отбора в таблице и в верхней части акта", good:true},
-        {id:"s2", label:"Проверю, что у каждой пробы свой код тары", good:true},
-        {id:"s3", label:"Убедюсь, что есть подпись представителя заказчика", good:true},
-        {id:"s4", label:"Если таблица не пустая, этого достаточно", bad:true}
+        {id:"s1", label:"У каждой пробы уникальный код тары", good:true},
+        {id:"s2", label:"Время отбора в таблице совпадает с временем в верхней части акта", good:true},
+        {id:"s3", label:"Указан консервант или способ хранения, если он нужен по методике", good:true},
+        {id:"s4", label:"Есть подпись представителя заказчика", good:true},
+        {id:"s5", label:"Если таблица не пустая, дальше можно не смотреть", bad:true}
       ],
-      hintGood:"Так у каждой пробы есть свой код и понятная история: когда отобрали, кто принял и кто подтверждает условия отбора.",
-      hintBad:"Если не следить за кодами и подписями, в спорной ситуации будет сложно связать конкретный протокол с конкретной пробой."
+      hintGood:"Так вы можете связать каждую пробу с конкретным протоколом анализа и подтвердить условия отбора обеими подписями.",
+      hintBad:"Формально заполненная таблица без уникальных кодов и подписи заказчика плохо защищает вас при проверке."
     }
   ];
 
@@ -282,6 +294,7 @@
   const popupClose = document.getElementById("popupClose");
 
   let currentStep = 0;
+  let dragItem = null;
 
   function renderStep() {
     const s = steps[currentStep];
@@ -291,20 +304,7 @@
     taskArea.innerHTML = "";
     hintLine.textContent = "";
     nextBtn.disabled = true;
-
-    if (s.type === "fields") {
-      s.fields.forEach(f => {
-        const label = document.createElement("label");
-        label.textContent = f.label;
-        const input = document.createElement("input");
-        input.type = "text";
-        input.className = "field-input";
-        input.placeholder = f.placeholder;
-        input.id = f.id;
-        label.appendChild(input);
-        taskArea.appendChild(label);
-      });
-    }
+    dragItem = null;
 
     if (s.type === "choices") {
       const box = document.createElement("div");
@@ -323,69 +323,65 @@
       taskArea.appendChild(box);
     }
 
-    if (s.type === "mixed") {
-      const label = document.createElement("label");
-      label.textContent = s.field.label;
-      const input = document.createElement("input");
-      input.type = "text";
-      input.className = "field-input";
-      input.placeholder = s.field.placeholder;
-      input.id = s.field.id;
-      label.appendChild(input);
-      taskArea.appendChild(label);
+    if (s.type === "order") {
+      const dragArea = document.createElement("div");
+      dragArea.className = "drag-area";
+      dragArea.textContent = "Перетащите шаги в нужный порядок в поле ниже.";
+      taskArea.appendChild(dragArea);
 
-      const box = document.createElement("div");
-      box.className = "options";
-      s.options.forEach(o => {
-        const lab = document.createElement("label");
-        const inp = document.createElement("input");
-        inp.type = "checkbox";
-        inp.id = o.id;
-        lab.appendChild(inp);
-        const span = document.createElement("span");
-        span.textContent = " " + o.label;
-        lab.appendChild(span);
-        box.appendChild(lab);
+      const chipsBox = document.createElement("div");
+      s.items.forEach(o => {
+        const chip = document.createElement("span");
+        chip.className = "chip";
+        chip.textContent = o.label;
+        chip.dataset.id = o.id;
+        chip.draggable = true;
+        chip.addEventListener("dragstart", e => {
+          dragItem = chip;
+          e.dataTransfer.effectAllowed = "move";
+        });
+        chipsBox.appendChild(chip);
       });
-      taskArea.appendChild(box);
+      taskArea.appendChild(chipsBox);
+
+      const drop = document.createElement("div");
+      drop.className = "drop";
+      drop.textContent = "Бросьте сюда шаги в нужном порядке.";
+      drop.addEventListener("dragover", e => {
+        e.preventDefault();
+      });
+      drop.addEventListener("drop", e => {
+        e.preventDefault();
+        if (!dragItem) return;
+        drop.textContent = "";
+        drop.classList.add("filled");
+        drop.appendChild(dragItem);
+        dragItem = null;
+        validateStep();
+      });
+      taskArea.appendChild(drop);
     }
   }
 
   function validateStep() {
     const s = steps[currentStep];
-    if (s.type === "fields") {
-      let ok = true;
-      s.fields.forEach(f => {
-        const val = document.getElementById(f.id).value.trim();
-        if (!f.check(val)) ok = false;
-      });
-      nextBtn.disabled = !ok;
-    }
-
     if (s.type === "choices") {
       const checked = taskArea.querySelectorAll("input[type=checkbox]:checked").length;
       nextBtn.disabled = checked === 0;
     }
-
-    if (s.type === "mixed") {
-      const val = document.getElementById(s.field.id).value.trim();
-      const okField = s.field.check(val);
-      const checked = taskArea.querySelectorAll("input[type=checkbox]:checked").length;
-      nextBtn.disabled = !(okField && checked > 0);
+    if (s.type === "order") {
+      const drop = taskArea.querySelector(".drop");
+      const chips = drop.querySelectorAll(".chip");
+      nextBtn.disabled = chips.length !== s.items.length;
     }
   }
 
-  taskArea.addEventListener("input", validateStep);
   taskArea.addEventListener("change", validateStep);
 
   nextBtn.addEventListener("click", () => {
     const s = steps[currentStep];
 
-    if (s.type === "fields") {
-      hintLine.textContent = s.hint;
-    }
-
-    if (s.type === "choices" || s.type === "mixed") {
+    if (s.type === "choices") {
       const inputs = taskArea.querySelectorAll("input[type=checkbox]");
       let hasGood = false;
       let hasBad = false;
@@ -399,6 +395,14 @@
       if (hasBad) hintLine.textContent += (hintLine.textContent ? " " : "") + s.hintBad;
     }
 
+    if (s.type === "order") {
+      const drop = taskArea.querySelector(".drop");
+      const chips = drop.querySelectorAll(".chip");
+      const order = Array.from(chips).map(ch => ch.dataset.id);
+      const isCorrect = JSON.stringify(order) === JSON.stringify(s.correct);
+      hintLine.textContent = s.hint + (isCorrect ? " Порядок верный." : " Порядок можно улучшить, но логика проверки уже верная.");
+    }
+
     if (currentStep < steps.length - 1) {
       setTimeout(() => {
         currentStep++;
@@ -410,11 +414,10 @@
     }
   });
 
-  // всплывающие комментарии по клику на зону
   const popupTexts = {
     coords: {
       title:"Координаты и точка отбора",
-      text:"Здесь важно не только наличие цифр. Сверьте название точки и систему координат с программой ПЭК. Если в акте указана другая система, попросите привести все к ГСК-2011."
+      text:"Сверьте название точки и систему координат с программой ПЭК. Если в акте другая система, попросите привести все к ГСК-2011 или оформить пересчет."
     },
     method: {
       title:"Методика и поверка",
@@ -426,7 +429,7 @@
     },
     sign: {
       title:"Подписи сторон",
-      text:"Подпись представителя заказчика фиксирует, что он согласен с условиями отбора. Если подписи нет, оспорить акт потом гораздо легче – но уже не в вашу пользу."
+      text:"Подпись представителя заказчика фиксирует, что он согласен с условиями отбора. Если подписи нет, оспорить акт потом значительно легче."
     }
   };
 
