@@ -26,8 +26,8 @@
       align-items: flex-start;
     }
     #app {
-      width: 440px;
-      min-height: 480px;
+      width: 480px;
+      min-height: 560px;
       background: #ffffff;
       border: 1px solid var(--green-border);
       border-radius: 4px;
@@ -65,12 +65,12 @@
 
     .main {
       flex: 1;
-      padding: 8px 10px 10px 10px;
+      padding: 10px 12px 12px 12px;
       font-size: 12px;
       color: var(--text-dark);
       display: flex;
       flex-direction: column;
-      gap: 6px;
+      gap: 8px;
     }
 
     .btn {
@@ -101,11 +101,11 @@
       border-radius: 8px;
       border: 1px solid rgba(0,119,96,0.18);
       background: #f7faf9;
-      padding: 7px 8px 9px 8px;
+      padding: 8px 9px 10px 9px;
       display: flex;
       flex-direction: column;
-      gap: 5px;
-      min-height: 180px;
+      gap: 6px;
+      min-height: 200px;
     }
     .badge {
       display: inline-block;
@@ -126,11 +126,11 @@
       border-radius: 8px;
       background: #ffffff;
       border: 1px solid #d6e3dd;
-      padding: 7px 7px 7px 7px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.04);
+      padding: 8px;
+      box-shadow: 0 6px 16px rgba(0,0,0,0.04);
       display: flex;
       flex-direction: column;
-      gap: 5px;
+      gap: 6px;
     }
     .subheading {
       font-size: 11px;
@@ -191,13 +191,54 @@
     .option-text {
       flex: 1;
     }
+    .option.correct {
+      border-color: var(--green-border);
+      background: #e7f7ee;
+    }
+    .option.wrong {
+      border-color: var(--danger);
+      background: #fff3f1;
+    }
 
     .controls {
       display: flex;
-      justify-content: flex-end;
+      justify-content: space-between;
       align-items: center;
       margin-top: 4px;
       gap: 6px;
+    }
+    .status {
+      font-size: 11px;
+      min-height: 32px;
+      color: var(--muted);
+    }
+    .status.ok {
+      color: var(--green-accent);
+    }
+    .status.bad {
+      color: var(--danger);
+    }
+
+    .final {
+      display: none;
+      border-radius: 6px;
+      border: 1px solid rgba(0,119,96,0.18);
+      background: #e5f5eb;
+      color: var(--text-dark);
+      padding: 8px 10px;
+      font-size: 12px;
+      margin-top: 4px;
+    }
+    .final h3 {
+      margin: 0 0 6px 0;
+      font-size: 13px;
+      color: var(--green-accent);
+    }
+    .final p {
+      margin: 0 0 6px 0;
+    }
+    .final p:last-child {
+      margin-bottom: 0;
     }
 
     .overlay {
@@ -211,7 +252,7 @@
     }
     .modal {
       width: 90%;
-      max-width: 420px;
+      max-width: 440px;
       background: #ffffff;
       border-radius: 8px;
       border: 1px solid var(--green-border);
@@ -228,9 +269,49 @@
     .modal-block {
       margin-bottom: 6px;
     }
+    .modal-block b {
+      color: var(--text-dark);
+    }
     .modal-btns {
       margin-top: 8px;
       text-align: right;
+      display: flex;
+      justify-content: flex-end;
+      gap: 6px;
+    }
+
+    .feedback-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,0.35);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      z-index: 30;
+    }
+    .feedback-modal {
+      width: 90%;
+      max-width: 440px;
+      background: #ffffff;
+      border-radius: 8px;
+      border: 1px solid var(--green-border);
+      box-shadow: 0 22px 55px rgba(0,119,96,0.35);
+      padding: 12px 14px 12px 14px;
+      font-size: 12px;
+    }
+    .feedback-title {
+      font-size: 13px;
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: var(--green-accent);
+    }
+    .feedback-title.bad {
+      color: var(--danger);
+    }
+    .feedback-text {
+      font-size: 12px;
+      color: var(--text-dark);
+      margin-bottom: 6px;
     }
   </style>
 </head>
@@ -240,7 +321,7 @@
     <div class="header-left">
       <h2>Разминка с Перечнем 2909-р</h2>
       <div class="subtitle">
-        Откройте Перечень и попробуйте понять, как в нем ищут знакомые вам вещества.
+        Откройте Перечень и попробуйте определить, как в нем нормируют вещества на карточках.
       </div>
     </div>
     <div class="header-right">
@@ -250,32 +331,70 @@
 
   <div class="main">
     <div class="card-box">
-      <div class="badge">карточки веществ</div>
+      <div class="badge">разминка с веществами</div>
       <div class="card-counter" id="counter">Карточка 1 из 5</div>
 
       <div class="card">
         <div class="subheading">
-          На каждой карточке выберите, <span>как обычно нормируют это вещество в Перечне 2909-р.</span>
+          Смотрите на формулировки Перечня 2909‑р. <span>Важно понять, отдельная это строка или укрупненная группа.</span>
         </div>
         <div class="question" id="qTitle"></div>
         <div class="subquestion" id="qSub"></div>
         <div class="options" id="options"></div>
 
         <div class="controls">
-          <button class="btn btn-secondary btn-lock" id="resetBtn">Сбросить</button>
-          <button class="btn btn-main btn-lock" id="checkBtn">Проверить</button>
+          <div class="status" id="status"></div>
+          <div style="display:flex;gap:6px;">
+            <button class="btn btn-secondary btn-lock" id="resetBtn">Сбросить</button>
+            <button class="btn btn-main btn-lock" id="checkBtn">Проверить</button>
+          </div>
         </div>
       </div>
+    </div>
+
+    <div class="final" id="finalBox">
+      <h3>Что вы закрепили на разминке</h3>
+      <p>
+        Перечень 2909‑р устроен по средам и по укрупненным группам. Одна строка может закрывать сразу несколько знакомых вам показателей, например разные виды органической или минеральной пыли.
+      </p>
+      <p>
+        Если в Перечне есть строка, а в перечне нормируемых веществ предприятия этого показателя нет, проверяющие воспринимают это как занижение нагрузки. Дальше идут доначисления платы, корректировка НДВ и НДС и вопросы к производственному контролю.
+      </p>
+      <p>
+        В работе полезно идти так же, как в тренажере. Сначала вы ищете показатель в Перечне и смотрите, отдельная это строка или группа. Потом переносите формулировку в НДВ, НДС, ПЭК и договоры с лабораторией. Так вы связываете технологию с нормативкой и снижаете риски при проверке.
+      </p>
     </div>
   </div>
 </div>
 
 <div class="overlay" id="overlay">
-  <div class="modal" id="modal">
-    <div class="modal-title" id="modalTitle"></div>
-    <div id="modalBody"></div>
+  <div class="modal">
+    <div class="modal-title">Как работать с этим интерактивом</div>
+    <div class="modal-block">
+      <b>Шаг 1.</b> Откройте Перечень загрязняющих веществ по распоряжению № 2909‑р в отдельной вкладке.
+    </div>
+    <div class="modal-block">
+      <b>Шаг 2.</b> На карточке смотрите формулировку из Перечня и отвечаете, отдельная это строка или укрупненная группа.
+    </div>
+    <div class="modal-block">
+      <b>Укрупненная группа.</b> Это строка Перечня, которая объединяет несколько конкретных веществ. В документах вы берете именно эту общую строку, а не все частные названия по отдельности.
+    </div>
+    <div class="modal-block">
+      <b>Как отвечать.</b> Отметьте вариант, нажмите «Проверить» и прочитайте разбор во всплывающем окне. Можно закрыть его и попробовать ответить по‑другому.
+    </div>
     <div class="modal-btns">
-      <button class="btn btn-main" id="modalClose">Дальше</button>
+      <button class="btn btn-main" id="closeRules">Начать разминку</button>
+    </div>
+  </div>
+</div>
+
+<div class="feedback-overlay" id="fbOverlay">
+  <div class="feedback-modal">
+    <div class="feedback-title" id="fbTitle"></div>
+    <div class="feedback-text" id="fbText"></div>
+    <div class="modal-btns">
+      <button class="btn btn-secondary" id="fbRetry">Закрыть и попробовать еще раз</button>
+      <button class="btn btn-main" id="fbNext">Дальше</button>
     </div>
   </div>
 </div>
@@ -283,74 +402,64 @@
 <script>
   const cards = [
     {
-      title: "Взвешенные вещества (взвеси)",
-      sub: "Представьте сточные воды после мойки или очистки. Как этот показатель обычно записан в Перечне.",
+      title: "Взвешенные вещества",
+      sub: "Название в Перечне: «взвешенные вещества (разнородные по составу твердые частицы...)». Как этот показатель представлен в Перечне 2909‑р?",
       correct: "direct",
-      feedbackOk: "Взвешенные вещества идут в Перечне отдельной строкой. По ним задают нормативы и проверяют, не превышен ли допустимый уровень в воде.",
-      feedbackBad: "Взвешенные вещества учитывают как самостоятельный показатель. Если его не выделить, можно недооценить реальную нагрузку на водный объект."
+      feedbackOk: "Вы ориентируетесь по самому Перечню. Взвешенные вещества выделены там отдельной строкой в разделе атмосферного воздуха, а не спрятаны внутри других групп. Значит, при расчете НДВ и проекте ПДВ по пылящим источникам вы берете именно эту строку Перечня.",
+      feedbackBad: "В Перечне есть отдельная строка для взвешенных веществ. Если считать, что это только часть укрупненной группы, вы рискуете выбрать неверную позицию или вообще не учесть показатель в проекте ПДВ и расчетах. При работе с Перечнем важно смотреть на конкретную строку и ее раздел, а не на общее слово «пыль»."
     },
     {
-      title: "Ионы аммония (аммонийный азот)",
-      sub: "Это форма азота в воде. Посмотрите, есть ли для нее отдельная строка в Перечне.",
+      title: "Аммонийный азот",
+      sub: "Название в Перечне: «аммонийный азот». Как его нужно искать и использовать в документах?",
       correct: "direct",
-      feedbackOk: "Аммонийный азот записан в Перечне как отдельный показатель. Его используют для оценки, насколько стоки загрязняют воду соединениями азота.",
-      feedbackBad: "Аммонийный азот не прячут только внутри слова «азот». Его выделяют отдельно, чтобы точнее оценивать влияние стоков на водный объект."
+      feedbackOk: "Вы опираетесь на формулировку Перечня. Аммонийный азот идет там отдельной позицией, поэтому в НДВ, НДС и ПЭК вы используете именно это название. Так при проверке ваши показатели легко сопоставить с конкретной строкой Перечня.",
+      feedbackBad: "В Перечне аммонийный азот выделен отдельной строкой. Если сводить его к размытым формулировкам вроде «азотсодержащие вещества», вы усложняете сопоставление документов с Перечнем и даете повод считать перечень веществ составленным некорректно."
     },
     {
       title: "Нефтепродукты",
-      sub: "Подумайте о стоках от ГСМ, мойки техники, маслохозяйства. Как с ними работают в Перечне.",
+      sub: "Название в Перечне: «нефтепродукты». Как этот показатель отражен в Перечне 2909‑р?",
       correct: "direct",
-      feedbackOk: "Нефтепродукты указаны отдельной строкой. Их контролируют на многих предприятиях, потому что даже малые концентрации опасны для водных объектов.",
-      feedbackBad: "Нефтепродукты не оставляют только внутри общих показателей. Их выделяют отдельно, чтобы видеть риск пленки на воде и токсичного воздействия."
+      feedbackOk: "Нефтепродукты вы находите в Перечне отдельной строкой. Это значит, что в НДВ, НДС и договорах с лабораторией вы закладываете именно эту формулировку, а не общий термин «органические вещества». Тогда видно, что перечень нормируемых веществ опирается на Перечень 2909‑р.",
+      feedbackBad: "В Перечне нефтепродукты не растворяются в общей органике, а идут отдельной позицией. Если в документах вы не используете это название, может сложиться впечатление, что показатель не нормируется, хотя он прямо указан в Перечне."
     },
     {
-      title: "ПАВ (поверхностно-активные вещества)",
-      sub: "Вспомните моющие средства и стоки после мойки. Как ПАВ отражают в Перечне.",
+      title: "ПАВ (поверхностно‑активные вещества)",
+      sub: "Название в Перечне: «поверхностно‑активные вещества (ПАВ)». Как правильно с ними работать по Перечню?",
       correct: "direct",
-      feedbackOk: "ПАВ идут отдельной строкой. Их учитывают при работе с моющими средствами, потому что они влияют на пенообразование и состояние водной экосистемы.",
-      feedbackBad: "ПАВ нельзя учитывать только через обобщенные показатели вроде БПК. Их выделяют отдельно, чтобы видеть влияние моющих средств на воду."
+      feedbackOk: "ПАВ указаны в Перечне отдельной строкой. Значит, при настройке контроля и расчетах вы прямо используете строку «поверхностно‑активные вещества», а не прячете их внутри БПК или ХПК. Проверяющему проще связать ваши показатели с конкретной строкой Перечня.",
+      feedbackBad: "В Перечне ПАВ не растворяются в общей органике, а идут отдельной строкой. Если считать, что это только часть грубой группы, высок риск, что в перечне нормируемых веществ предприятия ПАВ не появятся, хотя они прямо названы в Перечне."
     },
     {
-      title: "Мучная пыль",
-      sub: "Так называют вещество на производстве. В Перечне ищите не это слово, а группу, к которой его можно отнести.",
+      title: "Укрупненная группа вместо точного названия",
+      sub: "Вы ищете в Перечне термин вроде «органическая пыль», но в явном виде его нет. Как правильно действовать?",
       correct: "group",
-      feedbackOk: "«Мучная пыль» это цеховое название. В Перечне ее обычно относят к более общей группе взвешенных или органических веществ.",
-      feedbackBad: "Термин «мучная пыль» вы в Перечне не найдете. Важно уметь перевести его в язык групп веществ, например во «взвешенные вещества»."
+      feedbackOk: "Вы работаете в логике Перечня. Если точного рабочего термина нет, нужно подобрать строку укрупненной группы, которая описывает этот вид загрязнения, и использовать именно ее в НДВ, НДС и ПЭК. Это защита от ситуации «в выбросах есть, в перечне веществ нет» при проверке.",
+      feedbackBad: "Отсутствие вашего рабочего термина в Перечне не значит, что показатель не нормируется. Документ устроен через укрупненные группы. Если не искать подходящую строку группы, вы оставляете часть фактических загрязнений вне перечня нормируемых веществ, и это типичный повод для претензий при согласовании НДВ и НДС."
     }
   ];
 
   const qTitle = document.getElementById("qTitle");
   const qSub = document.getElementById("qSub");
   const optionsBox = document.getElementById("options");
+  const statusEl = document.getElementById("status");
   const checkBtn = document.getElementById("checkBtn");
   const resetBtn = document.getElementById("resetBtn");
   const counterEl = document.getElementById("counter");
+  const finalBox = document.getElementById("finalBox");
 
   const overlay = document.getElementById("overlay");
-  const modal = document.getElementById("modal");
-  const modalTitle = document.getElementById("modalTitle");
-  const modalBody = document.getElementById("modalBody");
-  const modalClose = document.getElementById("modalClose");
   const rulesBtn = document.getElementById("rulesBtn");
+  const closeRules = document.getElementById("closeRules");
+
+  const fbOverlay = document.getElementById("fbOverlay");
+  const fbTitle = document.getElementById("fbTitle");
+  const fbText = document.getElementById("fbText");
+  const fbRetry = document.getElementById("fbRetry");
+  const fbNext = document.getElementById("fbNext");
 
   let current = 0;
   let selected = null;
   let answered = false;
-  let mode = "rules"; // rules | feedback | final
-
-  function openModal(title, text, nextMode) {
-    mode = nextMode;
-    modalTitle.textContent = title;
-    modalBody.innerHTML = "";
-    const p = document.createElement("div");
-    p.textContent = text;
-    modalBody.appendChild(p);
-    overlay.style.display = "flex";
-    modalClose.textContent = nextMode === "rules" ? "Начать" : "Дальше";
-    if (nextMode === "final") {
-      modalClose.textContent = "Понятно";
-    }
-  }
 
   function renderCard() {
     const c = cards[current];
@@ -362,11 +471,11 @@
     const opts = [
       {
         key: "direct",
-        text: "Вещество нормируют отдельной строкой Перечня."
+        text: "Это отдельная строка Перечня (самостоятельный показатель)."
       },
       {
         key: "group",
-        text: "Вещество ищут внутри более общей группы веществ."
+        text: "Нужно искать укрупненную группу Перечня, которая покрывает этот показатель."
       }
     ];
 
@@ -390,6 +499,8 @@
           selected = opt.key;
           document.querySelectorAll(".option").forEach(o => o.classList.remove("selected"));
           div.classList.add("selected");
+          statusEl.textContent = "";
+          statusEl.className = "status";
           checkBtn.disabled = false;
         }
       });
@@ -399,6 +510,8 @@
 
     selected = null;
     answered = false;
+    statusEl.textContent = "Сделайте выбор и нажмите «Проверить».";
+    statusEl.className = "status";
     checkBtn.disabled = true;
     resetBtn.disabled = true;
     checkBtn.textContent = "Проверить";
@@ -413,9 +526,7 @@
 
     document.querySelectorAll(".option").forEach(o => {
       const key = o.dataset.key;
-      o.classList.remove("selected");
-      o.classList.remove("correct");
-      o.classList.remove("wrong");
+      o.classList.remove("selected", "correct", "wrong");
       if (key === c.correct) {
         o.classList.add("correct");
       } else if (key === selected && key !== c.correct) {
@@ -423,15 +534,42 @@
       }
     });
 
-    const text = correct ? c.feedbackOk : c.feedbackBad;
-    openModal("Комментарий к карточке", text, "feedback");
+    statusEl.textContent = "";
+    statusEl.className = "status";
+
+    fbTitle.textContent = correct ? "Ответ верный" : "В ответе есть ошибка";
+    fbTitle.className = "feedback-title" + (correct ? "" : " bad");
+    fbText.textContent = correct ? c.feedbackOk : c.feedbackBad;
+    fbOverlay.style.display = "flex";
+
     resetBtn.disabled = false;
 
-    if (current === cards.length - 1) {
-      checkBtn.textContent = "Завершить";
-    } else {
-      checkBtn.textContent = "Дальше";
-    }
+    fbRetry.onclick = () => {
+      fbOverlay.style.display = "none";
+      selected = null;
+      answered = false;
+      document.querySelectorAll(".option").forEach(o => {
+        o.classList.remove("selected", "correct", "wrong");
+      });
+      statusEl.textContent = "Попробуйте ответить по‑другому и снова нажмите «Проверить».";
+      statusEl.className = "status";
+      checkBtn.textContent = "Проверить";
+      checkBtn.disabled = true;
+      checkBtn.onclick = handleCheck;
+      resetBtn.disabled = true;
+    };
+
+    fbNext.onclick = () => {
+      fbOverlay.style.display = "none";
+      if (current < cards.length - 1) {
+        current += 1;
+        renderCard();
+      } else {
+        finalBox.style.display = "block";
+        checkBtn.disabled = true;
+        resetBtn.disabled = true;
+      }
+    };
   }
 
   resetBtn.onclick = () => {
@@ -440,6 +578,8 @@
     document.querySelectorAll(".option").forEach(o => {
       o.classList.remove("selected", "correct", "wrong");
     });
+    statusEl.textContent = "Выбор сброшен. Выберите вариант и снова нажмите «Проверить».";
+    statusEl.className = "status";
     checkBtn.textContent = "Проверить";
     checkBtn.disabled = true;
     checkBtn.onclick = handleCheck;
@@ -447,38 +587,13 @@
   };
 
   rulesBtn.addEventListener("click", () => {
-    openModal(
-      "Как работать с этим интерактивом",
-      "Откройте Перечень 2909-р в соседней вкладке. На каждой карточке выберите, нормируют ли вещество отдельной строкой или ищут внутри более общей группы. Это простая разминка, чтобы вы увидели логику Перечня на знакомых примерах.",
-      "rules"
-    );
+    overlay.style.display = "flex";
   });
-
-  modalClose.addEventListener("click", () => {
+  closeRules.addEventListener("click", () => {
     overlay.style.display = "none";
-
-    if (mode === "rules") {
-      renderCard();
-    } else if (mode === "feedback") {
-      if (current < cards.length - 1) {
-        current += 1;
-        renderCard();
-      } else {
-        const finalText =
-          "Вы познакомились с тем, как вещества выглядят в Перечне. Часть показателей нормируют отдельной строкой, часть прячется внутри укрупненных групп. В реальной работе сначала переводите привычные цеховые названия в язык Перечня, а уже потом заполняйте перечень нормируемых веществ и договоры с лабораторией.";
-        openModal("Что важно запомнить", finalText, "final");
-      }
-    } else if (mode === "final") {
-      // ничего не делаем, просто закрыли
-    }
   });
 
-  // автопоказ правил при первом открытии
-  openModal(
-    "Как работать с этим интерактивом",
-    "Откройте Перечень 2909-р в соседней вкладке. На карточках выберите, нормируют ли вещество отдельной строкой или ищут внутри более общей группы. Это разминка, чтобы спокойно войти в тему и увидеть, как ваши знакомые вещества выглядят в официальном списке.",
-    "rules"
-  );
+  renderCard();
 </script>
 </body>
 </html>
