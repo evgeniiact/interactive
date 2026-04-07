@@ -2,7 +2,7 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Интерактив: акт отбора проб</title>
+  <title>Интерактив: проверяем акт отбора проб</title>
   <style>
     body {
       margin:0;
@@ -181,58 +181,71 @@
       font-size:13px;
       cursor:pointer;
     }
+    .banner {
+      margin-top:8px;
+      padding:8px 10px;
+      border-radius:4px;
+      background:#fff4e0;
+      color:#6b3b00;
+      font-size:12px;
+      display:none;
+    }
   </style>
 </head>
 <body>
 <div class="wrap">
-  <h1>Потренируемся заполнять и проверять акт отбора проб</h1>
+  <h1>Проверяем акт отбора проб перед подписью</h1>
 
   <div class="intro">
-    <b>Правила интерактива</b><br>
-    1) Нажимайте на ключевые области акта на картинке слева.<br>
-    2) Справа выполняйте задания по выбранному блоку.<br>
-    3) В конце получите разбор, что важно проверить перед подписью.
+    <b>Вы подписываете акт отбора проб</b><br>
+    Ваша задача – за несколько шагов пройтись по ключевым блокам акта и отметить, что нужно уточнить до подписи.
   </div>
 
   <div class="layout">
     <div class="left">
       <img src="akt-otbora-prob.png" class="act-img" alt="Акт отбора проб">
 
-      <!-- блок места и координат -->
-      <div class="hotspot" data-step="0" data-popup="coords"
-           style="top:185px;left:20px;width:540px;height:60px;"></div>
-      <!-- методика и поверка -->
-      <div class="hotspot" data-step="1" data-popup="method"
-           style="top:250px;left:20px;width:540px;height:35px;"></div>
+      <!-- шапка и объект -->
+      <div class="hotspot" data-step="0"
+           style="top:70px;left:20px;width:540px;height:70px;"></div>
+      <!-- место и условия, тип среды и точка -->
+      <div class="hotspot" data-step="1"
+           style="top:170px;left:20px;width:540px;height:60px;"></div>
+      <!-- координаты и правая часть условий -->
+      <div class="hotspot" data-step="2"
+           style="top:215px;left:20px;width:540px;height:60px;"></div>
+      <!-- методика и пробоотборник -->
+      <div class="hotspot" data-step="4"
+           style="top:260px;left:20px;width:540px;height:35px;"></div>
       <!-- сведения о пробах -->
-      <div class="hotspot" data-step="2" data-popup="samples"
-           style="top:295px;left:20px;width:540px;height:130px;"></div>
+      <div class="hotspot" data-step="5"
+           style="top:305px;left:20px;width:540px;height:130px;"></div>
+      <!-- меры, цель, отклонения -->
+      <div class="hotspot" data-step="6"
+           style="top:440px;left:20px;width:540px;height:95px;"></div>
       <!-- подписи -->
-      <div class="hotspot" data-step="2" data-popup="sign"
-           style="top:450px;left:20px;width:540px;height:90px;"></div>
+      <div class="hotspot" data-step="7"
+           style="top:535px;left:20px;width:540px;height:90px;"></div>
     </div>
 
     <div class="right">
-      <div class="step-label">задание <span id="stepNum">1</span> из 3</div>
+      <div class="step-label">шаг <span id="stepNum">1</span> из 8</div>
       <div class="question" id="qTitle"></div>
       <div class="text" id="qText"></div>
       <div id="taskArea"></div>
       <button class="btn" id="nextBtn" disabled>Готово</button>
+      <div class="banner" id="warnBanner"></div>
       <div class="small" id="hintLine"></div>
     </div>
   </div>
 
   <div class="final" id="finalBlock">
-    <h2>Что вы подтверждаете подписью</h2>
+    <h2>Что вы подтвердили, когда подписали акт</h2>
     <p>
-      Акт закрепляет не только числа в протоколе, но и их происхождение. 
-      В нем сходятся координаты точки, режим работы источника, выбранная методика, 
-      исправность оборудования, коды и объемы проб, консервирование и сроки доставки.
+      Акт отбора – не приложение к отчету и не «бумажка лаборатории». Подпись под актом значит, что вы согласны со всем, что в нем написано: точка отбора и ее координаты, режим работы источника, методика и поверка, коды и объемы проб, консервирование, цель и все отклонения от плана.
     </p>
     <p>
-      Если акт заполнен формально, инспектор опирается не на ваши пояснения, 
-      а на документ с вашей подписью. В реальной работе пройдите акт так же, как в этом тренажере: 
-      по блокам, с вопросами к лаборатории до подписи.
+      Если в акте ошибка, инспектор будет опираться не на устные пояснения, а на документ с вашей подписью. В реальной работе пройдите акт так же, как в этом интерактиве: сверху вниз, задавая неудобные вопросы лаборатории до подписи, а не после.
     </p>
   </div>
 </div>
@@ -248,21 +261,51 @@
 <script>
   const steps = [
     {
-      title:"Место отбора и координаты",
-      text:"Вы нажали на блок «Место и условия отбора». Какие формулировки для акта корректны?",
-      type:"choices",
+      title:"Шапка и объект",
+      text:"Вы инженер-эколог предприятия. Лаборатория передала акт. Начните с самого верха.",
+      type:"radio",
       options:[
-        {id:"c1", label:"«К-1, выпуск №2, сточные воды после очистки»", good:true},
-        {id:"c2", label:"«Рядом с трубой на заднем дворе»", bad:true},
-        {id:"c3", label:"«Точка №1» без привязки к схеме", bad:true},
-        {id:"c4", label:"«Координаты в системе ГСК-2011, схема прилагается»", good:true}
+        {id:"h1", label:"Да, шапка в порядке, идем дальше", bad:true},
+        {id:"h2", label:"Я хочу проверить заказчика и объект отбора проб", good:true}
       ],
-      hintGood:"Четкое название точки и координаты в ГСК-2011, совпадающие с программой ПЭК, помогают однозначно доказать место отбора.",
-      hintBad:"Размытые описания вроде «рядом с трубой» не работают в спорной ситуации – инспектору нужна привязка к схеме и координатам."
+      hintGood:"Так вы снижаете риск, что акт «повиснет» на другой площадке или юрлице.",
+      hintBad:"Если в шапке ошибка по объекту, потом трудно доказать, что пробу брали именно на вашей площадке."
     },
     {
-      title:"Методика и оборудование",
-      text:"Теперь блок «Методика – пробоотборник – поверка». Расставьте порядок проверки, перетащив шаги в поле ниже.",
+      title:"Тип среды и точка отбора",
+      text:"Посмотрите на блок «Место и условия отбора». Что вы проверите в нем перед подписью?",
+      type:"choices",
+      options:[
+        {id:"t1", label:"Тип среды выбран верно", good:true},
+        {id:"t2", label:"Название точки совпадает с программой ПЭК или договором", good:true},
+        {id:"t3", label:"Пропущу, это не принципиально", bad:true}
+      ],
+      hintGood:"Вы сверяете акт с программой – так меньше поводов для споров с инспектором.",
+      hintBad:"Название точки и тип среды – основа трассировки пробы. Если здесь ошибка, дальше правильные числа не помогут."
+    },
+    {
+      title:"Координаты точки",
+      text:"Подпись под актом подтверждает, что проба взята именно там, где указано. Координаты в строке заполнены. Ваше действие?",
+      type:"radio",
+      options:[
+        {id:"k1", label:"Сравню координаты с программой или паспортом точки", good:true},
+        {id:"k2", label:"Меня устроит любой формат координат, лишь бы были", bad:true},
+        {id:"k3", label:"Проверю, что указана система ГСК-2011", good:true}
+      ],
+      hintGood:"Вы снижаете риск, что ошибка в системе координат даст разброс до десятков метров.",
+      hintBad:"Так часто делают, но это риск. В реальной работе просите лабораторию приводить координаты к ГСК-2011 или прикладывать расчет пересчета."
+    },
+    {
+      title:"Условия в момент отбора",
+      text:"Правый столбец блока «Место и условия отбора» описывает контекст измерений.",
+      type:"dragCheck",
+      lines:["Дата и время отбора","Режим / состояние объекта","Погода","Ничего, это ответственность лаборатории"],
+      hintGood:"Вы фиксируете контекст отбора. Это пригодится, если потом измерения будут оспаривать.",
+      hintBad:"Формально ответственность разделенная, но если режим не соответствовал программе ПЭК, вопросы будут к вам."
+    },
+    {
+      title:"Методика и пробоотборник",
+      text:"Строка «Методика – пробоотборник – поверка». Расставьте порядок проверки.",
       type:"order",
       items:[
         {id:"o1", label:"Сравнить дату поверки с датой отбора проб"},
@@ -270,21 +313,44 @@
         {id:"o3", label:"Сверить номер методики с программой ПЭК или договором"}
       ],
       correct:["o3","o2","o1"],
-      hint:"Сначала убеждаемся, что методика совпадает с документами, затем смотрим оборудование и только после этого дату поверки."
+      hint:"Просроченная поверка даже на один день – формальное основание признать акт недействительным. Это первое, что смотрит инспектор."
     },
     {
-      title:"Сведения о пробах и подписи",
-      text:"Вы перешли к таблице проб и подписям. Что обязательно проверить перед подписью акта?",
+      title:"Сведения о пробах",
+      text:"В таблице «Сведения о пробах» выберите, какие столбцы вы проверите обязательно.",
       type:"choices",
       options:[
-        {id:"s1", label:"У каждой пробы уникальный код тары", good:true},
-        {id:"s2", label:"Время отбора в таблице совпадает с временем в верхней части акта", good:true},
-        {id:"s3", label:"Указан консервант или способ хранения, если это требует методика", good:true},
-        {id:"s4", label:"Есть подпись представителя заказчика", good:true},
-        {id:"s5", label:"Если таблица не пустая, дальше можно не смотреть", bad:true}
+        {id:"s1", label:"Код тары", good:true},
+        {id:"s2", label:"Объем", good:true},
+        {id:"s3", label:"Консервант / обработка", good:true},
+        {id:"s4", label:"Время начала", good:true},
+        {id:"s5", label:"Время окончания", good:true}
       ],
-      hintGood:"Так вы можете связать каждую пробу с конкретным протоколом анализа и подтвердить условия отбора обеими подписями.",
-      hintBad:"Таблица без уникальных кодов и подписи заказчика плохо защищает вас при проверке."
+      hintGood:"Без уникального кода тары и консерванта часть показателей может измениться уже по пути в лабораторию."
+    },
+    {
+      title:"Меры сохранности, цель, отклонения",
+      text:"Внизу акта блоки про меры сохранности, цель отбора и отклонения от методики.",
+      type:"choices",
+      options:[
+        {id:"m1", label:"Уточню, как доставляли пробы и за какое время", good:true},
+        {id:"m2", label:"Спрошу, соответствует ли цель отбора программе ПЭК", good:true},
+        {id:"m3", label:"Если были отклонения, попрошу записать их в акт", good:true},
+        {id:"m4", label:"Ничего, это внутреннее дело лаборатории", bad:true}
+      ],
+      hintGood:"Эти строки связывают акт с программой ПЭК и реальными условиями транспортировки проб.",
+      hintBad:"Если отклонения не зафиксировать, потом сложнее объяснять, почему условия отличались от методики."
+    },
+    {
+      title:"Подписи",
+      text:"Нижняя часть акта – подписи лаборатории и заказчика.",
+      type:"radio",
+      options:[
+        {id:"p1", label:"Я еще раз просматриваю акт сверху вниз и только потом ставлю подпись", good:true},
+        {id:"p2", label:"Сразу подписываю и отправляю", bad:true}
+      ],
+      hintGood:"Так вы подтверждаете только то, что действительно проверили.",
+      hintBad:"В учебном примере можно рискнуть. В реальной проверке это ваши деньги и ваша ответственность."
     }
   ];
 
@@ -294,6 +360,7 @@
   const nextBtn = document.getElementById("nextBtn");
   const stepNum = document.getElementById("stepNum");
   const hintLine = document.getElementById("hintLine");
+  const warnBanner = document.getElementById("warnBanner");
   const finalBlock = document.getElementById("finalBlock");
 
   const overlay = document.getElementById("overlay");
@@ -311,6 +378,7 @@
     qText.textContent = s.text;
     taskArea.innerHTML = "";
     hintLine.textContent = "";
+    warnBanner.style.display = "none";
     nextBtn.disabled = true;
     dragItem = null;
 
@@ -318,17 +386,40 @@
       h.classList.toggle("active", Number(h.dataset.step) === currentStep);
     });
 
-    if (s.type === "choices") {
+    if (s.type === "radio" || s.type === "choices") {
       const box = document.createElement("div");
       box.className = "options";
       s.options.forEach(o => {
         const lab = document.createElement("label");
         const inp = document.createElement("input");
-        inp.type = "checkbox";
+        inp.type = s.type === "radio" ? "radio" : "checkbox";
+        inp.name = "opt";
         inp.id = o.id;
         lab.appendChild(inp);
         const span = document.createElement("span");
         span.textContent = " " + o.label;
+        lab.appendChild(span);
+        box.appendChild(lab);
+      });
+      taskArea.appendChild(box);
+    }
+
+    if (s.type === "dragCheck") {
+      const dragArea = document.createElement("div");
+      dragArea.className = "drag-area";
+      dragArea.textContent = "Отметьте, какие строки вы точно проверите.";
+      taskArea.appendChild(dragArea);
+
+      const box = document.createElement("div");
+      box.className = "options";
+      s.lines.forEach((text, index) => {
+        const lab = document.createElement("label");
+        const inp = document.createElement("input");
+        inp.type = "checkbox";
+        inp.id = "dc" + index;
+        lab.appendChild(inp);
+        const span = document.createElement("span");
+        span.textContent = " " + text;
         lab.appendChild(span);
         box.appendChild(lab);
       });
@@ -377,7 +468,11 @@
 
   function validateStep() {
     const s = steps[currentStep];
-    if (s.type === "choices") {
+    if (s.type === "radio") {
+      const checked = taskArea.querySelectorAll("input[type=radio]:checked").length;
+      nextBtn.disabled = checked === 0;
+    }
+    if (s.type === "choices" || s.type === "dragCheck") {
       const checked = taskArea.querySelectorAll("input[type=checkbox]:checked").length;
       nextBtn.disabled = checked === 0;
     }
@@ -393,8 +488,8 @@
   nextBtn.addEventListener("click", () => {
     const s = steps[currentStep];
 
-    if (s.type === "choices") {
-      const inputs = taskArea.querySelectorAll("input[type=checkbox]");
+    if (s.type === "radio" || s.type === "choices") {
+      const inputs = taskArea.querySelectorAll("input");
       let hasGood = false;
       let hasBad = false;
       inputs.forEach(i => {
@@ -403,8 +498,26 @@
         if (i.checked && opt.good) hasGood = true;
         if (i.checked && opt.bad) hasBad = true;
       });
-      if (hasGood) hintLine.textContent = s.hintGood;
-      if (hasBad) hintLine.textContent += (hintLine.textContent ? " " : "") + s.hintBad;
+      if (hasGood && s.hintGood) hintLine.textContent = s.hintGood;
+      if (hasBad && s.hintBad) {
+        warnBanner.textContent = s.hintBad;
+        warnBanner.style.display = "block";
+      }
+    }
+
+    if (s.type === "dragCheck") {
+      const inputs = taskArea.querySelectorAll("input[type=checkbox]");
+      let pickedNothing = false;
+      inputs.forEach(i => {
+        const label = i.parentElement.textContent.trim();
+        if (i.checked && /ничего/i.test(label)) pickedNothing = true;
+      });
+      if (pickedNothing) {
+        warnBanner.textContent = s.hintBad;
+        warnBanner.style.display = "block";
+      } else {
+        hintLine.textContent = s.hintGood;
+      }
     }
 
     if (s.type === "order") {
@@ -412,7 +525,7 @@
       const chips = drop.querySelectorAll(".chip");
       const order = Array.from(chips).map(ch => ch.dataset.id);
       const isCorrect = JSON.stringify(order) === JSON.stringify(s.correct);
-      hintLine.textContent = s.hint + (isCorrect ? " Порядок верный." : " Порядок можно улучшить, но логика проверки уже верная.");
+      hintLine.textContent = s.hint + (isCorrect ? " Порядок верный." : " Порядок можно улучшить, но ключевые шаги вы уже видите.");
     }
 
     if (currentStep < steps.length - 1) {
@@ -424,41 +537,6 @@
       nextBtn.disabled = true;
       finalBlock.style.display = "block";
     }
-  });
-
-  const popupTexts = {
-    coords: {
-      title:"Координаты и точка отбора",
-      text:"Сверьте название точки и систему координат с программой ПЭК. Если в акте другая система, попросите привести все к ГСК-2011 или оформить пересчет."
-    },
-    method: {
-      title:"Методика и поверка",
-      text:"Здесь могут быть формальные основания не принять результаты. Проверьте номер методики, тип пробоотборника и дату поверки относительно даты отбора."
-    },
-    samples: {
-      title:"Сведения о пробах",
-      text:"Коды тары, объемы и консерванты должны позволять однозначно связать каждую пробу с конкретным протоколом анализа."
-    },
-    sign: {
-      title:"Подписи сторон",
-      text:"Подпись представителя заказчика фиксирует, что он согласен с условиями отбора. Без нее акт проще оспорить."
-    }
-  };
-
-  document.querySelectorAll(".hotspot").forEach(el => {
-    el.addEventListener("click", () => {
-      const stepIndex = Number(el.dataset.step);
-      if (stepIndex !== currentStep) {
-        currentStep = stepIndex;
-        renderStep();
-      }
-      const key = el.dataset.popup;
-      const data = popupTexts[key];
-      if (!data) return;
-      popupTitle.textContent = data.title;
-      popupText.textContent = data.text;
-      overlay.style.display = "flex";
-    });
   });
 
   popupClose.addEventListener("click", () => {
