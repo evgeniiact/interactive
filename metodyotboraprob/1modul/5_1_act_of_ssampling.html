@@ -2,79 +2,107 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Интерактив по проверке акта отбора проб</title>
+  <title>Интерактив: акт отбора проб</title>
   <style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background:#f2f7f4;
       margin:0;
       padding:20px;
-      color:#17321f;
+      background:#f2f7f4;
+      font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      color:#163424;
     }
-    .wrapper {
-      max-width:1000px;
+    .wrap {
+      max-width:1100px;
       margin:0 auto;
       background:#ffffff;
-      border-radius:8px;
-      box-shadow:0 4px 16px rgba(0,0,0,0.06);
-      padding:24px;
+      border-radius:10px;
+      box-shadow:0 6px 24px rgba(0,0,0,0.08);
+      padding:20px 24px 28px;
     }
     h1 {
-      font-size:24px;
       margin:0 0 8px 0;
-      color:#145c2c;
+      font-size:24px;
+      color:#155d33;
     }
-    .rules {
-      border-left:4px solid #35a060;
+    .intro {
       background:#e5f5eb;
-      padding:12px 16px;
-      margin-bottom:16px;
+      border-left:4px solid #34a261;
+      padding:10px 14px;
+      margin-bottom:14px;
       font-size:14px;
     }
-    .rules strong {
-      color:#145c2c;
-    }
+    .intro b { color:#155d33; }
+
     .layout {
       display:flex;
-      gap:20px;
-      margin-top:16px;
+      gap:18px;
+      margin-top:6px;
     }
-    .layout img {
-      max-width:550px;
-      border:1px solid #c7d6cc;
-      border-radius:4px;
+    .left {
+      position:relative;
+      flex:0 0 600px;
     }
-    .panel {
+    .act-img {
+      width:100%;
+      border:1px solid #c3d5c9;
+      border-radius:6px;
+      display:block;
+    }
+
+    /* кликабельные зоны поверх акта */
+    .hotspot {
+      position:absolute;
+      border:2px solid rgba(52,162,97,0.0);
+      border-radius:3px;
+      cursor:pointer;
+    }
+    .hotspot:hover {
+      border-color:rgba(52,162,97,0.7);
+      box-shadow:0 0 0 2px rgba(52,162,97,0.25);
+    }
+    .hotspot.filled {
+      background:rgba(52,162,97,0.12);
+    }
+
+    .right {
       flex:1;
       font-size:14px;
     }
-    .question-title {
-      font-weight:600;
-      margin-bottom:6px;
-      color:#145c2c;
-    }
-    .step-indicator {
+    .step-label {
       font-size:12px;
       text-transform:uppercase;
-      letter-spacing:0.06em;
-      color:#6d8b75;
+      letter-spacing:.08em;
+      color:#6c8a74;
       margin-bottom:4px;
     }
-    .options {
-      margin-top:8px;
+    .question {
+      font-weight:600;
+      color:#155d33;
+      margin-bottom:6px;
+    }
+    .text {
+      margin-bottom:8px;
     }
     .options label {
       display:block;
-      margin-bottom:6px;
+      margin-bottom:5px;
       cursor:pointer;
     }
+    .field-input {
+      width:100%;
+      padding:6px 8px;
+      border-radius:4px;
+      border:1px solid #c3d5c9;
+      font-size:14px;
+      box-sizing:border-box;
+      margin-top:4px;
+    }
     .btn {
-      display:inline-block;
       margin-top:10px;
       padding:8px 16px;
-      border-radius:4px;
+      border-radius:5px;
       border:none;
-      background:#35a060;
+      background:#34a261;
       color:#ffffff;
       font-size:14px;
       cursor:pointer;
@@ -83,253 +111,342 @@
       opacity:.5;
       cursor:default;
     }
-    .hint {
-      margin-top:10px;
-      padding:8px 10px;
-      border-radius:4px;
-      font-size:13px;
-      display:none;
-    }
-    .hint.good {
-      background:#e5f5eb;
-      border-left:3px solid #35a060;
-      color:#17321f;
-    }
-    .hint.bad {
-      background:#fff4e5;
-      border-left:3px solid #e58a1f;
-      color:#6b3b00;
-    }
-    .zones {
-      margin-top:10px;
+    .small {
       font-size:12px;
-      color:#6d8b75;
+      color:#6c8a74;
+      margin-top:4px;
     }
-    .zones span {
-      display:inline-block;
-      margin:2px 4px 0 0;
-      padding:3px 6px;
-      border-radius:3px;
-      border:1px dashed #9bb5a3;
-      cursor:pointer;
-    }
-    .zones span.active {
-      background:#35a060;
-      color:#ffffff;
-      border-color:#35a060;
-    }
-    .final-block {
-      margin-top:22px;
-      padding:14px 16px;
-      border-radius:6px;
-      background:#17321f;
-      color:#e5f5eb;
-      font-size:14px;
+
+    .final {
+      margin-top:20px;
       display:none;
+      background:#163424;
+      color:#e9f6ee;
+      border-radius:8px;
+      padding:14px 16px;
+      font-size:14px;
     }
-    .final-block h2 {
-      margin:0 0 8px 0;
+    .final h2 {
+      margin:0 0 6px 0;
       font-size:18px;
       color:#ffffff;
     }
-    .progress {
-      font-size:12px;
-      color:#6d8b75;
-      margin-top:6px;
+
+    /* всплывающие окна */
+    .overlay {
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.35);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:20;
+    }
+    .popup {
+      background:#ffffff;
+      border-radius:8px;
+      max-width:420px;
+      padding:14px 18px;
+      box-shadow:0 10px 30px rgba(0,0,0,0.25);
+      font-size:14px;
+      border-top:4px solid #34a261;
+    }
+    .popup h3 {
+      margin:0 0 8px 0;
+      font-size:16px;
+      color:#155d33;
+    }
+    .popup button {
+      margin-top:10px;
+      padding:6px 12px;
+      border-radius:4px;
+      border:none;
+      background:#34a261;
+      color:#ffffff;
+      font-size:13px;
+      cursor:pointer;
     }
   </style>
 </head>
 <body>
-<div class="wrapper">
-  <h1>Потренируемся проверять акт отбора проб</h1>
+<div class="wrap">
+  <h1>Потренируемся заполнять и проверять акт отбора проб</h1>
 
-  <div class="rules">
-    <strong>Как пройти интерактив</strong><br>
-    1) Смотрите на акт на картинке слева.<br>
-    2) На каждом шаге отвечайте на вопрос и отмечайте, что проверили бы перед подписью.<br>
-    3) В конце получите разбор действий и памятку, что просматривать в акте в первую очередь.
+  <div class="intro">
+    <b>Правила интерактива</b><br>
+    1) Сначала нажимайте на подсвеченные области акта на картинке слева.<br>
+    2) Справа выполняйте короткие задания по заполнению полей.<br>
+    3) Всплывающие окна подскажут, на что обращать внимание перед подписью.
   </div>
 
   <div class="layout">
-    <div class="image">
-      <img src="akt-otbora-prob.png" alt="Акт отбора проб">
-      <div class="zones">
-        Кликабельные зоны акта (для тренировки):
-        <span data-zone="head">шапка</span>
-        <span data-zone="place">место и условия</span>
-        <span data-zone="coords">координаты</span>
-        <span data-zone="method">методика и поверка</span>
-        <span data-zone="samples">сведения о пробах</span>
-        <span data-zone="sign">подписи</span>
-      </div>
+    <div class="left">
+      <img src="akt-otbora-prob.png" class="act-img" alt="Акт отбора проб">
+
+      <!-- координаты -->
+      <div class="hotspot" data-popup="coords" style="top:205px;left:110px;width:430px;height:32px;"></div>
+      <!-- методика и поверка -->
+      <div class="hotspot" data-popup="method" style="top:260px;left:20px;width:540px;height:32px;"></div>
+      <!-- таблица проб -->
+      <div class="hotspot" data-popup="samples" style="top:305px;left:20px;width:540px;height:130px;"></div>
+      <!-- подписи -->
+      <div class="hotspot" data-popup="sign" style="top:460px;left:20px;width:540px;height:80px;"></div>
     </div>
 
-    <div class="panel">
-      <div class="step-indicator">шаг <span id="step">1</span> из 4</div>
-      <div class="question-title" id="questionTitle"></div>
-      <div id="questionText"></div>
-      <div class="options" id="options"></div>
-      <button class="btn" id="nextBtn" disabled>Ответить</button>
-      <div class="hint good" id="hintGood"></div>
-      <div class="hint bad" id="hintBad"></div>
-      <div class="progress" id="progressInfo"></div>
+    <div class="right">
+      <div class="step-label">задание <span id="stepNum">1</span> из 3</div>
+      <div class="question" id="qTitle"></div>
+      <div class="text" id="qText"></div>
+      <div id="taskArea"></div>
+      <button class="btn" id="nextBtn" disabled>Готово</button>
+      <div class="small" id="hintLine"></div>
     </div>
   </div>
 
-  <div class="final-block" id="finalBlock">
-    <h2>Что вы подтверждаете, когда подписываете акт</h2>
+  <div class="final" id="finalBlock">
+    <h2>Зачем вам этот акт</h2>
     <p>
-      Акт отбора закрепляет не только цифры из протокола, но и происхождение этих цифр. 
-      Подпись значит, что вы согласны с местом отбора, координатами, режимом работы источника, 
-      выбранной методикой, исправным оборудованием, кодами и объемами проб, способами консервации 
-      и сроками доставки в лабораторию.
+      Подписанный акт связывает результаты анализа с местом, временем и способом отбора проб. 
+      В нем сходятся координаты точки, режим работы источника, методика и поверка оборудования, 
+      коды и объемы проб, консервирование и сроки доставки.
     </p>
     <p>
-      Если что-то в акте не сходится с программой ПЭК или условиями на объекте, инспектор будет 
-      опираться не на ваши устные объяснения, а на документ с вашей подписью. 
-      В реальной работе пройдите акт так же, как в этом интерактиве: сверху вниз, не стесняясь 
-      задавать лаборатории конкретные вопросы до подписи, а не после.
+      Если какой-то блок заполнен формально, инспектор будет опираться не на ваши пояснения, 
+      а на документ с подписью. Перед реальной проверкой пройдите акт так же, как в этом задании: 
+      кликом по ключевым полям, вопросами к лаборатории и корректировкой текста до того, 
+      как поставить подпись.
     </p>
+  </div>
+</div>
+
+<div class="overlay" id="overlay">
+  <div class="popup" id="popup">
+    <h3 id="popupTitle"></h3>
+    <div id="popupText"></div>
+    <button id="popupClose">Понятно</button>
   </div>
 </div>
 
 <script>
   const steps = [
     {
-      title: "Начинаем с шапки акта",
-      text: "Вы инженер-эколог на объекте. Лаборатория прислала акт. Что вы сделаете с шапкой документа перед подписью?",
-      options: [
-        {id:"ok", label:"Ничего, там всегда все верно", bad:true},
-        {id:"checkHead", label:"Проверю заказчика, объект и дату акта", good:true}
+      title:"Заполняем блок координат и точки",
+      text:"Представьте, что вы согласуете акт с лабораторией. Заполните кратко название точки и систему координат.",
+      type:"fields",
+      fields:[
+        {id:"pointName", label:"Точка отбора (как в программе ПЭК)", placeholder:"Например, К-1, выпуск №2", check:v=>v.length>3},
+        {id:"coordSys", label:"Система координат", placeholder:"Например, ГСК-2011", check:v=>/гск/i.test(v)}
       ],
-      good: "Вы сверяете шапку с договором и объектом. Так меньше шансов, что акт окажется оформлен на не ту площадку или на другую дату.",
-      bad: "В шапке часто прячутся ошибки по объекту или дате. Потом их сложнее исправлять, чем заметить до подписи."
+      hint:"Если в акте указана другая система, чем в программе ПЭК, попросите лабораторию привести координаты к ГСК-2011 или оформить пересчет."
     },
     {
-      title: "Место и условия отбора",
-      text: "Посмотрите на блок \"Место и условия отбора\". Что точно стоит проверить?",
-      options: [
-        {id:"type", label:"Тип среды и название точки отбора", good:true},
-        {id:"mode", label:"Режим или состояние объекта в момент отбора", good:true},
-        {id:"skip", label:"Эти детали отвечает лаборатория, проверять не буду", bad:true}
+      title:"Методика, оборудование, поверка",
+      text:"Вы согласовываете, по какому документу отбирают пробы и каким оборудованием. Выберите верные действия.",
+      type:"choices",
+      options:[
+        {id:"m1", label:"Сверю номер методики с договором или программой ПЭК", good:true},
+        {id:"m2", label:"Проверю тип и номер пробоотборника", good:true},
+        {id:"m3", label:"Сравню дату поверки с датой отбора проб", good:true},
+        {id:"m4", label:"Эти пункты считает лаборатория, можно не смотреть", bad:true}
       ],
-      good: "Вы связываете акт с реальными условиями на объекте. Это поможет, если позже будут вопросы к режиму работы или выбору точки.",
-      bad: "Если не смотреть на режим и точку отбора, при споре будет сложно доказать, что пробу брали в нужных условиях."
+      hintGood:"Так вы заранее убираете риск, что измерения признают недействительными из-за просроченной поверки или неверной методики.",
+      hintBad:"Ответственность разделенная. Если поверка просрочена, формально акт можно не принимать даже при хороших результатах."
     },
     {
-      title: "Координаты и методика",
-      text: "В акте есть координаты точки и строка про методику и поверку. Как вы с этим работаете?",
-      options: [
-        {id:"coords", label:"Сверяю координаты и систему (ГСК-2011) с программой ПЭК", good:true},
-        {id:"met", label:"Проверяю номер методики, тип пробоотборника и дату поверки", good:true},
-        {id:"trust", label:"Доверяю лаборатории, эти пункты не трогаю", bad:true}
+      title:"Сведения о пробах и подписи",
+      text:"Нужно убедиться, что пробу можно однозначно отследить от отбора до протокола анализа. Заполните код тары и выберите, что проверите перед подписью.",
+      type:"mixed",
+      field:{id:"code", label:"Код тары для первой пробы", placeholder:"Например, W-01-2026", check:v=>v.length>4},
+      options:[
+        {id:"s1", label:"Сравню время начала и окончания отбора в таблице и в верхней части акта", good:true},
+        {id:"s2", label:"Проверю, что у каждой пробы свой код тары", good:true},
+        {id:"s3", label:"Убедюсь, что есть подпись представителя заказчика", good:true},
+        {id:"s4", label:"Если таблица не пустая, этого достаточно", bad:true}
       ],
-      good: "Так вы убеждаетесь, что отбор делали по нужной методике и исправным оборудованием именно в той точке, которая заложена в программе.",
-      bad: "Просроченная поверка или неверная система координат могут стать формальной причиной не принять результаты измерений."
-    },
-    {
-      title: "Сведения о пробах и подписи",
-      text: "Ниже в акте таблица с пробами и блок с подписями. Что проверите перед тем, как расписаться?",
-      options: [
-        {id:"codes", label:"Коды тары, объемы и консервант в таблице", good:true},
-        {id:"time", label:"Сравню время отбора в таблице и в верхней части акта", good:true},
-        {id:"sign", label:"Проверю, что есть подпись представителя заказчика", good:true},
-        {id:"fast", label:"Если строки заполнены, просто подписываю", bad:true}
-      ],
-      good: "Вы контролируете, что каждая проба однозначно идентифицируется и условия отбора подтверждены обеими сторонами.",
-      bad: "Подпись под непроверенным актом означает согласие со всеми ошибками в кодах проб, времени отбора и условиях их доставки."
+      hintGood:"Так у каждой пробы есть свой код и понятная история: когда отобрали, кто принял и кто подтверждает условия отбора.",
+      hintBad:"Если не следить за кодами и подписями, в спорной ситуации будет сложно связать конкретный протокол с конкретной пробой."
     }
   ];
 
-  let currentStep = 0;
-
-  const questionTitle = document.getElementById("questionTitle");
-  const questionText = document.getElementById("questionText");
-  const optionsBlock = document.getElementById("options");
+  const qTitle = document.getElementById("qTitle");
+  const qText = document.getElementById("qText");
+  const taskArea = document.getElementById("taskArea");
   const nextBtn = document.getElementById("nextBtn");
-  const hintGood = document.getElementById("hintGood");
-  const hintBad = document.getElementById("hintBad");
-  const stepSpan = document.getElementById("step");
-  const progressInfo = document.getElementById("progressInfo");
+  const stepNum = document.getElementById("stepNum");
+  const hintLine = document.getElementById("hintLine");
   const finalBlock = document.getElementById("finalBlock");
+
+  const overlay = document.getElementById("overlay");
+  const popupTitle = document.getElementById("popupTitle");
+  const popupText = document.getElementById("popupText");
+  const popupClose = document.getElementById("popupClose");
+
+  let currentStep = 0;
 
   function renderStep() {
     const s = steps[currentStep];
-    stepSpan.textContent = currentStep + 1;
-    questionTitle.textContent = s.title;
-    questionText.textContent = s.text;
-    optionsBlock.innerHTML = "";
-    hintGood.style.display = "none";
-    hintBad.style.display = "none";
+    stepNum.textContent = currentStep + 1;
+    qTitle.textContent = s.title;
+    qText.textContent = s.text;
+    taskArea.innerHTML = "";
+    hintLine.textContent = "";
     nextBtn.disabled = true;
-    progressInfo.textContent = "";
 
-    s.options.forEach(opt => {
-      const id = "opt_" + currentStep + "_" + opt.id;
+    if (s.type === "fields") {
+      s.fields.forEach(f => {
+        const label = document.createElement("label");
+        label.textContent = f.label;
+        const input = document.createElement("input");
+        input.type = "text";
+        input.className = "field-input";
+        input.placeholder = f.placeholder;
+        input.id = f.id;
+        label.appendChild(input);
+        taskArea.appendChild(label);
+      });
+    }
+
+    if (s.type === "choices") {
+      const box = document.createElement("div");
+      box.className = "options";
+      s.options.forEach(o => {
+        const lab = document.createElement("label");
+        const inp = document.createElement("input");
+        inp.type = "checkbox";
+        inp.id = o.id;
+        lab.appendChild(inp);
+        const span = document.createElement("span");
+        span.textContent = " " + o.label;
+        lab.appendChild(span);
+        box.appendChild(lab);
+      });
+      taskArea.appendChild(box);
+    }
+
+    if (s.type === "mixed") {
       const label = document.createElement("label");
+      label.textContent = s.field.label;
       const input = document.createElement("input");
-      input.type = "checkbox";
-      input.id = id;
-      input.dataset.good = opt.good ? "1" : "";
-      input.dataset.bad = opt.bad ? "1" : "";
+      input.type = "text";
+      input.className = "field-input";
+      input.placeholder = s.field.placeholder;
+      input.id = s.field.id;
       label.appendChild(input);
-      const span = document.createElement("span");
-      span.textContent = " " + opt.label;
-      label.appendChild(span);
-      optionsBlock.appendChild(label);
-    });
+      taskArea.appendChild(label);
+
+      const box = document.createElement("div");
+      box.className = "options";
+      s.options.forEach(o => {
+        const lab = document.createElement("label");
+        const inp = document.createElement("input");
+        inp.type = "checkbox";
+        inp.id = o.id;
+        lab.appendChild(inp);
+        const span = document.createElement("span");
+        span.textContent = " " + o.label;
+        lab.appendChild(span);
+        box.appendChild(lab);
+      });
+      taskArea.appendChild(box);
+    }
   }
 
-  optionsBlock.addEventListener("change", () => {
-    const checked = optionsBlock.querySelectorAll("input:checked").length;
-    nextBtn.disabled = checked === 0;
-  });
+  function validateStep() {
+    const s = steps[currentStep];
+    if (s.type === "fields") {
+      let ok = true;
+      s.fields.forEach(f => {
+        const val = document.getElementById(f.id).value.trim();
+        if (!f.check(val)) ok = false;
+      });
+      nextBtn.disabled = !ok;
+    }
+
+    if (s.type === "choices") {
+      const checked = taskArea.querySelectorAll("input[type=checkbox]:checked").length;
+      nextBtn.disabled = checked === 0;
+    }
+
+    if (s.type === "mixed") {
+      const val = document.getElementById(s.field.id).value.trim();
+      const okField = s.field.check(val);
+      const checked = taskArea.querySelectorAll("input[type=checkbox]:checked").length;
+      nextBtn.disabled = !(okField && checked > 0);
+    }
+  }
+
+  taskArea.addEventListener("input", validateStep);
+  taskArea.addEventListener("change", validateStep);
 
   nextBtn.addEventListener("click", () => {
     const s = steps[currentStep];
-    const inputs = optionsBlock.querySelectorAll("input");
-    let hasGood = false;
-    let hasBad = false;
-    inputs.forEach(el => {
-      if (el.checked && el.dataset.good) hasGood = true;
-      if (el.checked && el.dataset.bad) hasBad = true;
-    });
 
-    if (hasGood) {
-      hintGood.textContent = s.good;
-      hintGood.style.display = "block";
-    }
-    if (hasBad) {
-      hintBad.textContent = s.bad;
-      hintBad.style.display = "block";
+    if (s.type === "fields") {
+      hintLine.textContent = s.hint;
     }
 
-    progressInfo.textContent = "Шаг пройден. Нажмите еще раз, чтобы перейти дальше.";
-    if (!nextBtn.dataset.second) {
-      nextBtn.dataset.second = "1";
-      return;
+    if (s.type === "choices" || s.type === "mixed") {
+      const inputs = taskArea.querySelectorAll("input[type=checkbox]");
+      let hasGood = false;
+      let hasBad = false;
+      inputs.forEach(i => {
+        const opt = (s.options || []).find(o => o.id === i.id);
+        if (!opt) return;
+        if (i.checked && opt.good) hasGood = true;
+        if (i.checked && opt.bad) hasBad = true;
+      });
+      if (hasGood) hintLine.textContent = s.hintGood;
+      if (hasBad) hintLine.textContent += (hintLine.textContent ? " " : "") + s.hintBad;
     }
 
-    nextBtn.dataset.second = "";
-    currentStep++;
-    if (currentStep < steps.length) {
-      renderStep();
+    if (currentStep < steps.length - 1) {
+      setTimeout(() => {
+        currentStep++;
+        renderStep();
+      }, 900);
     } else {
-      questionTitle.textContent = "Интерактив завершен";
-      questionText.textContent = "Вы прошли все шаги проверки акта. Ниже — короткий вывод.";
-      optionsBlock.innerHTML = "";
-      nextBtn.style.display = "none";
-      hintGood.style.display = "none";
-      hintBad.style.display = "none";
-      progressInfo.textContent = "";
+      nextBtn.disabled = true;
       finalBlock.style.display = "block";
     }
   });
 
-  document.querySelectorAll(".zones span").forEach(el => {
+  // всплывающие комментарии по клику на зону
+  const popupTexts = {
+    coords: {
+      title:"Координаты и точка отбора",
+      text:"Здесь важно не только наличие цифр. Сверьте название точки и систему координат с программой ПЭК. Если в акте указана другая система, попросите привести все к ГСК-2011."
+    },
+    method: {
+      title:"Методика и поверка",
+      text:"В этой строке прячутся формальные основания не принять результаты. Попросите лабораторию показать действующую поверку и убедитесь, что дата не позже даты отбора."
+    },
+    samples: {
+      title:"Сведения о пробах",
+      text:"Коды тары, объемы и консерванты должны позволять однозначно связать каждую пробу с конкретным протоколом анализа. Дублирующиеся коды лучше исправить до подписания."
+    },
+    sign: {
+      title:"Подписи сторон",
+      text:"Подпись представителя заказчика фиксирует, что он согласен с условиями отбора. Если подписи нет, оспорить акт потом гораздо легче – но уже не в вашу пользу."
+    }
+  };
+
+  document.querySelectorAll(".hotspot").forEach(el => {
     el.addEventListener("click", () => {
-      el.classList.toggle("active");
+      const key = el.dataset.popup;
+      const data = popupTexts[key];
+      if (!data) return;
+      popupTitle.textContent = data.title;
+      popupText.textContent = data.text;
+      overlay.style.display = "flex";
+      el.classList.add("filled");
     });
+  });
+
+  popupClose.addEventListener("click", () => {
+    overlay.style.display = "none";
+  });
+  overlay.addEventListener("click", e => {
+    if (e.target === overlay) overlay.style.display = "none";
   });
 
   renderStep();
