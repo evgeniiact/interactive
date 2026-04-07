@@ -2,662 +2,624 @@
 <html lang="ru">
 <head>
   <meta charset="UTF-8">
-  <title>Интерактив: акт отбора проб</title>
+  <title>Тренажер: акт отбора проб</title>
   <style>
-    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Playfair+Display:wght@700&display=swap');
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&display=swap');
 
     :root {
       --green-dark: #007760;
       --green-light: #19a86e;
       --green-bg: #f3fbf7;
-      --silk: #fdfaf5;
       --text-dark: #2c2c2c;
       --white: #ffffff;
-      --error: #d32f2f;
       --gold: #bc932f;
     }
 
+    html, body {
+      margin:0;
+      padding:0;
+      width:100%;
+      height:100%;
+    }
+
     body {
-      font-family: 'Montserrat', sans-serif;
-      background-color: var(--green-bg);
-      color: var(--text-dark);
-      margin: 0;
-      display: flex;
-      justify-content: center;
-      min-height: 100vh;
+      font-family:'Montserrat',sans-serif;
+      background:var(--green-bg);
+      color:var(--text-dark);
+      display:flex;
+      justify-content:center;
+      align-items:center;
     }
 
     #app {
-      width: 100%;
-      max-width: 1200px;
-      background: var(--white);
-      margin: 20px;
-      border-radius: 12px;
-      box-shadow: 0 20px 50px rgba(0, 119, 96, 0.1);
-      overflow: hidden;
-      display: flex;
-      flex-direction: column;
-      position: relative;
+      width:560px;
+      height:800px;
+      background:var(--white);
+      border-radius:12px;
+      box-shadow:0 16px 40px rgba(0,119,96,0.15);
+      overflow:hidden;
+      display:flex;
+      flex-direction:column;
     }
 
-    .screen {
-      display: none;
-      padding: 40px;
-      animation: fadeIn 0.5s ease;
+    .header {
+      padding:10px 16px 8px;
+      border-bottom:1px solid rgba(0,119,96,0.12);
+      background:var(--white);
+    }
+    .title {
+      font-size:16px;
+      font-weight:600;
+      color:var(--green-dark);
+      margin:0 0 4px 0;
+    }
+    .subtitle {
+      font-size:12px;
+      color:#666;
     }
 
-    .screen.active {
-      display: flex;
-      flex-direction: column;
+    .status-bar {
+      margin-top:8px;
+      height:6px;
+      background:#e2f2ea;
+      border-radius:3px;
+      overflow:hidden;
+    }
+    .status-fill {
+      height:100%;
+      width:0%;
+      background:var(--green-light);
+      transition:width .3s ease;
     }
 
-    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-
-    .intro-box, .final-box {
-      background: var(--green-dark);
-      color: var(--white);
-      padding: 40px;
-      border-radius: 8px;
-      text-align: center;
+    .main {
+      flex:1;
+      display:flex;
+      flex-direction:column;
+      padding:8px 12px 12px;
+      gap:8px;
     }
 
-    .intro-box h1, .final-box h1 {
-      font-family: 'Playfair Display', serif;
-      font-size: 32px;
-      margin-bottom: 20px;
+    .hint-strip {
+      font-size:11px;
+      padding:6px 8px;
+      border-radius:6px;
+      background:#f7faf9;
+      border-left:3px solid var(--green-light);
+      color:#555;
     }
 
-    .intro-text, .final-text {
-      font-size: 16px;
-      line-height: 1.6;
-      text-align: left;
-      margin-bottom: 30px;
+    .act-wrapper {
+      flex:1;
+      position:relative;
+      border-radius:8px;
+      border:1px solid #d4e0d9;
+      overflow:hidden;
+      background:#f0f0f0;
     }
-
-    .btn {
-      background: var(--green-light);
-      color: white;
-      border: none;
-      padding: 15px 40px;
-      font-size: 16px;
-      font-weight: 700;
-      border-radius: 30px;
-      cursor: pointer;
-      transition: 0.3s;
-      text-transform: uppercase;
-      align-self: center;
-    }
-
-    .btn:hover { background: var(--green-dark); transform: translateY(-2px); }
-
-    .game-container {
-      display: grid;
-      grid-template-columns: 1fr 360px;
-      gap: 20px;
-      height: 720px;
-    }
-
-    .act-viewer {
-      position: relative;
-      background: #eee;
-      border: 1px solid #ccc;
-      overflow: auto;
-      border-radius: 4px;
-    }
-
     .act-img {
-      width: 100%;
-      display: block;
+      width:100%;
+      height:100%;
+      object-fit:contain;
+      display:block;
     }
 
-    .highlight {
-      position: absolute;
-      background: rgba(25, 168, 110, 0.18);
-      border: 2px solid var(--green-light);
-      pointer-events: none;
-      display: none;
-      z-index: 5;
-      transition: 0.25s;
+    .zone {
+      position:absolute;
+      cursor:pointer;
+      border:2px solid rgba(25,168,110,0);
+      border-radius:4px;
+    }
+    .zone:hover {
+      border-color:rgba(25,168,110,0.8);
+      box-shadow:0 0 0 2px rgba(25,168,110,0.25);
+    }
+    .zone.done {
+      background:rgba(25,168,110,0.16);
+      border-color:rgba(25,168,110,0.9);
     }
 
-    .zone-clickable {
-      position: absolute;
-      cursor: pointer;
-      z-index: 10;
+    .footer {
+      padding:6px 12px 10px;
+      font-size:11px;
+      color:#777;
+      border-top:1px solid #edf2ef;
     }
 
-    .controls {
-      background: var(--green-bg);
-      padding: 20px;
-      border-radius: 8px;
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      border: 1px solid rgba(0, 119, 96, 0.1);
+    /* overlay + popup */
+    .overlay {
+      position:fixed;
+      inset:0;
+      background:rgba(0,0,0,0.35);
+      display:none;
+      align-items:center;
+      justify-content:center;
+      z-index:20;
     }
-
-    .step-title {
-      font-weight: 700;
-      color: var(--green-dark);
-      margin-bottom: 10px;
-      font-size: 18px;
+    .popup {
+      width:480px;
+      max-height:90vh;
+      background:var(--white);
+      border-radius:10px;
+      box-shadow:0 12px 32px rgba(0,0,0,0.25);
+      padding:14px 16px 14px;
+      display:flex;
+      flex-direction:column;
+      font-size:13px;
     }
-
-    .instruction-text {
-      font-size: 14px;
-      font-style: italic;
-      margin-bottom: 15px;
+    .popup-header {
+      font-weight:600;
+      color:var(--green-dark);
+      margin-bottom:6px;
+      font-size:15px;
     }
-
+    .popup-text {
+      font-size:13px;
+      margin-bottom:10px;
+    }
     .options-list {
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      margin-bottom:8px;
+    }
+    .option {
+      background:#f9fbfa;
+      border:1px solid #d7e2dc;
+      border-radius:6px;
+      padding:6px 8px;
+      cursor:pointer;
+      transition:.2s;
+    }
+    .option:hover { border-color:var(--green-light); }
+    .option.selected {
+      background:var(--green-light);
+      border-color:var(--green-light);
+      color:var(--white);
+    }
+    .popup-feedback {
+      display:none;
+      margin-top:4px;
+      padding:6px 8px;
+      border-radius:6px;
+      font-size:12px;
+      line-height:1.4;
+    }
+    .popup-feedback.info {
+      background:#e3f2fd;
+      color:#0d47a1;
+      border-left:3px solid #2196f3;
+    }
+    .popup-feedback.warn {
+      background:#fffde7;
+      color:#827717;
+      border-left:3px solid var(--gold);
+    }
+    .popup-feedback.success {
+      background:#e8f5e9;
+      color:#1b5e20;
+      border-left:3px solid var(--green-light);
     }
 
-    .option-item {
-      background: white;
-      padding: 10px 12px;
-      border-radius: 6px;
-      border: 1px solid #ddd;
-      cursor: pointer;
-      font-size: 14px;
-      transition: 0.2s;
+    .popup-actions {
+      margin-top:10px;
+      display:flex;
+      justify-content:flex-end;
+      gap:8px;
+    }
+    .btn {
+      background:var(--green-light);
+      color:#fff;
+      border:none;
+      padding:7px 16px;
+      border-radius:20px;
+      font-size:12px;
+      font-weight:600;
+      cursor:pointer;
+      text-transform:uppercase;
+      letter-spacing:0.04em;
+    }
+    .btn.secondary {
+      background:#e0e7e3;
+      color:#444;
     }
 
-    .option-item:hover { border-color: var(--green-light); }
-    .option-item.selected { background: var(--green-light); color: white; border-color: var(--green-light); }
-
-    .feedback {
-      margin-top: 15px;
-      padding: 12px 14px;
-      border-radius: 6px;
-      font-size: 14px;
-      display: none;
-      line-height: 1.4;
+    /* карточки для упорядочивания */
+    .order-text {
+      font-size:12px;
+      margin-bottom:4px;
     }
-
-    .feedback.visible { display: block; }
-    .feedback.info { background: #e3f2fd; color: #0d47a1; border-left: 4px solid #2196f3; }
-    .feedback.warn { background: #fffde7; color: #827717; border-left: 4px solid var(--gold); }
-    .feedback.success { background: #e8f5e9; color: #1b5e20; border-left: 4px solid var(--green-light); }
-
-    .drag-area { margin-top: 4px; font-size: 13px; }
-    .card-container { display: flex; flex-direction: column; gap: 6px; margin-top: 6px; }
+    .order-list {
+      display:flex;
+      flex-direction:column;
+      gap:4px;
+    }
     .card {
-      background: #fff;
-      padding: 8px 10px;
-      border: 1px solid #ccc;
-      cursor: move;
-      border-radius: 4px;
-      font-size: 13px;
+      background:#ffffff;
+      border:1px solid #d0ddd6;
+      border-radius:4px;
+      padding:5px 7px;
+      font-size:12px;
+      cursor:move;
       user-select:none;
     }
-
-    .footer-hint {
-      padding: 15px 40px;
-      background: #f9f9f9;
-      border-top: 1px solid #eee;
-      font-size: 14px;
-      color: #666;
-    }
-
-    .hidden { display: none !important; }
   </style>
 </head>
 <body>
-
 <div id="app">
-  <!-- Intro -->
-  <div id="screen-intro" class="screen active">
-    <div class="intro-box">
-      <h1>Акт отбора проб: тренажер по заполнению</h1>
-      <div class="intro-text">
-        Вы готовите акт отбора проб воздуха, воды или почвы. Ваша задача – по шагам заполнить ключевые блоки акта и проверить себя.<br><br>
-        <strong>Как проходить интерактив</strong><br>
-        • смотрите на акт слева и кликайте по нужному блоку<br>
-        • справа выбирайте варианты ответов или расставляйте шаги<br>
-        • в конце получите короткий чек-лист, что просматривать перед подписью акта
-      </div>
-      <button class="btn" onclick="startGame()">Начать тренажер</button>
+  <div class="header">
+    <div class="title">Тренажер по акту отбора проб</div>
+    <div class="subtitle" id="status-label">Шаг 0 из 8 • прочитайте правила</div>
+    <div class="status-bar">
+      <div class="status-fill" id="status-fill"></div>
     </div>
   </div>
 
-  <!-- Game -->
-  <div id="screen-game" class="screen">
-    <div class="game-container">
-      <div class="act-viewer" id="act-viewer">
-        <div id="highlight" class="highlight"></div>
-        <img src="akt-otbora-prob.png" alt="Акт отбора проб" class="act-img" id="main-act">
+  <div class="main">
+    <div class="hint-strip" id="hint-strip">
+      Нажмите «Правила» чтобы понять, как заполнить акт без формальных ошибок.
+    </div>
 
-        <!-- координаты по реальному макету (подгони при необходимости) -->
-        <!-- шапка: заказчик, объект -->
-        <div class="zone-clickable" data-step="0"
-             style="top:12%;left:3%;width:94%;height:10%;"></div>
-        <!-- тип среды и точка -->
-        <div class="zone-clickable" data-step="1"
-             style="top:25%;left:3%;width:46%;height:14%;"></div>
-        <!-- дата/время, режим, погода -->
-        <div class="zone-clickable" data-step="2"
-             style="top:25%;left:51%;width:46%;height:14%;"></div>
-        <!-- методика и пробоотборник -->
-        <div class="zone-clickable" data-step="3"
-             style="top:39%;left:3%;width:94%;height:6%;"></div>
-        <!-- таблица проб -->
-        <div class="zone-clickable" data-step="4"
-             style="top:46%;left:3%;width:94%;height:21%;"></div>
-        <!-- меры сохранности -->
-        <div class="zone-clickable" data-step="5"
-             style="top:69%;left:3%;width:94%;height:7%;"></div>
-        <!-- цель отбора -->
-        <div class="zone-clickable" data-step="6"
-             style="top:77%;left:3%;width:94%;height:7%;"></div>
-        <!-- отклонения и подписи -->
-        <div class="zone-clickable" data-step="7"
-             style="top:85%;left:3%;width:94%;height:13%;"></div>
-      </div>
+    <div class="act-wrapper">
+      <img src="akt-otbora-prob.png" class="act-img" alt="Акт отбора проб">
 
-      <div class="controls">
-        <div id="step-header">
-          <div class="step-title" id="step-title"></div>
-          <div class="instruction-text" id="step-instruction"></div>
-        </div>
+      <!-- зоны по реальному макету -->
+      <!-- шапка: заказчик и объект -->
+      <div class="zone" data-step="1" style="top:10%;left:3%;width:94%;height:11%;"></div>
+      <!-- тип среды и точка -->
+      <div class="zone" data-step="2" style="top:23%;left:3%;width:46%;height:14%;"></div>
+      <!-- дата/время/режим/погода -->
+      <div class="zone" data-step="3" style="top:23%;left:51%;width:46%;height:14%;"></div>
+      <!-- методика и пробоотборник -->
+      <div class="zone" data-step="4" style="top:38%;left:3%;width:94%;height:6%;"></div>
+      <!-- таблица проб -->
+      <div class="zone" data-step="5" style="top:45%;left:3%;width:94%;height:21%;"></div>
+      <!-- меры сохранности -->
+      <div class="zone" data-step="6" style="top:68%;left:3%;width:94%;height:7%;"></div>
+      <!-- цель отбора -->
+      <div class="zone" data-step="7" style="top:76%;left:3%;width:94%;height:7%;"></div>
+      <!-- отклонения и подписи -->
+      <div class="zone" data-step="8" style="top:84%;left:3%;width:94%;height:14%;"></div>
 
-        <div id="step-content"></div>
-
-        <div id="feedback-area" class="feedback"></div>
-
-        <button class="btn hidden" id="next-btn" onclick="nextStep()">Далее</button>
-      </div>
+      <!-- подсветка выбранной зоны -->
+      <div id="highlight" class="highlight"></div>
     </div>
   </div>
 
-  <!-- Final -->
-  <div id="screen-final" class="screen">
-    <div class="final-box">
-      <h1>Что вы подтверждаете актом</h1>
-      <div class="final-text">
-        Подписывая акт отбора проб, вы соглашаетесь с тем, где, когда и как получена каждая проба, по какой методике и каким оборудованием ее отбирали, как ее консервировали и доставляли в лабораторию.<br><br>
-        Просматривайте акт блок за блоком – шапка, точка и координаты, условия и режим работы, методика и поверка, сведения о пробах, меры сохранности, цель отбора, отклонения и подписи. Если что-то не сходится с программой ПЭК или фактическими условиями, корректируйте документ до подписи, а не после.
-      </div>
-      <button class="btn" onclick="location.reload()">Пройти еще раз</button>
-    </div>
+  <div class="footer">
+    Нажимайте на нужный блок акта и отвечайте на вопросы во всплывающем окне.
+    <button class="btn" style="float:right;padding:6px 14px;margin-top:-4px;font-size:11px;"
+            onclick="openIntroPopup()">Правила</button>
   </div>
+</div>
 
-  <div class="footer-hint" id="footer-hint">
-    Кликайте по нужному месту акта, затем выполняйте задание в правой панели.
+<div class="overlay" id="overlay">
+  <div class="popup" id="popup">
+    <div class="popup-header" id="popup-title"></div>
+    <div class="popup-text" id="popup-text"></div>
+
+    <div id="popup-options"></div>
+
+    <div id="popup-feedback" class="popup-feedback"></div>
+
+    <div class="popup-actions">
+      <button class="btn secondary" onclick="closePopup()">Закрыть</button>
+      <button class="btn" id="popup-next-btn" onclick="nextStep()" style="display:none;">Далее</button>
+    </div>
   </div>
 </div>
 
 <script>
-  let currentStep = 0;
+  let currentStep = 0; // 0 – правила, 1–8 – блоки акта
 
-  const steps = [
-    {
-      title: "Шаг 1. Шапка: заказчик и объект",
-      instruction: "Лаборатория прислала бланк акта. Начните с проверки, на кого и на какой объект он оформлен.",
-      highlight: { top: "12%", left: "3%", width: "94%", height: "10%" },
-      type: "choices",
-      question: "Что вы сделаете с этим блоком перед заполнением остальных полей?",
-      options: [
+  const steps = {
+    1: {
+      title:"Шапка: заказчик и объект",
+      text:"Вы начинаете заполнять акт. Что проверяете в шапке перед тем, как перейти к остальным полям?",
+      type:"choices",
+      options:[
         {
-          text: "Сверю название заказчика и объекта с договором / приказом на ПЭК",
-          correct: true,
-          style: "success",
-          feedback: "Так вы исключаете ситуацию, когда акт фактически оформлен на другую площадку или юрлицо."
+          text:"Сверяю название заказчика и объекта с договором / приказом на ПЭК",
+          feedback:"Так вы исключаете ситуацию, когда акт оформлен на другую площадку или юрлицо.",
+          style:"success"
         },
         {
-          text: "Пропущу, главное правильно заполнить таблицу проб",
-          correct: false,
-          style: "warn",
-          feedback: "Если объект в шапке указан неверно, любые корректные цифры по пробам уже не спасут документ."
-        },
-        {
-          text: "Попрошу лабораторию самой проверить реквизиты заказчика",
-          correct: false,
-          style: "info",
-          feedback: "Лаборатория отвечает за форму, но именно вы подтверждаете, что объект указан верно."
+          text:"Если лаборатория вписала реквизиты, значит все верно – проверять не буду",
+          feedback:"Лаборатория отвечает за форму, но именно вы подтверждаете объект подписью. Ошибка в шапке делает весь акт спорным.",
+          style:"warn"
         }
       ]
     },
-    {
-      title: "Шаг 2. Тип среды и точка отбора",
-      instruction: "Вы выбираете, что именно отбираете и в какой точке.",
-      highlight: { top: "25%", left: "3%", width: "46%", height: "14%" },
-      type: "choices",
-      question: "Какие действия нужны для корректного заполнения этого блока?",
-      options: [
+    2: {
+      title:"Тип среды и точка отбора",
+      text:"Нужно описать, что и где отбираете. Выберите корректные действия.",
+      type:"choices",
+      options:[
         {
-          text: "Выбрать тип среды по фактическому объекту (воздух, вода, почва)",
-          correct: true,
-          style: "success",
-          feedback: "Тип среды должен соответствовать программе ПЭК и реальному объекту отбора."
+          text:"Выбираю тип среды по фактическому объекту (воздух, вода, почва)",
+          feedback:"Тип среды должен совпадать с программой ПЭК и реальным объектом отбора.",
+          style:"success"
         },
         {
-          text: "Переписать название точки из программы ПЭК / паспорта точки",
-          correct: true,
-          style: "success",
-          feedback: "Название точки должно совпадать с тем, что фигурирует в вашей документации."
+          text:"Переписываю название точки из программы ПЭК / паспорта точки без сокращений «Точка №1»",
+          feedback:"Так акт напрямую связывается с вашей схемой и документацией.",
+          style:"success"
         },
         {
-          text: "Написать «Точка №1» без привязки к схеме",
-          correct: false,
-          style: "warn",
-          feedback: "Без связи с программой ПЭК и схемой сложно доказать, где именно отбирали пробу."
+          text:"Пишу «место отбора: рядом с трубой» – так быстрее",
+          feedback:"Размытые формулировки плохо защищают вас при споре с инспектором.",
+          style:"warn"
         }
       ]
     },
-    {
-      title: "Шаг 3. Дата, время, режим и погода",
-      instruction: "Этот блок связывает отбор проб с конкретным режимом работы объекта и условиями среды.",
-      highlight: { top: "25%", left: "51%", width: "46%", height: "14%" },
-      type: "choices",
-      question: "Что вы внесете и проверите здесь в первую очередь?",
-      options: [
+    3: {
+      title:"Дата, время и режим работы",
+      text:"Этот блок показывает, в каких условиях фактически делали отбор.",
+      type:"choices",
+      options:[
         {
-          text: "Дата и время отбора для сопоставления с журналами работы оборудования",
-          correct: true,
-          style: "success",
-          feedback: "По дате и времени можно проверить, действительно ли объект работал в нужном режиме."
+          text:"Фиксирую дату и интервал времени отбора и сверяю их с журналом работы оборудования",
+          feedback:"Так вы можете доказать, что отбор шел в нужный период работы источника.",
+          style:"success"
         },
         {
-          text: "Режим / состояние объекта (например, «котел в номинальном режиме»)",
-          correct: true,
-          style: "success",
-          feedback: "Если режим не соответствует программе ПЭК, результаты отбора можно поставить под сомнение."
+          text:"Кратко описываю режим: «котел в номинальном режиме», «очистные в штатной схеме»",
+          feedback:"Режим работы источника – один из первых пунктов, которые смотрит инспектор.",
+          style:"info"
         },
         {
-          text: "Погоду и особенности среды (для воды и почвы)",
-          correct: true,
-          style: "info",
-          feedback: "Погодные условия и состояние среды помогают объяснить отклонения в результатах."
-        },
-        {
-          text: "Ничего, эту часть можно оставить пустой",
-          correct: false,
-          style: "warn",
-          feedback: "Пустой блок условий отбора делает акт слабее при проверке."
+          text:"Оставляю режим и погоду пустыми – это и так понятно",
+          feedback:"Пустой блок условий отбора делает акт слабее и дает повод оспорить результаты.",
+          style:"warn"
         }
       ]
     },
-    {
-      title: "Шаг 4. Методика и пробоотборник",
-      instruction: "Вы фиксируете, по какому документу и каким оборудованием проводили отбор.",
-      highlight: { top: "39%", left: "3%", width: "94%", height: "6%" },
-      type: "order",
-      question: "Расставьте в правильном порядке шаги проверки этого блока.",
-      orderItems: [
-        { id: 1, text: "Сверить номер методики с программой ПЭК или договором" },
-        { id: 2, text: "Проверить тип и заводской номер пробоотборника" },
-        { id: 3, text: "Сравнить дату поверки с датой отбора проб" }
+    4: {
+      title:"Методика и пробоотборник",
+      text:"Расположите шаги проверки блока «Методика – пробоотборник – поверка» в правильном порядке.",
+      type:"order",
+      items:[
+        "Сверить номер методики с программой ПЭК или договором",
+        "Проверить тип и заводской номер пробоотборника",
+        "Сравнить дату поверки с датой отбора проб"
       ],
-      correctOrder: [1,2,3],
-      feedback: "Сначала убеждаемся, что методика соответствует программе, затем смотрим оборудование и только потом дату поверки."
+      correct:[0,1,2],
+      feedback:"Сначала убеждаются, что методика соответствует документам, потом проверяют оборудование и только после этого дату поверки."
     },
-    {
-      title: "Шаг 5. Таблица «Сведения о пробах»",
-      instruction: "Вы заполняете строки по каждой пробе. Ошибка здесь напрямую бьет по трассировке.",
-      highlight: { top: "46%", left: "3%", width: "94%", height: "21%" },
-      type: "choices",
-      question: "Какие столбцы критично заполнить и перепроверить?",
-      options: [
+    5: {
+      title:"Таблица «Сведения о пробах»",
+      text:"Вы заносите данные по каждой пробе. Что обязательно должно быть заполнено и проверено?",
+      type:"choices",
+      options:[
         {
-          text: "Код тары и объем",
-          correct: true,
-          style: "success",
-          feedback: "Уникальный код тары и объем позволяют связать конкретную пробу с протоколом анализа."
+          text:"Уникальный код тары и объем пробы",
+          feedback:"Без кода тары вы не свяжете конкретную пробу с протоколом анализа.",
+          style:"success"
         },
         {
-          text: "Консервант / обработка",
-          correct: true,
-          style: "success",
-          feedback: "Без корректного консерванта часть показателей изменится до лаборатории."
+          text:"Консервант / обработка и время начала и окончания отбора",
+          feedback:"Эти поля показывают, могли ли показатели сохраниться до лаборатории.",
+          style:"info"
         },
         {
-          text: "Время начала и окончания отбора",
-          correct: true,
-          style: "info",
-          feedback: "Время отбора должно согласовываться с режимом работы источника и верхней частью акта."
-        },
-        {
-          text: "Только количество проб в таблице",
-          correct: false,
-          style: "warn",
-          feedback: "Одного количества проб мало – важна идентификация каждой пробы."
+          text:"Только количество проб в таблице – остальное не критично",
+          feedback:"Количество важно, но без идентификации каждой пробы акт легко оспорить.",
+          style:"warn"
         }
       ]
     },
-    {
-      title: "Шаг 6. Меры сохранности пробы",
-      instruction: "Вы фиксируете, как гарантировали неизменность состава пробы при транспортировке.",
-      highlight: { top: "69%", left: "3%", width: "94%", height: "7%" },
-      type: "choices",
-      question: "Что из вариантов выглядит корректной формулировкой для этого блока?",
-      options: [
+    6: {
+      title:"Меры сохранности пробы",
+      text:"Как корректно заполнить строку о сохранности пробы при транспортировке?",
+      type:"choices",
+      options:[
         {
-          text: "«Проба доставлена в лабораторию в течение 2 часов при t +4…+6 °C»",
-          correct: true,
-          style: "success",
-          feedback: "Такой текст показывает и срок, и температурный режим хранения."
+          text:"«Проба доставлена в лабораторию в течение 2 часов при t +4…+6 °C»",
+          feedback:"Такая запись фиксирует и срок, и температурный режим, что важно для большинства методик.",
+          style:"success"
         },
         {
-          text: "«Проба доставлена вовремя»",
-          correct: false,
-          style: "warn",
-          feedback: "Размытая формулировка не доказывает соблюдение условий методики."
+          text:"«Проба доставлена вовремя»",
+          feedback:"Размытая формулировка не доказывает соблюдение условий методики.",
+          style:"warn"
         },
         {
-          text: "«Без контроля температуры»",
-          correct: false,
-          style: "warn",
-          feedback: "Такой текст прямо указывает на нарушение требований по сохранности пробы."
+          text:"«Без контроля температуры, как получится»",
+          feedback:"Такой текст прямо показывает нарушение условий хранения пробы.",
+          style:"warn"
         }
       ]
     },
-    {
-      title: "Шаг 7. Цель отбора и отклонения",
-      instruction: "Этот блок связывает акт с программой ПЭК и честно фиксирует отклонения.",
-      highlight: { top: "77%", left: "3%", width: "94%", height: "7%" },
-      type: "choices",
-      question: "Как вы будете заполнять цель отбора и отклонения от методики?",
-      options: [
+    7: {
+      title:"Цель отбора и отклонения",
+      text:"Блок «Цель отбора» и «Отклонения от методики» часто заполняют формально.",
+      type:"choices",
+      options:[
         {
-          text: "Выберу цель, соответствующую программе (ПЭК, инвентаризация, контроль нормативов)",
-          correct: true,
-          style: "success",
-          feedback: "Цель должна совпадать с тем, ради чего проводят отбор и анализы."
+          text:"Выбираю цель, которая совпадает с программой (ПЭК, инвентаризация, контроль нормативов)",
+          feedback:"Цель должна совпадать с тем, ради чего вообще брали пробу и делали анализы.",
+          style:"success"
         },
         {
-          text: "Если были отклонения от методики, кратко опишу их в соответствующем блоке",
-          correct: true,
-          style: "info",
-          feedback: "Лучше зафиксировать отклонения честно, чем делать вид, что все шло по методике."
+          text:"Если были отклонения от методики или плана, кратко прописываю их",
+          feedback:"Лучше честно зафиксировать отклонения, чем делать вид, что все прошло идеально.",
+          style:"info"
         },
         {
-          text: "Оставлю цель и отклонения пустыми – инспектор все равно не читает",
-          correct: false,
-          style: "warn",
-          feedback: "Инспектор как раз начинает с целей и отклонений. Пустой блок вызывает вопросы."
+          text:"Оставляю цель и отклонения пустыми – так делают все",
+          feedback:"При проверке пустой блок целей и отклонений сразу вызывает вопросы у инспектора.",
+          style:"warn"
         }
       ]
     },
-    {
-      title: "Шаг 8. Подписи сторон",
-      instruction: "Финальный шаг – подтверждение акта подписью.",
-      highlight: { top: "85%", left: "3%", width: "94%", height: "13%" },
-      type: "choices",
-      question: "Что вы проверите в блоке подписей перед тем, как расписаться сами?",
-      options: [
+    8: {
+      title:"Подписи сторон",
+      text:"Перед тем как расписаться, вы смотрите на блок подписи.",
+      type:"choices",
+      options:[
         {
-          text: "Есть ли подпись представителя заказчика с расшифровкой Ф.И.О.",
-          correct: true,
-          style: "success",
-          feedback: "Подпись заказчика подтверждает условия отбора и факт передачи проб."
+          text:"Проверяю, что есть подпись представителя заказчика с расшифровкой Ф.И.О. и должности",
+          feedback:"Подпись заказчика подтверждает условия отбора и факт передачи проб.",
+          style:"success"
         },
         {
-          text: "Совпадает ли должность и фамилия в акте с фактическим представителем на объекте",
-          correct: true,
-          style: "info",
-          feedback: "Иначе позже могут заявить, что подпись поставил неуполномоченный человек."
+          text:"Сравниваю, совпадает ли указанная должность с фактическим представителем на объекте",
+          feedback:"Если подпись у неуполномоченного лица, акт легко оспорить.",
+          style:"info"
         },
         {
-          text: "Подпишусь сразу, раз таблица проб заполнена",
-          correct: false,
-          style: "warn",
-          feedback: "Подписывая акт, вы принимаете на себя все ошибки выше по документу."
+          text:"Если таблица проб заполнена, подписываю не глядя",
+          feedback:"Подписывая акт, вы принимаете на себя все ошибки во всех блоках документа.",
+          style:"warn"
         }
       ]
     }
-  ];
+  };
 
-  function showScreen(id) {
-    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-    document.getElementById(id).classList.add('active');
-  }
-
-  function startGame() {
+  function openIntroPopup() {
     currentStep = 0;
-    showScreen('screen-game');
-    renderStep();
+    showPopup(
+      "Как проходить тренажер",
+      "Слева вы видите реальный бланк акта отбора проб. Нажимайте на нужный блок акта – шапку, точку отбора, таблицу проб, подписи. Для каждого блока всплывает задание с вариантами ответов. После каждого выбора вы получите короткий разбор и риски, если в реальной работе заполнить этот блок невнимательно.",
+      null,
+      null,
+      false
+    );
+    updateStatus();
   }
 
-  function renderStep() {
-    const step = steps[currentStep];
-    if (!step) { showFinal(); return; }
+  function showPopup(title, text, stepObj, stepKey, withNext=true) {
+    document.getElementById("popup-title").innerText = title;
+    document.getElementById("popup-text").innerText = text;
 
-    document.getElementById('step-title').innerText = step.title;
-    document.getElementById('step-instruction').innerText = step.instruction;
+    const optionsWrap = document.getElementById("popup-options");
+    const fb = document.getElementById("popup-feedback");
+    const nextBtn = document.getElementById("popup-next-btn");
 
-    const hl = document.getElementById('highlight');
-    hl.style.display = 'block';
-    hl.style.top = step.highlight.top;
-    hl.style.left = step.highlight.left;
-    hl.style.width = step.highlight.width;
-    hl.style.height = step.highlight.height;
+    optionsWrap.innerHTML = "";
+    fb.style.display = "none";
+    fb.className = "popup-feedback";
+    nextBtn.style.display = withNext ? "inline-block" : "none";
 
-    const content = document.getElementById('step-content');
-    const feedback = document.getElementById('feedback-area');
-    const nextBtn = document.getElementById('next-btn');
-
-    feedback.className = 'feedback';
-    feedback.style.display = 'none';
-    nextBtn.classList.add('hidden');
-
-    content.innerHTML = `<p><strong>${step.question}</strong></p>`;
-
-    if (step.type === 'choices') {
-      const list = document.createElement('div');
-      list.className = 'options-list';
-      step.options.forEach((opt, idx) => {
-        const div = document.createElement('div');
-        div.className = 'option-item';
+    if (stepObj && stepObj.type === "choices") {
+      const list = document.createElement("div");
+      list.className = "options-list";
+      stepObj.options.forEach((opt,i) => {
+        const div = document.createElement("div");
+        div.className = "option";
         div.innerText = opt.text;
-        div.onclick = () => handleChoice(step, opt, div);
+        div.onclick = () => {
+          document.querySelectorAll(".option").forEach(o=>o.classList.remove("selected"));
+          div.classList.add("selected");
+          fb.innerText = opt.feedback;
+          fb.classList.add("visible", "popup-feedback", opt.style || "info");
+          fb.style.display = "block";
+          document.querySelectorAll(`.zone[data-step="${stepKey}"]`).forEach(z=>z.classList.add("done"));
+        };
         list.appendChild(div);
       });
-      content.appendChild(list);
+      optionsWrap.appendChild(list);
     }
 
-    if (step.type === 'order') {
-      const info = document.createElement('div');
-      info.className = 'drag-area';
-      info.innerText = 'Перетащите карточки в правильном порядке – от первого шага к последнему.';
-      content.appendChild(info);
+    if (stepObj && stepObj.type === "order") {
+      const textEl = document.createElement("div");
+      textEl.className = "order-text";
+      textEl.innerText = "Перетащите шаги так, как вы бы их выполняли в реальной проверке.";
+      optionsWrap.appendChild(textEl);
 
-      const container = document.createElement('div');
-      container.className = 'card-container';
-      step.orderItems.forEach(it => {
-        const card = document.createElement('div');
-        card.className = 'card';
+      const list = document.createElement("div");
+      list.className = "order-list";
+      stepObj.items.forEach((t,idx) => {
+        const card = document.createElement("div");
+        card.className = "card";
         card.draggable = true;
-        card.dataset.id = it.id;
-        card.innerText = it.text;
-        card.addEventListener('dragstart', dragStart);
-        card.addEventListener('dragover', dragOver);
-        card.addEventListener('drop', dropped);
-        container.appendChild(card);
+        card.dataset.idx = idx;
+        card.innerText = t;
+        card.addEventListener("dragstart", dragStart);
+        card.addEventListener("dragover", dragOver);
+        card.addEventListener("drop", dropCard);
+        list.appendChild(card);
       });
-      content.appendChild(container);
-    }
-  }
+      optionsWrap.appendChild(list);
 
-  function handleChoice(step, opt, element) {
-    const feedback = document.getElementById('feedback-area');
-    const nextBtn = document.getElementById('next-btn');
-
-    if (step.type === 'choices') {
-      element.classList.toggle('selected');
-    }
-
-    if (opt.feedback) {
-      feedback.innerText = opt.feedback;
-      feedback.className = 'feedback visible ' + (opt.style || 'info');
-    } else {
-      feedback.innerText = '';
-      feedback.style.display = 'none';
+      nextBtn.onclick = () => {
+        const order = Array.from(list.children).map(c=>Number(c.dataset.idx));
+        const isCorrect = JSON.stringify(order) === JSON.stringify(stepObj.correct);
+        fb.innerText = stepObj.feedback + (isCorrect ? " Порядок выбран верно." : " Порядок можно улучшить, но вы уже понимаете, что именно нужно проверить.");
+        fb.classList.add("visible","popup-feedback","info");
+        fb.style.display = "block";
+        document.querySelectorAll(`.zone[data-step="${stepKey}"]`).forEach(z=>z.classList.add("done"));
+        nextStep();
+      };
     }
 
-    nextBtn.classList.remove('hidden');
+    document.getElementById("overlay").style.display = "flex";
   }
 
-  let dragSrcEl = null;
-
-  function dragStart(e) {
-    dragSrcEl = this;
-    e.dataTransfer.effectAllowed = 'move';
+  function closePopup() {
+    document.getElementById("overlay").style.display = "none";
   }
 
-  function dragOver(e) {
+  function dragStart(e){ e.dataTransfer.setData("text/plain", e.target.dataset.idx); }
+  function dragOver(e){ e.preventDefault(); }
+  function dropCard(e){
     e.preventDefault();
-    e.dataTransfer.dropEffect = 'move';
-  }
-
-  function dropped(e) {
-    e.stopPropagation();
-    if (dragSrcEl !== this) {
-      const parent = this.parentNode;
-      const nodes = Array.from(parent.children);
-      const srcIndex = nodes.indexOf(dragSrcEl);
-      const targetIndex = nodes.indexOf(this);
-      if (srcIndex < targetIndex) {
-        parent.insertBefore(dragSrcEl, this.nextSibling);
-      } else {
-        parent.insertBefore(dragSrcEl, this);
-      }
+    const fromIdx = e.dataTransfer.getData("text/plain");
+    const dragged = [...this.parentNode.children].find(c=>c.dataset.idx===fromIdx);
+    if(dragged && dragged!==this){
+      const list = this.parentNode;
+      list.insertBefore(dragged, this.nextSibling);
     }
-    const step = steps[currentStep];
-    const currentOrder = Array.from(this.parentNode.children).map(c => Number(c.dataset.id));
-    const correct = JSON.stringify(currentOrder) === JSON.stringify(step.correctOrder);
-    const feedback = document.getElementById('feedback-area');
-    feedback.innerText = step.feedback + (correct ? " Порядок верный." : " Логику вы уловили, но порядок шагов еще можно улучшить.");
-    feedback.className = 'feedback visible info';
-    document.getElementById('next-btn').classList.remove('hidden');
-    return false;
   }
 
-  function nextStep() {
-    currentStep++;
-    if (currentStep >= steps.length) {
-      showFinal();
+  function onZoneClick(stepKey){
+    const stepObj = steps[stepKey];
+    if(!stepObj) return;
+    currentStep = stepKey;
+    updateStatus();
+    const hl = document.getElementById("highlight");
+    const zoneEl = document.querySelector(`.zone[data-step="${stepKey}"]`);
+    if(zoneEl){
+      const r = zoneEl.getBoundingClientRect();
+      const parentR = zoneEl.parentElement.getBoundingClientRect();
+      hl.style.display="block";
+      hl.style.top = (zoneEl.offsetTop) + "px";
+      hl.style.left = (zoneEl.offsetLeft) + "px";
+      hl.style.width = zoneEl.offsetWidth + "px";
+      hl.style.height = zoneEl.offsetHeight + "px";
+    }
+    showPopup(stepObj.title, stepObj.text, stepObj, stepKey, stepObj.type==="order");
+  }
+
+  function nextStep(){
+    closePopup();
+    if(currentStep<8){
+      currentStep++;
+      updateStatus();
     } else {
-      renderStep();
+      document.getElementById("hint-strip").innerText = "Все блоки акта разобраны. Можно еще раз пройти тренажер или использовать чек-лист в работе.";
     }
   }
 
-  function showFinal() {
-    showScreen('screen-final');
+  function updateStatus(){
+    const label = document.getElementById("status-label");
+    const fill = document.getElementById("status-fill");
+    const doneCount = Math.min(currentStep,8);
+    const percent = (doneCount/8)*100;
+    fill.style.width = percent + "%";
+    if(currentStep===0){
+      label.innerText = "Шаг 0 из 8 • прочитайте правила";
+    } else {
+      label.innerText = "Шаг " + doneCount + " из 8 • работаем с блоком акта";
+    }
   }
 
-  document.querySelectorAll('.zone-clickable').forEach(z => {
-    z.addEventListener('click', () => {
-      const stepIndex = Number(z.dataset.step);
-      if (stepIndex !== currentStep) {
-        currentStep = stepIndex;
-        renderStep();
-      }
-    });
+  document.querySelectorAll(".zone").forEach(z=>{
+    z.addEventListener("click", ()=>onZoneClick(Number(z.dataset.step)));
   });
-</script>
 
+  // автопоказ правил при первом запуске
+  window.onload = openIntroPopup;
+</script>
 </body>
 </html>
