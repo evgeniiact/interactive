@@ -34,20 +34,18 @@
       color: var(--text);
       display: flex;
       justify-content: center;
-      /* убираем растяжение по высоте страницы */
       align-items: flex-start;
     }
 
     #app {
       position: relative;
       width: 560px;
-      /* убрана фиксированная высота */
       background: var(--bg);
       overflow: visible;
     }
 
     .panel {
-      position: relative;           /* была absolute + inset:0 */
+      position: relative;
       padding: 20px 22px 22px;
       display: flex;
       flex-direction: column;
@@ -145,7 +143,7 @@
     }
 
     .overlay {
-      position: fixed;              /* чтобы попап не зависел от высоты app */
+      position: fixed;
       inset: 0;
       background: rgba(12, 34, 28, 0.30);
       backdrop-filter: blur(5px);
@@ -286,18 +284,196 @@
 <body>
 <div id="app">
   <div class="panel">
-    <!-- твои кнопки без изменений -->
-    ...
+    <button class="info-btn" data-key="pec" aria-label="Программа ПЭК">
+      <div class="btn-top">
+        <div class="btn-title">Программа ПЭК</div>
+        <div class="btn-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="btn-note">Помогает обосновать точки, показатели и частоту контроля.</div>
+    </button>
+
+    <button class="info-btn" data-key="nvos" aria-label="Плата за НВОС и отчетность">
+      <div class="btn-top">
+        <div class="btn-title">Плата за НВОС</div>
+        <div class="btn-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="btn-note">Влияет на расчеты и на то, как примут отчетность на проверке.</div>
+    </button>
+
+    <button class="info-btn" data-key="plan" aria-label="Плановая проверка">
+      <div class="btn-top">
+        <div class="btn-title">Плановая проверка</div>
+        <div class="btn-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="btn-note">Инспектор оценивает не только цифры, но и путь их получения.</div>
+    </button>
+
+    <button class="info-btn" data-key="complaint" aria-label="Проверка по жалобе">
+      <div class="btn-top">
+        <div class="btn-title">Проверка по жалобе</div>
+        <div class="btn-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="btn-note">Свежие данные помогают быстро подтвердить позицию предприятия.</div>
+    </button>
+
+    <button class="info-btn" data-key="incident" aria-label="Инцидент и авария">
+      <div class="btn-top">
+        <div class="btn-title">Инцидент и авария</div>
+        <div class="btn-icon" aria-hidden="true">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none">
+            <path d="M9 3V15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+            <path d="M3 9H15" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+          </svg>
+        </div>
+      </div>
+      <div class="btn-note">Фоновые измерения помогают точнее считать ущерб после аварии.</div>
+    </button>
   </div>
 
   <div class="overlay" id="overlay" aria-hidden="true">
-    <!-- попап без изменений -->
-    ...
+    <div class="popup" role="dialog" aria-modal="true" aria-labelledby="popup-title">
+      <button class="popup-close" id="popupClose" aria-label="Закрыть">×</button>
+
+      <div class="popup-kicker">Где пригодятся результаты отбора проб</div>
+
+      <div class="popup-header-row">
+        <h2 class="popup-title" id="popup-title"></h2>
+      </div>
+
+      <div class="popup-body">
+        <div class="popup-text" id="popup-text"></div>
+        <div class="popup-risk">
+          <div class="popup-risk-title">Если при измерениях допущена ошибка</div>
+          <div class="popup-risk-text" id="popup-risk"></div>
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
 <script>
-  // JS без изменений
+  const data = {
+    pec: {
+      title: 'При разработке и корректировке программы ПЭК',
+      text: [
+        'Программу ПЭК строят на фактических данных о воздействии объекта. Для этого используют результаты инвентаризации, сведения о технологии и результаты производственного контроля за прошлые периоды.',
+        'Корректно организованный отбор проб и подтвержденные лабораторные результаты помогают обосновать выбор точек контроля, перечень показателей и периодичность измерений.',
+        'Чем точнее исходные данные, тем меньше поводов у надзорного органа требовать переработать программу.'
+      ],
+      risk: 'Если результаты измерений не подтверждены документами или не отражают реальное воздействие, программу ПЭК сложнее защитить при проверке.'
+    },
+    nvos: {
+      title: 'При расчете платы за НВОС и подготовке отчетности',
+      text: [
+        'Результаты анализов используют для расчета платы за негативное воздействие и при подготовке отчетности по ПЭК. Чтобы эти данные приняли, важно подтвердить порядок отбора проб и область аккредитации лаборатории по нужным показателям.',
+        'Корректно оформленные акты отбора и протоколы анализов позволяют рассчитывать плату исходя из фактических выбросов и сбросов, а не только по нормативам.',
+        'То же основание используют при подготовке ежегодного отчета об организации и результатах ПЭК.'
+      ],
+      risk: 'Если отбор проб проведен с нарушениями или лаборатория не подтверждает компетентность по нужным показателям, контролирующий орган вправе не учитывать такие результаты.'
+    },
+    plan: {
+      title: 'При плановой проверке',
+      text: [
+        'На плановой проверке инспектор оценивает не только значения показателей, но и то, как их получили. Он сверяет точки отбора с программой ПЭК и анализирует комплект документов по каждому измерению.',
+        'Инспектора интересуют акт и протокол отбора, сведения о примененных методиках, информация о лаборатории и ее области аккредитации.',
+        'Если все шаги цепочки «программа ПЭК – отбор проб – лабораторный анализ» можно проверить, то результаты проще принять как доказательные.'
+      ],
+      risk: 'Если точки отбора не совпадают с программой ПЭК или документы оформлены с нарушением установленного порядка, результаты анализов могут не принять при оценке соблюдения требований.'
+    },
+    complaint: {
+      title: 'При внеплановой проверке по жалобе',
+      text: [
+        'Внеплановая проверка по жалобе проводится в сжатые сроки и внезапно. У эколога мало времени, чтобы собрать аргументы, поэтому особенно важно иметь под рукой результаты измерений.',
+        'Наличие актуальных данных, актов отбора проб и протоколов лабораторных исследований показывает, что предприятие ведет контроль регулярно, а не только в ответ на жалобы и при проверках.',
+        'Такие материалы позволяют сразу предъявить документальные подтверждения фактического уровня воздействия.'
+      ],
+      risk: 'Если у предприятия нет актуальных результатов или документы по отборам и анализам отсутствуют, позицию приходится строить на общих объяснениях без достаточной доказательности.'
+    },
+    incident: {
+      title: 'При производственных инцидентах',
+      text: [
+        'После разлива, аварийного выброса или другой нештатной ситуации важны данные о состоянии среды до инцидента. Их дают результаты регулярного мониторинга.',
+        'Сопоставление фоновых значений и показателей после аварии помогает определить масштаб изменений и вклад конкретного инцидента в общее загрязнение.',
+        'На этой основе формируют расчеты ущерба и обосновывают выводы о фактическом воздействии объекта.'
+      ],
+      risk: 'Если фоновые измерения отсутствуют, сложнее отделить последствия аварии от ранее существовавшего загрязнения и корректно оценить размер ущерба.'
+    }
+  };
+
+  const buttons = Array.from(document.querySelectorAll('.info-btn'));
+  const overlay = document.getElementById('overlay');
+  const popupTitle = document.getElementById('popup-title');
+  const popupText = document.getElementById('popup-text');
+  const popupRisk = document.getElementById('popup-risk');
+  const popupClose = document.getElementById('popupClose');
+
+  let activeKey = null;
+
+  function closePopup() {
+    activeKey = null;
+    overlay.classList.remove('open');
+    overlay.setAttribute('aria-hidden', 'true');
+    buttons.forEach(btn => btn.classList.remove('active'));
+  }
+
+  function openPopup(key) {
+    const item = data[key];
+    if (!item) return;
+
+    activeKey = key;
+
+    popupTitle.textContent = item.title;
+    popupText.innerHTML = item.text.map(p => `<p>${p}</p>`).join('');
+    popupRisk.textContent = item.risk;
+
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+
+    buttons.forEach(btn => {
+      btn.classList.toggle('active', btn.dataset.key === key);
+    });
+  }
+
+  buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const key = btn.dataset.key;
+      if (activeKey === key) {
+        closePopup();
+      } else {
+        openPopup(key);
+      }
+    });
+  });
+
+  popupClose.addEventListener('click', closePopup);
+
+  overlay.addEventListener('click', (e) => {
+    if (e.target === overlay) closePopup();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') closePopup();
+  });
 </script>
 </body>
 </html>
