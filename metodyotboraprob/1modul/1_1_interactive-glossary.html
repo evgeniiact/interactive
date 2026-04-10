@@ -47,28 +47,47 @@
       height: auto;
     }
 
-    /* прозрачные интерактивные зоны поверх уже нарисованных плюсиков */
     .hotspot {
       position: absolute;
-      width: 3.5%;
+      width: 3.2%;
       aspect-ratio: 1;
-      min-width: 24px;
-      min-height: 24px;
+      min-width: 22px;
+      min-height: 22px;
       border: none;
       border-radius: 999px;
-      background: transparent;
+      background: rgba(255,255,255,0.78);
+      box-shadow: 0 0 0 2px rgba(47,107,61,0.55), 0 6px 18px rgba(0,0,0,0.16);
       cursor: pointer;
+      transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease;
     }
 
     .hotspot::before,
     .hotspot::after {
-      content: none;
+      content: '';
+      position: absolute;
+      left: 50%;
+      top: 50%;
+      background: var(--accent);
+      transform: translate(-50%, -50%);
+      border-radius: 2px;
+    }
+
+    .hotspot::before {
+      width: 38%;
+      height: 3px;
+    }
+
+    .hotspot::after {
+      width: 3px;
+      height: 38%;
     }
 
     .hotspot:hover,
     .hotspot:focus-visible {
-      outline: 2px solid rgba(47,107,61,0.65);
-      outline-offset: 3px;
+      transform: scale(1.08);
+      background: rgba(255,255,255,0.96);
+      box-shadow: 0 0 0 3px rgba(47,107,61,0.65), 0 8px 24px rgba(0,0,0,0.2);
+      outline: none;
     }
 
     .hint {
@@ -152,31 +171,44 @@
       .wrap { padding: 12px; }
       .title { font-size: 24px; }
       .text { font-size: 16px; }
-      .hotspot { width: 4.5%; }
+      .hotspot { width: 4.2%; }
     }
   </style>
 </head>
 <body>
   <div class="wrap">
     <div class="stage">
-      <!-- новая картинка с уже нарисованными плюсами -->
-      <img src="./image.jpg" alt="Иллюстрация с терминами экологического контроля" />
+      <img src="./001_Untitledgenially.jpg" alt="Иллюстрация с терминами экологического контроля" />
 
-      <!-- координаты подобраны под видимые плюсики -->
-      <button class="hotspot" style="left: 23%; top: 24%;" data-key="pek" aria-label="ПЭК"></button>
-      <button class="hotspot" style="left: 52%; top: 34%;" data-key="pdk" aria-label="ПДК"></button>
-      <button class="hotspot" style="left: 79%; top: 32%;" data-key="ndv" aria-label="НДВ"></button>
+      <!-- ПЭК: иконка слева вверху -->
+      <button class="hotspot" style="left: 18%; top: 19%;" data-key="pek" aria-label="Открыть определение ПЭК"></button>
 
-      <button class="hotspot" style="left: 19%; top: 48%;" data-key="nvos" aria-label="НВОС"></button>
-      <button class="hotspot" style="left: 60%; top: 54%;" data-key="gost" aria-label="ГОСТ"></button>
-      <button class="hotspot" style="left: 86%; top: 50%;" data-key="laboratory" aria-label="Лаборатория"></button>
+      <!-- ПДК: колба вверху по центру -->
+      <button class="hotspot" style="left: 51%; top: 23%;" data-key="pdk" aria-label="Открыть определение ПДК"></button>
 
-      <button class="hotspot" style="left: 25%; top: 75%;" data-key="pndf" aria-label="ПНД Ф"></button>
-      <button class="hotspot" style="left: 63%; top: 80%;" data-key="protocol" aria-label="Протокол исследований"></button>
-      <button class="hotspot" style="left: 86%; top: 80%;" data-key="act" aria-label="Акт отбора проб"></button>
+      <!-- НДВ: значок графика справа вверху -->
+      <button class="hotspot" style="left: 71%; top: 21%;" data-key="ndv" aria-label="Открыть определение НДВ"></button>
+
+      <!-- НВОС: гистограмма слева посередине -->
+      <button class="hotspot" style="left: 14%; top: 40%;" data-key="nvos" aria-label="Открыть определение НВОС"></button>
+
+      <!-- ГОСТ: папка с лупой ближе к центру -->
+      <button class="hotspot" style="left: 58%; top: 43%;" data-key="gost" aria-label="Открыть определение ГОСТ"></button>
+
+      <!-- Лаборатория: колба справа, ближе к центру -->
+      <button class="hotspot" style="left: 82%; top: 38%;" data-key="laboratory" aria-label="Открыть определение лаборатории"></button>
+
+      <!-- ПНД Ф: папка с лупой слева снизу -->
+      <button class="hotspot" style="left: 15%; top: 70%;" data-key="pndf" aria-label="Открыть определение ПНД Ф"></button>
+
+      <!-- Протокол исследований: планшет со значком слева от подписи -->
+      <button class="hotspot" style="left: 63%; top: 76%;" data-key="protocol" aria-label="Открыть определение протокола лабораторных исследований"></button>
+
+      <!-- Акт отбора проб: колба возле подписи -->
+      <button class="hotspot" style="left: 86%; top: 74%;" data-key="act" aria-label="Открыть определение акта отбора проб"></button>
     </div>
 
-    <p class="hint">Нажмите на плюс рядом с термином, чтобы открыть определение.</p>
+    <p class="hint">Нажмите на значки на иллюстрации, чтобы открыть короткие и понятные определения терминов из урока.</p>
   </div>
 
   <div class="overlay" id="overlay" aria-hidden="true">
@@ -254,11 +286,11 @@
 
     closeBtn.addEventListener('click', closeModal);
 
-    overlay.addEventListener('click', event => {
+    overlay.addEventListener('click', (event) => {
       if (event.target === overlay) closeModal();
     });
 
-    document.addEventListener('keydown', event => {
+    document.addEventListener('keydown', (event) => {
       if (event.key === 'Escape') closeModal();
     });
   </script>
