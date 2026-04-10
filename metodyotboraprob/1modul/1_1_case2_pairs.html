@@ -1,0 +1,419 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Ситуация 2. Атмосферный воздух</title>
+<style>
+body {
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  background: #f3fbf7;
+  margin: 0;
+  padding: 8px;
+  display: flex;
+  justify-content: center;
+}
+#app {
+  background: #fff;
+  border: 1px solid #19a86e;
+  border-radius: 4px;
+  padding: 10px 12px 12px;
+  max-width: 560px;
+  width: 100%;
+  box-shadow: 0 12px 32px rgba(0,119,96,0.12);
+  position: relative;
+}
+
+/* верхняя панель */
+.top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 6px;
+  margin-bottom: 6px;
+}
+h2 {
+  margin: 0;
+  font-size: 14px;
+  text-transform: uppercase;
+  color: #007760;
+}
+.btn-rules {
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 14px;
+  border: 1px solid #007760;
+  background: #f7fcf9;
+  color: #007760;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+/* текст кейса */
+.case {
+  font-size: 12px;
+  line-height: 1.4;
+  background: #f7fcf9;
+  border-radius: 4px;
+  border: 1px solid rgba(0,119,96,0.12);
+  padding: 6px 8px;
+  margin-bottom: 6px;
+}
+.question {
+  font-size: 12px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+
+/* сетка 2 колонки */
+.layout {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  column-gap: 6px;
+}
+.col {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.col-title {
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  color: #527a6b;
+  margin-bottom: 2px;
+}
+
+/* карточки действий и рисков */
+.problem,
+.chip {
+  border-radius: 4px;
+  font-size: 11px;
+  padding: 6px 7px;
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  box-sizing: border-box;
+  cursor: pointer;
+  transition: 0.15s;
+}
+
+/* действия */
+.problem {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+}
+
+/* риски */
+.chip {
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
+}
+
+/* состояния выбора */
+.problem.selected,
+.chip.selected {
+  border-color: #007760;
+  background: #e3f3ec;
+}
+
+.problem.matched,
+.chip.matched {
+  border-color: #2e7d32;
+  background: #e6f4ea;
+  box-shadow: none;
+}
+
+.problem.error,
+.chip.error {
+  border-color: #d32f2f;
+  background: #ffebee;
+}
+
+/* футер */
+.footer {
+  margin-top: 8px;
+  border-top: 1px solid rgba(0,119,96,0.12);
+  padding-top: 6px;
+  display: flex;
+  justify-content: center;
+  gap: 6px;
+}
+.btn {
+  padding: 6px 16px;
+  border-radius: 16px;
+  font-size: 10px;
+  font-weight: 600;
+  text-transform: uppercase;
+  cursor: pointer;
+}
+.btn-main {
+  background: linear-gradient(135deg,#19a86e,#007760);
+  color: #fff;
+  border: none;
+}
+.btn-ghost {
+  background: transparent;
+  border: 1px solid #007760;
+  color: #007760;
+}
+#status {
+  margin-top: 4px;
+  font-size: 11px;
+  min-height: 14px;
+}
+#status.error { color: #d32f2f; }
+#status.ok { color: #2e7d32; }
+
+/* модалы */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.35);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 50;
+}
+.modal {
+  background: #fff;
+  border-radius: 4px;
+  padding: 12px 14px;
+  max-width: 380px;
+  width: 90%;
+  box-shadow: 0 14px 40px rgba(0,0,0,0.2);
+  font-size: 12px;
+  border-top: 3px solid #19a86e;
+}
+.modal-title {
+  font-weight: 600;
+  margin-bottom: 6px;
+  color: #007760;
+}
+.modal-close {
+  margin-top: 8px;
+  text-align: right;
+}
+.modal-close button {
+  padding: 4px 12px;
+  font-size: 10px;
+  border-radius: 14px;
+  border: 1px solid #007760;
+  background: #f7fcf9;
+  color: #007760;
+}
+
+/* адаптив для очень узких экранов */
+@media (max-width: 480px) {
+  #app { padding: 8px 8px 10px; }
+  .layout { grid-template-columns: 1fr; row-gap: 4px; }
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <div class="top-bar">
+    <h2>Ситуация 2. Когда аккредитации не хватает</h2>
+    <button class="btn-rules" onclick="openRules()">Правила</button>
+  </div>
+
+  <div class="case">
+    Металлургическое предприятие контролирует воздух на границе санитарно-защитной зоны. 
+    Новый эколог увидел, что у лаборатории нет аккредитации на отбор атмосферного воздуха, 
+    только на воздух в помещениях и воду. Протоколы могут не принять, а ПЭК по воздуху посчитают невыполненным.
+  </div>
+
+  <div class="question">
+    Соотнесите действия эколога при выборе лаборатории и риски для предприятия.
+  </div>
+
+  <div class="layout">
+    <div class="col">
+      <div class="col-title">Действия эколога</div>
+      <div class="problem" data-id="1">
+        Эколог не проверил в реестре, есть ли у лаборатории действующая аккредитация на отбор проб атмосферного воздуха
+      </div>
+      <div class="problem" data-id="2">
+        Эколог не сверил область аккредитации лаборатории с нужными методиками и условиями отбора (граница СЗЗ)
+      </div>
+      <div class="problem" data-id="3">
+        Эколог не проверил, есть ли в области аккредитации лаборатории нужные вещества, и не обсудил сроки расширения области аккредитации
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="col-title">Риски для предприятия</div>
+
+      <!-- риски в перемешанном порядке -->
+      <div class="chip" data-id="2">
+        Нужные методики и условия отбора не входят в область аккредитации. Результаты не принимают как доказательство при проверке и в суде.
+      </div>
+      <div class="chip" data-id="3">
+        Нужных веществ нет в области аккредитации и расширение вовремя не согласовали. Протоколы по этим показателям могут не принять, контроль придется повторять.
+      </div>
+      <div class="chip" data-id="1">
+        Протоколы могут признать недействительными, а ПЭК по воздуху невыполненным. Надзор выдает предписание и штраф.
+      </div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <button class="btn btn-ghost" onclick="resetGame()">Сбросить</button>
+    <button class="btn btn-main" onclick="checkGame()">Проверить</button>
+  </div>
+
+  <div id="status"></div>
+</div>
+
+<!-- модал правил -->
+<div class="modal-backdrop" id="rules-backdrop">
+  <div class="modal">
+    <div class="modal-title">Как выполнить задание</div>
+    <div>
+      1. Нажмите на действие эколога слева. <br>
+      2. Затем нажмите на риск справа, который логично продолжает это действие. <br>
+      3. Повторите для всех действий, а потом нажмите «Проверить». <br>
+      4. После успешного прохождения нажимайте на пары, чтобы читать пояснения.
+    </div>
+    <div class="modal-close">
+      <button onclick="closeRules()">Понятно</button>
+    </div>
+  </div>
+</div>
+
+<!-- модал комментария по карточке -->
+<div class="modal-backdrop" id="pair-modal-backdrop">
+  <div class="modal">
+    <div class="modal-title" id="pair-modal-title">Комментарий по риску</div>
+    <div id="pair-modal-body"></div>
+    <div class="modal-close">
+      <button onclick="closePairModal()">Понятно</button>
+    </div>
+  </div>
+</div>
+
+<script>
+let selectedProblem = null;
+let selectedRisk = null;
+let pairs = {};          // { problemId: riskId }
+let gameCompleted = false;
+
+const problems = document.querySelectorAll('.problem');
+const risks = document.querySelectorAll('.chip');
+const statusEl = document.getElementById('status');
+const rulesBackdrop = document.getElementById('rules-backdrop');
+const pairModalBackdrop = document.getElementById('pair-modal-backdrop');
+const pairModalBody = document.getElementById('pair-modal-body');
+
+const comments = {
+  '1': 'Если у лаборатории нет аккредитации на атмосферный воздух, проверяющие могут вообще не засчитать протоколы. Для эколога это риск признания ПЭК по воздуху невыполненным, даже если контроль проводили.',
+  '2': 'Область аккредитации описывает, какие методики и в каких условиях лаборатория может применять. Если методика или условия отбора не входят в область, результаты легко оспорить в проверке или суде.',
+  '3': 'Состав контролируемых веществ нужно проверять заранее. Если нужных веществ нет в области аккредитации, протоколы по ним могут не принять и контроль придется повторять за счет предприятия.'
+};
+
+function openRules() { rulesBackdrop.style.display = 'flex'; }
+function closeRules() { rulesBackdrop.style.display = 'none'; }
+
+function showPairModal(text) {
+  pairModalBody.textContent = text;
+  pairModalBackdrop.style.display = 'flex';
+}
+function closePairModal() { pairModalBackdrop.style.display = 'none'; }
+
+function clearSelection() {
+  problems.forEach(p => p.classList.remove('selected'));
+  risks.forEach(r => r.classList.remove('selected'));
+  selectedProblem = null;
+  selectedRisk = null;
+}
+
+function handleProblemClick(problem) {
+  if (gameCompleted) {
+    const id = problem.dataset.id;
+    if (pairs[id] && comments[pairs[id]]) showPairModal(comments[pairs[id]]);
+    return;
+  }
+  problems.forEach(p => p.classList.remove('selected'));
+  problem.classList.add('selected');
+  selectedProblem = problem.dataset.id;
+}
+
+function handleRiskClick(risk) {
+  const riskId = risk.dataset.id;
+
+  if (gameCompleted) {
+    if (comments[riskId]) showPairModal(comments[riskId]);
+    return;
+  }
+
+  risks.forEach(r => r.classList.remove('selected'));
+  risk.classList.add('selected');
+  selectedRisk = riskId;
+
+  if (selectedProblem && selectedRisk) {
+    pairs[selectedProblem] = selectedRisk;
+    const problemEl = Array.from(problems).find(p => p.dataset.id === selectedProblem);
+    problemEl.classList.add('matched');
+    risk.classList.add('matched');
+    statusEl.textContent = '';
+    statusEl.className = '';
+    selectedProblem = null;
+    selectedRisk = null;
+    problems.forEach(p => p.classList.remove('selected'));
+    risks.forEach(r => r.classList.remove('selected'));
+  }
+}
+
+problems.forEach(p => {
+  p.addEventListener('click', () => handleProblemClick(p));
+});
+
+risks.forEach(r => {
+  r.addEventListener('click', () => handleRiskClick(r));
+});
+
+function checkGame() {
+  const correctMap = { '1':'1', '2':'2', '3':'3' };
+  let errors = false;
+  problems.forEach(p => p.classList.remove('error'));
+  risks.forEach(r => r.classList.remove('error'));
+
+  Object.keys(correctMap).forEach(pid => {
+    const expected = correctMap[pid];
+    const chosen = pairs[pid];
+    if (!chosen || chosen !== expected) errors = true;
+  });
+
+  if (errors) {
+    statusEl.className = 'error';
+    statusEl.textContent = 'Не все пары совпали. Выберите для каждого действия подходящий риск.';
+    problems.forEach(p => {
+      const pid = p.dataset.id;
+      if (!pairs[pid] || pairs[pid] !== correctMap[pid]) p.classList.add('error');
+    });
+    risks.forEach(r => {
+      const rid = r.dataset.id;
+      const usedIn = Object.keys(pairs).find(pid => pairs[pid] === rid);
+      if (usedIn && correctMap[usedIn] !== rid) r.classList.add('error');
+    });
+  } else {
+    statusEl.className = 'ok';
+    statusEl.textContent = 'Все пары собраны верно. Нажимайте на карточки, чтобы прочитать пояснения.';
+    gameCompleted = true;
+  }
+}
+
+function resetGame() {
+  pairs = {};
+  gameCompleted = false;
+  selectedProblem = null;
+  selectedRisk = null;
+  statusEl.textContent = '';
+  statusEl.className = '';
+  problems.forEach(p => p.classList.remove('selected','matched','error'));
+  risks.forEach(r => r.classList.remove('selected','matched','error'));
+}
+
+</script>
+</body>
+</html>
