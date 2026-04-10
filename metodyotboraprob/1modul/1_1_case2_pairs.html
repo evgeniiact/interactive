@@ -17,7 +17,7 @@ body {
   border: 1px solid #19a86e;
   border-radius: 4px;
   padding: 10px 12px 12px;
-  max-width: 560px;
+  max-width: 720px;
   width: 100%;
   box-shadow: 0 12px 32px rgba(0,119,96,0.12);
   position: relative;
@@ -64,16 +64,26 @@ h2 {
   margin-bottom: 6px;
 }
 
-/* сетка 2 колонки */
+/* сетка 2 колонки + слой линий */
+.match-layout {
+  position: relative;
+}
+.lines-layer {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
+/* 2 колонки */
 .layout {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  column-gap: 6px;
+  column-gap: 24px;
 }
 .col {
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 6px;
 }
 .col-title {
   font-size: 10px;
@@ -83,51 +93,66 @@ h2 {
   margin-bottom: 2px;
 }
 
-/* карточки действий и рисков */
+/* карточки */
 .problem,
 .chip {
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 11px;
-  padding: 6px 7px;
-  min-height: 64px;
+  padding: 8px 9px;
+  min-height: 70px;
   display: flex;
   align-items: center;
   box-sizing: border-box;
   cursor: pointer;
+  background: #fff;
+  border: 1px solid #e0e0e0;
+  position: relative;
   transition: 0.15s;
 }
-
-/* действия */
-.problem {
-  background: #fff;
-  border: 1px solid #e0e0e0;
+.problem::before,
+.chip::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #cfd8dc;
+  transform: translateY(-50%);
 }
+.problem::before { right: -16px; }
+.chip::before { left: -16px; }
 
-/* риски */
-.chip {
-  background: #fff;
-  border: 1px solid #e0e0e0;
-  box-shadow: 0 3px 8px rgba(0,0,0,0.12);
-}
-
-/* состояния выбора */
+/* состояния выбора и матча */
 .problem.selected,
 .chip.selected {
   border-color: #007760;
   background: #e3f3ec;
 }
-
 .problem.matched,
 .chip.matched {
   border-color: #2e7d32;
   background: #e6f4ea;
-  box-shadow: none;
 }
-
 .problem.error,
 .chip.error {
   border-color: #d32f2f;
   background: #ffebee;
+}
+
+/* линия-связь */
+svg line {
+  stroke: #b0bec5;
+  stroke-width: 2;
+}
+svg line.active {
+  stroke: #007760;
+}
+svg line.correct {
+  stroke: #2e7d32;
+}
+svg line.wrong {
+  stroke: #d32f2f;
 }
 
 /* футер */
@@ -203,10 +228,19 @@ h2 {
   color: #007760;
 }
 
-/* адаптив для очень узких экранов */
-@media (max-width: 480px) {
-  #app { padding: 8px 8px 10px; }
-  .layout { grid-template-columns: 1fr; row-gap: 4px; }
+/* адаптив */
+@media (max-width: 640px) {
+  .layout {
+    grid-template-columns: 1fr;
+    row-gap: 10px;
+  }
+  .problem::before,
+  .chip::before {
+    display: none;
+  }
+  .lines-layer {
+    display: none;
+  }
 }
 </style>
 </head>
@@ -227,38 +261,40 @@ h2 {
     Соотнесите действия эколога при выборе лаборатории и риски для предприятия.
   </div>
 
-  <div class="layout">
-    <div class="col">
-      <div class="col-title">Действия эколога</div>
-      <div class="problem" data-id="1">
-        Эколог не проверил в реестре, есть ли у лаборатории действующая аккредитация на отбор проб атмосферного воздуха
-      </div>
-      <div class="problem" data-id="2">
-        Эколог не сверил область аккредитации лаборатории с нужными методиками и условиями отбора (граница СЗЗ)
-      </div>
-      <div class="problem" data-id="3">
-        Эколог не проверил, есть ли в области аккредитации лаборатории нужные вещества, и не обсудил сроки расширения области аккредитации
-      </div>
-    </div>
+  <div class="match-layout">
+    <svg class="lines-layer" id="lines-svg"></svg>
 
-    <div class="col">
-      <div class="col-title">Риски для предприятия</div>
+    <div class="layout" id="pairs-layout">
+      <div class="col" id="col-left">
+        <div class="col-title">Действия эколога</div>
+        <div class="problem" data-id="1">
+          Эколог не проверил в реестре, есть ли у лаборатории действующая аккредитация на отбор проб атмосферного воздуха
+        </div>
+        <div class="problem" data-id="2">
+          Эколог не сверил область аккредитации лаборатории с нужными методиками и условиями отбора (граница СЗЗ)
+        </div>
+        <div class="problem" data-id="3">
+          Эколог не проверил, есть ли в области аккредитации лаборатории нужные вещества, и не обсудил сроки расширения области аккредитации
+        </div>
+      </div>
 
-      <!-- риски в перемешанном порядке -->
-      <div class="chip" data-id="2">
-        Нужные методики и условия отбора не входят в область аккредитации. Результаты не принимают как доказательство при проверке и в суде.
-      </div>
-      <div class="chip" data-id="3">
-        Нужных веществ нет в области аккредитации и расширение вовремя не согласовали. Протоколы по этим показателям могут не принять, контроль придется повторять.
-      </div>
-      <div class="chip" data-id="1">
-        Протоколы могут признать недействительными, а ПЭК по воздуху невыполненным. Надзор выдает предписание и штраф.
+      <div class="col" id="col-right">
+        <div class="col-title">Риски для предприятия</div>
+        <div class="chip" data-id="2">
+          Нужные методики и условия отбора не входят в область аккредитации. Результаты не принимают как доказательство при проверке и в суде.
+        </div>
+        <div class="chip" data-id="3">
+          Нужных веществ нет в области аккредитации и расширение вовремя не согласовали. Протоколы по этим показателям могут не принять, контроль придется повторять.
+        </div>
+        <div class="chip" data-id="1">
+          Протоколы могут признать недействительными, а ПЭК по воздуху невыполненным. Надзор выдает предписание и штраф.
+        </div>
       </div>
     </div>
   </div>
 
   <div class="footer">
-    <button class="btn btn-ghost" onclick="resetGame()">Сбросить</button>
+    <button class="btn btn-ghost" onclick="resetGame()">Пройти заново</button>
     <button class="btn btn-main" onclick="checkGame()">Проверить</button>
   </div>
 
@@ -270,10 +306,11 @@ h2 {
   <div class="modal">
     <div class="modal-title">Как выполнить задание</div>
     <div>
-      1. Нажмите на действие эколога слева. <br>
-      2. Затем нажмите на риск справа, который логично продолжает это действие. <br>
-      3. Повторите для всех действий, а потом нажмите «Проверить». <br>
-      4. После успешного прохождения нажимайте на пары, чтобы читать пояснения.
+      1. Нажмите на карточку в левой колонке. <br>
+      2. Затем нажмите на карточку в правой колонке, которая логично продолжает мысль. <br>
+      3. Между карточками появится линия-связь. Повторите для всех пар. <br>
+      4. Нажмите «Проверить», чтобы увидеть результат. <br>
+      5. После успешного прохождения нажимайте на пары, чтобы прочитать пояснение.
     </div>
     <div class="modal-close">
       <button onclick="closeRules()">Понятно</button>
@@ -293,17 +330,22 @@ h2 {
 </div>
 
 <script>
-let selectedProblem = null;
-let selectedRisk = null;
-let pairs = {};          // { problemId: riskId }
-let gameCompleted = false;
+const correctMap = { '1':'1', '2':'2', '3':'3' };
 
-const problems = document.querySelectorAll('.problem');
-const risks = document.querySelectorAll('.chip');
+const problems = Array.from(document.querySelectorAll('.problem'));
+const risks = Array.from(document.querySelectorAll('.chip'));
 const statusEl = document.getElementById('status');
+const linesSvg = document.getElementById('lines-svg');
+
 const rulesBackdrop = document.getElementById('rules-backdrop');
 const pairModalBackdrop = document.getElementById('pair-modal-backdrop');
 const pairModalBody = document.getElementById('pair-modal-body');
+
+let selectedLeft = null;
+let selectedRight = null;
+let pairs = {};     // problemId -> riskId
+let lineMap = {};   // key "left-right" -> SVG line
+let gameCompleted = false;
 
 const comments = {
   '1': 'Если у лаборатории нет аккредитации на атмосферный воздух, проверяющие могут вообще не засчитать протоколы. Для эколога это риск признания ПЭК по воздуху невыполненным, даже если контроль проводили.',
@@ -320,63 +362,110 @@ function showPairModal(text) {
 }
 function closePairModal() { pairModalBackdrop.style.display = 'none'; }
 
+function getCenterPoint(el, side) {
+  const rect = el.getBoundingClientRect();
+  const containerRect = document.getElementById('pairs-layout').getBoundingClientRect();
+  const x = side === 'left' ? rect.right - containerRect.left : rect.left - containerRect.left;
+  const y = rect.top + rect.height / 2 - containerRect.top;
+  return { x, y };
+}
+
+function redrawLines() {
+  const containerRect = document.getElementById('pairs-layout').getBoundingClientRect();
+  linesSvg.setAttribute('width', containerRect.width);
+  linesSvg.setAttribute('height', containerRect.height);
+  linesSvg.innerHTML = '';
+
+  Object.keys(pairs).forEach(pid => {
+    const rid = pairs[pid];
+    const leftEl = problems.find(p => p.dataset.id === pid);
+    const rightEl = risks.find(r => r.dataset.id === rid);
+    if (!leftEl || !rightEl) return;
+
+    const p = getCenterPoint(leftEl, 'left');
+    const r = getCenterPoint(rightEl, 'right');
+
+    const line = document.createElementNS('http://www.w3.org/2000/svg','line');
+    line.setAttribute('x1', p.x);
+    line.setAttribute('y1', p.y);
+    line.setAttribute('x2', r.x);
+    line.setAttribute('y2', r.y);
+    line.classList.add('active');
+    linesSvg.appendChild(line);
+
+    lineMap[pid + '-' + rid] = line;
+  });
+}
+
 function clearSelection() {
   problems.forEach(p => p.classList.remove('selected'));
   risks.forEach(r => r.classList.remove('selected'));
-  selectedProblem = null;
-  selectedRisk = null;
+  selectedLeft = null;
+  selectedRight = null;
 }
 
-function handleProblemClick(problem) {
-  if (gameCompleted) {
-    const id = problem.dataset.id;
-    if (pairs[id] && comments[pairs[id]]) showPairModal(comments[pairs[id]]);
+function handleProblemClick(el) {
+  const id = el.dataset.id;
+
+  if (gameCompleted && pairs[id]) {
+    const rid = pairs[id];
+    if (comments[rid]) showPairModal(comments[rid]);
     return;
   }
+
   problems.forEach(p => p.classList.remove('selected'));
-  problem.classList.add('selected');
-  selectedProblem = problem.dataset.id;
+  el.classList.add('selected');
+  selectedLeft = id;
+  selectedRight = null;
+  risks.forEach(r => r.classList.remove('selected'));
 }
 
-function handleRiskClick(risk) {
-  const riskId = risk.dataset.id;
+function handleRiskClick(el) {
+  const id = el.dataset.id;
 
   if (gameCompleted) {
-    if (comments[riskId]) showPairModal(comments[riskId]);
+    if (comments[id]) showPairModal(comments[id]);
     return;
   }
 
-  risks.forEach(r => r.classList.remove('selected'));
-  risk.classList.add('selected');
-  selectedRisk = riskId;
-
-  if (selectedProblem && selectedRisk) {
-    pairs[selectedProblem] = selectedRisk;
-    const problemEl = Array.from(problems).find(p => p.dataset.id === selectedProblem);
-    problemEl.classList.add('matched');
-    risk.classList.add('matched');
-    statusEl.textContent = '';
-    statusEl.className = '';
-    selectedProblem = null;
-    selectedRisk = null;
-    problems.forEach(p => p.classList.remove('selected'));
+  if (!selectedLeft) {
     risks.forEach(r => r.classList.remove('selected'));
+    el.classList.add('selected');
+    selectedRight = id;
+    return;
   }
+
+  pairs[selectedLeft] = id;
+  problems.forEach(p => {
+    if (p.dataset.id === selectedLeft) p.classList.add('matched');
+  });
+  risks.forEach(r => {
+    if (r.dataset.id === id) r.classList.add('matched');
+  });
+
+  redrawLines();
+  clearSelection();
+  statusEl.textContent = '';
+  statusEl.className = '';
 }
 
-problems.forEach(p => {
-  p.addEventListener('click', () => handleProblemClick(p));
-});
+problems.forEach(p => p.addEventListener('click', () => handleProblemClick(p)));
+risks.forEach(r => r.addEventListener('click', () => handleRiskClick(r)));
 
-risks.forEach(r => {
-  r.addEventListener('click', () => handleRiskClick(r));
+window.addEventListener('resize', () => {
+  if (!Object.keys(pairs).length) return;
+  redrawLines();
 });
 
 function checkGame() {
-  const correctMap = { '1':'1', '2':'2', '3':'3' };
-  let errors = false;
   problems.forEach(p => p.classList.remove('error'));
   risks.forEach(r => r.classList.remove('error'));
+  Object.values(lineMap).forEach(line => {
+    line.classList.remove('correct','wrong');
+    line.classList.add('active');
+  });
+
+  let errors = false;
 
   Object.keys(correctMap).forEach(pid => {
     const expected = correctMap[pid];
@@ -386,32 +475,49 @@ function checkGame() {
 
   if (errors) {
     statusEl.className = 'error';
-    statusEl.textContent = 'Не все пары совпали. Выберите для каждого действия подходящий риск.';
-    problems.forEach(p => {
-      const pid = p.dataset.id;
-      if (!pairs[pid] || pairs[pid] !== correctMap[pid]) p.classList.add('error');
-    });
-    risks.forEach(r => {
-      const rid = r.dataset.id;
-      const usedIn = Object.keys(pairs).find(pid => pairs[pid] === rid);
-      if (usedIn && correctMap[usedIn] !== rid) r.classList.add('error');
+    statusEl.textContent = 'Не все пары совпали. Проверьте, логично ли риск продолжает действие.';
+
+    Object.keys(pairs).forEach(pid => {
+      const rid = pairs[pid];
+      const key = pid + '-' + rid;
+      const line = lineMap[key];
+      if (!line) return;
+      if (correctMap[pid] === rid) {
+        line.classList.add('correct');
+      } else {
+        line.classList.add('wrong');
+        problems.find(p => p.dataset.id === pid).classList.add('error');
+        risks.find(r => r.dataset.id === rid).classList.add('error');
+      }
     });
   } else {
     statusEl.className = 'ok';
-    statusEl.textContent = 'Все пары собраны верно. Нажимайте на карточки, чтобы прочитать пояснения.';
+    statusEl.textContent = 'Все пары собраны верно. Нажимайте на пару, чтобы прочитать пояснение.';
     gameCompleted = true;
+
+    Object.keys(pairs).forEach(pid => {
+      const rid = pairs[pid];
+      const key = pid + '-' + rid;
+      const line = lineMap[key];
+      if (line) {
+        line.classList.remove('active');
+        line.classList.add('correct');
+      }
+    });
   }
 }
 
 function resetGame() {
+  selectedLeft = null;
+  selectedRight = null;
   pairs = {};
+  lineMap = {};
   gameCompleted = false;
-  selectedProblem = null;
-  selectedRisk = null;
   statusEl.textContent = '';
   statusEl.className = '';
   problems.forEach(p => p.classList.remove('selected','matched','error'));
   risks.forEach(r => r.classList.remove('selected','matched','error'));
+  linesSvg.innerHTML = '';
 }
 
 </script>
