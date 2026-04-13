@@ -79,6 +79,7 @@ h2 {
   display: grid;
   grid-template-columns: 1fr 1fr;
   column-gap: 24px;
+  align-items: stretch;
 }
 .col {
   display: flex;
@@ -99,7 +100,7 @@ h2 {
   border-radius: 8px;
   font-size: 11px;
   padding: 8px 9px;
-  min-height: 70px;
+  min-height: 80px;
   display: flex;
   align-items: center;
   box-sizing: border-box;
@@ -109,19 +110,12 @@ h2 {
   position: relative;
   transition: 0.15s;
 }
+
+/* убрали точки */
 .problem::before,
 .chip::before {
-  content: '';
-  position: absolute;
-  top: 50%;
-  width: 8px;
-  height: 8px;
-  border-radius: 50%;
-  background: #cfd8dc;
-  transform: translateY(-50%);
+  content: none;
 }
-.problem::before { right: -16px; }
-.chip::before { left: -16px; }
 
 /* состояния выбора и матча */
 .problem.selected,
@@ -233,10 +227,6 @@ svg line.wrong {
   .layout {
     grid-template-columns: 1fr;
     row-gap: 10px;
-  }
-  .problem::before,
-  .chip::before {
-    display: none;
   }
   .lines-layer {
     display: none;
@@ -495,31 +485,39 @@ function checkGame() {
     statusEl.className = 'ok';
     statusEl.textContent = 'Все пары собраны верно. Нажимайте на пары, чтобы читать пояснения.';
     gameCompleted = true;
-    Object.keys(pairs).forEach(pid => {
-      const rid = pairs[pid];
-      const key = pid + '-' + rid;
-      const line = lineMap[key];
-      if (line) {
-        line.classList.remove('active');
-        line.classList.add('correct');
-      }
+
+    /* после правильного ответа убираем линии и собираем пары в строки */
+    linesSvg.innerHTML = '';
+    const rightCol = document.getElementById('col-right');
+    const rightMap = {};
+    risks.forEach(r => rightMap[r.dataset.id] = r);
+
+    problems.forEach(p => {
+      const pid = p.dataset.id;
+      const rid = correctMap[pid];
+      const riskCard = rightMap[rid];
+      if (!riskCard) return;
+      const wrapper = document.createElement('div');
+      wrapper.style.display = 'flex';
+      wrapper.style.flexDirection = 'column';
+      wrapper.style.gap = '4px';
+
+      const cloneRisk = riskCard.cloneNode(true);
+      cloneRisk.classList.remove('selected','error');
+      cloneRisk.classList.add('matched');
+
+      p.replaceWith(wrapper);
+      wrapper.appendChild(p);
+      wrapper.appendChild(cloneRisk);
     });
+
+    rightCol.innerHTML = '<div class="col-title">Риски собраны</div><div style="font-size:11px;color:#527a6b;">Все риски распределены по действиям. Читайте пары слева.</div>';
   }
 }
 
 function resetGame() {
-  selectedLeft = null;
-  selectedRight = null;
-  pairs = {};
-  lineMap = {};
-  gameCompleted = false;
-  statusEl.textContent = '';
-  statusEl.className = '';
-  problems.forEach(p => p.classList.remove('selected','matched','error'));
-  risks.forEach(r => r.classList.remove('selected','matched','error'));
-  linesSvg.innerHTML = '';
+  location.reload();
 }
-
 </script>
 </body>
 </html>
