@@ -64,7 +64,7 @@ h2 {
   margin-bottom: 6px;
 }
 
-/* сетка 2 колонки + слой линий */
+/* сетка + слой линий */
 .match-layout {
   position: relative;
 }
@@ -111,12 +111,6 @@ h2 {
   transition: 0.15s;
 }
 
-/* убрали точки */
-.problem::before,
-.chip::before {
-  content: none;
-}
-
 /* состояния выбора и матча */
 .problem.selected,
 .chip.selected {
@@ -134,20 +128,14 @@ h2 {
   background: #ffebee;
 }
 
-/* линия-связь */
+/* линии */
 svg line {
   stroke: #b0bec5;
   stroke-width: 2;
 }
-svg line.active {
-  stroke: #007760;
-}
-svg line.correct {
-  stroke: #2e7d32;
-}
-svg line.wrong {
-  stroke: #d32f2f;
-}
+svg line.active { stroke: #007760; }
+svg line.correct { stroke: #2e7d32; }
+svg line.wrong { stroke: #d32f2f; }
 
 /* футер */
 .footer {
@@ -333,7 +321,6 @@ const pairModalBackdrop = document.getElementById('pair-modal-backdrop');
 const pairModalBody = document.getElementById('pair-modal-body');
 
 let selectedLeft = null;
-let selectedRight = null;
 let pairs = {};
 let lineMap = {};
 let gameCompleted = false;
@@ -393,7 +380,6 @@ function clearSelection() {
   problems.forEach(p => p.classList.remove('selected'));
   risks.forEach(r => r.classList.remove('selected'));
   selectedLeft = null;
-  selectedRight = null;
 }
 
 function handleProblemClick(el) {
@@ -408,7 +394,6 @@ function handleProblemClick(el) {
   problems.forEach(p => p.classList.remove('selected'));
   el.classList.add('selected');
   selectedLeft = id;
-  selectedRight = null;
   risks.forEach(r => r.classList.remove('selected'));
 }
 
@@ -423,7 +408,6 @@ function handleRiskClick(el) {
   if (!selectedLeft) {
     risks.forEach(r => r.classList.remove('selected'));
     el.classList.add('selected');
-    selectedRight = id;
     return;
   }
 
@@ -486,32 +470,48 @@ function checkGame() {
     statusEl.textContent = 'Все пары собраны верно. Нажимайте на пары, чтобы читать пояснения.';
     gameCompleted = true;
 
-    /* после правильного ответа убираем линии и собираем пары в строки */
+    // убираем линии
     linesSvg.innerHTML = '';
-    const rightCol = document.getElementById('col-right');
-    const rightMap = {};
-    risks.forEach(r => rightMap[r.dataset.id] = r);
 
-    problems.forEach(p => {
-      const pid = p.dataset.id;
+    // строим новый двухколоночный список пар
+    const layout = document.getElementById('pairs-layout');
+    layout.innerHTML = '';
+
+    const newGrid = document.createElement('div');
+    newGrid.className = 'layout';
+    layout.appendChild(newGrid);
+
+    const leftColTitle = document.createElement('div');
+    leftColTitle.className = 'col-title';
+    leftColTitle.textContent = 'Действие';
+    const rightColTitle = document.createElement('div');
+    rightColTitle.className = 'col-title';
+    rightColTitle.textContent = 'Риск';
+
+    newGrid.style.display = 'grid';
+    newGrid.style.gridTemplateColumns = '1fr 1fr';
+    newGrid.style.columnGap = '24px';
+    newGrid.style.rowGap = '6px';
+
+    newGrid.appendChild(leftColTitle);
+    newGrid.appendChild(rightColTitle);
+
+    Object.keys(correctMap).forEach(pid => {
       const rid = correctMap[pid];
-      const riskCard = rightMap[rid];
-      if (!riskCard) return;
-      const wrapper = document.createElement('div');
-      wrapper.style.display = 'flex';
-      wrapper.style.flexDirection = 'column';
-      wrapper.style.gap = '4px';
+      const leftEl = problems.find(p => p.dataset.id === pid).cloneNode(true);
+      const rightEl = risks.find(r => r.dataset.id === rid).cloneNode(true);
 
-      const cloneRisk = riskCard.cloneNode(true);
-      cloneRisk.classList.remove('selected','error');
-      cloneRisk.classList.add('matched');
+      leftEl.classList.remove('selected','error');
+      rightEl.classList.remove('selected','error');
+      leftEl.classList.add('matched');
+      rightEl.classList.add('matched');
 
-      p.replaceWith(wrapper);
-      wrapper.appendChild(p);
-      wrapper.appendChild(cloneRisk);
+      leftEl.onclick = () => { if (comments[rid]) showPairModal(comments[rid]); };
+      rightEl.onclick = () => { if (comments[rid]) showPairModal(comments[rid]); };
+
+      newGrid.appendChild(leftEl);
+      newGrid.appendChild(rightEl);
     });
-
-    rightCol.innerHTML = '<div class="col-title">Риски собраны</div><div style="font-size:11px;color:#527a6b;">Все риски распределены по действиям. Читайте пары слева.</div>';
   }
 }
 
