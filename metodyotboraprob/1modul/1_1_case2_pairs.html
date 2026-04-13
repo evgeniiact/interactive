@@ -117,13 +117,13 @@ h2 {
   border-color: #007760;
   background: #e3f3ec;
 }
-.problem.matched,
-.chip.matched {
+.problem.correct,
+.chip.correct {
   border-color: #2e7d32;
   background: #e6f4ea;
 }
-.problem.error,
-.chip.error {
+.problem.wrong,
+.chip.wrong {
   border-color: #d32f2f;
   background: #ffebee;
 }
@@ -287,9 +287,9 @@ svg line.wrong { stroke: #d32f2f; }
     <div>
       1. Прочитайте ситуацию и действия эколога слева. <br>
       2. Нажмите на действие эколога и затем на риск справа, который логично показывает, чем это грозит предприятию. <br>
-      3. Между карточками появится линия-связь. Соберите так все пары. <br>
+      3. Между карточками появится линия-связь. Связь можно поменять: просто выберите другое действие и риск. <br>
       4. Нажмите «Проверить», чтобы увидеть результат. <br>
-      5. После успешного прохождения нажимайте на пары, чтобы читать пояснения.
+      5. После проверки линии и карточки останутся на местах, вы сможете поправить ошибки и проверить еще раз.
     </div>
     <div class="modal-close">
       <button onclick="closeRules()">Понятно</button>
@@ -321,8 +321,8 @@ const pairModalBackdrop = document.getElementById('pair-modal-backdrop');
 const pairModalBody = document.getElementById('pair-modal-body');
 
 let selectedLeft = null;
-let pairs = {};
-let lineMap = {};
+let pairs = {};      // problemId -> riskId
+let lineMap = {};    // key "left-right" -> SVG line
 let gameCompleted = false;
 
 const comments = {
@@ -385,6 +385,7 @@ function clearSelection() {
 function handleProblemClick(el) {
   const id = el.dataset.id;
 
+  // после успешного решения клик показывает комментарий по риску
   if (gameCompleted && pairs[id]) {
     const rid = pairs[id];
     if (comments[rid]) showPairModal(comments[rid]);
@@ -411,13 +412,8 @@ function handleRiskClick(el) {
     return;
   }
 
+  // переназначаем связь: одна левая карточка -> один риск
   pairs[selectedLeft] = id;
-  problems.forEach(p => {
-    if (p.dataset.id === selectedLeft) p.classList.add('matched');
-  });
-  risks.forEach(r => {
-    if (r.dataset.id === id) r.classList.add('matched');
-  });
 
   redrawLines();
   clearSelection();
@@ -434,8 +430,8 @@ window.addEventListener('resize', () => {
 });
 
 function checkGame() {
-  problems.forEach(p => p.classList.remove('error'));
-  risks.forEach(r => r.classList.remove('error'));
+  problems.forEach(p => p.classList.remove('correct','wrong'));
+  risks.forEach(r => r.classList.remove('correct','wrong'));
   Object.values(lineMap).forEach(line => {
     line.classList.remove('correct','wrong');
     line.classList.add('active');
@@ -451,72 +447,52 @@ function checkGame() {
 
   if (errors) {
     statusEl.className = 'error';
-    statusEl.textContent = 'Не все пары совпали. Проверьте, логично ли риск продолжает действие.';
-    Object.keys(pairs).forEach(pid => {
-      const rid = pairs[pid];
-      const key = pid + '-' + rid;
-      const line = lineMap[key];
-      if (!line) return;
-      if (correctMap[pid] === rid) {
-        line.classList.add('correct');
-      } else {
-        line.classList.add('wrong');
-        problems.find(p => p.dataset.id === pid).classList.add('error');
-        risks.find(r => r.dataset.id === rid).classList.add('error');
-      }
-    });
+    statusEl.textContent = 'Не все пары совпали. Поправьте связи и нажмите «Проверить» еще раз.';
   } else {
     statusEl.className = 'ok';
     statusEl.textContent = 'Все пары собраны верно. Нажимайте на пары, чтобы читать пояснения.';
     gameCompleted = true;
-
-    // убираем линии
-    linesSvg.innerHTML = '';
-
-    // строим новый двухколоночный список пар
-    const layout = document.getElementById('pairs-layout');
-    layout.innerHTML = '';
-
-    const newGrid = document.createElement('div');
-    newGrid.className = 'layout';
-    layout.appendChild(newGrid);
-
-    const leftColTitle = document.createElement('div');
-    leftColTitle.className = 'col-title';
-    leftColTitle.textContent = 'Действие';
-    const rightColTitle = document.createElement('div');
-    rightColTitle.className = 'col-title';
-    rightColTitle.textContent = 'Риск';
-
-    newGrid.style.display = 'grid';
-    newGrid.style.gridTemplateColumns = '1fr 1fr';
-    newGrid.style.columnGap = '24px';
-    newGrid.style.rowGap = '6px';
-
-    newGrid.appendChild(leftColTitle);
-    newGrid.appendChild(rightColTitle);
-
-    Object.keys(correctMap).forEach(pid => {
-      const rid = correctMap[pid];
-      const leftEl = problems.find(p => p.dataset.id === pid).cloneNode(true);
-      const rightEl = risks.find(r => r.dataset.id === rid).cloneNode(true);
-
-      leftEl.classList.remove('selected','error');
-      rightEl.classList.remove('selected','error');
-      leftEl.classList.add('matched');
-      rightEl.classList.add('matched');
-
-      leftEl.onclick = () => { if (comments[rid]) showPairModal(comments[rid]); };
-      rightEl.onclick = () => { if (comments[rid]) showPairModal(comments[rid]); };
-
-      newGrid.appendChild(leftEl);
-      newGrid.appendChild(rightEl);
-    });
   }
+
+  // подсветка карточек и линий по результату
+  Object.keys(correctMap).forEach(pid => {
+    const rid = pairs[pid];
+    if (!rid) return;
+    const leftEl = problems.find(p => p.dataset.id === pid);
+    const rightEl = risks.find(r => r.dataset.id === rid);
+    const key = pid + '-' + rid;
+    const line = lineMap[key];
+
+    const isCorrect = correctMap[pid] === rid;
+
+    if (isCorrect) {
+      leftEl.classList.add('correct');
+      rightEl.classList.add('correct');
+      if (line) {
+        line.classList.remove('active','wrong');
+        line.classList.add('correct');
+      }
+    } else {
+      leftEl.classList.add('wrong');
+      rightEl.classList.add('wrong');
+      if (line) {
+        line.classList.remove('active','correct');
+        line.classList.add('wrong');
+      }
+    }
+  });
 }
 
 function resetGame() {
-  location.reload();
+  selectedLeft = null;
+  pairs = {};
+  lineMap = {};
+  gameCompleted = false;
+  statusEl.textContent = '';
+  statusEl.className = '';
+  problems.forEach(p => p.classList.remove('selected','correct','wrong'));
+  risks.forEach(r => r.classList.remove('selected','correct','wrong'));
+  linesSvg.innerHTML = '';
 }
 </script>
 </body>
