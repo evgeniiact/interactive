@@ -1,432 +1,563 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Интерактив: Основы санитарно-защитной зоны</title>
-<style>
-  :root {
-    --bg: #ffffff;
-    --text: #0f172a;
-    --text-muted: #64748b;
-    --border: #e2e8f0;
-    --primary: #059669;
-    --primary-hover: #047857;
-    --secondary: #0ea5e9;
-    --secondary-hover: #0284c7;
-    --danger: #ef4444;
-    --danger-hover: #dc2626;
-  }
-  * { box-sizing: border-box; }
-  body {
-    margin: 0; padding: 24px; background: var(--bg); font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; color: var(--text); line-height: 1.6;
-  }
-  .szz-container {
-    max-width: 860px; margin: 0 auto; background: var(--bg); border: 1px solid var(--border); border-radius: 10px; padding: 32px; box-shadow: 0 4px 16px rgba(0,0,0,0.04);
-  }
-  .szz-header { margin-bottom: 24px; border-bottom: 1px solid var(--border); padding-bottom: 16px; }
-  .szz-header h2 { margin: 0 0 8px; font-size: 1.5rem; font-weight: 600; }
-  .szz-header p { margin: 0; color: var(--text-muted); font-size: 0.95rem; }
-  
-  .szz-progress { height: 3px; background: var(--border); border-radius: 2px; margin: 20px 0; overflow: hidden; }
-  .szz-progress-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.4s ease; border-radius: 2px; }
-  
-  .szz-step { display: none; animation: szz-fade 0.3s ease; }
-  .szz-step.active { display: block; }
-  @keyframes szz-fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  
-  .szz-pool {
-    display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; padding: 14px; background: #f8fafc; border-radius: 8px; min-height: 64px; border: 1px solid var(--border);
-  }
-  .szz-drag-item {
-    background: #ffffff; border: 1px solid var(--border); padding: 10px 14px; border-radius: 6px;
-    cursor: grab; user-select: none; font-size: 0.9rem; transition: all 0.2s; white-space: nowrap;
-  }
-  .szz-drag-item:hover { border-color: var(--secondary); }
-  .szz-drag-item.dragging { opacity: 0.5; border-style: dashed; }
-  .szz-drag-item.placed { cursor: default; }
-  .szz-drag-item.correct { border-color: var(--primary); background: #ffffff; }
-  .szz-drag-item.clickable { cursor: pointer; position: relative; }
-  .szz-drag-item.clickable::after { content: "i"; position: absolute; top: -6px; right: -6px; width: 16px; height: 16px; background: var(--secondary); color: #fff; font-size: 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; }
-  
-  .szz-zones { display: grid; grid-template-columns: repeat(3, 1fr); gap: 14px; margin: 20px 0; }
-  .szz-drop-zone {
-    background: #ffffff; border: 2px dashed var(--border); border-radius: 8px; min-height: 160px; padding: 12px; display: flex; flex-direction: column; gap: 6px; transition: background 0.2s, border-color 0.2s;
-  }
-  .szz-drop-zone.drag-over { border-color: var(--secondary); background: #f8fafc; }
-  .szz-zone-label { font-weight: 600; font-size: 0.8rem; margin-bottom: 8px; color: var(--text-muted); padding-bottom: 8px; border-bottom: 1px solid var(--border); text-align: center; text-transform: uppercase; letter-spacing: 0.5px; }
-  
-  .quiz-wrap { background: #ffffff; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid var(--border); }
-  .quiz-question { font-weight: 500; margin-bottom: 12px; font-size: 1rem; }
-  .quiz-options { display: grid; gap: 8px; }
-  .quiz-label {
-    display: flex; align-items: flex-start; gap: 10px; padding: 12px; border: 1px solid var(--border); border-radius: 6px; cursor: pointer; transition: all 0.2s; background: #fff;
-  }
-  .quiz-label:hover { border-color: var(--secondary); }
-  .quiz-label input { margin-top: 4px; }
-  .quiz-label.selected-correct { border-color: var(--primary); background: #fff; }
-  .quiz-label.clickable { cursor: pointer; }
-  .quiz-label.clickable::after { content: "i"; margin-left: auto; width: 16px; height: 16px; background: var(--secondary); color: #fff; font-size: 10px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; }
-  
-  .szz-btn {
-    background: var(--primary); color: #ffffff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.95rem; transition: background 0.2s; margin-top: 16px;
-  }
-  .szz-btn:hover { background: var(--primary-hover); }
-  .szz-btn:disabled { background: #94a3b8; cursor: not-allowed; }
-  .szz-btn-outline { background: #ffffff; border: 1px solid var(--border); color: var(--text); }
-  .szz-btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
-  .szz-btn-next { background: var(--secondary); }
-  .szz-btn-next:hover { background: var(--secondary-hover); }
-  
-  .szz-actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
-  
-  /* Modal */
-  .szz-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.4); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; backdrop-filter: blur(2px);
-  }
-  .szz-overlay.active { display: flex; }
-  .szz-modal {
-    background: #ffffff; border: 1px solid var(--border); border-radius: 10px; max-width: 640px; width: 100%; box-shadow: 0 16px 40px rgba(0,0,0,0.12); overflow: hidden; animation: modal-in 0.2s ease;
-  }
-  @keyframes modal-in { from { opacity: 0; transform: scale(0.98) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
-  .szz-modal-header { display: flex; justify-content: space-between; align-items: center; padding: 14px 20px; border-bottom: 1px solid var(--border); background: #f8fafc; }
-  .szz-modal-header h3 { margin: 0; font-size: 1.05rem; font-weight: 600; }
-  .szz-modal-close { background: none; border: none; cursor: pointer; font-size: 1.6rem; color: var(--text-muted); line-height: 1; padding: 4px; }
-  .szz-modal-close:hover { color: var(--text); }
-  .szz-modal-body { padding: 20px; font-size: 0.95rem; line-height: 1.6; background: #ffffff; color: #334155; }
-  .szz-modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); background: #f8fafc; text-align: right; }
-  
-  .szz-breakdown { display: none; background: #ffffff; border: 1px solid var(--border); border-radius: 10px; padding: 28px; margin-top: 24px; }
-  .szz-breakdown.show { display: block; animation: szz-fade 0.4s ease; }
-  .szz-breakdown h3 { margin: 0 0 20px; font-size: 1.3rem; color: var(--text); border-bottom: 2px solid var(--primary); padding-bottom: 10px; display: inline-block; }
-  .szz-breakdown h4 { margin: 24px 0 10px; font-size: 1.05rem; color: var(--text); }
-  .szz-breakdown p { margin: 0 0 10px; color: #475569; }
-  .szz-breakdown ul { margin: 8px 0 16px 20px; padding: 0; }
-  .szz-breakdown li { margin-bottom: 6px; color: #475569; }
-  .szz-note { background: #f8fafc; border-left: 3px solid var(--text-muted); padding: 12px 16px; margin-top: 16px; font-style: italic; color: #64748b; }
-  
-  @media (max-width: 700px) {
-    .szz-zones { grid-template-columns: 1fr; }
-    .szz-container { padding: 20px; }
-  }
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Интерактив по СЗЗ - Где это допустимо</title>
+  <style>
+    :root {
+      --bg: #f5f7f6;
+      --card: #ffffff;
+      --text: #1f2a24;
+      --muted: #68756e;
+      --line: #dce5df;
+      --green: #2d6a4f;
+      --green-soft: #e7f3ed;
+      --green-soft-2: #f4faf7;
+      --good: #2d6a4f;
+      --bad: #b4532a;
+      --bad-soft: #fff1ea;
+      --shadow: 0 16px 44px rgba(26, 36, 31, 0.12);
+      --radius: 18px;
+      --radius-sm: 12px;
+      --transition: 180ms ease;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: linear-gradient(180deg, #fbfcfb 0%, var(--bg) 100%);
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px 12px 48px;
+    }
+
+    .app {
+      max-width: 650px;
+      margin: 0 auto;
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 28px;
+      box-shadow: var(--shadow);
+      overflow: hidden;
+    }
+
+    .header {
+      padding: 22px 24px 18px;
+      border-bottom: 1px solid var(--line);
+      background: linear-gradient(180deg, #ffffff 0%, #fbfdfc 100%);
+    }
+
+    .eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      background: var(--green-soft);
+      color: var(--green);
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-size: 12px;
+      font-weight: 700;
+      letter-spacing: 0.02em;
+      margin-bottom: 14px;
+    }
+
+    h1 {
+      margin: 0 0 8px;
+      font-size: clamp(28px, 4vw, 40px);
+      line-height: 1.05;
+      letter-spacing: -0.02em;
+    }
+
+    .lead {
+      margin: 0;
+      max-width: 75ch;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .layout {
+      display: block;
+    }
+
+    .sidebar {
+      background: #fcfdfc;
+      padding: 18px 22px 8px;
+    }
+
+    .panel {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      padding: 16px;
+      margin-bottom: 14px;
+    }
+
+    .accordion {
+      margin-bottom: 14px;
+    }
+
+    .accordion-btn {
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 16px;
+      padding: 14px 16px;
+      font-size: 14px;
+      font-weight: 700;
+      color: var(--text);
+      cursor: pointer;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      transition: transform var(--transition), border-color var(--transition), background var(--transition), box-shadow var(--transition);
+    }
+
+    .accordion-btn:hover {
+      transform: translateY(-1px);
+      border-color: #bfd5c8;
+      background: #fcfefd;
+    }
+
+    .accordion-btn.primary-call {
+      background: linear-gradient(180deg, #f2fbf6 0%, #e7f3ed 100%);
+      border-color: #bcd8c8;
+      color: var(--green);
+      box-shadow: 0 10px 24px rgba(45, 106, 79, 0.12);
+    }
+
+    .accordion-btn .hint {
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--muted);
+    }
+
+    .accordion-btn.primary-call .hint {
+      color: var(--green);
+    }
+
+    .accordion-content {
+      display: none;
+      margin-top: 8px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 16px;
+      padding: 14px 16px;
+    }
+
+    .accordion.open .accordion-content {
+      display: block;
+    }
+
+    .panel h2 {
+      margin: 0 0 10px;
+      font-size: 16px;
+    }
+
+    .panel p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .panel ul {
+      margin: 0;
+      padding-left: 18px;
+      color: var(--muted);
+      font-size: 14px;
+    }
+
+    .panel li + li { margin-top: 6px; }
+
+    .progress {
+      display: grid;
+      gap: 8px;
+    }
+
+    .progress-bar {
+      width: 100%;
+      height: 10px;
+      border-radius: 999px;
+      background: #edf2ef;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, #4f8d72 0%, var(--green) 100%);
+      transition: width 220ms ease;
+    }
+
+    .progress-meta {
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .main {
+      padding: 12px 22px 22px;
+      background: linear-gradient(180deg, #ffffff 0%, #f9fbfa 100%);
+    }
+
+    .zones {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 14px;
+      margin-bottom: 18px;
+    }
+
+    .zone {
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      min-height: 300px;
+      padding: 14px;
+      display: flex;
+      flex-direction: column;
+      transition: border-color var(--transition), background var(--transition), box-shadow var(--transition);
+    }
+
+    .zone.drag-over {
+      border-color: var(--green);
+      background: var(--green-soft-2);
+      box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.08);
+    }
+
+    .zone.correct-target {
+      border-color: var(--green);
+    }
+
+    .zone-header {
+      margin-bottom: 12px;
+      padding-bottom: 10px;
+      border-bottom: 1px solid var(--line);
+    }
+
+    .zone-title {
+      margin: 0 0 4px;
+      font-size: 17px;
+      font-weight: 700;
+    }
+
+    .zone-text {
+      margin: 0;
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .drop-area {
+      display: grid;
+      gap: 10px;
+      min-height: 180px;
+      align-content: start;
+      flex: 1;
+    }
+
+    .cards {
+      margin-top: 8px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 20px;
+      padding: 14px;
+    }
+
+    .cards h3 {
+      margin: 0 0 10px;
+      font-size: 15px;
+    }
+
+    .cards-grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      appearance: none;
+      width: 100%;
+      text-align: left;
+      border: 1px solid var(--line);
+      background: #fff;
+      border-radius: 16px;
+      padding: 12px 14px;
+      cursor: grab;
+      font-size: 14px;
+      color: var(--text);
+      transition: transform var(--transition), border-color var(--transition), background var(--transition), opacity var(--transition);
+    }
+
+    .card:hover {
+      transform: translateY(-1px);
+      border-color: #bed3c6;
+      background: #fcfefd;
+    }
+
+    .card.dragging {
+      opacity: 0.55;
+      transform: scale(0.98);
+    }
+
+    .card.placed {
+      cursor: default;
+    }
+
+    .card.correct {
+      border-color: var(--green);
+      background: var(--green-soft);
+      color: var(--green);
+      font-weight: 600;
+    }
+
+    .actions {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      margin-top: 16px;
+      flex-wrap: wrap;
+    }
+
+    .status {
+      color: var(--muted);
+      font-size: 13px;
+    }
+
+    .btn {
+      appearance: none;
+      border: 1px solid var(--line);
+      background: #fff;
+      color: var(--text);
+      border-radius: 999px;
+      padding: 10px 14px;
+      font-size: 14px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: transform var(--transition), background var(--transition), border-color var(--transition);
+    }
+
+    .btn:hover { transform: translateY(-1px); }
+    .btn-primary {
+      background: var(--green-soft);
+      border-color: #cde0d5;
+      color: var(--green);
+    }
+
+    .analysis {
+      display: none;
+      margin: 0 22px 22px;
+      background: #fff;
+      border: 1px solid var(--line);
+      border-radius: 22px;
+      padding: 20px;
+    }
+
+    .analysis.show { display: block; }
+
+    .analysis h2 {
+      margin: 0 0 12px;
+      font-size: 24px;
+    }
+
+    .analysis p {
+      margin: 0 0 12px;
+      color: var(--muted);
+      font-size: 15px;
+      max-width: 75ch;
+    }
+
+    .analysis .keyline {
+      margin-top: 12px;
+      padding: 14px 16px;
+      border-radius: 14px;
+      background: var(--green-soft);
+      color: var(--green);
+      font-weight: 700;
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(17, 24, 21, 0.42);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+      backdrop-filter: blur(4px);
+    }
+
+    .overlay.active { display: flex; }
+
+    .modal {
+      width: min(520px, 100%);
+      background: #fff;
+      border-radius: 22px;
+      border: 1px solid var(--line);
+      box-shadow: 0 22px 70px rgba(12, 18, 15, 0.25);
+      padding: 20px;
+      animation: rise 160ms ease;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-tag {
+      display: inline-block;
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .modal-tag.good {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .modal-tag.bad {
+      background: var(--bad-soft);
+      color: var(--bad);
+    }
+
+    .modal h3 {
+      margin: 0 0 8px;
+      font-size: 22px;
+      line-height: 1.1;
+    }
+
+    .modal p {
+      margin: 0 0 10px;
+      color: var(--muted);
+      font-size: 15px;
+    }
+
+    .modal .key {
+      background: #f7faf8;
+      border: 1px solid var(--line);
+      border-radius: 14px;
+      padding: 12px 14px;
+      font-weight: 600;
+      color: var(--text);
+    }
+
+    .modal-actions {
+      display: flex;
+      justify-content: flex-end;
+      margin-top: 16px;
+    }
+
+    @media (max-width: 980px) {
+      .layout { grid-template-columns: 1fr; }
+      .sidebar { border-right: 0; border-bottom: 1px solid var(--line); }
+    }
+
+    @media (max-width: 760px) {
+      .zones { grid-template-columns: 1fr; }
+      .cards-grid { grid-template-columns: 1fr; }
+      .actions { align-items: stretch; }
+    }
+  </style>
 </head>
 <body>
+  <main class="app" aria-label="Интерактив по СЗЗ">
+    <section class="header">
+      <div class="eyebrow">Интерактив по теме СЗЗ</div>
+      <h1>Где это допустимо</h1>
+      <p class="lead">Разложите карточки по трем зонам. Ваша задача – отличить территорию предприятия, санитарно-защитную зону и жилую зону. После каждого действия вы увидите комментарий, почему выбор верный или нет.</p>
+    </section>
 
-<div class="szz-container">
-  <div class="szz-header">
-    <h2>Интерактив: Основы санитарно-защитной зоны</h2>
-    <p>Практический разбор для начинающих промышленных экологов</p>
-  </div>
-  <div class="szz-progress"><div class="szz-progress-bar" id="progressBar"></div></div>
+    <section class="layout">
+      <aside class="sidebar">
+        <div class="accordion open">
+          <button class="accordion-btn primary-call" type="button" data-accordion>
+            <span>Сначала откройте правила</span>
+            <span class="hint">Это поможет пройти интерактив быстрее</span>
+          </button>
+          <div class="accordion-content">
+            <div class="panel" style="margin-bottom:0; border:none; padding:0;">
+              <h2>Как работать</h2>
+              <ul>
+                <li>Перетащите карточку в одну из трех зон.</li>
+                <li>После каждого действия откроется пояснение.</li>
+                <li>Верные карточки останутся на месте и будут подсвечены.</li>
+                <li>Неверные карточки вернутся в список.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
 
-  <!-- STEP 1 -->
-  <section class="szz-step active" id="step1">
-    <h3>Задание 1. Распределение объектов</h3>
-    <p>Перетащите карточки в соответствующую зону. Размещайте объекты согласно их функциональному назначению и санитарным нормам.</p>
-    <div class="szz-pool" id="pool">
-      <div class="szz-drag-item" draggable="true" data-id="f1">Основные цеха</div>
-      <div class="szz-drag-item" draggable="true" data-id="f2">Склад сырья</div>
-      <div class="szz-drag-item" draggable="true" data-id="s1">Пост мониторинга воздуха</div>
-      <div class="szz-drag-item" draggable="true" data-id="s2">Подъездная дорога</div>
-      <div class="szz-drag-item" draggable="true" data-id="s3">Зеленые насаждения</div>
-      <div class="szz-drag-item" draggable="true" data-id="h1">Жилые дома</div>
-      <div class="szz-drag-item" draggable="true" data-id="h2">Детская площадка</div>
-    </div>
-    <div class="szz-zones">
-      <div class="szz-drop-zone" data-zone="factory"><div class="szz-zone-label">Промышленная площадка</div></div>
-      <div class="szz-drop-zone" data-zone="szz"><div class="szz-zone-label">Санитарно-защитная зона</div></div>
-      <div class="szz-drop-zone" data-zone="home"><div class="szz-zone-label">Жилая застройка</div></div>
-    </div>
-    <div class="szz-actions">
-      <button class="szz-btn" id="check1" disabled>Проверить</button>
-      <button class="szz-btn szz-btn-outline" id="reset1">Сбросить</button>
-      <button class="szz-btn szz-btn-next" id="next1" style="display:none">Следующее задание</button>
-    </div>
-  </section>
+        <div class="accordion">
+          <button class="accordion-btn" type="button" data-accordion>
+            <span>Что важно понять</span>
+            <span class="hint">Короткая опора перед началом</span>
+          </button>
+          <div class="accordion-content">
+            <div class="panel" style="margin-bottom:0; border:none; padding:0;">
+              <p>Предприятие – это источник воздействия. СЗЗ – территория с особым режимом между площадкой и местами постоянного или регулярного пребывания людей. Жилая зона – это территория, которую СЗЗ должна защищать.</p>
+            </div>
+          </div>
+        </div>
 
-  <!-- STEP 2 -->
-  <section class="szz-step" id="step2">
-    <h3>Задание 2. Правовые ограничения</h3>
-    <div class="quiz-wrap">
-      <p class="quiz-question">Что произойдет, если застройщик попытается согласовать строительство жилого дома внутри установленной СЗЗ?</p>
-      <div class="quiz-options">
-        <label class="quiz-label" data-ans="a"><input type="radio" name="q2" value="a"> Проект будет отклонен, так как размещение жилья в СЗЗ прямо запрещено санитарными нормами.</label>
-        <label class="quiz-label" data-ans="b"><input type="radio" name="q2" value="b"> Проект согласуют при условии установки шумозащитных экранов и дополнительной фильтрации выбросов.</label>
-        <label class="quiz-label" data-ans="c"><input type="radio" name="q2" value="c"> Строительство разрешат, если предприятие предоставит финансовую компенсацию жителям.</label>
-        <label class="quiz-label" data-ans="d"><input type="radio" name="q2" value="d"> Ничего, СЗЗ носит рекомендательный характер и не влияет на градостроительные решения.</label>
+        <div class="panel progress">
+          <h2>Прогресс</h2>
+          <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+          <div class="progress-meta" id="progressText">Разложено 0 из 8 карточек</div>
+        </div>
+
+      </aside>
+
+      <div class="main">
+        <section class="zones">
+          <div class="zone" data-zone="enterprise">
+            <div class="zone-header">
+              <h2 class="zone-title">Территория предприятия</h2>
+              <p class="zone-text">Здесь размещаются производственные и вспомогательные объекты предприятия.</p>
+            </div>
+            <div class="drop-area" id="enterprise"></div>
+          </div>
+
+          <div class="zone" data-zone="szz">
+            <div class="zone-header">
+              <h2 class="zone-title">Санитарно-защитная зона</h2>
+              <p class="zone-text">Это территория с особым режимом между предприятием и зонами проживания людей.</p>
+            </div>
+            <div class="drop-area" id="szz"></div>
+          </div>
+
+          <div class="zone" data-zone="residential">
+            <div class="zone-header">
+              <h2 class="zone-title">Жилая зона</h2>
+              <p class="zone-text">Здесь люди живут, отдыхают или регулярно находятся.</p>
+            </div>
+            <div class="drop-area" id="residential"></div>
+          </div>
+        </section>
+
+        <section class="cards">
+          <h3>Карточки для распределения</h3>
+          <div class="cards-grid" id="cardsPool"></div>
+        </section>
+
+        <div class="actions">
+          <div class="status" id="statusText">Начните с любой карточки.</div>
+          <button class="btn btn-primary" id="restartBtn" type="button">Начать заново</button>
+        </div>
       </div>
-    </div>
-    <div class="szz-actions">
-      <button class="szz-btn" id="check2">Проверить</button>
-      <button class="szz-btn szz-btn-outline" id="reset2">Сбросить</button>
-      <button class="szz-btn szz-btn-next" id="next2" style="display:none">Следующее задание</button>
-    </div>
-  </section>
+    </section>
 
-  <!-- STEP 3 -->
-  <section class="szz-step" id="step3">
-    <h3>Задание 3. Функциональное назначение</h3>
-    <div class="quiz-wrap">
-      <p class="quiz-question">Какова основная физическая цель создания СЗЗ вокруг промышленного объекта?</p>
-      <div class="quiz-options">
-        <label class="quiz-label" data-ans="a"><input type="radio" name="q3" value="a"> Увеличение площади предприятия для размещения дополнительных складских помещений.</label>
-        <label class="quiz-label" data-ans="b"><input type="radio" name="q3" value="b"> Ограничение доступа сотрудников к жилой территории в нерабочее время.</label>
-        <label class="quiz-label" data-ans="c"><input type="radio" name="q3" value="c"> Создание буфера, где вредные выбросы и шум рассеиваются до безопасных уровней до достижения жилых кварталов.</label>
-        <label class="quiz-label" data-ans="d"><input type="radio" name="q3" value="d"> Резервная территория для будущего расширения цехов без изменения границ участка.</label>
-      </div>
-    </div>
-    <div class="szz-actions">
-      <button class="szz-btn" id="check3">Проверить</button>
-      <button class="szz-btn szz-btn-outline" id="reset3">Сбросить</button>
-      <button class="szz-btn szz-btn-next" id="next3" style="display:none">Показать разбор</button>
-    </div>
-  </section>
-
-  <!-- BREAKDOWN -->
-  <section class="szz-breakdown" id="breakdown">
-    <h3>Полный разбор: СЗЗ для промышленного эколога</h3>
-    
-    <h4>1. Суть и назначение</h4>
-    <p>Санитарно-защитная зона (СЗЗ) это обязательный территориальный буфер между промышленной площадкой и жилой застройкой. Её главная задача обеспечить естественное рассеивание химических выбросов, снижение концентрации пыли и затухание шума до значений, безопасных для здоровья населения. Зона работает как физический фильтр и пространственный разделитель.</p>
-    
-    <h4>2. Юридический статус</h4>
-    <p>СЗЗ относится к зонам с особыми условиями использования территорий (ЗОУИТ). После прохождения расчетов, согласования с Роспотребнадзором и внесения сведений в ЕГРН, границы СЗЗ приобретают обязательный характер. Любое строительство, не соответствующее профилю зоны, пресекается на этапе государственной экспертизы. Нарушение границ СЗЗ влечет административную ответственность и приостановку деятельности предприятия.</p>
-    
-    <h4>3. Что допустимо внутри СЗЗ</h4>
-    <ul>
-      <li>Объекты инфраструктуры предприятия: подъездные пути, парковки, очистные сооружения, посты экологического мониторинга.</li>
-      <li>Озеленение и защитные лесополосы, способствующие осаждению пыли и поглощению акустического шума.</li>
-      <li>Объекты без постоянного пребывания людей: трансформаторные подстанции, насосные станции, пожарные депо, склады непищевого назначения.</li>
-    </ul>
-    
-    <h4>4. Что строго запрещено</h4>
-    <ul>
-      <li>Жилая застройка любой этажности и формы собственности.</li>
-      <li>Образовательные и медицинские учреждения, спортивные сооружения, парки отдыха, садоводческие товарищества.</li>
-      <li>Склады пищевой продукции, фармацевтических субстанций и объектов социальной инфраструктуры.</li>
-    </ul>
-    
-    <h4>5. Этапы формирования границ</h4>
-    <p>Процесс всегда идет по схеме: класс опасности предприятия ориентировочный размер из таблиц СанПиН расчетная (предварительная) СЗЗ на основе моделей рассеивания натурные замеры после пуска предприятия установленная (окончательная) СЗЗ с внесением в ЕГРН. Только последний этап фиксирует границы окончательно.</p>
-    
-    <h4>6. Практические советы для начинающего эколога</h4>
-    <ul>
-      <li>Всегда учитывайте фоновое загрязнение от соседних производств. Без него расчеты будут занижены, и проект не пройдет экспертизу.</li>
-      <li>СЗЗ не является зоной отчуждения. Предприятие сохраняет право пользования землей внутри нее, но с жесткими ограничениями на тип застройки.</li>
-      <li>Не путайте СЗЗ с ЗСО (зона санитарной охраны водозаборов). У них разные правовые основы и контролирующие органы.</li>
-      <li>Документация по СЗЗ должна быть в едином пакете с проектом ПДВ (предельно допустимых выбросов). Их согласование взаимосвязано.</li>
-    </ul>
-    
-    <div class="szz-note">
-      Сохраните этот материал. В реальной работе вы будете постоянно возвращаться к этим базовым принципам при аудите территорий, подготовке отчетов и взаимодействии с надзорными органами. Понимание логики СЗЗ защитит вас от проектных ошибок и поможет выстраивать диалог с проектировщиками и заказчиками на одном языке.
-    </div>
-  </section>
-</div>
-
-<!-- Intro Modal -->
-<div class="szz-overlay active" id="introModal">
-  <div class="szz-modal">
-    <div class="szz-modal-header">
-      <h3>Вводная ситуация</h3>
-      <button class="szz-modal-close" aria-label="Закрыть">&times;</button>
-    </div>
-    <div class="szz-modal-body">
-      <p><strong>Олег, эколог-новичок:</strong> Я только начал заниматься темой СЗЗ на предприятии. Мне сказали, что вокруг завода есть какая-то граница, но я не до конца понимаю, зачем она нужна, что можно размещать внутри, а что нельзя, и как это регулируется. Помогите разобраться на практике.</p>
-    </div>
-    <div class="szz-modal-footer">
-      <button class="szz-btn" id="closeIntro">Начать разбор</button>
-    </div>
-  </div>
-</div>
-
-<!-- Feedback/Detail Modal -->
-<div class="szz-overlay" id="detailModal">
-  <div class="szz-modal">
-    <div class="szz-modal-header">
-      <h3 id="detailTitle">Разбор</h3>
-      <button class="szz-modal-close" id="detailClose">&times;</button>
-    </div>
-    <div class="szz-modal-body" id="detailBody"></div>
-    <div class="szz-modal-footer">
-      <button class="szz-btn" id="detailCloseBtn">Закрыть</button>
-    </div>
-  </div>
-</div>
-
-<script>
-(function(){
-  // State & Data
-  const state = { step: 1, s1Complete: false, s2Complete: false, s3Complete: false, placed: {} };
-  const correctPlacements = { f1:'factory', f2:'factory', s1:'szz', s2:'szz', s3:'szz', h1:'home', h2:'home' };
-  
-  const details = {
-    f1: "Основные цеха размещаются строго на территории промышленной площадки. Являются источниками выбросов и физических воздействий, поэтому вынос за её пределы недопустим.",
-    f2: "Склад сырья относится к производственной инфраструктуре. Находится в пределах промплощадки для обеспечения логистики и технологического цикла.",
-    s1: "Пост мониторинга устанавливается на границе СЗЗ или внутри неё. Позволяет в режиме реального времени контролировать качество атмосферного воздуха и подтверждать расчеты.",
-    s2: "Подъездная дорога транспортная инфраструктура. Разрешена в СЗЗ, так как не предполагает постоянного пребывания людей и не создает дополнительных источников загрязнения.",
-    s3: "Зеленые насаждения обязательный элемент благоустройства СЗЗ. Деревья и кустарники снижают уровень шума, задерживают пылевые фракции и улучшают микроклимат буферной зоны.",
-    h1: "Жилые дома строго запрещены санитарными нормами. Постоянное проживание в зоне промышленного воздействия недопустимо из-за хронического риска здоровью.",
-    h2: "Детская площадка объект с массовым пребыванием уязвимой группы населения. Категорически выносится за пределы СЗЗ независимо от уровня выбросов предприятия.",
-    
-    q2_a: "Верно. СанПиН прямо запрещает размещение жилья. Никакие инженерные меры не отменяют этот запрет, так как СЗЗ создается именно для исключения постоянного проживания в зоне воздействия.",
-    q2_b: "Ошибка. Шумозащитные экраны и фильтры снижают воздействие, но не дают права нарушать санитарную границу. Проект получит отказ на этапе экспертизы.",
-    q2_c: "Ошибка. Финансовые компенсации не заменяют соблюдение гигиенических нормативов. Закон защищает здоровье людей, а не имущественные интересы.",
-    q2_d: "Ошибка. СЗЗ имеет статус ЗОУИТ, вносится в ЕГРН и обязательна для исполнения. Её границы учитываются при выдаче градостроительных планов.",
-    
-    q3_c: "Верно. Физический принцип СЗЗ основан на процессах рассеивания, диффузии, осаждения и поглощения вредных веществ в атмосферном воздухе. Чем больше расстояние, тем ниже концентрация к моменту достижения жилых кварталов.",
-    q3_a: "Ошибка. Расширение складов не является целью санитарного буфера. Для этих целей используются другие градостроительные инструменты.",
-    q3_b: "Ошибка. СЗЗ не регулирует доступ персонала, она защищает население от промышленных воздействий. Контроль доступа обеспечивается периметральным ограждением предприятия.",
-    q3_d: "Ошибка. Резервирование земель под расширение делается иными механизмами. СЗЗ не может использоваться для производственного расширения без изменения класса опасности и пересмотра границ."
-  };
-
-  // Modal Logic
-  const detailModal = document.getElementById('detailModal');
-  const detailTitle = document.getElementById('detailTitle');
-  const detailBody = document.getElementById('detailBody');
-  
-  function openDetail(key, title) {
-    detailTitle.textContent = title || "Разбор";
-    detailBody.textContent = details[key] || "Информация уточняется.";
-    detailModal.classList.add('active');
-  }
-  function closeDetail() { detailModal.classList.remove('active'); }
-  
-  document.getElementById('detailClose').addEventListener('click', closeDetail);
-  document.getElementById('detailCloseBtn').addEventListener('click', closeDetail);
-  detailModal.addEventListener('click', e => { if(e.target === detailModal) closeDetail(); });
-
-  // Progress & Navigation
-  const progressBar = document.getElementById('progressBar');
-  function updateProgress() { progressBar.style.width = ((state.step - 1) / 3 * 100) + '%'; }
-  
-  function showStep(n) {
-    document.querySelectorAll('.szz-step').forEach(s => s.classList.remove('active'));
-    document.getElementById('step' + n).classList.add('active');
-    state.step = n; updateProgress();
-    window.scrollTo({ top: document.querySelector('.szz-container').offsetTop - 20, behavior: 'smooth' });
-  }
-
-  // Intro
-  document.getElementById('closeIntro').addEventListener('click', () => document.getElementById('introModal').classList.remove('active'));
-
-  // STEP 1: Drag & Drop
-  const draggables = document.querySelectorAll('.szz-drag-item');
-  const dropZones = document.querySelectorAll('.szz-drop-zone');
-  const pool = document.getElementById('pool');
-  const check1 = document.getElementById('check1');
-  const reset1 = document.getElementById('reset1');
-  const next1 = document.getElementById('next1');
-
-  draggables.forEach(d => {
-    d.addEventListener('dragstart', e => { e.dataTransfer.setData('text', d.dataset.id); d.classList.add('dragging'); });
-    d.addEventListener('dragend', () => d.classList.remove('dragging'));
-  });
-  dropZones.forEach(z => {
-    z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('drag-over'); });
-    z.addEventListener('dragleave', () => z.classList.remove('drag-over'));
-    z.addEventListener('drop', e => {
-      e.preventDefault(); z.classList.remove('drag-over');
-      const id = e.dataTransfer.getData('text');
-      const item = document.querySelector(`.szz-drag-item[data-id="${id}"]`);
-      if(item && !state.placed[id]) { z.appendChild(item); item.classList.add('placed'); state.placed[id] = z.dataset.zone; checkAllPlaced(); }
-    });
-  });
-  pool.addEventListener('dragover', e => e.preventDefault());
-  pool.addEventListener('drop', e => {
-    e.preventDefault();
-    const id = e.dataTransfer.getData('text');
-    const item = document.querySelector(`.szz-drag-item[data-id="${id}"]`);
-    if(item && state.placed[id]) { pool.appendChild(item); item.classList.remove('placed'); delete state.placed[id]; checkAllPlaced(); }
-  });
-
-  function checkAllPlaced() { check1.disabled = Object.keys(state.placed).length !== draggables.length; }
-
-  reset1.addEventListener('click', () => {
-    draggables.forEach(d => { d.className = 'szz-drag-item'; d.onclick = null; pool.appendChild(d); });
-    state.placed = {}; check1.disabled = true; next1.style.display = 'none'; state.s1Complete = false;
-    closeDetail();
-  });
-
-  check1.addEventListener('click', () => {
-    if(state.s1Complete) return;
-    let allOk = true;
-    draggables.forEach(d => {
-      if(state.placed[d.dataset.id] !== correctPlacements[d.dataset.id]) allOk = false;
-    });
-
-    if(allOk) {
-      state.s1Complete = true;
-      draggables.forEach(d => d.classList.add('correct', 'clickable'));
-      check1.style.display = 'none'; reset1.style.display = 'none'; next1.style.display = 'inline-block';
-      
-      draggables.forEach(d => {
-        d.onclick = () => openDetail(d.dataset.id, d.textContent);
-      });
-      openDetail('s1_intro', "Задание выполнено верно"); // Show a generic success or just skip
-    } else {
-      openDetail('s1_err', "Обнаружены ошибки");
-    }
-  });
-
-  next1.addEventListener('click', () => { closeDetail(); showStep(2); });
-
-  // STEP 2 & 3: Quiz Logic
-  function setupQuiz(stepNum) {
-    const checkBtn = document.getElementById('check'+stepNum);
-    const resetBtn = document.getElementById('reset'+stepNum);
-    const nextBtn = document.getElementById('next'+stepNum);
-    const radios = document.querySelectorAll(`input[name="q${stepNum}"]`);
-    const labels = document.querySelectorAll(`#step${stepNum} .quiz-label`);
-    const key = 's'+stepNum+'Complete';
-
-    resetBtn.addEventListener('click', () => {
-      radios.forEach(r => r.checked = false);
-      labels.forEach(l => { l.classList.remove('selected-correct', 'clickable'); l.onclick = null; });
-      nextBtn.style.display = 'none'; checkBtn.style.display = 'inline-block'; state[key] = false; closeDetail();
-    });
-
-    checkBtn.addEventListener('click', () => {
-      if(state[key]) return;
-      const sel = document.querySelector(`input[name="q${stepNum}"]:checked`);
-      if(!sel) return;
-      const val = sel.value;
-      const label = sel.closest('.quiz-label');
-      const isCorrect = (val === (stepNum === 2 ? 'a' : 'c'));
-
-      if(isCorrect) {
-        state[key] = true;
-        labels.forEach(l => l.classList.add('clickable'));
-        label.classList.add('selected-correct');
-        nextBtn.style.display = 'inline-block'; checkBtn.style.display = 'none';
-        
-        labels.forEach(l => {
-          l.onclick = () => openDetail(`q${stepNum}_${l.dataset.ans}`, "Разбор варианта");
-        });
-      } else {
-        label.style.borderColor = 'var(--danger)';
-        setTimeout(() => label.style.borderColor = '', 1000);
-      }
-    });
-
-    nextBtn.addEventListener('click', () => {
-      if(!state[key]) return;
-      closeDetail();
-      if(stepNum === 3) {
-        showStep(4);
-        document.getElementById('breakdown').classList.add('show');
-        progressBar.style.width = '100%';
-      } else {
-        showStep(stepNum + 1);
-      }
-    });
-  }
-
-  setupQuiz(2);
-  setupQuiz(3);
-  
-  updateProgress();
-})();
-</script>
-</body>
-</html>
+    <section class="analysis" id="analysisBlock" style="display:none;">
+      <h2>Разбор</h2>
+      <p>Территория предприятия – это место, где находятся сам объект и связанные с ним производственные и вспомогательные объекты. Именно отсюда возникает воздействие, вокруг которого затем формируют санитарно-защитную зону.</p>
+      <p>Санитарно-защитная зона – это не место для постоянного проживания и не просто линия на схеме. Это специальная территория между промплощадкой и местами, где живут и отдыхают люди. На этой территории действует особый режим, а ее границы обосновывают и закрепляют документально.</p>
+      <p>Жилая зона – это территория постоянного или регулярного пребывания людей. Поэтому жилые дома, детские сады и зоны отдыха нужно четко отличать и от территории предприятия, и от самой СЗЗ. Смысл санитарно-защитной зоны в том, чтобы отделить эти территории друг от друга и снизить риск вредного воздействия.</p>
+      <p>Обратите внимание на логику. Производственный цех, склад сырья и административно-бытовой корпус относятся к самой площадке предприятия. Контрольная точка для замеров и защитное озеленение связаны с режимом и устройством СЗЗ. Жилой дом, детский сад и зона отдыха относятся к жилой зоне, то есть к территориям, которые СЗЗ должна защищать.</p>
+      <div class="keyline">Главное, что нужно запомнить. Предприятие – источник 
