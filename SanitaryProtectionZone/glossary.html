@@ -1,886 +1,336 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Интерактивный глоссарий по СЗЗ</title>
-  <style>
-    :root {
-      --bg: #f6f8f7;
-      --card: #ffffff;
-      --text: #1f2a24;
-      --muted: #66756d;
-      --line: #dde5df;
-      --green: #2d6a4f;
-      --green-soft: #e8f3ee;
-      --shadow: 0 14px 40px rgba(24, 35, 30, 0.16);
-      --radius: 18px;
-      --transition: 180ms ease;
-    }
-    * { box-sizing: border-box; }
-    body {
-      margin: 0;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: var(--bg);
-      color: var(--text);
-      line-height: 1.5;
-      display: flex;
-      justify-content: center;
-      padding: 24px 12px;
-    }
-    .app {
-      width: 100%;
-      max-width: 700px;
-      background: var(--card);
-      border-radius: 24px;
-      border: 1px solid var(--line);
-      box-shadow: var(--shadow);
-      padding: 20px 22px 22px;
-    }
-    h1 {
-      margin: 0 0 6px;
-      font-size: 22px;
-    }
-    .lead {
-      margin: 0 0 10px;
-      font-size: 14px;
-      color: var(--muted);
-    }
-    .groups-label {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--muted);
-      margin: 6px 0 6px;
-    }
-    .groups {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-bottom: 10px;
-    }
-    .group-btn {
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: #fff;
-      padding: 6px 10px;
-      font-size: 12px;
-      cursor: pointer;
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      color: var(--muted);
-    }
-    .group-btn span.count {
-      font-size: 11px;
-      color: #8b9890;
-    }
-    .group-btn.active {
-      background: var(--green-soft);
-      border-color: var(--green);
-      color: var(--green);
-    }
-    .group-helper {
-      font-size: 12px;
-      color: var(--muted);
-      margin-bottom: 12px;
-    }
-    .progress {
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 12px;
-    }
-    .term-box {
-      border-radius: var(--radius);
-      border: 1px solid var(--line);
-      padding: 14px 14px 16px;
-      background: #fbfdfc;
-      margin-bottom: 14px;
-    }
-    .term-label {
-      font-size: 12px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      color: var(--green);
-      font-weight: 700;
-      margin-bottom: 6px;
-    }
-    .definition {
-      font-size: 14px;
-    }
-    .options {
-      display: grid;
-      gap: 10px;
-      margin-bottom: 12px;
-    }
-    button { font-family: inherit; }
-    .option {
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      padding: 9px 13px;
-      background: #fff;
-      text-align: left;
-      font-size: 14px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 10px;
-      transition: background var(--transition), border-color var(--transition), transform var(--transition);
-    }
-    .option span.label {
-      flex: 1;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .option span.tag {
-      font-size: 11px;
-      color: var(--muted);
-    }
-    .option:hover {
-      background: #f7faf8;
-      border-color: #c8d8cf;
-      transform: translateY(-1px);
-    }
-    .option.correct {
-      border-color: var(--green);
-      background: var(--green-soft);
-      color: var(--green);
-    }
-    .option.wrong {
-      border-color: #e29578;
-      background: #fff2ea;
-      color: #9b341a;
-    }
-    .footer {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 10px;
-      margin-top: 10px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .footer button {
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: #fff;
-      padding: 7px 11px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .footer button:hover { background: #f4f7f5; }
-    .footer button:disabled {
-      opacity: 0.5;
-      cursor: default;
-    }
-    .map {
-      margin-top: 16px;
-      border-radius: 16px;
-      border: 1px solid var(--line);
-      background: #f7faf6;
-      padding: 10px 12px;
-      font-size: 12px;
-      color: var(--muted);
-    }
-    .map-title {
-      font-weight: 600;
-      margin-bottom: 4px;
-      color: var(--green);
-      font-size: 12px;
-    }
-    .overlay {
-      position: fixed;
-      inset: 0;
-      background: rgba(17, 24, 21, 0.45);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      padding: 16px;
-      z-index: 20;
-    }
-    .overlay.active { display: flex; }
-    .modal {
-      width: 100%;
-      max-width: 480px;
-      background: #fff;
-      border-radius: 18px;
-      padding: 18px 18px 14px;
-      border: 1px solid var(--line);
-      box-shadow: 0 18px 60px rgba(10, 16, 13, 0.28);
-      animation: rise 150ms ease-out;
-      font-size: 14px;
-    }
-    @keyframes rise {
-      from { opacity: 0; transform: translateY(6px); }
-      to { opacity: 1; transform: translateY(0); }
-    }
-    .modal-label {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.06em;
-      margin-bottom: 6px;
-    }
-    .modal-label.good { color: var(--green); }
-    .modal-label.bad { color: #b35019; }
-    .modal-title {
-      margin: 0 0 6px;
-      font-weight: 700;
-      font-size: 15px;
-    }
-    .modal-body {
-      margin: 0 0 8px;
-      color: var(--muted);
-    }
-    .modal-key {
-      background: #f5f8f6;
-      border-radius: 12px;
-      padding: 8px 10px;
-      font-weight: 600;
-      margin-bottom: 10px;
-    }
-    .modal-actions {
-      display: flex;
-      justify-content: flex-end;
-    }
-    .modal-actions button {
-      border-radius: 999px;
-      border: 1px solid var(--line);
-      background: #fff;
-      padding: 6px 10px;
-      font-size: 12px;
-      cursor: pointer;
-    }
-    .modal-actions button:hover { background: #f4f7f5; }
-  </style>
+<meta charset="UTF-8">
+<style>
+  .szz-task-container {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    max-width: 820px;
+    margin: 20px auto;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+    color: #1e293b;
+    line-height: 1.6;
+  }
+  .szz-task-header h2 {
+    margin: 0 0 8px;
+    color: #0f172a;
+    font-size: 1.4rem;
+  }
+  .szz-task-header p {
+    margin: 0 0 16px;
+    color: #475569;
+    font-size: 0.95rem;
+  }
+  .szz-task-progress {
+    height: 6px;
+    background: #e2e8f0;
+    border-radius: 3px;
+    margin-bottom: 20px;
+    overflow: hidden;
+  }
+  .szz-task-progress-bar {
+    height: 100%;
+    background: linear-gradient(90deg, #10b981, #059669);
+    width: 0%;
+    transition: width 0.4s ease;
+    border-radius: 3px;
+  }
+  .szz-task-step {
+    display: none;
+    animation: szz-fade 0.3s ease;
+  }
+  .szz-task-step.active { display: block; }
+  @keyframes szz-fade { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .szz-task-question {
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-left: 4px solid #3b82f6;
+    padding: 14px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+    font-size: 1rem;
+  }
+  .szz-task-options {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .szz-task-card {
+    background: #ffffff;
+    border: 2px solid #e2e8f0;
+    border-radius: 8px;
+    padding: 12px;
+    cursor: pointer;
+    text-align: center;
+    font-weight: 500;
+    transition: all 0.2s;
+    user-select: none;
+  }
+  .szz-task-card:hover { border-color: #3b82f6; background: #eff6ff; }
+  .szz-task-card.selected { border-color: #2563eb; background: #dbeafe; box-shadow: 0 0 0 2px rgba(37,99,235,0.2); }
+  .szz-task-card.correct { border-color: #10b981; background: #d1fae5; }
+  .szz-task-card.wrong { border-color: #ef4444; background: #fee2e2; }
+  .szz-task-card:disabled { cursor: default; opacity: 0.7; }
+
+  .szz-task-feedback {
+    min-height: 20px;
+    padding: 10px;
+    border-radius: 8px;
+    margin: 12px 0;
+    font-size: 0.95rem;
+    display: none;
+  }
+  .szz-task-feedback.show { display: block; }
+  .szz-task-feedback.ok { background: #ecfdf5; border: 1px solid #6ee7b7; color: #065f46; }
+  .szz-task-feedback.err { background: #fef2f2; border: 1px solid #fca5a5; color: #991b1b; }
+
+  .szz-task-btn {
+    background: #059669;
+    color: white;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.95rem;
+    transition: background 0.2s;
+  }
+  .szz-task-btn:hover { background: #047857; }
+  .szz-task-btn:disabled { background: #94a3b8; cursor: not-allowed; }
+  .szz-task-btn.next { background: #2563eb; margin-left: 10px; }
+  .szz-task-btn.next:hover { background: #1d4ed8; }
+
+  .szz-task-summary {
+    display: none;
+    background: #ffffff;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 20px;
+    margin-top: 20px;
+  }
+  .szz-task-summary.show { display: block; }
+  .szz-task-summary h3 { margin: 0 0 12px; color: #0f172a; }
+  .szz-task-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.9rem;
+  }
+  .szz-task-table th, .szz-task-table td {
+    padding: 8px 10px;
+    border: 1px solid #e2e8f0;
+    text-align: left;
+    vertical-align: top;
+  }
+  .szz-task-table th { background: #f8fafc; font-weight: 600; color: #334155; }
+  .szz-task-badge {
+    display: inline-block;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.75rem;
+    font-weight: 600;
+    margin-left: 6px;
+  }
+  .badge-zone { background: #fef3c7; color: #92400e; }
+  .badge-limit { background: #dbeafe; color: #1e40af; }
+  .badge-process { background: #d1fae5; color: #065f46; }
+  .badge-param { background: #f3e8ff; color: #6b21a8; }
+
+  @media (max-width: 600px) {
+    .szz-task-container { padding: 16px; }
+    .szz-task-options { grid-template-columns: 1fr; }
+  }
+</style>
 </head>
 <body>
-  <div class="app" aria-label="Интерактивный глоссарий по СЗЗ">
-    <h1>Соберите глоссарий по СЗЗ</h1>
-    <p class="lead">
-      Прочитайте определение и выберите, к какому термину оно относится.
-      После выбора откроется пояснение. Можно отменить выбор и попробовать другой вариант.
-    </p>
 
-    <div class="groups-label">Группы терминов</div>
-    <div class="groups" id="groups">
-      <button class="group-btn active" data-group="all" type="button">
-        <span>Все термины</span><span class="count" id="count-all"></span>
-      </button>
-      <button class="group-btn" data-group="core" type="button">
-        <span>Базовые зоны</span><span class="count" id="count-core"></span>
-      </button>
-      <button class="group-btn" data-group="borders" type="button">
-        <span>Границы</span><span class="count" id="count-borders"></span>
-      </button>
-      <button class="group-btn" data-group="norms" type="button">
-        <span>Нормативы</span><span class="count" id="count-norms"></span>
-      </button>
-      <button class="group-btn" data-group="docs" type="button">
-        <span>Документы</span><span class="count" id="count-docs"></span>
-      </button>
-    </div>
-    <div class="group-helper" id="groupHelper">
-      Сейчас вы видите все термины. Можно выбрать группу, чтобы отработать только ее.
-    </div>
-
-    <div class="progress" id="progress">Термин 1 из 14</div>
-
-    <div class="term-box" id="termBox">
-      <div class="term-label">Определение</div>
-      <div class="definition" id="definition"></div>
-    </div>
-
-    <div class="options" id="options"></div>
-
-    <div class="footer">
-      <span id="status">Выберите термин.</span>
-      <div>
-        <button id="resetBtn" type="button" disabled>Отменить выбор</button>
-        <button id="nextBtn" type="button" disabled>Следующее определение</button>
-      </div>
-    </div>
-
-    <div class="map" id="mapBox">
-      <div class="map-title">Как связаны группы терминов</div>
-      <div id="mapText">
-        Объект и его класс опасности → ориентировочный размер СЗЗ → проект и расчетная СЗЗ
-        → при необходимости натурные замеры → установленная СЗЗ (как ЗОУИТ)
-        → отделение промплощадки от селитебной территории. ПДК, ПДУ и фон используются
-        на этапах расчетов и оценки воздействия.
-      </div>
-    </div>
+<div class="szz-task-container">
+  <div class="szz-task-header">
+    <h2>🌿 Интерактив: Обоснование СЗЗ</h2>
+    <p>Вы начинающий промышленный эколог. Пройдите 4 этапа реального проекта, чтобы собрать полную картину работы с санитарно-защитной зоной.</p>
   </div>
 
-  <div class="overlay" id="overlay" aria-hidden="true">
-    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
-      <div id="modalLabel" class="modal-label good">Комментарий</div>
-      <h2 id="modalTitle" class="modal-title">Заголовок</h2>
-      <p id="modalBody" class="modal-body">Текст комментария.</p>
-      <div id="modalKey" class="modal-key">Ключевая мысль.</div>
-      <div class="modal-actions">
-        <button type="button" id="closeModal">Понятно</button>
-      </div>
+  <div class="szz-task-progress"><div class="szz-task-progress-bar" id="szz-progress"></div></div>
+
+  <!-- STEP 1 -->
+  <div class="szz-task-step active" data-step="1">
+    <div class="szz-task-question">
+      1️⃣ <b>Старт проекта.</b> Предприятие относится к <span class="szz-blank">____</span>. На его основании из СанПиН берём <span class="szz-blank">____</span>. Это базовый радиус, отделяющий промплощадку от <span class="szz-blank">____</span>.
     </div>
+    <div class="szz-task-options" id="opt-1">
+      <div class="szz-task-card" data-val="класс опасности предприятия">Класс опасности предприятия</div>
+      <div class="szz-task-card" data-val="ориентировочный размер СЗЗ">Ориентировочный размер СЗЗ</div>
+      <div class="szz-task-card" data-val="селитебная территория">Селитебная территория</div>
+      <div class="szz-task-card" data-val="ПДК">ПДК</div>
+    </div>
+    <div class="szz-task-feedback" id="fb-1"></div>
+    <button class="szz-task-btn" id="check-1" disabled>Проверить</button>
+    <button class="szz-task-btn next" id="next-1" style="display:none">Далее →</button>
   </div>
 
-  <script>
-    const data = [
-      {
-        group: 'core',
-        definition: 'Территория с особым режимом использования, устанавливаемая вокруг объектов и производств, которые являются источниками вредного воздействия на среду обитания и здоровье человека.',
-        correct: 'Санитарно-защитная зона (СЗЗ)',
-        options: [
-          'Санитарно-защитная зона (СЗЗ)',
-          'Зона с особыми условиями использования территорий (ЗОУИТ)',
-          'Селитебная территория (зона)'
-        ],
-        feedback: {
-          'Санитарно-защитная зона (СЗЗ)': {
-            type: 'good',
-            title: 'Верно, это СЗЗ',
-            body: 'Определение описывает санитарно-защитную зону вокруг источника воздействия, которая нужна, чтобы защитить людей за пределами площадки.',
-            key: 'СЗЗ привязана к конкретному объекту и его воздействию.'
-          },
-          'Зона с особыми условиями использования территорий (ЗОУИТ)': {
-            type: 'bad',
-            title: 'Это не ЗОУИТ',
-            body: 'ЗОУИТ — общий правовой статус зон в градостроительном законодательстве. СЗЗ — один из видов ЗОУИТ, но здесь речь именно о санитарно-защитной зоне.',
-            key: 'ЗОУИТ — правовой «зонтик», СЗЗ — конкретный санитарный случай.'
-          },
-          'Селитебная территория (зона)': {
-            type: 'bad',
-            title: 'Это не селитебная территория',
-            body: 'Селитебная территория — это зона жилья, общественных зданий и парков. СЗЗ должна отделять промплощадку от селитебной территории.',
-            key: 'СЗЗ не часть селитебной зоны, а санитарный барьер перед ней.'
-          }
-        }
-      },
-      {
-        group: 'core',
-        definition: 'Правовой статус санитарно-защитной зоны в соответствии с Градостроительным кодексом РФ как зоны с особыми условиями использования территорий.',
-        correct: 'Зона с особыми условиями использования территорий (ЗОУИТ)',
-        options: [
-          'Зона с особыми условиями использования территорий (ЗОУИТ)',
-          'Санитарно-защитная зона (СЗЗ)',
-          'Селитебная территория (зона)'
-        ],
-        feedback: {
-          'Зона с особыми условиями использования территорий (ЗОУИТ)': {
-            type: 'good',
-            title: 'Верно, это ЗОУИТ',
-            body: 'Определение говорит о правовом статусе зоны по Градкодексу. СЗЗ оформляют как один из видов ЗОУИТ.',
-            key: 'Для юристов и градостроителей СЗЗ — это ЗОУИТ.'
-          },
-          'Санитарно-защитная зона (СЗЗ)': {
-            type: 'bad',
-            title: 'Это не сама СЗЗ',
-            body: 'СЗЗ — санитарное понятие. В градостроительных документах оно оформляется как ЗОУИТ. Это разные уровни описания.',
-            key: 'СЗЗ — содержание, ЗОУИТ — оболочка в граддокументах.'
-          },
-          'Селитебная территория (зона)': {
-            type: 'bad',
-            title: 'Это не селитебная зона',
-            body: 'Селитебная территория — это застройка, которую нужно защищать. ЗОУИТ описывает специальные условия использования участков.',
-            key: 'Селитебная зона — объект защиты, ЗОУИТ — режим использования территорий.'
-          }
-        }
-      },
-      {
-        group: 'core',
-        definition: 'Часть территории населенного пункта, предназначенная для размещения жилого фонда, общественных зданий, парков и объектов инфраструктуры. Санитарно-защитная зона призвана отделять промплощадку именно от селитебной застройки.',
-        correct: 'Селитебная территория (зона)',
-        options: [
-          'Селитебная территория (зона)',
-          'Санитарно-защитная зона (СЗЗ)',
-          'Зона санитарной охраны (ЗСО)'
-        ],
-        feedback: {
-          'Селитебная территория (зона)': {
-            type: 'good',
-            title: 'Верно, это селитебная территория',
-            body: 'Определение описывает зону жилья, соцобъектов и отдыха. Именно от этой застройки нужно отделять промплощадку с помощью СЗЗ.',
-            key: 'Селитебная зона — там, где живут и регулярно находятся люди.'
-          },
-          'Санитарно-защитная зона (СЗЗ)': {
-            type: 'bad',
-            title: 'Это не СЗЗ',
-            body: 'СЗЗ не предназначена для размещения жилья и парков. Она отделяет промплощадку от селитебной территории.',
-            key: 'СЗЗ — барьер, селитебная территория — то, что он защищает.'
-          },
-          'Зона санитарной охраны (ЗСО)': {
-            type: 'bad',
-            title: 'Это не ЗСО',
-            body: 'ЗСО защищает источники питьевой воды, а не описывает жилую застройку в населенном пункте.',
-            key: 'ЗСО — про водоисточники, не про структуру города.'
-          }
-        }
-      },
-      {
-        group: 'borders',
-        definition: 'Предварительный размер санитарно-защитной зоны в метрах, определяемый по санитарной классификации СанПиН в зависимости от класса опасности предприятия (I–V классы).',
-        correct: 'Ориентировочный размер СЗЗ',
-        options: [
-          'Ориентировочный размер СЗЗ',
-          'Расчетная (предварительная) СЗЗ',
-          'Установленная (окончательная) СЗЗ'
-        ],
-        feedback: {
-          'Ориентировочный размер СЗЗ': {
-            type: 'good',
-            title: 'Верно, это ориентировочный размер',
-            body: 'Эту величину берут из СанПиН по классу опасности. Это стартовая цифра до моделирования и замеров.',
-            key: 'Ориентировочный размер — отправная точка по классу.'
-          },
-          'Расчетная (предварительная) СЗЗ': {
-            type: 'bad',
-            title: 'Это не расчетная СЗЗ',
-            body: 'Расчетную СЗЗ определяют по проекту конкретного объекта и моделям, а не только по таблице классов.',
-            key: 'Расчетная зона учитывает реальные источники и условия площадки.'
-          },
-          'Установленная (окончательная) СЗЗ': {
-            type: 'bad',
-            title: 'Это не установленная СЗЗ',
-            body: 'Установленная СЗЗ — это границы после решения Роспотребнадзора и внесения в ЕГРН, а не предварительный размер по СанПиН.',
-            key: 'Окончательная зона появляется после решения РПН и записи в реестре.'
-          }
-        }
-      },
-      {
-        group: 'borders',
-        definition: 'Границы санитарно-защитной зоны, определенные на основании проекта СЗЗ с использованием математических моделей рассеивания выбросов и физического воздействия (шума, вибрации).',
-        correct: 'Расчетная (предварительная) СЗЗ',
-        options: [
-          'Расчетная (предварительная) СЗЗ',
-          'Ориентировочный размер СЗЗ',
-          'Натурные исследования (замеры)'
-        ],
-        feedback: {
-          'Расчетная (предварительная) СЗЗ': {
-            type: 'good',
-            title: 'Верно, это расчетная СЗЗ',
-            body: 'Здесь уже учитывают конкретный объект, его источники и условия площадки с помощью моделей и расчетов.',
-            key: 'Расчетная СЗЗ — результат проекта и моделей, а не голая таблица СанПиН.'
-          },
-          'Ориентировочный размер СЗЗ': {
-            type: 'bad',
-            title: 'Это не ориентировочный размер',
-            body: 'Ориентировочный размер — просто расстояние по классу опасности. В определении речь о границах по расчетам.',
-            key: 'Ориентировочный размер — число в метрах, расчетная зона — контур по моделям.'
-          },
-          'Натурные исследования (замеры)': {
-            type: 'bad',
-            title: 'Это не натурные замеры',
-            body: 'Натурные замеры — это измерения на местности. Здесь речь о расчетных границах, а не о фактических измерениях.',
-            key: 'Расчеты и замеры дополняют друг друга, но это разные этапы.'
-          }
-        }
-      },
-      {
-        group: 'borders',
-        definition: 'Границы санитарно-защитной зоны, утвержденные решением Роспотребнадзора и внесенные в Единый государственный реестр недвижимости (ЕГРН).',
-        correct: 'Установленная (окончательная) СЗЗ',
-        options: [
-          'Установленная (окончательная) СЗЗ',
-          'Расчетная (предварительная) СЗЗ',
-          'Зона с особыми условиями использования территорий (ЗОУИТ)'
-        ],
-        feedback: {
-          'Установленная (окончательная) СЗЗ': {
-            type: 'good',
-            title: 'Верно, это установленная СЗЗ',
-            body: 'Это конечный результат: есть решение Роспотребнадзора и запись в ЕГРН. С этой зоной уже связаны юридические ограничения.',
-            key: 'Установленная СЗЗ — расчетная зона плюс решение РПН и запись в реестре.'
-          },
-          'Расчетная (предварительная) СЗЗ': {
-            type: 'bad',
-            title: 'Это не расчетная зона',
-            body: 'Расчетная СЗЗ — предложения из проекта. Окончательная зона появляется только после утверждения и внесения в ЕГРН.',
-            key: 'Расчет — обоснование, установленная зона — юридический факт.'
-          },
-          'Зона с особыми условиями использования территорий (ЗОУИТ)': {
-            type: 'bad',
-            title: 'Здесь важнее уточнить вид ЗОУИТ',
-            body: 'Установленная СЗЗ оформляется как ЗОУИТ. Но определение прямо описывает границы санитарно-защитной зоны.',
-            key: 'Важно различать: вид ЗОУИТ и конкретные границы СЗЗ для объекта.'
-          }
-        }
-      },
-      {
-        group: 'norms',
-        definition: 'Максимальное количество вредного вещества в единице объема (воздуха, воды), которое при ежедневном воздействии не вызывает заболеваний или изменений в организме.',
-        correct: 'ПДК (Предельно допустимая концентрация)',
-        options: [
-          'ПДК (Предельно допустимая концентрация)',
-          'ПДУ (Предельно допустимый уровень)',
-          'Фоновое загрязнение'
-        ],
-        feedback: {
-          'ПДК (Предельно допустимая концентрация)': {
-            type: 'good',
-            title: 'Верно, это ПДК',
-            body: 'Здесь речь о максимально допустимой концентрации вещества, при которой не ожидается вреда для здоровья.',
-            key: 'ПДК — норматив по содержанию вещества в среде.'
-          },
-          'ПДУ (Предельно допустимый уровень)': {
-            type: 'bad',
-            title: 'Это не ПДУ',
-            body: 'ПДУ используют для физических факторов, а не для концентраций веществ.',
-            key: 'ПДК — вещество, ПДУ — физический фактор.'
-          },
-          'Фоновое загрязнение': {
-            type: 'bad',
-            title: 'Это не фоновое загрязнение',
-            body: 'Фоновое загрязнение описывает фактический уровень загрязнения, а не норматив.',
-            key: 'Фон — то, что есть, ПДК — планка, выше которой быть не должно.'
-          }
-        }
-      },
-      {
-        group: 'norms',
-        definition: 'Норматив физического воздействия (шум, вибрация, электромагнитное излучение), обеспечивающий безопасность для населения.',
-        correct: 'ПДУ (Предельно допустимый уровень)',
-        options: [
-          'ПДУ (Предельно допустимый уровень)',
-          'ПДК (Предельно допустимая концентрация)',
-          'Фоновое загрязнение'
-        ],
-        feedback: {
-          'ПДУ (Предельно допустимый уровень)': {
-            type: 'good',
-            title: 'Верно, это ПДУ',
-            body: 'ПДУ используют для оценки уровней физических факторов. По нему смотрят, безопасен ли уровень для людей.',
-            key: 'ПДУ — про уровни шума, вибрации и других физических факторов.'
-          },
-          'ПДК (Предельно допустимая концентрация)': {
-            type: 'bad',
-            title: 'Это не ПДК',
-            body: 'ПДК относится к концентрации вещества, а не к уровню физического воздействия.',
-            key: 'Не путайте: ПДК — концентрация, ПДУ — уровень воздействия.'
-          },
-          'Фоновое загрязнение': {
-            type: 'bad',
-            title: 'Это не фон',
-            body: 'Фон описывает общий уровень загрязнения, а не норму безопасности.',
-            key: 'Фон — фактический уровень, ПДУ — норматив.'
-          }
-        }
-      },
-      {
-        group: 'norms',
-        definition: 'Уровень загрязнения атмосферного воздуха в конкретном районе, создаваемый всеми остальными источниками, кроме рассматриваемого объекта.',
-        correct: 'Фоновое загрязнение',
-        options: [
-          'Фоновое загрязнение',
-          'ПДК (Предельно допустимая концентрация)',
-          'ПДУ (Предельно допустимый уровень)'
-        ],
-        feedback: {
-          'Фоновое загрязнение': {
-            type: 'good',
-            title: 'Верно, это фоновое загрязнение',
-            body: 'Определение говорит о суммарном вкладе других источников. Этот фон нужно учитывать при оценке воздействия вашего объекта.',
-            key: 'Фон — стартовый уровень загрязнения до учета объекта.'
-          },
-          'ПДК (Предельно допустимая концентрация)': {
-            type: 'bad',
-            title: 'Это не ПДК',
-            body: 'ПДК — норматив, а не фактический уровень загрязнения в районе.',
-            key: 'Фон — факт, ПДК — предел допустимого.'
-          },
-          'ПДУ (Предельно допустимый уровень)': {
-            type: 'bad',
-            title: 'Это не ПДУ',
-            body: 'ПДУ относится к физическим факторам, а не к суммарному загрязнению воздуха.',
-            key: 'ПДУ — про уровни воздействия, а не про фон загрязнения.'
-          }
-        }
-      },
-      {
-        group: 'docs',
-        definition: 'Документ, обосновывающий размер и границы санитарно-защитной зоны, включающий расчеты ожидаемого загрязнения и план мероприятий по защите населения.',
-        correct: 'Проект СЗЗ',
-        options: [
-          'Проект СЗЗ',
-          'Класс опасности предприятия',
-          'Натурные исследования (замеры)'
-        ],
-        feedback: {
-          'Проект СЗЗ': {
-            type: 'good',
-            title: 'Верно, это проект СЗЗ',
-            body: 'Проект описывает, какой должна быть зона: по размерам, границам, расчетам и мероприятиям. Это основа для решения Роспотребнадзора.',
-            key: 'Проект СЗЗ — главный документ-обоснование размеров и границ зоны.'
-          },
-          'Класс опасности предприятия': {
-            type: 'bad',
-            title: 'Это не класс опасности',
-            body: 'Класс опасности — характеристика объекта по СанПиН, но не документ с расчетами и планом мероприятий.',
-            key: 'Класс опасности задает исходные данные, а не заменяет проект.'
-          },
-          'Натурные исследования (замеры)': {
-            type: 'bad',
-            title: 'Это не натурные замеры',
-            body: 'Замеры подтверждают расчеты, но сами по себе не описывают границы СЗЗ и не содержат план мероприятий.',
-            key: 'Натурные замеры — часть доказательной базы, а не сам проект зоны.'
-          }
-        }
-      },
-      {
-        group: 'docs',
-        definition: 'Категория объекта (от I до V), определяемая по СанПиН исходя из мощности производства и степени вредности выбросов. Например, I класс требует санитарно-защитной зоны в 1000 м, а V класс — в 50 м.',
-        correct: 'Класс опасности предприятия',
-        options: [
-          'Класс опасности предприятия',
-          'Ориентировочный размер СЗЗ',
-          'Санитарно-защитная зона (СЗЗ)'
-        ],
-        feedback: {
-          'Класс опасности предприятия': {
-            type: 'good',
-            title: 'Верно, это класс опасности',
-            body: 'Определение описывает категорию объекта по СанПиН и привязку к размеру СЗЗ по таблице.',
-            key: 'Класс опасности задает базовый размер зоны по СанПиН.'
-          },
-          'Ориентировочный размер СЗЗ': {
-            type: 'bad',
-            title: 'Это не ориентировочный размер',
-            body: 'Ориентировочный размер — уже расстояние в метрах для выбранного класса. Здесь описана сама категория объекта.',
-            key: 'Сначала класс опасности, затем — ориентировочный размер по нему.'
-          },
-          'Санитарно-защитная зона (СЗЗ)': {
-            type: 'bad',
-            title: 'Это не сама СЗЗ',
-            body: 'СЗЗ — зона на местности. Класс опасности — характеристика объекта, которая влияет на размер этой зоны.',
-            key: 'Класс опасности относится к объекту, а не к территории.'
-          }
-        }
-      },
-      {
-        group: 'docs',
-        definition: 'Инструментальные измерения уровней загрязнения и физического воздействия в контрольных точках на границе санитарно-защитной зоны для подтверждения расчетных данных.',
-        correct: 'Натурные исследования (замеры)',
-        options: [
-          'Натурные исследования (замеры)',
-          'Проект СЗЗ',
-          'Фоновое загрязнение'
-        ],
-        feedback: {
-          'Натурные исследования (замеры)': {
-            type: 'good',
-            title: 'Верно, это натурные замеры',
-            body: 'Замеры нужны, чтобы проверить, совпадают ли фактические уровни с тем, что было получено в расчетах.',
-            key: 'Натурные замеры подтверждают или уточняют расчетную СЗЗ.'
-          },
-          'Проект СЗЗ': {
-            type: 'bad',
-            title: 'Это не проект СЗЗ',
-            body: 'Проект содержит расчеты и мероприятия, а не только сами измерения на местности.',
-            key: 'Проект — это обоснование, замеры — одна из его проверок.'
-          },
-          'Фоновое загрязнение': {
-            type: 'bad',
-            title: 'Это не фон',
-            body: 'Фон — общая загрязненность района, а здесь речь о измерениях на границе СЗЗ для конкретного объекта.',
-            key: 'Замеры на границе зоны и фон района — разные уровни информации.'
-          }
-        }
-      },
-      {
-        group: 'core',
-        definition: 'Зона, которая защищает источники питьевого водоснабжения от загрязнения и имеет свою структуру по поясам и режимам.',
-        correct: 'Зона санитарной охраны (ЗСО)',
-        options: [
-          'Зона санитарной охраны (ЗСО)',
-          'Санитарно-защитная зона (СЗЗ)',
-          'Зона с особыми условиями использования территорий (ЗОУИТ)'
-        ],
-        feedback: {
-          'Зона санитарной охраны (ЗСО)': {
-            type: 'good',
-            title: 'Верно, это ЗСО',
-            body: 'Определение относится к зоне вокруг источников питьевой воды, а не к промышленному объекту.',
-            key: 'ЗСО защищает водоисточники, СЗЗ — население от промвоздействия.'
-          },
-          'Санитарно-защитная зона (СЗЗ)': {
-            type: 'bad',
-            title: 'Это не СЗЗ',
-            body: 'СЗЗ устанавливают вокруг промобъектов и других источников техногенного воздействия, а не вокруг водоисточников.',
-            key: 'СЗЗ и ЗСО — разные по целям санитарные зоны.'
-          },
-          'Зона с особыми условиями использования территорий (ЗОУИТ)': {
-            type: 'bad',
-            title: 'Это не конкретный вид ЗОУИТ',
-            body: 'ЗСО и СЗЗ могут оформляться как ЗОУИТ, но определение прямо говорит о защите источников питьевой воды.',
-            key: 'ЗОУИТ — общий статус, конкретный вид здесь — ЗСО.'
-          }
-        }
-      }
-    ];
+  <!-- STEP 2 -->
+  <div class="szz-task-step" data-step="2">
+    <div class="szz-task-question">
+      2️⃣ <b>Расчётная СЗЗ.</b> Делаем прогноз рассеивания выбросов и шума. Проверяем, чтобы на границе зоны не превышались <span class="szz-blank">____</span> для химических веществ и <span class="szz-blank">____</span> для физических факторов. В расчётах обязательно учитываем <span class="szz-blank">____</span> территории.
+    </div>
+    <div class="szz-task-options" id="opt-2">
+      <div class="szz-task-card" data-val="ПДК">ПДК</div>
+      <div class="szz-task-card" data-val="ПДУ">ПДУ</div>
+      <div class="szz-task-card" data-val="фоновое загрязнение">Фоновое загрязнение</div>
+      <div class="szz-task-card" data-val="ЗОУИТ">ЗОУИТ</div>
+    </div>
+    <div class="szz-task-feedback" id="fb-2"></div>
+    <button class="szz-task-btn" id="check-2" disabled>Проверить</button>
+    <button class="szz-task-btn next" id="next-2" style="display:none">Далее →</button>
+  </div>
 
-    const definitionEl = document.getElementById('definition');
-    const optionsEl = document.getElementById('options');
-    const progressEl = document.getElementById('progress');
-    const statusEl = document.getElementById('status');
-    const resetBtn = document.getElementById('resetBtn');
-    const nextBtn = document.getElementById('nextBtn');
-    const overlay = document.getElementById('overlay');
-    const modalLabel = document.getElementById('modalLabel');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalBody = document.getElementById('modalBody');
-    const modalKey = document.getElementById('modalKey');
-    const closeModal = document.getElementById('closeModal');
-    const groupsEl = document.getElementById('groups');
-    const groupHelperEl = document.getElementById('groupHelper');
-    const mapTextEl = document.getElementById('mapText');
+  <!-- STEP 3 -->
+  <div class="szz-task-step" data-step="3">
+    <div class="szz-task-question">
+      3️⃣ <b>Уточнение границ.</b> После пуска производства проводим <span class="szz-blank">____</span> на границе расчётной зоны. Если нормативы не превышены, границы фиксируем в <span class="szz-blank">____</span> и согласовываем в Роспотребнадзоре. После этого СЗЗ становится <span class="szz-blank">____</span>.
+    </div>
+    <div class="szz-task-options" id="opt-3">
+      <div class="szz-task-card" data-val="натурные исследования (замеры)">Натурные исследования (замеры)</div>
+      <div class="szz-task-card" data-val="проект СЗЗ">Проект СЗЗ</div>
+      <div class="szz-task-card" data-val="установленная (окончательная) СЗЗ">Установленная (окончательная) СЗЗ</div>
+      <div class="szz-task-card" data-val="ЗСО">ЗСО</div>
+    </div>
+    <div class="szz-task-feedback" id="fb-3"></div>
+    <button class="szz-task-btn" id="check-3" disabled>Проверить</button>
+    <button class="szz-task-btn next" id="next-3" style="display:none">Далее →</button>
+  </div>
 
-    let currentGroup = 'all';
-    let filtered = data.slice();
-    let index = 0;
+  <!-- STEP 4 -->
+  <div class="szz-task-step" data-step="4">
+    <div class="szz-task-question">
+      4️⃣ <b>Проверка понимания.</b> Не путайте зоны! <span class="szz-blank">____</span> создаётся вокруг водозабора, а <span class="szz-blank">____</span> отделяет завод от жилья. Юридически обе являются <span class="szz-blank">____</span>.
+    </div>
+    <div class="szz-task-options" id="opt-4">
+      <div class="szz-task-card" data-val="ЗСО">ЗСО</div>
+      <div class="szz-task-card" data-val="СЗЗ">СЗЗ</div>
+      <div class="szz-task-card" data-val="ЗОУИТ">ЗОУИТ</div>
+      <div class="szz-task-card" data-val="ПДК">ПДК</div>
+    </div>
+    <div class="szz-task-feedback" id="fb-4"></div>
+    <button class="szz-task-btn" id="check-4" disabled>Проверить</button>
+    <button class="szz-task-btn next" id="next-4" style="display:none">Завершить</button>
+  </div>
 
-    function updateCounts() {
-      const counts = { all: data.length, core: 0, borders: 0, norms: 0, docs: 0 };
-      data.forEach(item => { counts[item.group]++; });
-      document.getElementById('count-all').textContent = `(${counts.all})`;
-      document.getElementById('count-core').textContent = `(${counts.core})`;
-      document.getElementById('count-borders').textContent = `(${counts.borders})`;
-      document.getElementById('count-norms').textContent = `(${counts.norms})`;
-      document.getElementById('count-docs').textContent = `(${counts.docs})`;
-    }
+  <!-- SUMMARY -->
+  <div class="szz-task-summary" id="szz-summary">
+    <h3>✅ Шпаргалка эколога: как связаны все понятия</h3>
+    <table class="szz-task-table">
+      <tr><th>Понятие</th><th>Роль в работе эколога</th><th>Тип</th></tr>
+      <tr><td><b>СЗЗ</b> <span class="szz-task-badge badge-zone">Зона</span></td><td>Буфер между промплощадкой и жильём</td><td>Вид ЗОУИТ</td></tr>
+      <tr><td><b>ЗОУИТ</b> <span class="szz-task-badge badge-zone">Зона</span></td><td>Юридический статус территорий с ограничениями</td><td>Классификатор</td></tr>
+      <tr><td><b>Селитебная территория</b> <span class="szz-task-badge badge-param">Объект</span></td><td>Жильё, школы, парки, которые защищаем</td><td>Цель защиты</td></tr>
+      <tr><td><b>Класс опасности предприятия</b> <span class="szz-task-badge badge-param">Параметр</span></td><td>I–V класс. Определяет стартовый радиус</td><td>Входные данные</td></tr>
+      <tr><td><b>Ориентировочный размер СЗЗ</b> <span class="szz-task-badge badge-process">Этап</span></td><td>Берётся из таблиц СанПиН по классу</td><td>Нормативная база</td></tr>
+      <tr><td><b>Расчётная (предварительная) СЗЗ</b> <span class="szz-task-badge badge-process">Этап</span></td><td>Границы по моделям рассеивания выбросов/шума</td><td>Проектная стадия</td></tr>
+      <tr><td><b>ПДК / ПДУ</b> <span class="szz-task-badge badge-limit">Норматив</span></td><td>ПДК – химия (мг/м³), ПДУ – физика (дБ, вибрация и т.д.)</td><td>Критерии соответствия</td></tr>
+      <tr><td><b>Фоновое загрязнение</b> <span class="szz-task-badge badge-param">Параметр</span></td><td>Уже существующее загрязнение, которое суммируется с новым</td><td>Учитывается в расчётах</td></tr>
+      <tr><td><b>Натурные исследования (замеры)</b> <span class="szz-task-badge badge-process">Этап</span></td><td>Полевые измерения после пуска производства</td><td>Верификация расчётов</td></tr>
+      <tr><td><b>Проект СЗЗ</b> <span class="szz-task-badge badge-zone">Документ</span></td><td>Комплексное обоснование границ и ограничений</td><td>Отчётная документация</td></tr>
+      <tr><td><b>Установленная (окончательная) СЗЗ</b> <span class="szz-task-badge badge-process">Этап</span></td><td>Утверждённая Роспотребнадзором граница</td><td>Юридический статус</td></tr>
+      <tr><td><b>ЗСО</b> <span class="szz-task-badge badge-zone">Зона</span></td><td>Зона санитарной охраны водных объектов. Не путать с СЗЗ!</td><td>Вид ЗОУИТ</td></tr>
+    </table>
+    <p style="margin-top:14px; font-size:0.9rem; color:#64748b;">💡 <i>Сохраните шпаргалку. В реальной работе все термины используются именно в этой последовательности.</i></p>
+  </div>
+</div>
 
-    function applyGroup(group) {
-      currentGroup = group;
-      if (group === 'all') {
-        filtered = data.slice();
-        groupHelperEl.textContent = 'Сейчас вы видите все термины. Можно выбрать группу, чтобы отработать только ее.';
-        mapTextEl.textContent =
-          'Объект и его класс опасности → ориентировочный размер СЗЗ → проект и расчетная СЗЗ → при необходимости натурные замеры → установленная СЗЗ (как ЗОУИТ) → отделение промплощадки от селитебной территории. ПДК, ПДУ и фон используются на этапах расчетов и оценки воздействия.';
-      } else {
-        filtered = data.filter(item => item.group === group);
-        if (group === 'core') {
-          groupHelperEl.textContent = 'Базовые зоны: СЗЗ, ее правовой статус и территории, которые она должна защищать.';
-          mapTextEl.textContent =
-            'СЗЗ как санитарная зона оформляется как вид ЗОУИТ и отделяет промплощадку от селитебной территории. ЗСО — отдельная зона для защиты источников воды.';
-        } else if (group === 'borders') {
-          groupHelperEl.textContent = 'Границы СЗЗ: от ориентировочного размера по классу до окончательной границы в ЕГРН.';
-          mapTextEl.textContent =
-            'Класс опасности дает ориентировочный размер → проект и расчеты формируют расчетную СЗЗ → решение РПН и запись в ЕГРН дают установленную СЗЗ.';
-        } else if (group === 'norms') {
-          groupHelperEl.textContent = 'Нормативы, с которыми работают при расчете и оценке воздействия.';
-          mapTextEl.textContent =
-            'ПДК задает допустимую концентрацию вещества, ПДУ — допустимый уровень физического фактора, фон — уже существующий уровень загрязнения в районе.';
-        } else if (group === 'docs') {
-          groupHelperEl.textContent = 'Документы и этапы: от класса опасности до замеров на границе зоны.';
-          mapTextEl.textContent =
-            'Класс опасности определяет исходный размер зоны → проект СЗЗ обосновывает границы и мероприятия → натурные замеры подтверждают расчеты и помогают уточнить зону.';
+<script>
+(function(){
+  const totalSteps = 4;
+  let currentStep = 1;
+  const selections = {};
+
+  // Answers: step -> correct values in order
+  const answers = {
+    1: ["класс опасности предприятия", "ориентировочный размер СЗЗ", "селитебная территория"],
+    2: ["ПДК", "ПДУ", "фоновое загрязнение"],
+    3: ["натурные исследования (замеры)", "проект СЗЗ", "установленная (окончательная) СЗЗ"],
+    4: ["ЗСО", "СЗЗ", "ЗОУИТ"]
+  };
+
+  const explanations = {
+    1: "Верно! Класс опасности (I–V) задаёт ориентировочный радиус по СанПиН. СЗЗ отделяет производство от селитебных территорий (жильё, соцобъекты, рекреация).",
+    2: "Точно. ПДК регулирует химические вещества, ПДУ – физические факторы. Фоновое загрязнение обязательно суммируется с расчётным, иначе нормативы будут нарушены.",
+    3: "Отлично. Натурные замеры подтверждают расчёты. Результаты вносятся в проект СЗЗ, после согласования граница получает статус установленной (окончательной).",
+    4: "Правильно. ЗСО защищает водозаборы, СЗЗ – жилую застройку от промышленных воздействий. Обе являются подвидами ЗОУИТ."
+  };
+
+  function updateProgress() {
+    document.getElementById('szz-progress').style.width = ((currentStep-1)/totalSteps * 100) + '%';
+  }
+
+  function initStep(step) {
+    const optContainer = document.getElementById(`opt-${step}`);
+    const checkBtn = document.getElementById(`check-${step}`);
+    const nextBtn = document.getElementById(`next-${step}`);
+    const fb = document.getElementById(`fb-${step}`);
+
+    selections[step] = [];
+
+    // Attach click handlers
+    optContainer.querySelectorAll('.szz-task-card').forEach(card => {
+      card.addEventListener('click', () => {
+        if(card.disabled) return;
+        const idx = selections[step].indexOf(card.dataset.val);
+        if(idx > -1) {
+          selections[step].splice(idx, 1);
+          card.classList.remove('selected');
+        } else {
+          if(selections[step].length < 3) {
+            selections[step].push(card.dataset.val);
+            card.classList.add('selected');
+          }
         }
-      }
-      index = 0;
-      renderCard();
-      progressEl.textContent = `Термин ${filtered.length ? index + 1 : 0} из ${filtered.length}`;
-    }
-
-    function renderCard() {
-      if (!filtered.length) {
-        definitionEl.textContent = 'В этой группе пока нет терминов.';
-        optionsEl.innerHTML = '';
-        statusEl.textContent = 'Выберите другую группу.';
-        resetBtn.disabled = true;
-        nextBtn.disabled = true;
-        return;
-      }
-      const item = filtered[index];
-      definitionEl.textContent = item.definition;
-      progressEl.textContent = `Термин ${index + 1} из ${filtered.length}`;
-      statusEl.textContent = 'Выберите термин.';
-      resetBtn.disabled = true;
-      nextBtn.disabled = true;
-      optionsEl.innerHTML = '';
-      item.options.forEach(name => {
-        const btn = document.createElement('button');
-        btn.type = 'button';
-        btn.className = 'option';
-        const spanLabel = document.createElement('span');
-        spanLabel.className = 'label';
-        spanLabel.textContent = name;
-        const spanTag = document.createElement('span');
-        spanTag.className = 'tag';
-        spanTag.textContent = 'термин';
-        btn.append(spanLabel, spanTag);
-        btn.addEventListener('click', () => onOptionClick(btn, name));
-        optionsEl.appendChild(btn);
+        checkBtn.disabled = selections[step].length !== 3;
       });
-    }
+    });
 
-    function onOptionClick(btn, name) {
-      const item = filtered[index];
-      const fb = item.feedback[name];
-      document.querySelectorAll('.option').forEach(b => {
-        b.classList.remove('correct', 'wrong');
+    checkBtn.addEventListener('click', () => {
+      const correct = answers[step];
+      let isCorrect = selections[step].every((val, i) => val === correct[i]);
+      
+      // Visual feedback
+      optContainer.querySelectorAll('.szz-task-card').forEach(card => {
+        card.disabled = true;
+        if(correct.includes(card.dataset.val)) card.classList.add('correct');
+        else if(selections[step].includes(card.dataset.val)) card.classList.add('wrong');
       });
-      btn.classList.add(fb.type === 'good' ? 'correct' : 'wrong');
-      resetBtn.disabled = false;
-      nextBtn.disabled = false;
-      statusEl.textContent = fb.type === 'good'
-        ? 'Вы подобрали верный термин. Можно перейти к следующему определению.'
-        : 'В этом ответе есть неточность. Посмотрите пояснение и при желании попробуйте другой вариант.';
-      openModal(fb.type, fb.title, fb.body, fb.key);
-    }
 
-    function openModal(type, title, body, key) {
-      modalLabel.textContent = type === 'good' ? 'Верный выбор' : 'Не совсем точно';
-      modalLabel.className = 'modal-label ' + (type === 'good' ? 'good' : 'bad');
-      modalTitle.textContent = title;
-      modalBody.textContent = body;
-      modalKey.textContent = key;
-      overlay.classList.add('active');
-      overlay.setAttribute('aria-hidden', 'false');
-    }
-
-    function closeModalFn() {
-      overlay.classList.remove('active');
-      overlay.setAttribute('aria-hidden', 'true');
-    }
-
-    resetBtn.addEventListener('click', () => {
-      document.querySelectorAll('.option').forEach(b => {
-        b.classList.remove('correct', 'wrong');
-      });
-      resetBtn.disabled = true;
-      nextBtn.disabled = true;
-      statusEl.textContent = 'Выберите термин.';
+      fb.textContent = isCorrect ? explanations[step] : `Не совсем. Правильный порядок: ${correct.join(' → ')}. ${explanations[step]}`;
+      fb.className = `szz-task-feedback show ${isCorrect ? 'ok' : 'err'}`;
+      
+      checkBtn.style.display = 'none';
+      nextBtn.style.display = 'inline-block';
+      updateProgress();
     });
 
     nextBtn.addEventListener('click', () => {
-      if (index < filtered.length - 1) {
-        index++;
-        renderCard();
+      document.querySelector(`.szz-task-step[data-step="${step}"]`).classList.remove('active');
+      currentStep++;
+      if(currentStep > totalSteps) {
+        document.getElementById('szz-summary').classList.add('show');
+        document.getElementById('szz-progress').style.width = '100%';
+        window.scrollTo({ top: document.getElementById('szz-summary').offsetTop - 20, behavior: 'smooth' });
       } else {
-        statusEl.textContent = 'Группа пройдена. Можно выбрать другую группу или вернуться к уроку.';
-        nextBtn.disabled = true;
-        resetBtn.disabled = true;
+        document.querySelector(`.szz-task-step[data-step="${currentStep}"]`).classList.add('active');
+        initStep(currentStep);
       }
     });
+  }
 
-    closeModal.addEventListener('click', closeModalFn);
-    overlay.addEventListener('click', (e) => {
-      if (e.target === overlay) closeModalFn();
-    });
-    document.addEventListener('keydown', (e) => {
-      if (e.key === 'Escape') closeModalFn();
-    });
+  // Init first step
+  initStep(1);
+})();
+</script>
 
-    groupsEl.addEventListener('click', (e) => {
-      const btn = e.target.closest('.group-btn');
-      if (!btn) return;
-      document.querySelectorAll('.group-btn').forEach(b => b.classList.remove('active'));
-      btn.classList.add('active');
-      applyGroup(btn.dataset.group);
-    });
-
-    updateCounts();
-    applyGroup('all');
-  </script>
 </body>
 </html>
