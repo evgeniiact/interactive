@@ -197,7 +197,7 @@
       display: grid;
       gap: 8px;
       align-content: start;
-      min-height: 148px;
+      min-height: 170px;
       overflow: auto;
       padding-right: 2px;
     }
@@ -482,7 +482,7 @@
 
       <div class="cards-panel">
         <div class="cards-head">
-          <h2>Карточки</h2>
+          <h2>Объекты для распределения</h2>
         </div>
         <div class="slider-wrap">
           <button class="slider-btn" type="button" id="prevCardsBtn" aria-label="Предыдущие карточки">‹</button>
@@ -809,10 +809,19 @@
       return btn;
     }
 
+    function shuffle(array) {
+      const copy = [...array];
+      for (let i = copy.length - 1; i > 0; i -= 1) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [copy[i], copy[j]] = [copy[j], copy[i]];
+      }
+      return copy;
+    }
+
     function renderCards() {
       cardsPool.innerHTML = '';
       document.querySelectorAll('.drop-area').forEach(area => area.innerHTML = '');
-      cardsData.forEach(card => cardsPool.appendChild(createCard(card)));
+      shuffle(cardsData).forEach(card => cardsPool.appendChild(createCard(card)));
       placedCount = 0;
       pendingFeedback = false;
       currentSlide = 0;
@@ -831,8 +840,13 @@
       const perSlide = 2;
       const maxSlide = Math.max(0, Math.ceil(cards.length / perSlide) - 1);
       if (currentSlide > maxSlide) currentSlide = maxSlide;
-      const shift = currentSlide * 100;
-      cardsPool.style.transform = `translateX(-${shift}%)`;
+
+      cards.forEach((card, index) => {
+        const start = currentSlide * perSlide;
+        const end = start + perSlide;
+        card.style.display = index >= start && index < end ? 'block' : 'none';
+      });
+
       prevCardsBtn.disabled = currentSlide === 0;
       nextCardsBtn.disabled = currentSlide === maxSlide || cards.length <= perSlide;
     }
@@ -909,6 +923,9 @@
         if (zoneName === cardData.correctZone) {
           dragged.classList.add('correct');
           dragged.draggable = false;
+          dragged.style.display = 'block';
+          dragged.style.minWidth = '100%';
+          dragged.style.maxWidth = '100%';
           zone.querySelector('.drop-area').appendChild(dragged);
           if (!dragged.dataset.counted) {
             dragged.dataset.counted = 'true';
