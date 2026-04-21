@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Интерактив: Для кого важна СЗЗ</title>
+<title>Справочник: Для кого важна СЗЗ</title>
 <style>
   :root {
     --bg: #ffffff;
@@ -11,11 +11,7 @@
     --text-muted: #64748b;
     --border: #e2e8f0;
     --primary: #059669;
-    --primary-hover: #047857;
     --secondary: #0ea5e9;
-    --secondary-hover: #0284c7;
-    --danger: #ef4444;
-    --danger-hover: #dc2626;
   }
   * { box-sizing: border-box; }
   body {
@@ -24,7 +20,7 @@
     color: var(--text); line-height: 1.6;
   }
   .szz-container {
-    max-width: 960px; margin: 0 auto; background: var(--bg); 
+    max-width: 900px; margin: 0 auto; background: var(--bg); 
     border: 1px solid var(--border); border-radius: 10px; 
     padding: 32px; box-shadow: 0 4px 16px rgba(0,0,0,0.04);
   }
@@ -32,73 +28,57 @@
   .szz-header h2 { margin: 0 0 8px; font-size: 1.5rem; font-weight: 600; }
   .szz-header p { margin: 0; color: var(--text-muted); font-size: 0.95rem; }
   
-  .szz-progress { height: 3px; background: var(--border); border-radius: 2px; margin: 20px 0; overflow: hidden; }
-  .szz-progress-bar { height: 100%; background: var(--primary); width: 0%; transition: width 0.4s ease; border-radius: 2px; }
-  
-  .szz-step { display: none; animation: szz-fade 0.3s ease; }
-  .szz-step.active { display: block; }
-  @keyframes szz-fade { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  
-  .szz-instruction { background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; padding: 14px; margin: 16px 0; font-size: 0.95rem; }
-  
-  .szz-pool {
-    display: flex; flex-wrap: wrap; gap: 10px; margin: 16px 0; padding: 14px; 
-    background: #f8fafc; border-radius: 8px; min-height: 64px; border: 1px solid var(--border);
+  .szz-char {
+    display: flex; gap: 16px; background: #f8fafc; border-left: 3px solid var(--secondary);
+    padding: 16px; border-radius: 6px; margin-bottom: 24px;
   }
-  .szz-card {
-    background: #ffffff; border: 2px solid var(--border); padding: 10px 14px; border-radius: 6px;
-    cursor: grab; user-select: none; font-size: 0.9rem; transition: all 0.2s; white-space: normal; max-width: 260px;
+  .szz-char-avatar {
+    width: 48px; height: 48px; border-radius: 50%; background: var(--secondary);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 1.2rem; flex-shrink: 0;
   }
-  .szz-card:hover { border-color: var(--secondary); }
-  .szz-card.dragging { opacity: 0.5; border-style: dashed; }
-  .szz-card.placed { cursor: default; }
-  .szz-card.correct { border-color: var(--primary); background: #ffffff; }
-  .szz-card.wrong { border-color: var(--danger); background: #ffffff; animation: shake 0.3s; }
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
+  .szz-char-text { font-size: 0.95rem; }
+  .szz-char-text b { color: var(--text); display: block; margin-bottom: 4px; }
   
-  .szz-categories { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 20px 0; }
-  .szz-drop-zone {
-    background: #ffffff; border: 2px dashed var(--border); border-radius: 8px; 
-    min-height: 140px; padding: 12px; display: flex; flex-direction: column; gap: 6px; 
-    transition: background 0.2s, border-color 0.2s;
-  }
-  .szz-drop-zone.drag-over { border-color: var(--secondary); background: #f8fafc; }
-  .szz-zone-label { 
-    font-weight: 600; font-size: 0.9rem; margin-bottom: 10px; color: var(--text); 
-    padding-bottom: 8px; border-bottom: 1px solid var(--border); text-align: center; 
+  .szz-instruction { 
+    background: #f8fafc; border: 1px solid var(--border); border-radius: 8px; 
+    padding: 14px; margin: 16px 0; font-size: 0.95rem; color: var(--text-muted);
   }
   
-  .quiz-wrap { background: #ffffff; padding: 16px; border-radius: 8px; margin: 16px 0; border: 1px solid var(--border); }
-  .quiz-question { font-weight: 500; margin-bottom: 12px; font-size: 1rem; }
-  .quiz-options { display: grid; gap: 8px; }
-  .quiz-label {
-    display: flex; align-items: flex-start; gap: 10px; padding: 12px; 
-    border: 1px solid var(--border); border-radius: 6px; cursor: pointer; 
-    transition: all 0.2s; background: #fff; position: relative;
+  .szz-cards-grid { 
+    display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; margin: 24px 0; 
   }
-  .quiz-label:hover { border-color: var(--secondary); }
-  .quiz-label input { margin-top: 4px; }
-  .quiz-label.selected-correct { border-color: var(--primary); }
-  .quiz-label.clickable { cursor: pointer; }
-  .quiz-label.clickable::after { 
-    content: "i"; margin-left: auto; width: 16px; height: 16px; 
-    background: var(--secondary); color: #fff; font-size: 10px; border-radius: 50%; 
-    display: flex; align-items: center; justify-content: center; font-weight: bold; flex-shrink: 0; 
+  .szz-ref-card {
+    background: #ffffff; border: 1px solid var(--border); border-radius: 8px; 
+    padding: 16px; cursor: pointer; transition: all 0.2s; position: relative;
+  }
+  .szz-ref-card:hover { border-color: var(--secondary); box-shadow: 0 2px 8px rgba(0,0,0,0.04); }
+  .szz-ref-card h4 { margin: 0 0 8px; font-size: 1rem; color: var(--text); }
+  .szz-ref-card p { margin: 0; font-size: 0.9rem; color: var(--text-muted); }
+  .szz-ref-card::after {
+    content: "i"; position: absolute; top: 12px; right: 14px;
+    width: 18px; height: 18px; background: var(--secondary); color: #fff;
+    font-size: 11px; border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-weight: bold;
   }
   
-  .szz-btn {
-    background: var(--primary); color: #ffffff; border: none; padding: 10px 20px; 
-    border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.95rem; 
-    transition: background 0.2s; margin-top: 16px;
+  .szz-summary-section {
+    background: #ffffff; border: 1px solid var(--border); border-radius: 10px; 
+    padding: 24px; margin-top: 24px;
   }
-  .szz-btn:hover { background: var(--primary-hover); }
-  .szz-btn:disabled { background: #94a3b8; cursor: not-allowed; }
-  .szz-btn-outline { background: #ffffff; border: 1px solid var(--border); color: var(--text); }
-  .szz-btn-outline:hover { background: #f8fafc; border-color: #cbd5e1; }
-  .szz-btn-next { background: var(--secondary); }
-  .szz-btn-next:hover { background: var(--secondary-hover); }
+  .szz-summary-section h3 { margin: 0 0 16px; font-size: 1.2rem; color: var(--text); border-bottom: 2px solid var(--primary); padding-bottom: 10px; display: inline-block; }
+  .szz-summary-section h4 { margin: 20px 0 8px; font-size: 1rem; color: var(--text); }
+  .szz-summary-section p { margin: 0 0 10px; color: #475569; font-size: 0.95rem; }
+  .szz-summary-section ul { margin: 8px 0 16px 20px; padding: 0; }
+  .szz-summary-section li { margin-bottom: 6px; color: #475569; font-size: 0.95rem; }
+  .szz-note { 
+    background: #f8fafc; border-left: 3px solid var(--text-muted); 
+    padding: 12px 16px; margin-top: 16px; font-style: italic; color: #64748b; font-size: 0.9rem; 
+  }
   
-  .szz-actions { display: flex; gap: 12px; margin-top: 20px; flex-wrap: wrap; align-items: center; }
+  .comparison-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9rem; }
+  .comparison-table th, .comparison-table td { padding: 10px 12px; border: 1px solid var(--border); text-align: left; vertical-align: top; }
+  .comparison-table th { background: #f8fafc; font-weight: 600; color: var(--text); }
   
   /* Modal */
   .szz-overlay {
@@ -109,7 +89,7 @@
   .szz-overlay.active { display: flex; }
   .szz-modal {
     background: #ffffff; border: 1px solid var(--border); border-radius: 10px; 
-    max-width: 660px; width: 100%; box-shadow: 0 16px 40px rgba(0,0,0,0.12); 
+    max-width: 640px; width: 100%; box-shadow: 0 16px 40px rgba(0,0,0,0.12); 
     overflow: hidden; animation: modal-in 0.2s ease;
   }
   @keyframes modal-in { from { opacity: 0; transform: scale(0.98) translateY(10px); } to { opacity: 1; transform: scale(1) translateY(0); } }
@@ -123,21 +103,8 @@
   .szz-modal-body { padding: 20px; font-size: 0.95rem; line-height: 1.6; background: #ffffff; color: #334155; }
   .szz-modal-footer { padding: 12px 20px; border-top: 1px solid var(--border); background: #f8fafc; text-align: right; }
   
-  .szz-breakdown { display: none; background: #ffffff; border: 1px solid var(--border); border-radius: 10px; padding: 28px; margin-top: 24px; }
-  .szz-breakdown.show { display: block; animation: szz-fade 0.4s ease; }
-  .szz-breakdown h3 { margin: 0 0 20px; font-size: 1.3rem; color: var(--text); border-bottom: 2px solid var(--primary); padding-bottom: 10px; display: inline-block; }
-  .szz-breakdown h4 { margin: 24px 0 10px; font-size: 1.05rem; color: var(--text); }
-  .szz-breakdown p { margin: 0 0 10px; color: #475569; }
-  .szz-breakdown ul { margin: 8px 0 16px 20px; padding: 0; }
-  .szz-breakdown li { margin-bottom: 6px; color: #475569; }
-  .szz-note { background: #f8fafc; border-left: 3px solid var(--text-muted); padding: 12px 16px; margin-top: 16px; font-style: italic; color: #64748b; }
-  
-  .comparison-table { width: 100%; border-collapse: collapse; margin: 16px 0; font-size: 0.9rem; }
-  .comparison-table th, .comparison-table td { padding: 10px 12px; border: 1px solid var(--border); text-align: left; vertical-align: top; }
-  .comparison-table th { background: #f8fafc; font-weight: 600; color: var(--text); }
-  
   @media (max-width: 700px) {
-    .szz-categories { grid-template-columns: 1fr; }
+    .szz-cards-grid { grid-template-columns: 1fr; }
     .szz-container { padding: 20px; }
   }
 </style>
@@ -146,94 +113,65 @@
 
 <div class="szz-container">
   <div class="szz-header">
-    <h2>Интерактив: Для кого важна СЗЗ</h2>
-    <p>Практический разбор заинтересованных сторон</p>
+    <h2>Справочник: Для кого важна СЗЗ</h2>
+    <p>Краткий обзор заинтересованных сторон и их интересов</p>
   </div>
-  <div class="szz-progress"><div class="szz-progress-bar" id="progressBar"></div></div>
 
-  <!-- STEP 1 -->
-  <section class="szz-step active" id="step1">
-    <h3>Задание 1. Распределение интересов</h3>
-    <div class="szz-instruction">
-      Разместите карточки с описанием интересов в столбцы соответствующих сторон. Комментарий появится сразу после размещения.
+  <div class="szz-char">
+    <div class="szz-char-avatar">О</div>
+    <div class="szz-char-text">
+      <b>Олег, эколог-новичок</b>
+      Раньше я думал, что СЗЗ нужна только для отчётности. Но на практике с ней работают разные стороны, и у каждой свой интерес. Этот справочник поможет быстро ориентироваться, кто и зачем обращается к теме санитарно-защитной зоны.
     </div>
-    <div class="szz-pool" id="pool1">
-      <div class="szz-card" draggable="true" data-id="owner">Инструмент управления рисками: видны ограничения для стройки, реконструкции и отношений с соседними территориями.</div>
-      <div class="szz-card" draggable="true" data-id="rospotrebnadzor">Основание для оценки соблюдения санитарных требований и защиты населения от воздействия объекта.</div>
-      <div class="szz-card" draggable="true" data-id="designers">Условие для планировки, размещения и реконструкции объектов на территории.</div>
-      <div class="szz-card" draggable="true" data-id="public">Подтверждение того, что предприятие учитывает интересы окружающей территории и не подвергает население рискам.</div>
-    </div>
-    <div class="szz-categories">
-      <div class="szz-drop-zone" data-zone="owner"><div class="szz-zone-label">Собственник и руководство предприятия</div></div>
-      <div class="szz-drop-zone" data-zone="rospotrebnadzor"><div class="szz-zone-label">Роспотребнадзор</div></div>
-      <div class="szz-drop-zone" data-zone="designers"><div class="szz-zone-label">Проектировщики</div></div>
-      <div class="szz-drop-zone" data-zone="public"><div class="szz-zone-label">Жители и органы власти</div></div>
-    </div>
-    <div class="szz-actions">
-      <button class="szz-btn szz-btn-outline" id="reset1">Сбросить</button>
-      <button class="szz-btn szz-btn-next" id="next1" style="display:none">Следующее задание</button>
-    </div>
-  </section>
+  </div>
 
-  <!-- STEP 2 -->
-  <section class="szz-step" id="step2">
-    <h3>Задание 2. Практическая ситуация</h3>
-    <div class="quiz-wrap">
-      <p class="quiz-question">Предприятие планирует расширить производство, но проектный расчёт показывает, что на границе существующей СЗЗ концентрация веществ превысит ПДК. Чья позиция станет решающим юридическим барьером для согласования расширения?</p>
-      <div class="quiz-options">
-        <label class="quiz-label" data-ans="a"><input type="radio" name="q2" value="a"> Собственник предприятия, так как он несёт финансовые риски от остановки стройки.</label>
-        <label class="quiz-label" data-ans="b"><input type="radio" name="q2" value="b"> Проектировщики, так как они обязаны пересмотреть генплан до передачи документации.</label>
-        <label class="quiz-label" data-ans="c"><input type="radio" name="q2" value="c"> Роспотребнадзор, так как превышение ПДК на границе зоны является прямым нарушением санитарных требований.</label>
-        <label class="quiz-label" data-ans="d"><input type="radio" name="q2" value="d"> Жители соседних кварталов, так как их жалоба автоматически блокирует любое строительство.</label>
-      </div>
-    </div>
-    <div class="szz-actions">
-      <button class="szz-btn" id="check2">Проверить</button>
-      <button class="szz-btn szz-btn-outline" id="reset2">Сбросить</button>
-      <button class="szz-btn szz-btn-next" id="next2" style="display:none">Показать разбор</button>
-    </div>
-  </section>
+  <div class="szz-instruction">
+    Нажмите на любую карточку, чтобы увидеть развёрнутый комментарий. Материал структурирован по группам заинтересованных сторон.
+  </div>
 
-  <!-- STEP 3: BREAKDOWN -->
-  <section class="szz-breakdown" id="breakdown">
-    <h3>Полный разбор: Стороны, заинтересованные в СЗЗ</h3>
+  <div class="szz-cards-grid">
+    <div class="szz-ref-card" data-key="owner">
+      <h4>Собственник и руководство предприятия</h4>
+      <p>Инструмент управления рисками и ограничениями застройки</p>
+    </div>
+    <div class="szz-ref-card" data-key="rospotrebnadzor">
+      <h4>Роспотребнадзор</h4>
+      <p>Основание для контроля соблюдения санитарных требований</p>
+    </div>
+    <div class="szz-ref-card" data-key="designers">
+      <h4>Проектировщики</h4>
+      <p>Условие для планировки и размещения объектов</p>
+    </div>
+    <div class="szz-ref-card" data-key="public">
+      <h4>Жители и органы власти</h4>
+      <p>Гарантия безопасности окружающей территории</p>
+    </div>
+  </div>
+
+  <div class="szz-summary-section">
+    <h3>Как эколу работать с заинтересованными сторонами</h3>
     
-    <p>СЗЗ не существует в вакууме. Это юридический и экологический инструмент, который формирует баланс интересов между промышленностью, государством и обществом. Понимание позиции каждой стороны помогает экологу выстраивать аргументацию, готовить документы и реагировать на запросы.</p>
+    <h4>Общая логика взаимодействия</h4>
+    <p>СЗЗ это не изолированный документ, а инструмент балансировки интересов. Понимание позиции каждой стороны помогает экологу готовить аргументированные материалы, избегать замечаний экспертизы и выстраивать диалог на языке, понятном собеседнику.</p>
     
     <table class="comparison-table">
-      <tr><th>Сторона</th><th>Ключевой интерес</th><th>Практическое значение для эколога</th></tr>
-      <tr><td><strong>Собственник / руководство</strong></td><td>Управление рисками и ограничениями застройки</td><td>Эколог должен заранее оценивать, как изменения в технологии повлияют на границы СЗЗ, чтобы избежать блокировки инвестиций.</td></tr>
-      <tr><td><strong>Роспотребнадзор</strong></td><td>Контроль соблюдения санитарных норм</td><td>Эколог готовит расчёты, проекты и протоколы замеров именно для подтверждения соответствия требованиям надзорного органа.</td></tr>
-      <tr><td><strong>Проектировщики</strong></td><td>Условие для размещения и реконструкции объектов</td><td>Эколог взаимодействует с проектным отделом на стадии генплана, чтобы СЗЗ была учтена до начала строительства.</td></tr>
-      <tr><td><strong>Жители и органы власти</strong></td><td>Гарантия безопасности территории</td><td>Эколог участвует в общественных обсуждениях, готовит понятные материалы о режимах зоны и мерах снижения воздействия.</td></tr>
+      <tr><th>Сторона</th><th>Ключевой вопрос</th><th>Что готовить экологу</th></tr>
+      <tr><td><strong>Собственник</strong></td><td>«Как СЗЗ повлияет на инвестиции и развитие?»</td><td>Прогноз границ при изменении технологии, оценка стоимости модернизации, варианты оптимизации.</td></tr>
+      <tr><td><strong>Роспотребнадзор</strong></td><td>«Соблюдены ли нормативы защиты населения?»</td><td>Расчёты рассеивания, протоколы замеров, проект СЗЗ в установленном формате, обоснование границ.</td></tr>
+      <tr><td><strong>Проектировщики</strong></td><td>«Где можно размещать объекты на генплане?»</td><td>Картографические материалы с границами СЗЗ, ограничения по видам деятельности, требования к инфраструктуре.</td></tr>
+      <tr><td><strong>Жители и власть</strong></td><td>«Безопасно ли жить рядом с предприятием?»</td><td>Понятные схемы зоны, пояснения о мерах снижения воздействия, результаты общественного мониторинга.</td></tr>
     </table>
     
-    <h4>Как эколог работает с каждой группой</h4>
+    <h4>Типичные ситуации и роль эколога</h4>
     <ul>
-      <li><strong>С собственником:</strong> фокус на экономических последствиях (штрафы, приостановка деятельности, стоимость расширения). Аргументация строится на прогнозах и вариантах оптимизации.</li>
-      <li><strong>С Роспотребнадзором:</strong> фокус на нормативном соответствии. Документация должна строго соответствовать формам, методикам и срокам подачи.</li>
-      <li><strong>С проектировщиками:</strong> фокус на интеграции экологических ограничений в архитектуру и генплан. Раннее участие эколога снижает стоимость переделок.</li>
-      <li><strong>С населением и властью:</strong> фокус на прозрачности и безопасности. Важно переводить технические термины (ПДК, фоновый уровень, рассеивание) на язык конкретных мер защиты.</li>
+      <li><strong>Расширение производства:</strong> эколог оценивает, потребует ли увеличение выбросов пересмотра границ СЗЗ, и заранее информирует собственника о возможных ограничениях.</li>
+      <li><strong>Новое строительство вблизи предприятия:</strong> эколог предоставляет проектировщикам актуальные данные о режиме СЗЗ, чтобы избежать конфликтов на этапе экспертизы.</li>
+      <li><strong>Запрос от надзорного органа:</strong> эколог оперативно готовит выписки из проекта СЗЗ и протоколы замеров, подтверждая соблюдение нормативов.</li>
+      <li><strong>Общественные слушания:</strong> эколог переводит технические параметры (ПДК, фоновый уровень, рассеивание) в конкретные меры защиты, понятные населению.</li>
     </ul>
     
     <div class="szz-note">
-      В реальной практике ошибки возникают именно на стыке интересов: когда эколог готовит документы только для надзорного органа, забывая о потребностях проектировщиков, или когда руководство игнорирует социальный аспект СЗЗ. Ваша задача как специалиста — видеть всю картину и обеспечивать согласованность решений на каждом этапе.
-    </div>
-  </section>
-</div>
-
-<!-- Intro Modal -->
-<div class="szz-overlay active" id="introModal">
-  <div class="szz-modal">
-    <div class="szz-modal-header">
-      <h3>Вводная ситуация</h3>
-      <button class="szz-modal-close" aria-label="Закрыть">&times;</button>
-    </div>
-    <div class="szz-modal-body">
-      <p><strong>Олег, эколог-новичок:</strong> Я думал, СЗЗ нужна в первую очередь для отчётов в Роспотребнадзор. Но на совещании я услышал, что из-за неё собственник не может расширить цех, проектировщики меняют генплан, а жители требуют дополнительных замеров. Кто на самом деле зависит от этой зоны и почему каждый трактует её по-своему?</p>
-    </div>
-    <div class="szz-modal-footer">
-      <button class="szz-btn" id="closeIntro">Начать разбор</button>
+      Запомните: ваша ценность как эколога не только в расчётах, но и в способности объяснять, как СЗЗ влияет на решения разных сторон. Этот справочник можно использовать как шпаргалку при подготовке встреч, отчётов и ответов на запросы.
     </div>
   </div>
 </div>
@@ -242,211 +180,63 @@
 <div class="szz-overlay" id="detailModal">
   <div class="szz-modal">
     <div class="szz-modal-header">
-      <h3 id="detailTitle">Результат</h3>
+      <h3 id="detailTitle">Подробности</h3>
       <button class="szz-modal-close" id="detailClose">&times;</button>
     </div>
     <div class="szz-modal-body" id="detailBody"></div>
     <div class="szz-modal-footer">
-      <button class="szz-btn" id="detailCloseBtn">Закрыть</button>
+      <button class="szz-btn" id="detailCloseBtn" style="background:#059669;color:#fff;border:none;padding:8px 16px;border-radius:6px;cursor:pointer">Закрыть</button>
     </div>
   </div>
 </div>
 
 <script>
 (function(){
-  const state = { step: 1, s1Locked: {}, s2Complete: false };
-  const correctZones = { owner: 'owner', rospotrebnadzor: 'rospotrebnadzor', designers: 'designers', public: 'public' };
-  const zoneNames = { 
-    owner: 'Собственник и руководство предприятия', 
-    rospotrebnadzor: 'Роспотребнадзор', 
-    designers: 'Проектировщики', 
-    public: 'Жители и органы власти' 
-  };
-  const cardTexts = {
-    owner: 'Инструмент управления рисками: видны ограничения для стройки, реконструкции и отношений с соседними территориями.',
-    rospotrebnadzor: 'Основание для оценки соблюдения санитарных требований и защиты населения от воздействия объекта.',
-    designers: 'Условие для планировки, размещения и реконструкции объектов на территории.',
-    public: 'Подтверждение того, что предприятие учитывает интересы окружающей территории и не подвергает население рискам.'
-  };
-
-  // Feedback generator
-  function getFeedback(cardId, chosenZone, isCorrect) {
-    const cardName = cardTexts[cardId];
-    if (isCorrect) {
-      let detail = '';
-      switch(cardId) {
-        case 'owner': detail = 'Для бизнеса СЗЗ — это карта ограничений. Она показывает, где нельзя строить, какие технологии потребуют модернизации и как объект вписывается в отношения с соседними территориями. Эколог здесь выступает аналитиком рисков.'; break;
-        case 'rospotrebnadzor': detail = 'Надзорный орган использует СЗЗ как правовой инструмент. Если на границе зоны фиксируется превышение ПДК или ПДУ, это основание для предписаний, штрафов или приостановки деятельности. СЗЗ даёт чёткие координаты для контроля.'; break;
-        case 'designers': detail = 'Архитекторы и инженеры обязаны учитывать границы СЗЗ на стадии генплана. Размещение корпусов, дорог и коммуникаций внутри зоны строго регламентировано. Эколог обеспечивает интеграцию санитарных требований в проектную документацию.'; break;
-        case 'public': detail = 'Для населения и муниципалитета СЗЗ — гарантия безопасности. Её наличие подтверждает, что завод не будет строить вплотную к домам, а выбросы и шум будут поглощаться на расстоянии. Эколог отвечает за прозрачность этой информации.'; break;
-      }
-      return `<p><strong>Верно.</strong> Карточка размещена в столбец «${zoneNames[chosenZone]}».</p><p style="margin-top:12px">${detail}</p>`;
-    } else {
-      const correctZone = zoneNames[correctZones[cardId]];
-      let mismatch = '';
-      switch(chosenZone) {
-        case 'owner': mismatch = 'Вы разместили карточку в столбец собственника. Для него СЗЗ действительно важна, но её главный фокус — управление ограничениями и рисками застройки, а не нормативный контроль или планировка.'; break;
-        case 'rospotrebnadzor': mismatch = 'Вы разместили карточку в столбец Роспотребнадзора. Надзорный орган фокусируется на проверке соблюдения санитарных норм и защите здоровья, а не на инвестиционных рисках или градостроительных решениях.'; break;
-        case 'designers': mismatch = 'Вы разместили карточку в столбец проектировщиков. Для них СЗЗ — техническое условие для генплана и размещения объектов, а не инструмент оценки социальных рисков или нормативного контроля.'; break;
-        case 'public': mismatch = 'Вы разместили карточку в столбец жителей и власти. Для этой группы СЗЗ подтверждает безопасность территории и учёт интересов населения, а не регулирует проектные решения или надзорные проверки.'; break;
-      }
-      return `<p><strong>Неверно.</strong> Карточка не соответствует интересам столбца «${zoneNames[chosenZone]}».</p><p style="margin-top:10px">${mismatch}</p><p style="margin-top:10px; color: var(--primary)"><strong>Правильное соответствие:</strong> ${correctZone}. Перетащите карточку обратно в пул, если хотите исправить.</p>`;
+  const content = {
+    owner: {
+      title: "Собственник и руководство предприятия",
+      text: "<p><strong>Интерес:</strong> СЗЗ как инструмент управления рисками.</p><p>Для бизнеса санитарно-защитная зона это не просто линия на карте, а источник ограничений и возможностей. По границам СЗЗ видно:</p><ul><li>Где нельзя вести новое строительство или реконструкцию без изменения режима зоны.</li><li>Какие технологические изменения потребуют пересмотра границ и дополнительных согласований.</li><li>Как предприятие соотносится с соседними территориями и где возможны конфликты интересов.</li></ul><p><strong>Практическое значение для эколога:</strong> Вы выступаете аналитиком рисков. Задача заранее оценить, как модернизация производства или изменение ассортимента повлияет на выбросы и, соответственно, на границы СЗЗ. Это позволяет собственнику принимать взвешенные инвестиционные решения и избегать ситуаций, когда стройка останавливается из-за санитарных ограничений.</p><p><strong>Что готовить:</strong> Прогнозные расчёты, сравнительные сценарии, оценку стоимости мероприятий по сохранению границ СЗЗ.</p>"
+    },
+    rospotrebnadzor: {
+      title: "Роспотребнадзор",
+      text: "<p><strong>Интерес:</strong> Контроль соблюдения санитарных требований.</p><p>Для надзорного органа СЗЗ это правовой инструмент проверки. Роспотребнадзор оценивает:</p><ul><li>Соответствует ли проект СЗЗ методикам и СанПиН.</li><li>Не превышаются ли ПДК и ПДУ на границе зоны по расчётным и натурным данным.</li><li>Достаточно ли мер по защите населения от воздействия предприятия.</li></ul><p><strong>Практическое значение для эколога:</strong> Вы готовите документацию, которая проходит экспертизу. Ошибки в расчётах, неполные данные замеров или несоответствие формам подачи приводят к замечаниям и задержкам. Точность и соответствие регламентам критичны.</p><p><strong>Что готовить:</strong> Проект СЗЗ в установленном формате, протоколы лабораторных исследований, расчёты рассеивания с обоснованием исходных данных, пояснительную записку.</p>"
+    },
+    designers: {
+      title: "Проектировщики",
+      text: "<p><strong>Интерес:</strong> СЗЗ как условие генплана и размещения объектов.</p><p>Для архитекторов и инженеров границы СЗЗ это техническое ограничение, которое влияет на:</p><ul><li>Расположение новых корпусов, складов и коммуникаций.</li><li>Проектирование подъездных путей и зон погрузки.</li><li>Выбор материалов и технологий с учётом требований к выбросам и шуму.</li></ul><p><strong>Практическое значение для эколога:</strong> Вы интегрируете санитарные требования в проектную документацию на ранней стадии. Чем раньше эколог подключится к генплану, тем меньше дорогостоящих переделок потребуется позже.</p><p><strong>Что готовить:</strong> Картографические материалы с наложением границ СЗЗ, выписки из проекта с ограничениями по видам деятельности, рекомендации по размещению инфраструктуры.</p>"
+    },
+    public: {
+      title: "Жители и органы власти",
+      text: "<p><strong>Интерес:</strong> Гарантия безопасности территории.</p><p>Для населения и муниципалитета СЗЗ это подтверждение того, что предприятие:</p><ul><li>Не будет строить жилые или социальные объекты в зоне воздействия.</li><li>Принимает меры по снижению выбросов и шума.</li><li>Учитывает интересы окружающей застройки при развитии.</li></ul><p><strong>Практическое значение для эколога:</strong> Вы участвуете в общественных обсуждениях и готовите материалы, которые переводят технические параметры на язык конкретных мер защиты. Прозрачность и доступность информации снижает социальную напряжённость.</p><p><strong>Что готовить:</strong> Схемы СЗЗ в понятном масштабе, пояснения о режиме зоны, результаты мониторинга, ответы на частые вопросы жителей.</p>"
     }
-  }
-
-  // Modal logic
-  const detailModal = document.getElementById('detailModal');
-  const detailTitle = document.getElementById('detailTitle');
-  const detailBody = document.getElementById('detailBody');
-  
-  function openModal(title, htmlContent, isCorrect) {
-    detailTitle.textContent = title;
-    detailBody.innerHTML = htmlContent;
-    detailBody.style.borderLeft = `4px solid ${isCorrect ? 'var(--primary)' : 'var(--danger)'}`;
-    detailModal.classList.add('active');
-  }
-  function closeModal() { detailModal.classList.remove('active'); }
-  
-  document.getElementById('detailClose').addEventListener('click', closeModal);
-  document.getElementById('detailCloseBtn').addEventListener('click', closeModal);
-  detailModal.addEventListener('click', e => { if(e.target === detailModal) closeModal(); });
-
-  // Progress & Nav
-  const progressBar = document.getElementById('progressBar');
-  function updateProgress() { progressBar.style.width = ((state.step - 1) / 2 * 100) + '%'; }
-  function showStep(n) {
-    document.querySelectorAll('.szz-step').forEach(s => s.classList.remove('active'));
-    document.getElementById('step' + n).classList.add('active');
-    state.step = n; updateProgress();
-    window.scrollTo({ top: document.querySelector('.szz-container').offsetTop - 20, behavior: 'smooth' });
-  }
-  document.getElementById('closeIntro').addEventListener('click', () => document.getElementById('introModal').classList.remove('active'));
-
-  // STEP 1: Immediate Drop Feedback
-  const cards1 = document.querySelectorAll('#step1 .szz-card');
-  const dropZones1 = document.querySelectorAll('#step1 .szz-drop-zone');
-  const pool1 = document.getElementById('pool1');
-  const reset1 = document.getElementById('reset1');
-  const next1 = document.getElementById('next1');
-
-  cards1.forEach(c => {
-    c.addEventListener('dragstart', e => { 
-      if(c.dataset.locked) { e.preventDefault(); return; }
-      e.dataTransfer.setData('text', c.dataset.id); c.classList.add('dragging'); 
-    });
-    c.addEventListener('dragend', () => c.classList.remove('dragging'));
-  });
-
-  dropZones1.forEach(z => {
-    z.addEventListener('dragover', e => { e.preventDefault(); z.classList.add('drag-over'); });
-    z.addEventListener('dragleave', () => z.classList.remove('drag-over'));
-    z.addEventListener('drop', e => {
-      e.preventDefault(); z.classList.remove('drag-over');
-      const id = e.dataTransfer.getData('text');
-      const item = document.querySelector(`.szz-card[data-id="${id}"]`);
-      if (!item || item.dataset.locked) return;
-
-      const chosenZone = z.dataset.zone;
-      const isCorrect = chosenZone === correctZones[id];
-
-      z.appendChild(item);
-      item.classList.add('placed');
-      item.classList.remove('correct', 'wrong');
-
-      if (isCorrect) {
-        item.classList.add('correct');
-        item.dataset.locked = "true";
-        item.draggable = false;
-        state.s1Locked[id] = chosenZone;
-        openModal("Результат", getFeedback(id, chosenZone, true), true);
-      } else {
-        item.classList.add('wrong');
-        openModal("Результат", getFeedback(id, chosenZone, false), false);
-      }
-      checkS1Completion();
-    });
-  });
-
-  pool1.addEventListener('dragover', e => e.preventDefault());
-  pool1.addEventListener('drop', e => {
-    e.preventDefault();
-    const id = e.dataTransfer.getData('text');
-    const item = document.querySelector(`.szz-card[data-id="${id}"]`);
-    if (item) {
-      pool1.appendChild(item);
-      item.classList.remove('placed', 'correct', 'wrong');
-      delete item.dataset.locked;
-      item.draggable = true;
-      delete state.s1Locked[id];
-      checkS1Completion();
-    }
-  });
-
-  function checkS1Completion() {
-    const allCorrect = Object.keys(correctZones).every(id => state.s1Locked[id] === correctZones[id]);
-    next1.style.display = allCorrect ? 'inline-block' : 'none';
-    reset1.style.display = allCorrect ? 'none' : 'inline-block';
-  }
-
-  reset1.addEventListener('click', () => {
-    cards1.forEach(c => {
-      c.className = 'szz-card'; c.draggable = true; delete c.dataset.locked; pool1.appendChild(c);
-    });
-    state.s1Locked = {}; next1.style.display = 'none'; reset1.style.display = 'inline-block'; closeModal();
-  });
-
-  next1.addEventListener('click', () => { closeModal(); showStep(2); });
-
-  // STEP 2: Quiz
-  const check2 = document.getElementById('check2');
-  const reset2 = document.getElementById('reset2');
-  const next2 = document.getElementById('next2');
-  const radios2 = document.querySelectorAll('input[name="q2"]');
-  const labels2 = document.querySelectorAll('#step2 .quiz-label');
-  
-  const quizDetails = {
-    a: "Неверно. Финансовые риски важны для собственника, но они не являются юридическим барьером для согласования. Без заключения Роспотребнадзора проект не получит разрешения на строительство, независимо от бюджета.",
-    b: "Неверно. Проектировщики корректируют документацию по техническим требованиям, но окончательное согласование зависит от соответствия санитарным нормам, которые контролирует надзорный орган.",
-    c: "Верно. Роспотребнадзор оценивает проект на соответствие СанПиН. Превышение ПДК на границе СЗЗ делает зону недостаточной для защиты населения, что является прямым основанием для отказа в согласовании без модернизации производства или изменения границ.",
-    d: "Неверно. Жалобы жителей могут инициировать проверки, но юридически блокировать согласование может только отсутствие положительного санитарно-эпидемиологического заключения от уполномоченного органа."
   };
 
-  reset2.addEventListener('click', () => {
-    radios2.forEach(r => r.checked = false);
-    labels2.forEach(l => { l.classList.remove('selected-correct', 'clickable'); l.onclick = null; });
-    next2.style.display = 'none'; check2.style.display = 'inline-block'; state.s2Complete = false; closeModal();
+  const modal = document.getElementById('detailModal');
+  const modalTitle = document.getElementById('detailTitle');
+  const modalBody = document.getElementById('detailBody');
+  const closeBtns = document.querySelectorAll('#detailClose, #detailCloseBtn');
+
+  function openModal(key) {
+    const data = content[key];
+    if(!data) return;
+    modalTitle.textContent = data.title;
+    modalBody.innerHTML = data.text;
+    modal.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    modal.classList.remove('active');
+    document.body.style.overflow = '';
+  }
+
+  closeBtns.forEach(btn => btn.addEventListener('click', closeModal));
+  modal.addEventListener('click', e => { if(e.target === modal) closeModal(); });
+  document.addEventListener('keydown', e => { if(e.key === 'Escape' && modal.classList.contains('active')) closeModal(); });
+
+  document.querySelectorAll('.szz-ref-card').forEach(card => {
+    card.addEventListener('click', () => openModal(card.dataset.key));
   });
-
-  check2.addEventListener('click', () => {
-    if(state.s2Complete) return;
-    const sel = document.querySelector('input[name="q2"]:checked');
-    if(!sel) return;
-    const val = sel.value;
-    const label = sel.closest('.quiz-label');
-    const isCorrect = (val === 'c');
-
-    if(isCorrect) {
-      state.s2Complete = true;
-      labels2.forEach(l => l.classList.add('clickable'));
-      label.classList.add('selected-correct');
-      next2.style.display = 'inline-block'; check2.style.display = 'none';
-      labels2.forEach(l => l.onclick = () => openModal("Разбор варианта", quizDetails[l.dataset.ans], l.dataset.ans === 'c'));
-      openModal("Верный ответ", quizDetails.c, true);
-    } else {
-      label.style.borderColor = 'var(--danger)';
-      setTimeout(() => label.style.borderColor = '', 1000);
-      openModal("Разбор выбранного варианта", quizDetails[val], false);
-    }
-  });
-
-  next2.addEventListener('click', () => {
-    if(!state.s2Complete) return;
-    closeModal(); showStep(3);
-    document.getElementById('breakdown').classList.add('show');
-    progressBar.style.width = '100%';
-  });
-
-  updateProgress();
 })();
 </script>
 </body>
