@@ -1,0 +1,771 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Интерактив: Чем СЗЗ отличается от других зон</title>
+  <style>
+    :root {
+      --bg: #f5f7f6;
+      --card: #ffffff;
+      --text: #1f2a24;
+      --muted: #68756e;
+      --line: #e0e4ea;
+      --line-soft: #eef1f7;
+      --green: #2d6a4f;
+      --green-soft: #e7f3ed;
+      --blue-soft: #f3f6fb;
+      --bad: #b4532a;
+      --bad-soft: #fff1ea;
+      --radius: 12px;
+      --transition: 180ms ease;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #f7f8fb;
+      color: var(--text);
+      line-height: 1.5;
+      padding: 24px 10px;
+    }
+
+    .wrapper {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid var(--line-soft);
+      padding: 24px 32px 28px;
+      box-shadow: 0 8px 28px rgba(15, 23, 42, 0.06);
+    }
+
+    h1 {
+      margin: 0 0 6px;
+      font-size: 22px;
+      font-weight: 700;
+    }
+
+    .subtitle {
+      margin: 0;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .divider {
+      height: 1px;
+      background: var(--line-soft);
+      margin: 20px 0;
+    }
+
+    .task-title {
+      margin: 0 0 8px;
+      font-weight: 600;
+      font-size: 16px;
+    }
+
+    .task-text {
+      margin: 0 0 16px;
+      font-size: 13px;
+      color: var(--muted);
+    }
+
+    .board {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+    }
+
+    .pool {
+      background: var(--blue-soft);
+      border-radius: 10px;
+      padding: 12px;
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      border: 1px solid var(--line-soft);
+      min-height: 56px;
+    }
+
+    .card {
+      background: #ffffff;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      padding: 6px 12px;
+      font-size: 13px;
+      cursor: grab;
+      user-select: none;
+      white-space: nowrap;
+      transition: box-shadow var(--transition), transform var(--transition), border-color var(--transition), background var(--transition);
+    }
+
+    .card:hover {
+      box-shadow: 0 3px 8px rgba(15, 23, 42, 0.12);
+      transform: translateY(-1px);
+      border-color: #c3cedd;
+    }
+
+    .card.dragging {
+      opacity: 0.7;
+      box-shadow: 0 6px 14px rgba(15, 23, 42, 0.18);
+      transform: scale(0.98);
+    }
+
+    .card.correct {
+      border-color: var(--green);
+      background: var(--green-soft);
+      color: var(--green);
+      cursor: default;
+    }
+
+    .card.wrong {
+      border-color: var(--bad);
+      background: var(--bad-soft);
+      color: var(--bad);
+    }
+
+    .columns {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+    }
+
+    .column {
+      border-radius: 10px;
+      border: 1px dashed var(--line);
+      background: #fdfefe;
+      padding: 10px;
+      min-height: 140px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+
+    .column-header {
+      font-size: 12px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .column.drop-target {
+      background: #f8fbff;
+      border-style: solid;
+      border-color: #c3d4f5;
+    }
+
+    .column-body {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px;
+      min-height: 80px;
+    }
+
+    .controls {
+      margin-top: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .btn {
+      appearance: none;
+      border-radius: 999px;
+      border: 1px solid var(--line);
+      background: #ffffff;
+      font-size: 12px;
+      padding: 7px 14px;
+      cursor: pointer;
+      transition: background var(--transition), border-color var(--transition), transform var(--transition);
+    }
+
+    .btn:hover {
+      background: #f5f7fb;
+      border-color: #c3cedd;
+      transform: translateY(-1px);
+    }
+
+    .status-strong {
+      font-weight: 600;
+      color: var(--green);
+    }
+
+    .status-error {
+      font-weight: 600;
+      color: var(--bad);
+    }
+
+    .overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(15, 23, 42, 0.45);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 50;
+    }
+
+    .overlay.active {
+      display: flex;
+    }
+
+    .modal {
+      width: min(560px, 100%);
+      max-height: min(80vh, 560px);
+      overflow: auto;
+      background: #ffffff;
+      border-radius: 12px;
+      border: 1px solid var(--line-soft);
+      padding: 18px 20px 16px;
+      box-shadow: 0 18px 45px rgba(15, 23, 42, 0.35);
+      animation: rise 160ms ease-out;
+    }
+
+    @keyframes rise {
+      from { opacity: 0; transform: translateY(8px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-tag {
+      display: inline-block;
+      padding: 4px 10px;
+      border-radius: 999px;
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+      margin-bottom: 8px;
+      font-weight: 700;
+    }
+
+    .modal-tag.good {
+      background: var(--green-soft);
+      color: var(--green);
+    }
+
+    .modal-tag.bad {
+      background: var(--bad-soft);
+      color: var(--bad);
+    }
+
+    .modal-tag.info {
+      background: #eef2ff;
+      color: #3730a3;
+    }
+
+    .modal h2 {
+      margin: 0 0 6px;
+      font-size: 18px;
+    }
+
+    .modal p {
+      margin: 0 0 8px;
+      font-size: 14px;
+      color: var(--muted);
+    }
+
+    .modal .key {
+      margin-top: 10px;
+      padding: 9px 11px;
+      border-radius: 8px;
+      background: #f8fafc;
+      border: 1px solid var(--line-soft);
+      font-size: 13px;
+      color: var(--text);
+    }
+
+    .modal-actions {
+      margin-top: 12px;
+      display: flex;
+      justify-content: flex-end;
+      gap: 8px;
+    }
+
+    .btn-primary {
+      border-color: var(--green);
+      background: var(--green);
+      color: #ffffff;
+    }
+
+    .btn-primary:hover {
+      background: #24533e;
+      border-color: #24533e;
+    }
+
+    @media (max-width: 720px) {
+      .wrapper {
+        padding: 18px 14px 20px;
+      }
+      .columns {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="wrapper">
+    <h1>Интерактив: Чем СЗЗ отличается от других зон</h1>
+    <p class="subtitle">Практический разбор для начинающих промышленных экологов.</p>
+
+    <div class="divider"></div>
+
+    <h2 class="task-title">Задание 1. Классификация понятий</h2>
+    <p class="task-text">
+      Перетащите карточки в подходящий столбец. Сразу после размещения вы получите развернутый комментарий.
+      Если карточка попала не туда, ее можно вернуть в пул или перенести в другой столбец.
+      Когда разложите все карточки верно, откроется итоговый разбор темы.
+    </p>
+
+    <div class="board">
+      <div id="pool" class="pool" aria-label="Пул карточек"></div>
+
+      <div class="columns">
+        <div class="column" data-column="zone" aria-label="Зона (территория)">
+          <div class="column-header">Зона (территория)</div>
+          <div class="column-body"></div>
+        </div>
+        <div class="column" data-column="norm" aria-label="Норматив (значение)">
+          <div class="column-header">Норматив (значение)</div>
+          <div class="column-body"></div>
+        </div>
+        <div class="column" data-column="param" aria-label="Параметр (характеристика)">
+          <div class="column-header">Параметр (характеристика)</div>
+          <div class="column-body"></div>
+        </div>
+      </div>
+
+      <div class="controls">
+        <span id="status">Разложите карточки по трем столбцам.</span>
+        <button class="btn" type="button" id="resetBtn">Сбросить</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Модалка обратной связи по карточке -->
+  <div class="overlay" id="feedbackOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="feedbackTitle">
+      <div class="modal-tag good" id="feedbackTag">Верно</div>
+      <h2 id="feedbackTitle">Комментарий</h2>
+      <p id="feedbackBody"></p>
+      <div class="key" id="feedbackKey"></div>
+      <div class="modal-actions">
+        <button class="btn" type="button" id="closeFeedbackBtn">Понятно</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Итоговый разбор -->
+  <div class="overlay" id="summaryOverlay" aria-hidden="true">
+    <div class="modal" role="dialog" aria-modal="true" aria-labelledby="summaryTitle">
+      <div class="modal-tag info">Итог</div>
+      <h2 id="summaryTitle">Что вы разобрали в этом задании</h2>
+      <p>
+        В этом упражнении вы отделили три типа понятий. СЗЗ, ЗСО и селитебная территория относятся к зонам и территориям.
+        ПДК и ПДУ — это численные нормативы, которые показывают, какие уровни воздействия считаются допустимыми.
+        Класс опасности предприятия и ЗОУИТ описывают характеристики объекта и режим его использования [web:23][web:29].
+      </p>
+      <p>
+        Такой разбор помогает не смешивать между собой территориальные зоны, нормативы и параметры объекта.
+        В документах они часто встречаются рядом, но выполняют разные роли: зоны задают границы и режим, нормативы — допустимые уровни воздействия,
+        а параметры объекта объясняют, почему эти зоны и ограничения вообще нужны [web:23][web:84][web:86].
+      </p>
+      <div class="key">
+        Ключевая мысль. Сначала определите, о чем идет речь — о территории, численном значении или характеристике объекта.
+        Уже потом сравнивайте СЗЗ с другими зонами и проверяйте, какие именно нормы и параметры за ними стоят.
+      </div>
+      <div class="modal-actions">
+        <button class="btn btn-primary" type="button" id="restartSummaryBtn">Пройти еще раз</button>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const cardsData = [
+      {
+        id: 'szz',
+        label: 'Санитарно-защитная зона (СЗЗ)',
+        correctColumn: 'zone',
+        feedback: {
+          correct: {
+            type: 'good',
+            title: 'Это зона (территория)',
+            body: 'СЗЗ – это территория вокруг предприятия или другого источника воздействия. Ее задача – отделить источник от мест, где живут и регулярно находятся люди [web:23].',
+            key: 'СЗЗ относится к территориальным зонам, а не к нормативам или характеристикам объекта.'
+          },
+          wrong: {
+            type: 'bad',
+            title: 'Не тот столбец',
+            body: 'СЗЗ – не численное значение и не параметр объекта. Это именно территория с особыми условиями использования.',
+            key: 'Если понятие описывает кусок пространства с режимом, это признак зоны (территории).'
+          }
+        }
+      },
+      {
+        id: 'zouit',
+        label: 'ЗОУИТ',
+        correctColumn: 'zone',
+        feedback: {
+          correct: {
+            type: 'good',
+            title: 'Это тоже зона (территория)',
+            body: 'Зона с особыми условиями использования территорий (ЗОУИТ) – общий класс территорий с ограничениями. СЗЗ входит в этот набор как один из видов [web:29].',
+            key: 'ЗОУИТ – зональное понятие. Его важно отделять от конкретных нормативов и параметров объекта.'
+          },
+          wrong: {
+            type: 'bad',
+            title: 'Это не норматив и не параметр',
+            body: 'ЗОУИТ не задает конкретное число и не описывает характеристику одного предприятия. Это рамка для разных видов зон, включая СЗЗ, водоохранные и другие [web:29].',
+            key: 'Если термин про территорию с особыми условиями использования, относите его к столбцу «Зона (территория)».'
+          }
+        }
+      },
+      {
+        id: 'zso',
+        label: 'Зона санитарной охраны (ЗСО)',
+        correctColumn: 'zone',
+        feedback: {
+          correct: {
+            type: 'good',
+            title: 'Верно, это территориальная зона',
+            body: 'ЗСО создают вокруг источников питьевого и хозяйственно-питьевого водоснабжения. Это тоже специальная территория с режимом, но у нее другая цель по сравнению с СЗЗ [web:86].',
+            key: 'СЗЗ и ЗСО — разные виды зон, но по сути оба понятия относятся к территориям.'
+          },
+          wrong: {
+            type: 'bad',
+            title: 'Неверный столбец',
+            body: 'ЗСО нельзя путать с нормативами вроде ПДК или ПДУ. Это не число и не характеристика объекта, а отдельная санитарная зона вокруг источника воды [web:86].',
+            key: 'Если вокруг чего‑то вводят специальный режим использования территории, это почти всегда категория «зона».'
+          }
+        }
+      },
+      {
+        id: 'pdk',
+        label: 'ПДК',
+        correctColumn: 'norm',
+        feedback: {
+          correct: {
+            type: 'good',
+            title: 'Это норматив (значение)',
+            body: 'ПДК – предельно допустимая концентрация. Это численное значение, которое показывает, сколько загрязняющего вещества может быть в среде, чтобы это считалось безопасным [web:23].',
+            key: 'ПДК и ПДУ — примеры именно нормативов, а не территорий или характеристик предприятий.'
+          },
+          wrong: {
+            type: 'bad',
+            title: 'Не зона и не параметр объекта',
+            body: 'ПДК не описывает территорию и не рассказывает о самом предприятии. Это число, с которым сравнивают результаты замеров, чтобы понять, есть ли превышение [web:23].',
+            key: 'Если понятие задает численное «сколько можно», его место в столбце нормативов.'
+          }
+        }
+      },
+      {
+        id: 'pdu',
+        label: 'ПДУ',
+        correctColumn: 'norm',
+        feedback: {
+          correct: {
+            type: 'good',
+            title: 'Да, это тоже норматив',
+            body: 'ПДУ – предельно допустимый уровень. Как и ПДК, это численное значение, но чаще его используют для шума, вибрации и других факторов, которые измеряют не в концентрации [web:23].',
+            key: 'Важно видеть, что ПДУ относится к группе численных пределов, а не к зонам и не к характеристикам объекта.'
+          },
+          wrong: {
+            type: 'bad',
+            title: 'Не тот столбец',
+            body: 'ПДУ не описывает границы территории и не классифицирует объект. Это ориентир, с которым сравнивают измеренный уровень шума, вибрации и других факторов [web:23].',
+            key: 'Если термин отвечает на вопрос «какое значение допустимо», его место среди нормативов.'
+          }
+        }
+      },
+      {
+        id: 'hazard',
+        label: 'Класс опасности предприятия',
+        correctColumn: 'param',
+        feedback: {
+          correct: {
+            type: 'good',
+            title: 'Это параметр объекта',
+            body: 'Класс опасности предприятия показывает, насколько потенциально опасен объект по составу и уровню его воздействия. От этого класса, в том числе, зависит, какой размер СЗЗ может понадобиться [web:27][web:26].',
+            key: 'Класс опасности описывает сам объект и влияет на требования к зонам и нормативам, но не является зоной или нормативом.'
+          },
+          wrong: {
+            type: 'bad',
+            title: 'Это не зона и не норматив',
+            body: 'Класс опасности не задает границы территории и не является числом «сколько можно». Это характеристика объекта, которая учитывается при проектировании СЗЗ и выборе мер защиты [web:27][web:26].',
+            key: 'Если термин говорит о типе или степени опасности объекта, его лучше относить к параметрам (характеристикам).'
+          }
+        }
+      },
+      {
+        id: 'residential',
+        label: 'Селитебная территория',
+        correctColumn: 'zone',
+        feedback: {
+          correct: {
+            type: 'good',
+            title: 'Это территория',
+            body: 'Селитебная территория – это зона, где люди живут и регулярно находятся. По сути это «обратная сторона» СЗЗ: именно такие территории СЗЗ должна защищать от воздействия предприятия [web:23].',
+            key: 'Селитебная территория и СЗЗ – разные типы зон, но обе относятся к категории территорий.'
+          },
+          wrong: {
+            type: 'bad',
+            title: 'Неверный столбец',
+            body: 'Селитебная территория не задает численных значений и не описывает свойства предприятия. Это особый вид территории, где проживает население [web:23].',
+            key: 'Если в определении говорится о том, где живут или находятся люди, это признак территориальной зоны.'
+          }
+        }
+      },
+      {
+        id: 'limit',
+        label: 'Лимит выбросов',
+        correctColumn: 'norm',
+        feedback: {
+          correct: {
+            type: 'good',
+            title: 'Правильно, это норматив',
+            body: 'Лимит выбросов показывает, какое количество загрязняющих веществ предприятие может выбрасывать с учетом требований по качеству среды и санитарной защиты [web:23][web:80].',
+            key: 'Лимиты и предельно допустимые значения относятся к группе нормативов, а не к зонам или характеристикам территории.'
+          },
+          wrong: {
+            type: 'bad',
+            title: 'Не тот тип понятия',
+            body: 'Лимит выбросов не описывает конкретную зону и не является абстрактной характеристикой объекта. Это разрешенный объем воздействия, который сравнивают с фактическими данными [web:23][web:80].',
+            key: 'Все, что задает границы по «сколько выбросов можно», логично относить к нормативам.'
+          }
+        }
+      }
+    ];
+
+    const pool = document.getElementById('pool');
+    const columns = document.querySelectorAll('.column');
+    const statusText = document.getElementById('status');
+    const resetBtn = document.getElementById('resetBtn');
+
+    const feedbackOverlay = document.getElementById('feedbackOverlay');
+    const feedbackTag = document.getElementById('feedbackTag');
+    const feedbackTitle = document.getElementById('feedbackTitle');
+    const feedbackBody = document.getElementById('feedbackBody');
+    const feedbackKey = document.getElementById('feedbackKey');
+    const closeFeedbackBtn = document.getElementById('closeFeedbackBtn');
+
+    const infoOverlay = document.getElementById('infoOverlay');
+    const infoTitle = document.getElementById('infoTitle');
+    const infoBody = document.getElementById('infoBody');
+    const infoKey = document.getElementById('infoKey');
+    const closeInfoBtn = document.getElementById('closeInfoBtn');
+    const rulesBtn = document.getElementById('rulesBtn');
+    const hintBtn = document.getElementById('hintBtn');
+
+    const summaryOverlay = document.getElementById('summaryOverlay');
+    const restartSummaryBtn = document.getElementById('restartFromSummaryBtn') || document.getElementById('restartSummaryBtn');
+
+    const infoTexts = {
+      rules: {
+        title: 'Как работать с заданием',
+        body: 'Перетаскивайте карточки из пула в один из трех столбцов. После каждого размещения вы увидите комментарий: почему это верно или нет. Карточку можно в любой момент вернуть в пул или перенести в другой столбец.',
+        key: 'Старайтесь каждый термин сначала мысленно отнести к одному из трех типов: зона, норматив или характеристика объекта. Потом уже проверяйте себя перетаскиванием.'
+      },
+      hint: {
+        title: 'С чего легче начать',
+        body: 'Сначала разложите самые очевидные пары: ПДК и ПДУ — это точно численные нормативы, а СЗЗ и ЗСО — территории с особыми условиями. Остальные карточки станет проще привязать, когда опорные места уже заняты.',
+        key: 'Если сомневаетесь, задайте себе три вопроса: это территория, число или свойство объекта.'
+      }
+    };
+
+    let placedCorrectCount = 0;
+    const totalCards = cardsData.length;
+
+    function createCard(card) {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.textContent = card.label;
+      el.draggable = true;
+      el.dataset.id = card.id;
+      el.dataset.correctColumn = card.correctColumn;
+
+      el.addEventListener('dragstart', (e) => {
+        el.classList.add('dragging');
+        e.dataTransfer.setData('text/plain', card.id);
+      });
+
+      el.addEventListener('dragend', () => {
+        el.classList.remove('dragging');
+      });
+
+      return el;
+    }
+
+    function renderInitial() {
+      pool.innerHTML = '';
+      columns.forEach(col => {
+        col.querySelector('.column-body').innerHTML = '';
+        col.classList.remove('drop-target');
+      });
+      placedCorrectCount = 0;
+      statusText.textContent = 'Разложите карточки по трем столбцам.';
+      cardsData.forEach(card => {
+        const el = createCard(card);
+        pool.appendChild(el);
+      });
+    }
+
+    function findCardData(cardId) {
+      return cardsData.find(c => c.id === cardId);
+    }
+
+    function openFeedback(feedbackObj, isCorrect) {
+      feedbackTag.textContent = feedbackObj.type === 'good' ? 'Верно' : 'Есть неточность';
+      feedbackTag.className = 'modal-tag ' + (feedbackObj.type === 'good' ? 'good' : 'bad');
+      feedbackTitle.textContent = feedbackObj.title;
+      feedbackBody.textContent = feedbackObj.body;
+      feedbackKey.textContent = feedbackObj.key;
+      feedbackOverlay.classList.add('active');
+      feedbackOverlay.setAttribute('aria-hidden', 'false');
+
+      if (isCorrect) {
+        statusText.innerHTML = '<span class="status-strong">Карточка размещена верно.</span>';
+      } else {
+        statusText.innerHTML = '<span class="status-error">Карточка пока в неверном столбце. Посмотрите комментарий и попробуйте другое место.</span>';
+      }
+    }
+
+    function closeFeedback() {
+      feedbackOverlay.classList.remove('active');
+      feedbackOverlay.setAttribute('aria-hidden', 'true');
+    }
+
+    function openInfo(type) {
+      const item = infoTexts[type];
+      infoTitle.textContent = item.title;
+      infoBody.textContent = item.body;
+      infoKey.textContent = item.key;
+      infoOverlay.classList.add('active');
+      infoOverlay.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeInfo() {
+      infoOverlay.classList.remove('active');
+      infoOverlay.setAttribute('aria-hidden', 'true');
+    }
+
+    function openSummary() {
+      summaryOverlay.classList.add('active');
+      summaryOverlay.setAttribute('aria-hidden', 'false');
+    }
+
+    function closeSummary() {
+      summaryOverlay.classList.remove('active');
+      summaryOverlay.setAttribute('aria-hidden', 'true');
+    }
+
+    columns.forEach(column => {
+      const body = column.querySelector('.column-body');
+
+      column.addEventListener('dragover', (e) => {
+        e.preventDefault();
+        column.classList.add('drop-target');
+      });
+
+      column.addEventListener('dragleave', (e) => {
+        if (!column.contains(e.relatedTarget)) {
+          column.classList.remove('drop-target');
+        }
+      });
+
+      column.addEventListener('drop', (e) => {
+        e.preventDefault();
+        column.classList.remove('drop-target');
+
+        const cardId = e.dataTransfer.getData('text/plain');
+        if (!cardId) return;
+
+        const cardEl = document.querySelector(`.card[data-id="${cardId}"]`);
+        if (!cardEl) return;
+
+        const cardData = findCardData(cardId);
+        const targetColumn = column.dataset.column;
+        const isCorrect = targetColumn === cardData.correctColumn;
+
+        // если карточка была ранее правильно размещена и мы переносим ее в другое место
+        if (cardEl.classList.contains('correct') && !isCorrect) {
+          placedCorrectCount = Math.max(0, placedCorrectCount - 1);
+        }
+
+        // если только сейчас правильно разместили
+        if (!cardEl.classList.contains('correct') && isCorrect) {
+          placedCorrectCount += 1;
+        }
+
+        // оформление карточки
+        cardEl.classList.remove('wrong');
+        if (isCorrect) {
+          cardEl.classList.add('correct');
+        } else {
+          cardEl.classList.add('wrong');
+        }
+
+        body.appendChild(cardEl);
+
+        const fb = isCorrect ? cardData.feedback.correct : cardData.feedback.wrong;
+        openFeedback(fb, isCorrect);
+
+        if (placedCorrectCount === totalCards) {
+          // небольшая задержка, чтобы человек успел прочитать последний комментарий
+          setTimeout(openSummary, 400);
+        }
+      });
+    });
+
+    // сброс в пул
+    pool.addEventListener('dragover', (e) => {
+      e.preventDefault();
+    });
+
+    pool.addEventListener('drop', (e) => {
+      e.preventDefault();
+      const cardId = e.dataTransfer.getData('text/plain');
+      if (!cardId) return;
+      const cardEl = document.querySelector(`.card[data-id="${cardId}"]`);
+      if (!cardEl) return;
+
+      if (cardEl.classList.contains('correct')) {
+        placedCorrectCount = Math.max(0, placedCorrectCount - 1);
+      }
+
+      cardEl.classList.remove('correct', 'wrong');
+      pool.appendChild(cardEl);
+      statusText.textContent = 'Карточка возвращена в пул. Попробуйте расположить ее еще раз.';
+    });
+
+    closeFeedbackBtn.addEventListener('click', closeFeedback);
+    resetBtn.addEventListener('click', () => {
+      closeFeedback();
+      closeInfo();
+      closeSummary();
+      renderInitial();
+    });
+    restartSummaryBtn.addEventListener('click', () => {
+      closeSummary();
+      renderInitial();
+    });
+
+    rulesBtn.addEventListener('click', () => openInfo('rules'));
+    hintBtn.addEventListener('click', () => openInfo('hint'));
+    closeInfoBtn.addEventListener('click', closeInfo);
+
+    [feedbackOverlay, infoOverlay, summaryOverlay].forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) overlay.classList.remove('active');
+      });
+    });
+
+    renderInitial();
+  </script>
+</body>
+</html>
