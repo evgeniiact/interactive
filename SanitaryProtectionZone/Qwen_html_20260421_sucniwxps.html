@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Глоссарий: Основные понятия СЗЗ</title>
+<style>
+  :root {
+    --bg: #f5f7f6;
+    --card: #ffffff;
+    --text: #1f2a24;
+    --muted: #68756e;
+    --line: #dce5df;
+    --green: #2d6a4f;
+    --green-soft: #e7f3ed;
+    --green-soft-2: #f4faf7;
+    --good: #2d6a4f;
+    --bad: #b4532a;
+    --bad-soft: #fff1ea;
+    --shadow: 0 16px 44px rgba(26, 36, 31, 0.12);
+    --radius: 18px;
+    --transition: 180ms ease;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    background: #ffffff;
+    color: var(--text);
+    line-height: 1.5;
+    padding: 18px 10px 24px;
+  }
+  
+  .szz-wrap {
+    max-width: 650px;
+    max-height: 700px;
+    background: var(--card);
+    margin: 0 auto;
+    border: 1px solid var(--line);
+    border-radius: var(--radius);
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    box-shadow: var(--shadow);
+  }
+  
+  .szz-header {
+    background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%);
+    padding: 20px 24px;
+    border-bottom: 1px solid var(--line);
+    flex-shrink: 0;
+  }
+  .szz-header h2 {
+    margin: 0 0 6px;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--green);
+  }
+  .szz-header p {
+    margin: 0;
+    font-size: 0.9rem;
+    color: var(--muted);
+  }
+  
+  .szz-content {
+    padding: 20px 24px;
+    overflow-y: auto;
+    flex: 1;
+  }
+  
+  .oleg-block {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    background: var(--green-soft-2);
+    border-left: 3px solid var(--green);
+    padding: 12px;
+    border-radius: 10px;
+    margin-bottom: 18px;
+  }
+  .oleg-avatar {
+    width: 40px;
+    height: 40px;
+    flex-shrink: 0;
+  }
+  .oleg-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+    border-radius: 50%;
+    border: 2px solid var(--card);
+  }
+  .oleg-text {
+    font-size: 0.9rem;
+    color: var(--text);
+  }
+  .oleg-text strong {
+    display: block;
+    margin-bottom: 4px;
+    color: var(--green);
+    font-weight: 600;
+  }
+  
+  .instruction {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin: 0 0 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px dashed var(--line);
+  }
+  
+  .top-actions {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .btn-info {
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: var(--transition);
+    color: var(--muted);
+  }
+  .btn-info:hover {
+    border-color: var(--green);
+    color: var(--green);
+  }
+  
+  .filter-bar {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 16px;
+    flex-wrap: wrap;
+  }
+  .btn-filter {
+    padding: 8px 14px;
+    border: 1px solid var(--line);
+    background: var(--card);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    font-weight: 500;
+    transition: var(--transition);
+    color: var(--muted);
+  }
+  .btn-filter:hover {
+    border-color: var(--green);
+    color: var(--green);
+  }
+  .btn-filter.active {
+    background: var(--green-soft);
+    border-color: var(--green);
+    color: var(--green);
+  }
+  
+  .term-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .term-card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 16px;
+    cursor: pointer;
+    transition: var(--transition);
+    position: relative;
+  }
+  .term-card:hover {
+    border-color: var(--green);
+    background: var(--green-soft-2);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(45, 106, 79, 0.08);
+  }
+  .term-card.hidden { display: none; }
+  .term-card h4 {
+    margin: 0 0 6px;
+    font-size: 0.95rem;
+    color: var(--text);
+    font-weight: 600;
+  }
+  .term-card p {
+    margin: 0;
+    font-size: 0.85rem;
+    color: var(--muted);
+    line-height: 1.4;
+  }
+  .term-tag {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    font-size: 0.7rem;
+    padding: 3px 8px;
+    border-radius: 6px;
+    background: var(--green-soft);
+    color: var(--green);
+    font-weight: 600;
+  }
+  
+  .bottom-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 8px;
+    padding-top: 16px;
+    border-top: 1px solid var(--line);
+  }
+  .btn-main {
+    flex: 1;
+    padding: 12px;
+    border: none;
+    border-radius: 12px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: var(--transition);
+    background: var(--green);
+    color: #fff;
+  }
+  .btn-main:hover {
+    background: var(--green);
+    filter: brightness(0.95);
+  }
+  
+  .modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(31, 42, 36, 0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+    backdrop-filter: blur(4px);
+  }
+  .modal.active { display: flex; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  
+  .modal-box {
+    background: var(--card);
+    border-radius: var(--radius);
+    max-width: 520px;
+    width: 100%;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    animation: slideUp 0.25s;
+    max-height: 85vh;
+    display: flex;
+    flex-direction: column;
+    border: 1px solid var(--line);
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .modal-header {
+    padding: 16px 20px;
+    background: var(--green-soft-2);
+    border-bottom: 1px solid var(--line);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .modal-header h3 {
+    margin: 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--green);
+  }
+  .modal-close {
+    background: none;
+    border: none;
+    font-size: 1.8rem;
+    cursor: pointer;
+    color: var(--muted);
+    padding: 0;
+    line-height: 1;
+  }
+  .modal-close:hover { color: var(--text); }
+  
+  .modal-body {
+    padding: 20px;
+    font-size: 0.92rem;
+    line-height: 1.6;
+    color: var(--text);
+    overflow-y: auto;
+    flex: 1;
+  }
+  .modal-body p { margin: 0 0 12px; }
+  .modal-body ul { padding-left: 20px; margin: 12px 0; }
+  .modal-body li { margin-bottom: 6px; }
+  .modal-body strong { color: var(--green); }
+  
+  .definition-block {
+    background: var(--green-soft-2);
+    border-left: 3px solid var(--green);
+    padding: 12px 16px;
+    border-radius: 0 10px 10px 0;
+    margin: 14px 0;
+  }
+  .practice-block {
+    background: var(--green-soft);
+    border: 1px solid var(--line);
+    padding: 12px 16px;
+    border-radius: 10px;
+    margin-top: 14px;
+  }
+  .practice-block strong { display: block; margin-bottom: 6px; color: var(--green); }
+  
+  .modal-footer {
+    padding: 14px 20px;
+    border-top: 1px solid var(--line);
+    background: var(--card);
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .btn-ok {
+    background: var(--green);
+    color: #fff;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 600;
+    transition: var(--transition);
+  }
+  .btn-ok:hover { filter: brightness(0.95); }
+  
+  @media (max-width: 500px) {
+    .term-grid { grid-template-columns: 1fr; }
+    .szz-header h2 { font-size: 1.2rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="szz-wrap">
+  <div class="szz-header">
+    <h2>Глоссарий: Основные понятия СЗЗ</h2>
+    <p>Краткие определения с практическим контекстом</p>
+  </div>
+
+  <div class="szz-content">
+    <div class="oleg-block">
+      <div class="oleg-avatar"><img src="oleg.jpg" alt="Олег"></div>
+      <div class="oleg-text">
+        <strong>Олег:</strong> В документах много аббревиатур и терминов. Как быстро понять, что означает каждый, и где их применять на практике?
+      </div>
+    </div>
+
+    <div class="top-actions">
+      <button class="btn-info" onclick="openModal('howto')">Как пользоваться</button>
+      <button class="btn-info" onclick="openModal('help-modal')">Как запомнить термины</button>
+    </div>
+
+    <p class="instruction">Нажмите на карточку, чтобы увидеть полное определение и пример использования в работе эколога.</p>
+    
+    <div class="filter-bar" id="filters">
+      <button class="btn-filter active" data-cat="all">Все</button>
+      <button class="btn-filter" data-cat="zone">Зоны</button>
+      <button class="btn-filter" data-cat="norm">Нормативы</button>
+      <button class="btn-filter" data-cat="stage">Этапы</button>
+      <button class="btn-filter" data-cat="param">Параметры</button>
+    </div>
+
+    <div class="term-grid" id="term-grid"></div>
+  </div>
+</div>
+
+<!-- Modals -->
+<div class="modal" id="howto">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Как пользоваться</h3><button class="modal-close" onclick="closeModal('howto')">&times;</button></div>
+    <div class="modal-body">
+      <p>Глоссарий разбит на четыре группы: зоны, нормативы, этапы работы и параметры предприятия. Это помогает сразу видеть, с чем вы работаете: с территорией, цифрой, документом или характеристикой объекта.</p>
+      <ul>
+        <li>Нажимайте на кнопки категорий, чтобы отфильтровать термины.</li>
+        <li>Клик по карточке открывает окно с определением и практическим контекстом.</li>
+        <li>Закрывайте окна крестиком или кнопкой внизу.</li>
+      </ul>
+      <div class="practice-block">
+        <strong>Совет</strong>
+        При чтении проекта СЗЗ сначала определяйте категорию термина. Если это «Зона» – смотрите на карту границ. Если «Норматив» – проверяйте расчеты. Если «Этап» – сверяйте статус согласования.
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-ok" onclick="closeModal('howto')">Понятно</button></div>
+  </div>
+</div>
+
+<div class="modal" id="detail">
+  <div class="modal-box">
+    <div class="modal-header"><h3 id="detail-title">Термин</h3><button class="modal-close" onclick="closeModal('detail')">&times;</button></div>
+    <div class="modal-body" id="detail-body"></div>
+    <div class="modal-footer"><button class="btn-ok" onclick="closeModal('detail')">Закрыть</button></div>
+  </div>
+</div>
+
+<div class="modal" id="help-modal">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Как запомнить термины</h3><button class="modal-close" onclick="closeModal('help-modal')">&times;</button></div>
+    <div class="modal-body">
+      <p>Не учите определения наизусть. Запоминайте логику связей между понятиями – это поможет применять их в работе.</p>
+      
+      <div class="definition-block">
+        <strong>Цепочка формирования СЗЗ</strong><br>
+        Класс опасности предприятия → Ориентировочный размер из таблиц СанПиН → Расчетная СЗЗ по моделям рассеивания → Натурные замеры после пуска → Установленная СЗЗ с внесением в ЕГРН.
+      </div>
+      
+      <p><strong>Как различать категории терминов:</strong></p>
+      <ul>
+        <li><strong>Зона</strong> – это территория с границами на карте (СЗЗ, ЗСО, ЗОУИТ). Спрашивайте: «Где это на плане?»</li>
+        <li><strong>Норматив</strong> – это числовое значение (ПДК, ПДУ). Спрашивайте: «В каких единицах измеряется?»</li>
+        <li><strong>Этап</strong> – это стадия работы (проект, замеры, согласование). Спрашивайте: «Когда это делается?»</li>
+        <li><strong>Параметр</strong> – это характеристика объекта или среды (класс опасности, фон). Спрашивайте: «От чего зависит?»</li>
+      </ul>
+      
+      <div class="practice-block">
+        <strong>Практический совет</strong>
+        При чтении проекта СЗЗ сначала определите категорию каждого термина. Если это «Зона» – смотрите на карту границ. Если «Норматив» – проверяйте расчеты. Если «Этап» – сверяйте статус согласования. Это сокращает время работы с документом в 2–3 раза.
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-ok" onclick="closeModal('help-modal')">Понятно</button></div>
+  </div>
+</div>
+
+<script>
+const terms = [
+  {
+    id: 'szz',
+    name: 'Санитарно-защитная зона (СЗЗ)',
+    cat: 'zone',
+    short: 'Буфер между заводом и жильем',
+    def: 'Территория с особым режимом использования, которая отделяет промышленную площадку от жилой застройки. В пределах СЗЗ обеспечивается рассеивание вредных выбросов и снижение физических воздействий до уровней, безопасных для здоровья населения.',
+    practice: 'Внутри СЗЗ запрещено размещать жилые дома, школы, больницы, детские площадки. Допускаются: подъездные дороги, склады сырья, посты экологического мониторинга, зеленые насаждения. Границы СЗЗ фиксируются в ЕГРН как зона с особыми условиями использования территорий (ЗОУИТ).'
+  },
+  {
+    id: 'zouit',
+    name: 'ЗОУИТ',
+    cat: 'zone',
+    short: 'Юридическая категория территории',
+    def: 'Зона с особыми условиями использования территорий – общая правовая категория земельного законодательства. Включает СЗЗ, ЗСО, охранные зоны ЛЭП, газопроводов, объектов культурного наследия и другие виды ограничений.',
+    practice: 'Когда вы видите ЗОУИТ в выписке ЕГРН, это сигнал уточнить конкретный вид зоны. СЗЗ и ЗСО – разные режимы с разными правилами. Ошибка в классификации ведет к неверным выводам о допустимых действиях на участке.'
+  },
+  {
+    id: 'seliteb',
+    name: 'Селитебная территория',
+    cat: 'zone',
+    short: 'Зона проживания и отдыха людей',
+    def: 'Территория, предназначенная для размещения жилых домов, образовательных и медицинских учреждений, парков, спортивных сооружений и других объектов, связанных с постоянным пребыванием людей.',
+    practice: 'Селитебная территория – это объект защиты СЗЗ, а не инструмент регулирования. При проектировании границ СЗЗ эколог проверяет, чтобы на расстоянии расчетного рассеивания не оказалось жилых кварталов. Если жилье уже есть – зона должна его охватывать или предприятие обязано снизить выбросы.'
+  },
+  {
+    id: 'zso',
+    name: 'Зона санитарной охраны (ЗСО)',
+    cat: 'zone',
+    short: 'Охрана водных объектов',
+    def: 'Территория с особым режимом хозяйственной деятельности, создаваемая вокруг водозаборов, скважин, водохранилищ и других источников питьевого водоснабжения. Регулируется водным законодательством и санитарными правилами охраны вод.',
+    practice: 'Не путайте ЗСО с СЗЗ. ЗСО защищает воду от загрязнения, СЗЗ защищает людей от промышленных воздействий. У них разные нормативные базы, контролирующие органы и режимы. На практике территории могут пересекаться – тогда соблюдаются оба режима.'
+  },
+  {
+    id: 'pdk',
+    name: 'ПДК (предельно допустимая концентрация)',
+    cat: 'norm',
+    short: 'Максимальная концентрация вещества',
+    def: 'Гигиенический норматив – максимальная концентрация вредного вещества в атмосферном воздухе, воде или почве, которая при неограниченно долгом воздействии не оказывает прямого или косвенного неблагоприятного влияния на здоровье человека.',
+    practice: 'ПДК используется как критерий при расчете границ СЗЗ: на внешней границе зоны концентрация каждого вещества не должна превышать ПДК. Это числовое значение (мг/м³ для воздуха), а не территория. В протоколах замеров вы сравниваете фактические концентрации с ПДК.'
+  },
+  {
+    id: 'pdu',
+    name: 'ПДУ (предельно допустимый уровень)',
+    cat: 'norm',
+    short: 'Норматив для физических факторов',
+    def: 'Гигиенический норматив для физических факторов воздействия: шума, вибрации, электромагнитного излучения, радиации. Определяет максимальный уровень фактора, безопасный для здоровья при постоянном воздействии.',
+    practice: 'ПДУ применяется вместе с ПДК при комплексной оценке воздействия предприятия. Например, на границе СЗЗ проверяют и концентрацию бенз(а)пирена (ПДК), и уровень шума (ПДУ). Единицы измерения зависят от фактора: дБ для шума, мкВ/м для излучения.'
+  },
+  {
+    id: 'orient',
+    name: 'Ориентировочный размер СЗЗ',
+    cat: 'stage',
+    short: 'Стартовый радиус по таблицам',
+    def: 'Начальная граница санитарно-защитной зоны, определяемая по классу опасности предприятия в соответствии с таблицами СанПиН. Используется на предпроектной стадии для оценки возможности размещения объекта.',
+    practice: 'Ориентировочный размер задает направление проекта, но не является окончательной границей. Например, для предприятия II класса опасности ориентировочный размер – 500 м. Далее эта граница уточняется расчетами рассеивания с учетом реального рельефа, метеоусловий и фонового загрязнения.'
+  },
+  {
+    id: 'calc',
+    name: 'Расчетная (предварительная) СЗЗ',
+    cat: 'stage',
+    short: 'Граница по моделям рассеивания',
+    def: 'Предварительная граница санитарно-защитной зоны, полученная в результате математического моделирования рассеивания выбросов и распространения шума с учетом местных метеоусловий, рельефа и застройки.',
+    practice: 'Расчетная СЗЗ уточняет ориентировочный размер. Если моделирование показывает, что на расстоянии 300 м концентрации уже ниже ПДК, граница может быть сокращена. Если на 500 м есть превышения – зона расширяется. Расчеты выполняются в специализированном ПО и проходят экспертизу.'
+  },
+  {
+    id: 'final',
+    name: 'Установленная (окончательная) СЗЗ',
+    cat: 'stage',
+    short: 'Окончательная граница после замеров',
+    def: 'Граница санитарно-защитной зоны, подтвержденная результатами натурных исследований (полевых замеров) после ввода предприятия в эксплуатацию и согласованная в территориальном управлении Роспотребнадзора. Вносится в ЕГРН.',
+    practice: 'Установленная СЗЗ имеет юридическую силу. Любое строительство, не соответствующее режиму зоны, пресекается на этапе экспертизы. Изменить границу можно только через повторные расчеты, замеры и согласование. Это финальная точка в формировании режима территории.'
+  },
+  {
+    id: 'project',
+    name: 'Проект СЗЗ',
+    cat: 'stage',
+    short: 'Документ с обоснованием границ',
+    def: 'Комплект расчетно-пояснительных материалов, доказывающих безопасность санитарно-защитной зоны для населения. Включает расчеты рассеивания, карты границ, программу натурных исследований и пояснительную записку. Проходит государственную санитарно-эпидемиологическую экспертизу.',
+    practice: 'Без согласованного проекта СЗЗ предприятие не получит разрешение на ввод в эксплуатацию. Эколог готовит проект на основе исходных данных о технологии, выбросах, метеоусловиях. Документ подается в Роспотребнадзор с приложением протоколов лабораторных исследований.'
+  },
+  {
+    id: 'class',
+    name: 'Класс опасности предприятия',
+    cat: 'param',
+    short: 'Показатель I–V по уровню воздействия',
+    def: 'Характеристика промышленного объекта по уровню потенциального воздействия на окружающую среду и здоровье населения. Определяется по объему выбросов, токсичности веществ, классу опасности химических соединений, уровню шума и другим факторам. Диапазон: от I (наиболее опасные) до V (минимальное воздействие).',
+    practice: 'Класс опасности – входной параметр для определения ориентировочного размера СЗЗ. Например, I класс → 1000 м, V класс → 50 м. Снижение класса возможно при модернизации производства и подтверждается расчетами и замерами. Это влияет на стоимость природоохранных мероприятий.'
+  },
+  {
+    id: 'background',
+    name: 'Фоновое загрязнение',
+    cat: 'param',
+    short: 'Уже существующее загрязнение среды',
+    def: 'Концентрация вредных веществ в атмосферном воздухе, воде или почве, создаваемая другими источниками, кроме рассматриваемого предприятия. Учитывается при расчетах рассеивания как базовый уровень, к которому добавляются выбросы объекта.',
+    practice: 'Игнорирование фонового загрязнения ведет к занижению расчетных концентраций и ошибочному сокращению границ СЗЗ. При экспертизе проекта такие расчеты отклоняют. Эколог запрашивает данные о фоне в территориальных органах Росгидромета или проводит собственные замеры.'
+  },
+  {
+    id: 'field',
+    name: 'Натурные исследования (замеры)',
+    cat: 'stage',
+    short: 'Полевые измерения после пуска',
+    def: 'Комплекс полевых измерений качества атмосферного воздуха, уровня шума, вибрации и других физических факторов на границе расчетной СЗЗ после ввода предприятия в эксплуатацию. Проводятся в реальных метеоусловиях аккредитованной лабораторией.',
+    practice: 'Результаты замеров сравниваются с расчетными данными. Если фактические концентрации ниже расчетных – граница может быть скорректирована в меньшую сторону. Если выше – зона расширяется или предприятие модернизирует очистное оборудование. Замеры – обязательный этап перед согласованием окончательной границы.'
+  }
+];
+
+const grid = document.getElementById('term-grid');
+const filterBtns = document.querySelectorAll('.btn-filter');
+
+function renderTerms() {
+  grid.innerHTML = '';
+  const activeCat = document.querySelector('.btn-filter.active').dataset.cat;
+  
+  terms.forEach(t => {
+    if (activeCat === 'all' || t.cat === activeCat) {
+      const card = document.createElement('div');
+      card.className = 'term-card';
+      card.innerHTML = `
+        <h4>${t.name}</h4>
+        <p>${t.short}</p>
+        <span class="term-tag">${getCatName(t.cat)}</span>
+      `;
+      card.onclick = () => openTermDetail(t);
+      grid.appendChild(card);
+    }
+  });
+}
+
+function getCatName(c) {
+  const map = { zone: 'Зона', norm: 'Норматив', stage: 'Этап', param: 'Параметр' };
+  return map[c] || '';
+}
+
+function openTermDetail(t) {
+  document.getElementById('detail-title').textContent = t.name;
+  document.getElementById('detail-body').innerHTML = `
+    <p><strong>Определение:</strong></p>
+    <div class="definition-block">${t.def}</div>
+    <div class="practice-block">
+      <strong>Практическое применение</strong>
+      ${t.practice}
+    </div>
+  `;
+  openModal('detail');
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+  document.body.style.overflow = 'hidden';
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+  document.body.style.overflow = '';
+}
+
+filterBtns.forEach(btn => {
+  btn.onclick = () => {
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    renderTerms();
+  };
+});
+
+document.querySelectorAll('.modal').forEach(m => {
+  m.onclick = e => { if (e.target === m) closeModal(m.id); };
+});
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape') {
+    document.querySelectorAll('.modal.active').forEach(m => closeModal(m.id));
+  }
+});
+
+renderTerms();
+</script>
+</body>
+</html>
