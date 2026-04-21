@@ -208,7 +208,7 @@
       background: #fcfefd;
     }
 
-    .option-btn.correct-chosen {
+    .option-btn.correct-lock {
       border-color: var(--green);
       background: var(--green-soft);
       color: var(--green);
@@ -653,7 +653,7 @@
     const infoTexts = {
       rules: {
         title: 'Как работать с интерактивом',
-        body: 'На каждом шаге читайте вопрос и выбирайте один вариант ответа. После ответа откроется короткий комментарий. Перейти к следующему вопросу можно только после верного ответа.',
+        body: 'На каждом шаге читайте вопрос и выбирайте один вариант ответа. После ответа откроется комментарий. Если ответ неверный, окно можно закрыть и попробовать другой вариант. Перейти к следующему вопросу можно только после верного ответа.',
         key: 'Старайтесь определять не просто правильное название, а логику зоны. Что она защищает, как устанавливается и чем отличается от других ограничений.'
       },
       hint: {
@@ -698,7 +698,8 @@
     let currentStep = 0;
     let pendingFeedback = false;
     let lastChosenCorrect = false;
-    let selectedOption = null;
+    let currentOptionBtn = null;
+    let currentOptionIsCorrect = false;
 
     function shuffle(array) {
       const copy = [...array];
@@ -715,7 +716,7 @@
       progressText.textContent = `Шаг ${currentStep + 1} из ${steps.length}`;
     }
 
-    function openFeedback(type, title, body, key, isCorrect) {
+    function openFeedback(type, title, body, key, isCorrect, btn) {
       feedbackTag.textContent = type === 'good' ? 'Верно' : 'Есть неточность';
       feedbackTag.className = 'modal-tag ' + (type === 'good' ? 'good' : 'bad');
       feedbackTitle.textContent = title;
@@ -724,8 +725,11 @@
       feedbackOverlay.classList.add('active');
       feedbackOverlay.setAttribute('aria-hidden', 'false');
       pendingFeedback = true;
-      lastChosenCorrect = isCorrect;
-      nextQuestionBtn.disabled = !isCorrect;
+      currentOptionBtn = btn;
+      currentOptionIsCorrect = isCorrect;
+      if (isCorrect) {
+        nextQuestionBtn.disabled = false;
+      }
     }
 
     function closeFeedback() {
@@ -777,7 +781,9 @@
       optionsBox.innerHTML = '';
       pendingFeedback = false;
       lastChosenCorrect = false;
-      selectedOption = null;
+      currentOptionBtn = null;
+      currentOptionIsCorrect = false;
+      nextQuestionBtn.disabled = true;
       statusText.textContent = 'Выберите ответ.';
 
       shuffle(step.options).forEach(option => {
@@ -787,25 +793,22 @@
         btn.textContent = option.label;
 
         btn.addEventListener('click', () => {
-          // нельзя сменить вариант, но можно повторно открыть комментарий по выбранному
-          if (selectedOption && selectedOption !== btn) {
-            return;
-          }
-          selectedOption = btn;
           const isCorrect = !!option.correct;
 
           if (isCorrect) {
-            btn.classList.add('correct-chosen');
+            // при первом правильном ответе фиксируем блокировку других вариантов
+            lastChosenCorrect = true;
+            optionsBox.querySelectorAll('button').forEach(item => {
+              if (item !== btn) item.disabled = true;
+            });
+            btn.classList.add('correct-lock');
+            statusText.textContent = 'Верный вариант. Нажмите «Следующий вопрос», чтобы двигаться дальше.';
+          } else {
+            // при неверном варианте даем комментарий, но после закрытия снова разрешаем попытки
+            statusText.textContent = 'Ответ с неточностью. Посмотрите комментарий и попробуйте другой вариант.';
           }
 
-          optionsBox.querySelectorAll('button').forEach(item => {
-            if (item !== btn) item.disabled = true;
-          });
-
-          openFeedback(option.feedback.type, option.feedback.title, option.feedback.body, option.feedback.key, isCorrect);
-          statusText.textContent = isCorrect
-            ? 'Ответ принят. Нажмите «Следующий вопрос», чтобы двигаться дальше.'
-            : 'Ответ принят. Посмотрите комментарий. Чтобы перейти дальше, нужно найти верный вариант.';
+          openFeedback(option.feedback.type, option.feedback.title, option.feedback.body, option.feedback.key, isCorrect, btn);
         });
 
         optionsBox.appendChild(btn);
@@ -822,6 +825,16 @@
     closeFeedbackBtn.addEventListener('click', () => {
       if (!pendingFeedback) return;
       closeFeedback();
+      // если ответ был неверным – повторно открываем все варианты и снимаем выбор
+      if (!currentOptionIsCorrect) {
+        const buttons = optionsBox.querySelectorAll('button');
+        buttons.forEach(btn => {
+          btn.disabled = false;
+        });
+        currentOptionBtn = null;
+        currentOptionIsCorrect = false;
+      }
+      pendingFeedback = false;
     });
 
     nextQuestionBtn.addEventListener('click', () => {
@@ -833,7 +846,8 @@
       currentStep = 0;
       pendingFeedback = false;
       lastChosenCorrect = false;
-      selectedOption = null;
+      currentOptionBtn = null;
+      currentOptionIsCorrect = false;
       closeFeedback();
       closeInfo();
       closeSummary();
