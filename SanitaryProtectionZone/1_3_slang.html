@@ -1,0 +1,367 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Сленг эколога: квиз</title>
+<style>
+  :root {
+    --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
+    --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
+    --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
+    --radius: 16px; --transition: 160ms ease;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px; background: #ffffff;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    color: var(--text); line-height: 1.4;
+  }
+  .szz-wrap {
+    max-width: 650px; max-height: 700px; background: var(--card);
+    margin: 0 auto; border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: var(--shadow);
+  }
+  .szz-header {
+    background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%);
+    padding: 16px 20px; border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  .szz-header h2 { margin: 0 0 4px; font-size: 1.2rem; font-weight: 600; color: var(--green); }
+  .szz-header p { margin: 0; font-size: 0.85rem; color: var(--muted); }
+  
+  .top-actions { display: flex; gap: 6px; padding: 10px 20px; border-bottom: 1px solid var(--line); background: #fff; flex-shrink: 0; }
+  .btn-sm { padding: 6px 10px; border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 500; transition: var(--transition); color: var(--muted); }
+  .btn-sm:hover { border-color: var(--green); color: var(--green); background: var(--green-soft-2); }
+  
+  .szz-content { padding: 14px 20px; overflow: hidden; flex: 1; display: flex; flex-direction: column; }
+  
+  .oleg-preview { display: flex; gap: 10px; align-items: flex-start; background: var(--green-soft-2); border-radius: 10px; padding: 10px; margin-bottom: 12px; }
+  .oleg-preview img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; flex-shrink: 0; }
+  .oleg-preview .text { font-size: 0.85rem; color: var(--text); line-height: 1.3; }
+  .oleg-preview .text strong { display: block; margin-bottom: 2px; color: var(--green); font-weight: 600; font-size: 0.9rem; }
+  
+  .progress-bar { height: 3px; background: var(--line); border-radius: 2px; margin: 0 0 12px; overflow: hidden; flex-shrink: 0; }
+  .progress-fill { height: 100%; background: var(--green); width: 0%; transition: width 0.25s ease; border-radius: 2px; }
+  
+  .quiz-card { flex: 1; display: flex; flex-direction: column; }
+  .quiz-card .step { font-size: 0.75rem; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 6px; }
+  .quiz-card .question { font-size: 0.95rem; font-weight: 600; color: var(--text); margin: 0 0 10px; }
+  
+  .slang-card {
+    background: var(--green-soft-2); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px; margin-bottom: 12px; cursor: pointer; transition: var(--transition);
+  }
+  .slang-card:hover { border-color: var(--green); }
+  .slang-card .phrase { font-weight: 600; color: var(--green); margin: 0 0 4px; font-size: 0.9rem; }
+  .slang-card .context { font-size: 0.8rem; color: var(--muted); margin: 0; font-style: italic; }
+  .slang-card.answered { cursor: default; opacity: 0.9; }
+  
+  .options-list { display: grid; gap: 8px; margin-bottom: 10px; }
+  .option-btn {
+    padding: 10px 12px; border: 1px solid var(--line); background: var(--card);
+    border-radius: 8px; cursor: pointer; font-size: 0.85rem; text-align: left;
+    transition: var(--transition); color: var(--text);
+  }
+  .option-btn:hover { border-color: var(--green); background: var(--green-soft-2); }
+  .option-btn.selected { border-color: var(--green); background: var(--green-soft); font-weight: 500; }
+  .option-btn:disabled { opacity: 0.6; cursor: default; }
+  
+  .feedback {
+    display: none; padding: 10px 12px; border-radius: 8px; margin-top: 8px;
+    font-size: 0.85rem; line-height: 1.4; border-left: 3px solid var(--green);
+  }
+  .feedback.show { display: block; animation: fade 0.2s; }
+  .feedback.ok { background: var(--green-soft-2); border-color: var(--green); }
+  .feedback.err { background: #fff1ea; border-color: #b4532a; }
+  .feedback .official { font-weight: 600; color: var(--green); display: block; margin-bottom: 4px; }
+  
+  .bottom-actions { display: flex; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--line); background: #fff; flex-shrink: 0; }
+  .btn-main { flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.85rem; font-weight: 600; transition: var(--transition); background: var(--green); color: #fff; }
+  .btn-main:hover { filter: brightness(0.95); }
+  .btn-main:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; filter: none; }
+  .btn-reset { padding: 10px 14px; border: 1px solid var(--line); background: #fff; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: var(--transition); color: var(--muted); display: none; }
+  .btn-reset:hover { border-color: var(--green); color: var(--green); background: var(--green-soft-2); }
+  
+  .summary { display: none; flex: 1; flex-direction: column; }
+  .summary.show { display: flex; }
+  .summary h4 { margin: 0 0 8px; font-size: 0.95rem; color: var(--green); }
+  .summary p, .summary li { font-size: 0.85rem; color: var(--text); margin-bottom: 4px; line-height: 1.3; }
+  .summary ul { padding-left: 18px; margin: 6px 0; }
+  
+  .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(31,42,36,0.4); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px; backdrop-filter: blur(2px); }
+  .modal.active { display: flex; animation: fadeIn 0.15s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal-box { background: var(--card); border-radius: var(--radius); max-width: 460px; width: 100%; box-shadow: var(--shadow); overflow: hidden; animation: slideUp 0.2s; max-height: 80vh; display: flex; flex-direction: column; border: 1px solid var(--line); }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-header { padding: 12px 16px; background: var(--green-soft-2); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h3 { margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--green); }
+  .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); padding: 0; line-height: 1; }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 14px 16px; font-size: 0.85rem; line-height: 1.4; color: var(--text); overflow-y: auto; flex: 1; }
+  .modal-body p { margin: 0 0 8px; }
+  .modal-body ul { padding-left: 16px; margin: 6px 0; }
+  .modal-footer { padding: 10px 16px; border-top: 1px solid var(--line); background: var(--card); text-align: right; flex-shrink: 0; }
+  .btn-ok { background: var(--green); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.8rem; font-weight: 500; transition: var(--transition); }
+  .btn-ok:hover { filter: brightness(0.95); }
+  
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 500px) { .szz-wrap { max-height: 100vh; border-radius: 0; border: none; } }
+</style>
+</head>
+<body>
+
+<div class="szz-wrap">
+  <div class="szz-header">
+    <h2>Сленг эколога: квиз</h2>
+    <p>5 вопросов, чтобы разобраться в рабочих фразах</p>
+  </div>
+
+  <div class="top-actions">
+    <button class="btn-sm" onclick="openModal('rules')">Правила</button>
+    <button class="btn-sm" onclick="openModal('importance')">Что важно понять</button>
+  </div>
+
+  <div class="szz-content">
+    <div class="oleg-preview">
+      <img src="oleg.jpg" alt="Олег">
+      <div class="text">
+        <strong>Олег:</strong> На совещаниях коллеги говорят фразами вроде «нужно посадить санитарку». Помогите мне понять, что они имеют в виду.
+      </div>
+    </div>
+
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+
+    <div class="quiz-card" id="quiz-card">
+      <div class="step">Вопрос <span id="q-num">1</span> из 5</div>
+      <div class="question">Как вы понимаете эту фразу?</div>
+      <div class="slang-card" id="slang-card">
+        <div class="phrase" id="q-phrase">...</div>
+        <div class="context" id="q-context">...</div>
+      </div>
+      <div class="options-list" id="options"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div class="summary" id="summary">
+      <h4>Что вы разобрали</h4>
+      <p>Вы научились переводить сленговые фразы на язык нормативов. Теперь понимаете, что стоит за короткими формулировками в рабочих чатах.</p>
+      <ul>
+        <li>«Санитарка» и «пятьсот метров» – про границы СЗЗ и класс опасности.</li>
+        <li>«Фон» – уже существующее загрязнение от соседей.</li>
+        <li>«Роспотреб» и «посадить зону» – документы и ЕГРН.</li>
+        <li>«Урезать» и «проектники» – расчёты, замеры, генплан.</li>
+      </ul>
+      <p>В отчётах используйте полные термины. Сленг оставляйте для неформального общения – так избежите разночтений.</p>
+    </div>
+
+    <div class="bottom-actions">
+      <button class="btn-main" id="btn-next" disabled>Дальше</button>
+      <button class="btn-reset" id="btn-reset">Пройти ещё раз</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<div class="modal" id="rules">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Правила</h3><button class="modal-close" onclick="closeModal('rules')">&times;</button></div>
+    <div class="modal-body">
+      <ul>
+        <li>Читайте фразу, которую Олег услышал от коллег.</li>
+        <li>Выберите один вариант перевода.</li>
+        <li>Комментарий появится сразу после выбора.</li>
+        <li>Нажмите «Дальше», чтобы перейти к следующему вопросу.</li>
+      </ul>
+    </div>
+    <div class="modal-footer"><button class="btn-ok" onclick="closeModal('rules')">Понятно</button></div>
+  </div>
+</div>
+
+<div class="modal" id="importance">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Что важно понять</h3><button class="modal-close" onclick="closeModal('importance')">&times;</button></div>
+    <div class="modal-body">
+      <p>Сленг ускоряет общение, но в документах нужны точные термины. Ошибка в понимании ведёт к замечаниям экспертизы.</p>
+      <p>Этот квиз связывает бытовые формулировки с нормативными определениями. Вы понимаете, в каком контексте каждая фраза уместна.</p>
+      <p style="background:var(--green-soft-2);padding:8px 10px;border-radius:6px;border-left:3px solid var(--green)">
+        <strong>Правило:</strong> Услышали сленг → уточнили термин → использовали полный термин в документе.
+      </p>
+    </div>
+    <div class="modal-footer"><button class="btn-ok" onclick="closeModal('importance')">Понятно</button></div>
+  </div>
+</div>
+
+<script>
+const quizData = [
+  {
+    phrase: 'Коллега сказал: «Нужно согласовать санитарку с роспотребом»',
+    context: 'На планерке, в неформальной беседе',
+    options: [
+      'Согласовать проект санитарно-защитной зоны (СЗЗ) с Роспотребнадзором',
+      'Получить разрешение на санитарную обработку помещений',
+      'Утвердить график уборки территории'
+    ],
+    correct: 0,
+    official: 'Санитарно-защитная зона (СЗЗ) и Роспотребнадзор',
+    def: 'СЗЗ – территория с особым режимом между заводом и жильём. Роспотребнадзор согласовывает её границы и контролирует соблюдение норм.',
+    comment: 'Верно. «Санитарка» – бытовое название СЗЗ, «роспотреб» – Роспотребнадзор. В отчётах пишите полные наименования.'
+  },
+  {
+    phrase: 'Инженер упомянул: «Учитывайте фон при расчёте границы»',
+    context: 'При обсуждении замеров и расчётов',
+    options: [
+      'Учитывать фоновое загрязнение от других источников',
+      'Добавить фоновую музыку в офис для комфорта',
+      'Проверить фондовый рынок перед инвестициями'
+    ],
+    correct: 0,
+    official: 'Фоновое загрязнение',
+    def: 'Концентрация вредных веществ от соседних предприятий. Суммируется с выбросами вашего объекта при расчётах рассеивания.',
+    comment: 'Точно. «Фон» в экологии – уже существующее загрязнение. Без него расчёты СЗЗ занижают границу и не проходят экспертизу.'
+  },
+  {
+    phrase: 'Руководитель сказал: «Для нас ориентировочно пятьсот метров»',
+    context: 'При обсуждении размеров зоны',
+    options: [
+      'Ориентировочный размер СЗЗ для предприятия II класса опасности',
+      'Расстояние до ближайшей автобусной остановки',
+      'Радиус действия служебной радиосвязи'
+    ],
+    correct: 0,
+    official: 'Ориентировочный размер СЗЗ',
+    def: 'Начальная граница зоны по таблицам СанПиН в зависимости от класса опасности. Требует уточнения расчётами и натурными замерами.',
+    comment: 'Верно. «Пятьсот метров» – стартовая цифра для II класса опасности. Окончательную границу определяют расчёты и замеры.'
+  },
+  {
+    phrase: 'Специалист сказал: «После согласования нужно посадить зону в реестр»',
+    context: 'При обсуждении кадастра и документов',
+    options: [
+      'Внести границы СЗЗ в Единый государственный реестр недвижимости (ЕГРН)',
+      'Посадить деревья вдоль границы буферной зоны',
+      'Закрепить земельный участок за предприятием'
+    ],
+    correct: 0,
+    official: 'Внесение границ СЗЗ в ЕГРН',
+    def: 'Юридическая фиксация границ санитарно-защитной зоны в реестре. После этого зона приобретает обязательный правовой статус.',
+    comment: 'Точно. «Посадить» – внести границы в ЕГРН. Это финальный этап: после него изменения возможны только через повторную экспертизу.'
+  },
+  {
+    phrase: 'Эколог сказал: «Если замеры позволят, можно урезать зону»',
+    context: 'После натурных исследований',
+    options: [
+      'Сократить границы СЗЗ по результатам замеров, если воздействия ниже нормативов',
+      'Снести ограждение предприятия для расширения территории',
+      'Уменьшить производственные площади цеха'
+    ],
+    correct: 0,
+    official: 'Сокращение границ СЗЗ',
+    def: 'Процедура уменьшения размера санитарно-защитной зоны после подтверждения замерами, что воздействия на границе ниже ПДК и ПДУ.',
+    comment: 'Верно. «Урезать» – сократить границы по замерам. Возможно только после подтверждения данных и согласования с Роспотребнадзором.'
+  }
+];
+
+let current = 0;
+let answered = false;
+
+const qNum = document.getElementById('q-num');
+const qPhrase = document.getElementById('q-phrase');
+const qContext = document.getElementById('q-context');
+const optionsDiv = document.getElementById('options');
+const feedback = document.getElementById('feedback');
+const nextBtn = document.getElementById('btn-next');
+const resetBtn = document.getElementById('btn-reset');
+const progress = document.getElementById('progress');
+const quizCard = document.getElementById('quiz-card');
+const summary = document.getElementById('summary');
+const slangCard = document.getElementById('slang-card');
+
+function renderQuestion() {
+  const item = quizData[current];
+  qNum.textContent = current + 1;
+  qPhrase.textContent = item.phrase;
+  qContext.textContent = item.context;
+  
+  optionsDiv.innerHTML = '';
+  feedback.className = 'feedback';
+  feedback.style.display = 'none';
+  answered = false;
+  nextBtn.disabled = true;
+  slangCard.classList.remove('answered');
+  
+  item.options.forEach((opt, idx) => {
+    const btn = document.createElement('button');
+    btn.className = 'option-btn';
+    btn.textContent = opt;
+    btn.onclick = () => handleAnswer(idx, item);
+    optionsDiv.appendChild(btn);
+  });
+  
+  progress.style.width = `${(current / quizData.length) * 100}%`;
+}
+
+function handleAnswer(selectedIdx, item) {
+  if(answered) return;
+  answered = true;
+  
+  // Disable all options
+  document.querySelectorAll('.option-btn').forEach(btn => btn.disabled = true);
+  slangCard.classList.add('answered');
+  
+  const isOk = selectedIdx === item.correct;
+  
+  feedback.innerHTML = `
+    <span class="official">${item.official}</span>
+    ${item.def}<br><br>
+    <strong>${isOk ? '✓' : '•'}</strong> ${item.comment}
+  `;
+  feedback.className = 'feedback show ' + (isOk ? 'ok' : 'err');
+  
+  nextBtn.disabled = false;
+}
+
+nextBtn.onclick = function() {
+  current++;
+  if(current >= quizData.length) {
+    showSummary();
+  } else {
+    renderQuestion();
+  }
+};
+
+function showSummary() {
+  progress.style.width = '100%';
+  quizCard.style.display = 'none';
+  summary.classList.add('show');
+  nextBtn.style.display = 'none';
+  resetBtn.style.display = 'inline-block';
+}
+
+function openModal(id) {
+  document.getElementById(id).classList.add('active');
+}
+function closeModal(id) {
+  document.getElementById(id).classList.remove('active');
+}
+
+resetBtn.onclick = function() {
+  current = 0;
+  quizCard.style.display = 'block';
+  summary.classList.remove('show');
+  nextBtn.style.display = 'inline-block';
+  nextBtn.disabled = true;
+  resetBtn.style.display = 'none';
+  renderQuestion();
+};
+
+document.querySelectorAll('.modal').forEach(m => {
+  m.onclick = e => { if(e.target === m) closeModal(m.id); };
+});
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') document.querySelectorAll('.modal.active').forEach(closeModal);
+});
+
+renderQuestion();
+</script>
+</body>
+</html>
