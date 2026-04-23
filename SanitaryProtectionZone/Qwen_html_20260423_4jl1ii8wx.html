@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Гайд Олега: алгоритм работы с СЗЗ</title>
+<style>
+  :root {
+    --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
+    --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
+    --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
+    --radius: 16px; --transition: 160ms ease;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px; background: #ffffff;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    color: var(--text); line-height: 1.4;
+  }
+  .szz-wrap {
+    max-width: 650px; max-height: 700px; background: var(--card);
+    margin: 0 auto; border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: var(--shadow); position: relative;
+  }
+  .szz-header {
+    background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%);
+    padding: 16px 20px; border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  .szz-header h2 { margin: 0 0 4px; font-size: 1.2rem; font-weight: 600; color: var(--green); }
+  .szz-header p { margin: 0; font-size: 0.85rem; color: var(--muted); }
+  
+  .top-actions { display: flex; gap: 6px; padding: 10px 20px; border-bottom: 1px solid var(--line); background: #fff; flex-shrink: 0; position: relative; z-index: 5; }
+  .btn-sm { padding: 6px 10px; border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 500; transition: var(--transition); color: var(--muted); }
+  .btn-sm:hover { border-color: var(--green); color: var(--green); background: var(--green-soft-2); }
+  .btn-sm:active { transform: translateY(1px); }
+  
+  .szz-content { padding: 14px 20px; flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+  
+  .oleg-preview { 
+    display: flex; gap: 10px; align-items: flex-start; 
+    background: var(--green-soft-2); border-radius: 10px; padding: 12px; margin-bottom: 14px;
+    border-left: 3px solid var(--green);
+  }
+  .oleg-avatar { 
+    width: 40px; height: 40px; border-radius: 50%; overflow: hidden; flex-shrink: 0; 
+    border: 2px solid #fff; box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  }
+  .oleg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .oleg-preview .text { font-size: 0.85rem; color: var(--text); line-height: 1.35; }
+  .oleg-preview .text strong { display: block; margin-bottom: 3px; color: var(--green); font-weight: 600; font-size: 0.9rem; }
+  
+  .guide-intro { 
+    font-size: 0.85rem; color: var(--muted); margin: 0 0 14px; 
+    padding: 10px 12px; background: var(--green-soft-2); 
+    border-radius: 8px; border-left: 3px solid var(--green);
+  }
+  
+  .progress-mini { 
+    display: flex; gap: 4px; margin: 0 0 12px; justify-content: center; 
+  }
+  .progress-dot {
+    width: 8px; height: 8px; border-radius: 50%; 
+    background: var(--line); transition: var(--transition);
+  }
+  .progress-dot.viewed { background: var(--green-soft); border: 1px solid var(--green); }
+  
+  .roadmap { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+  .roadmap-step {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 12px; cursor: pointer; transition: var(--transition);
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .roadmap-step:hover { border-color: var(--green); background: var(--green-soft-2); transform: translateX(2px); }
+  .roadmap-step.viewed { border-color: var(--green); background: var(--green-soft); }
+  .roadmap-step .num {
+    width: 26px; height: 26px; border-radius: 50%; background: var(--green);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 600; font-size: 0.8rem; flex-shrink: 0;
+  }
+  .roadmap-step.viewed .num { background: var(--green-soft); color: var(--green); border: 1px solid var(--green); }
+  .roadmap-step .content { flex: 1; }
+  .roadmap-step .title { font-weight: 600; font-size: 0.9rem; color: var(--text); margin-bottom: 3px; }
+  .roadmap-step .desc { font-size: 0.8rem; color: var(--muted); line-height: 1.3; }
+  .roadmap-step .status { font-size: 0.75rem; color: var(--green); margin-top: 4px; font-weight: 500; display: none; }
+  .roadmap-step.viewed .status { display: block; }
+  
+  .bottom-actions { display: flex; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--line); background: #fff; flex-shrink: 0; }
+  .btn-reset { padding: 10px 14px; border: 1px solid var(--line); background: #fff; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: var(--transition); color: var(--muted); }
+  .btn-reset:hover { border-color: var(--green); color: var(--green); background: var(--green-soft-2); }
+  
+  .summary-block { display: none; background: var(--green-soft-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin: 10px 0; animation: fade 0.2s; }
+  .summary-block.show { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .summary-block h4 { margin: 0 0 8px; font-size: 0.92rem; color: var(--green); }
+  .summary-block p { font-size: 0.84rem; color: var(--text); line-height: 1.35; }
+  
+  .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(31,42,36,0.4); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px; backdrop-filter: blur(2px); }
+  .modal.active { display: flex; animation: fadeIn 0.15s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal-box { background: var(--card); border-radius: var(--radius); max-width: 480px; width: 100%; box-shadow: var(--shadow); overflow: hidden; animation: slideUp 0.2s; max-height: 85vh; display: flex; flex-direction: column; border: 1px solid var(--line); }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-header { padding: 12px 16px; background: var(--green-soft-2); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h3 { margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--green); }
+  .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); padding: 0; line-height: 1; }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 14px 16px; font-size: 0.86rem; line-height: 1.45; color: var(--text); overflow-y: auto; flex: 1; }
+  .modal-body p { margin: 0 0 10px; }
+  .modal-body ul { padding-left: 18px; margin: 8px 0; }
+  .modal-body li { margin-bottom: 6px; }
+  .modal-body strong { color: var(--green); }
+  .apply-block { background: var(--green-soft-2); border-left: 3px solid var(--green); padding: 10px 12px; border-radius: 0 8px 8px 0; margin: 10px 0; font-size: 0.85rem; }
+  .apply-block strong { display: block; margin-bottom: 4px; color: var(--green); }
+  .modal-footer { padding: 10px 16px; border-top: 1px solid var(--line); background: var(--card); text-align: right; flex-shrink: 0; }
+  .btn-ok { background: var(--green); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500; transition: var(--transition); }
+  .btn-ok:hover { filter: brightness(0.95); }
+  
+  @media (max-width: 500px) { 
+    .szz-wrap { max-height: 100vh; border-radius: 0; border: none; }
+    .roadmap-step { padding: 10px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="szz-wrap">
+  <div class="szz-header">
+    <h2>Гайд Олега: алгоритм работы с СЗЗ</h2>
+    <p>7 шагов от данных до реестра</p>
+  </div>
+
+  <div class="top-actions">
+    <button class="btn-sm" id="btn-about">О гайде</button>
+    <button class="btn-sm" id="btn-tips">Советы новичку</button>
+  </div>
+
+  <div class="szz-content">
+    <div class="oleg-preview">
+      <div class="oleg-avatar"><img src="oleg.jpg" alt="Олег"></div>
+      <div class="text">
+        <strong>Олег:</strong> Мне подсказали простой алгоритм: семь шагов от проверки данных до внесения границы в реестр. Я хочу изучить его в своём темпе – возвращаться к шагам, сравнивать, примерять на своё предприятие.
+      </div>
+    </div>
+
+    <div class="guide-intro">
+      Нажимайте на любой шаг в любом порядке. Каждый шаг можно открывать сколько угодно раз. Изучайте, сравнивайте, применяйте – без ограничений.
+    </div>
+    
+    <div class="progress-mini" id="progress-dots"></div>
+    
+    <div class="roadmap" id="roadmap"></div>
+    
+    <div class="summary-block" id="summary-block">
+      <h4>Памятка по алгоритму</h4>
+      <p>Полный цикл работы с СЗЗ: от проверки исходных данных до внесения границ в реестр. Этот алгоритм универсален – он подходит для любого промышленного объекта.</p>
+      <p style="margin-top:8px"><strong>Примените к своему предприятию:</strong> Возьмите этот гайд как чек-лист. Пройдите по шагам для вашего объекта: проверьте, есть ли исходные данные, сделаны ли расчёты, проведены ли замеры. Если какой-то этап пропущен – это точка роста для вашей работы.</p>
+    </div>
+  </div>
+
+  <div class="bottom-actions">
+    <button class="btn-reset" id="btn-reset">Сбросить отметки</button>
+  </div>
+</div>
+
+<!-- Модальные окна -->
+<div class="modal" id="about">
+  <div class="modal-box">
+    <div class="modal-header"><h3>О гайде</h3><button class="modal-close" data-modal-close>&times;</button></div>
+    <div class="modal-body">
+      <p>Этот интерактив – навигатор для самостоятельного изучения. Здесь нет тестов, ограничений и обязательного порядка.</p>
+      <p><strong>Как устроен каждый шаг:</strong></p>
+      <ul>
+        <li><strong>Что делает Олег</strong> – конкретное действие на его заводе.</li>
+        <li><strong>Зачем это нужно</strong> – логика и нормативное обоснование.</li>
+        <li><strong>Примените к своему предприятию</strong> – практический совет для вашей работы.</li>
+      </ul>
+      <p style="background:var(--green-soft-2);padding:8px 10px;border-radius:6px;border-left:3px solid var(--green)">
+        <strong>Как работать:</strong> Кликайте на шаги в любом порядке. Возвращайтесь к изученным, сравнивайте, открывайте несколько раз. Внизу есть памятка – она всегда доступна.
+      </p>
+    </div>
+    <div class="modal-footer"><button class="btn-ok" data-modal-close>Понятно</button></div>
+  </div>
+</div>
+
+<div class="modal" id="tips">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Советы новичку</h3><button class="modal-close" data-modal-close>&times;</button></div>
+    <div class="modal-body">
+      <ul>
+        <li><strong>Не учите наизусть.</strong> Запоминайте логику: данные → расчёт → замеры → документ → согласование → реестр.</li>
+        <li><strong>Уточняйте термины.</strong> Если не знаете слово – откройте глоссарий курса. Не гадайте, а проверяйте.</li>
+        <li><strong>Применяйте сразу.</strong> После каждого шага спросите себя: «А как это выглядит на моём предприятии?»</li>
+        <li><strong>Записывайте вопросы.</strong> Возникли сомнения? Запишите и обсудите с наставником или коллегами.</li>
+        <li><strong>Возвращайтесь.</strong> Если шаг стал понятнее после изучения следующего – отлично. Алгоритм работает как система.</li>
+      </ul>
+    </div>
+    <div class="modal-footer"><button class="btn-ok" data-modal-close>Понятно</button></div>
+  </div>
+</div>
+
+<div class="modal" id="step-modal">
+  <div class="modal-box">
+    <div class="modal-header"><h3 id="step-title">Шаг</h3><button class="modal-close" data-modal-close>&times;</button></div>
+    <div class="modal-body" id="step-body"></div>
+    <div class="modal-footer"><button class="btn-ok" data-modal-close>Закрыть</button></div>
+  </div>
+</div>
+
+<script>
+  const roadmap = [
+    {
+      num: 1, title: 'Проверить исходные данные',
+      oleg: 'Олег открывает реестр НВОС и техническую документацию завода. Смотрит: стоит ли объект на учёте, какие вещества в выбросах, какой класс опасности.',
+      why: 'Без исходных параметров нельзя делать расчёты. Класс опасности задаёт ориентировочный размер СЗЗ, состав выбросов – перечень веществ для контроля.',
+      tip: 'Для своего предприятия: откройте выписку из реестра НВОС. Запишите класс опасности и основные вещества в выбросах. Это отправная точка для работы с СЗЗ.'
+    },
+    {
+      num: 2, title: 'Определить ориентировочный размер',
+      oleg: 'Олег находит в СанПиН таблицу по классу опасности. Для своего завода (1.1.29) видит ориентировочный размер 1 000 м – именно такую СЗЗ установили в 2003 году.',
+      why: 'Ориентировочный размер – стартовая точка. Он не окончательный, но задаёт направление для дальнейших расчётов и помогает оценить масштаб задачи.',
+      tip: 'Найдите таблицу СанПиН для вашего класса опасности. Запишите ориентировочный размер. Сравните с фактической границей на карте – есть ли расхождения?'
+    },
+    {
+      num: 3, title: 'Сделать расчёт рассеивания',
+      oleg: 'Олег передаёт данные проектировщикам: выбросы формальдегида, фенола, метанола, метеоусловия, рельеф. Получает расчётную границу, где концентрации падают ниже 0,1 ПДК.',
+      why: 'Расчёт показывает, как далеко распространяются выбросы в реальных условиях. Это основа для уточнения границы – она может быть меньше или больше ориентировочной.',
+      tip: 'Уточните, кто делает расчёты рассеивания на вашем предприятии. Запросите результаты по ключевым веществам. Сравните с порогом 0,1 ПДК.'
+    },
+    {
+      num: 4, title: 'Провести натурные замеры',
+      oleg: 'После пуска производства Олег организует замеры на границе расчётной зоны. Проверяет формальдегид, фенол, метанол, шум. Сравнивает факт с расчётом.',
+      why: 'Расчёт – это модель. Замеры показывают реальность. Если фактические концентрации ниже расчётных, границу можно скорректировать. Если выше – зону нужно расширить.',
+      tip: 'Проверьте, есть ли программа натурных исследований для вашего объекта. Если нет – это повод инициировать замеры. Без них границу нельзя считать обоснованной.'
+    },
+    {
+      num: 5, title: 'Оформить проект СЗЗ',
+      oleg: 'Олег собирает все материалы в единый документ: расчёты, карты, протоколы замеров, пояснительную записку. Формирует проект для экспертизы.',
+      why: 'Проект – это обоснование границы. Без него Роспотребнадзор не даст заключение, а Росреестр не внесёт сведения в ЕГРН. Структура проекта регламентирована.',
+      tip: 'Запросите актуальный проект СЗЗ для вашего предприятия. Сверьте его структуру с требованиями МР 2.1.1.0358-24. Если разделов не хватает – зафиксируйте замечания.'
+    },
+    {
+      num: 6, title: 'Согласовать с Роспотребнадзором',
+      oleg: 'Олег подаёт проект в территориальное управление. Получает санитарно-эпидемиологическое заключение. Это разрешение на установление границы.',
+      why: 'Заключение Роспотребнадзора – обязательный этап. Без него граница не имеет юридической силы. Экспертиза проверяет полноту расчётов и соответствие нормативам.',
+      tip: 'Уточните статус согласования СЗЗ для вашего объекта. Если заключения нет или оно устарело – это риск при проверках. Запланируйте актуализацию.'
+    },
+    {
+      num: 7, title: 'Внести границу в ЕГРН',
+      oleg: 'После согласования Олег подаёт документы в Росреестр. Граница СЗЗ появляется в выписках ЕГРН. Теперь она обязательна для всех: застройщиков, проектировщиков, надзора.',
+      why: 'Внесение в ЕГРН – финальный шаг. Только после этого граница становится юридическим фактом. Любое строительство в пределах зоны теперь требует учёта санитарного режима.',
+      tip: 'Закажите выписку ЕГРН на земельный участок вашего предприятия. Найдите сведения о СЗЗ. Если их нет – граница не имеет юридической силы, даже если есть проект.'
+    }
+  ];
+
+  let viewedSteps = [];
+
+  const roadmapContainer = document.getElementById('roadmap');
+  const progressDots = document.getElementById('progress-dots');
+  const summaryBlock = document.getElementById('summary-block');
+
+  function renderProgress() {
+    progressDots.innerHTML = '';
+    roadmap.forEach((_, idx) => {
+      const dot = document.createElement('div');
+      dot.className = 'progress-dot';
+      if(viewedSteps.includes(idx)) dot.classList.add('viewed');
+      progressDots.appendChild(dot);
+    });
+  }
+
+  function renderRoadmap() {
+    roadmapContainer.innerHTML = '';
+    roadmap.forEach((step, idx) => {
+      const item = document.createElement('div');
+      item.className = 'roadmap-step';
+      if(viewedSteps.includes(idx)) item.classList.add('viewed');
+      item.innerHTML = `
+        <div class="num">${step.num}</div>
+        <div class="content">
+          <div class="title">${step.title}</div>
+          <div class="desc">${viewedSteps.includes(idx) ? '✓ Изучено' : 'Нажмите, чтобы открыть'}</div>
+          <div class="status">Просмотрено</div>
+        </div>
+      `;
+      item.onclick = () => openStep(idx);
+      roadmapContainer.appendChild(item);
+    });
+    renderProgress();
+    if(viewedSteps.length === roadmap.length) summaryBlock.classList.add('show');
+  }
+
+  function openStep(idx) {
+    const step = roadmap[idx];
+    document.getElementById('step-title').textContent = `Шаг ${step.num}: ${step.title}`;
+    document.getElementById('step-body').innerHTML = `
+      <p><strong>Что делает Олег:</strong> ${step.oleg}</p>
+      <p><strong>Зачем это нужно:</strong> ${step.why}</p>
+      <div class="apply-block">
+        <strong>Примените к своему предприятию:</strong>
+        ${step.tip}
+      </div>
+    `;
+    document.getElementById('step-modal').classList.add('active');
+    if(!viewedSteps.includes(idx)) {
+      viewedSteps.push(idx);
+      renderRoadmap();
+    }
+  }
+
+  function openModal(id) { document.getElementById(id).classList.add('active'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+  function closeModalTarget(e) {
+    const btn = e.target.closest('[data-modal-close]');
+    const modal = e.target.closest('.modal');
+    if(btn && modal) modal.classList.remove('active');
+    else if(e.target.classList.contains('modal')) e.target.classList.remove('active');
+  }
+
+  // Event Listeners
+  document.getElementById('btn-about').onclick = () => openModal('about');
+  document.getElementById('btn-tips').onclick = () => openModal('tips');
+  document.getElementById('btn-reset').onclick = function() {
+    viewedSteps = []; summaryBlock.classList.remove('show');
+    renderRoadmap(); document.querySelector('.szz-content').scrollTop = 0;
+  };
+  document.addEventListener('click', closeModalTarget);
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+  });
+
+  renderRoadmap();
+</script>
+</body>
+</html>
