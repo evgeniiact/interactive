@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Капитальное строительство или нет</title>
+<style>
+  :root {
+    --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
+    --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
+    --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
+    --radius: 16px; --transition: 160ms ease;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px; background: var(--bg);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    color: var(--text); line-height: 1.4;
+  }
+  
+  .szz-wrap {
+    max-width: 900px; margin: 0 auto; background: var(--card);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: var(--shadow); max-height: 100vh;
+  }
+  
+  .szz-header { padding: 20px 24px; background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%); border-bottom: 1px solid var(--line); }
+  .szz-header h2 { margin: 0 0 8px; font-size: 1.25rem; font-weight: 600; color: var(--green); }
+  .szz-header p { margin: 0; font-size: 0.9rem; color: var(--muted); line-height: 1.4; }
+  
+  .top-actions { display: flex; gap: 6px; padding: 10px 24px; border-bottom: 1px solid var(--line); background: #fff; flex-shrink: 0; flex-wrap: wrap; }
+  .btn-sm { padding: 6px 10px; border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 500; transition: var(--transition); color: var(--muted); }
+  .btn-sm:hover { border-color: var(--green); color: var(--green); background: var(--green-soft-2); }
+  
+  .oleg-intro {
+    display: flex; gap: 12px; align-items: flex-start; padding: 16px 24px;
+    background: var(--green-soft-2); margin: 0; border-bottom: 1px solid var(--line);
+  }
+  .oleg-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; flex-shrink: 0; }
+  .oleg-text { font-size: 0.88rem; color: var(--text); line-height: 1.35; }
+  .oleg-text strong { display: block; margin-bottom: 2px; color: var(--green); font-weight: 600; }
+  
+  .szz-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+  
+  .instruction {
+    background: var(--green-soft-2); border-left: 3px solid var(--green);
+    padding: 12px 16px; border-radius: 0 8px 8px 0; margin-bottom: 20px;
+    font-size: 0.9rem; color: var(--text);
+  }
+  
+  .game-area { display: flex; flex-direction: column; gap: 20px; margin-bottom: 20px; }
+  
+  /* Drum / Deck */
+  .deck-container {
+    background: #f8fafc; border: 1px dashed var(--line); border-radius: 12px; padding: 16px;
+  }
+  .deck-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px; }
+  .deck-label { font-size: 0.85rem; color: var(--muted); font-weight: 500; }
+  .deck-stack { position: relative; height: 140px; width: 100%; }
+  
+  .deck-card {
+    position: absolute; top: 0; left: 0; right: 0;
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    padding: 14px 16px; box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    display: flex; gap: 10px; align-items: flex-start;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+  }
+  .deck-card:nth-child(1) { z-index: 3; transform: translateY(0); }
+  .deck-card:nth-child(2) { z-index: 2; transform: translateY(14px); opacity: 0.7; pointer-events: none; }
+  .deck-card:nth-child(3) { z-index: 1; transform: translateY(28px); opacity: 0.4; pointer-events: none; }
+  .deck-card.dragging { z-index: 100; transform: scale(1.03) translateY(-4px); box-shadow: 0 12px 24px rgba(0,0,0,0.12); opacity: 0.9; }
+  .deck-card.placed { display: none; }
+  
+  .card-icon { width: 28px; height: 28px; background: var(--green-soft); border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+  .card-text { font-size: 0.88rem; line-height: 1.4; color: var(--text); }
+  
+  /* Zones */
+  .zones-wrapper { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .drop-zone {
+    background: var(--card); border: 2px dashed var(--line); border-radius: 12px;
+    padding: 16px; min-height: 220px; transition: var(--transition);
+    display: flex; flex-direction: column;
+  }
+  .drop-zone.drag-over { border-color: var(--green); background: var(--green-soft-2); }
+  .drop-zone h3 { margin: 0 0 4px; font-size: 1rem; color: var(--text); }
+  .drop-zone p { margin: 0 0 12px; font-size: 0.82rem; color: var(--muted); }
+  .zone-cards { display: flex; flex-direction: column; gap: 10px; flex: 1; }
+  
+  .zone-card {
+    background: #fff; border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px; font-size: 0.85rem; line-height: 1.4; color: var(--text);
+    display: flex; align-items: flex-start; gap: 10px; position: relative;
+    transition: var(--transition);
+  }
+  .zone-card.correct { border-color: var(--green); background: var(--green-soft); }
+  .zone-card.incorrect { border-color: #b4532a; background: #fff1ea; }
+  .zone-card.interactive { cursor: pointer; }
+  .zone-card.interactive::after {
+    content: "💬"; position: absolute; top: 8px; right: 10px; font-size: 0.8rem; opacity: 0.6;
+  }
+  .zone-card .click-hint { display: none; font-size: 0.75rem; color: var(--green); margin-top: 6px; font-style: italic; }
+  .zone-card.interactive .click-hint { display: block; }
+  
+  .drop-zone.success { border-color: var(--green); border-style: solid; }
+  .drop-zone.error { border-color: #b4532a; border-style: solid; }
+  
+  .summary {
+    padding: 14px; border-radius: 8px; margin-bottom: 16px; font-size: 0.92rem;
+    display: none; animation: fadeIn 0.3s;
+  }
+  .summary.show { display: block; }
+  .summary.success { background: var(--green-soft); border: 1px solid var(--green); color: var(--green); }
+  .summary.error { background: #fff1ea; border: 1px solid #b4532a; color: #92400e; }
+  
+  .controls { display: flex; gap: 12px; justify-content: flex-end; flex-wrap: wrap; }
+  .btn-action { padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: var(--transition); }
+  .btn-check { background: var(--green); color: #fff; }
+  .btn-check:hover { filter: brightness(0.95); }
+  .btn-check:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+  .btn-reset { background: #fff; color: var(--text); border: 1px solid var(--line); }
+  .btn-reset:hover { border-color: var(--green); background: var(--green-soft-2); }
+  
+  /* Modals */
+  .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(31,42,36,0.45); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 20px; backdrop-filter: blur(3px); }
+  .modal.active { display: flex; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal-box { background: #fff; border-radius: 12px; max-width: 480px; width: 100%; box-shadow: 0 16px 40px rgba(0,0,0,0.15); overflow: hidden; animation: slideUp 0.25s; max-height: 85vh; display: flex; flex-direction: column; }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-head { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: var(--green-soft-2); }
+  .modal-head h3 { margin: 0; font-size: 1rem; color: var(--green); }
+  .modal-x { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); line-height: 1; }
+  .modal-x:hover { color: var(--text); }
+  .modal-body { padding: 20px; overflow-y: auto; font-size: 0.9rem; line-height: 1.5; color: var(--text); }
+  .modal-body ul { padding-left: 18px; margin: 8px 0; }
+  .modal-body li { margin-bottom: 6px; }
+  .modal-body strong { color: var(--green); }
+  .modal-foot { padding: 12px 20px; border-top: 1px solid var(--line); text-align: right; background: #fff; }
+  .btn-modal-close { background: var(--green); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+  .btn-modal-close:hover { filter: brightness(0.95); }
+  
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 768px) {
+    .zones-wrapper { grid-template-columns: 1fr; }
+    .szz-wrap { max-height: 100vh; border-radius: 0; border: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="szz-wrap">
+  <div class="szz-header">
+    <h2>Объект капитального строительства или нет</h2>
+    <p>Первый фильтр перед оценкой НВОС и необходимостью СЗЗ</p>
+  </div>
+
+  <div class="top-actions">
+    <button class="btn-sm" id="btn-rules">Правила</button>
+    <button class="btn-sm" id="btn-important">Что важно запомнить</button>
+  </div>
+
+  <div class="oleg-intro">
+    <img src="oleg.jpg" alt="Олег" class="oleg-avatar">
+    <div class="oleg-text">
+      <strong>Олег:</strong> Мне нужно распределить объекты по типу, чтобы понять, для каких из них рассчитывать СЗЗ. Помогите разобраться, что есть капитальное строительство, а что нет.
+    </div>
+  </div>
+
+  <div class="szz-body">
+    <div class="instruction">
+      Берите карточки из барабана по одной и перетаскивайте в нужную зону. После проверки нажмите на любую карточку, чтобы увидеть подробный разбор.
+    </div>
+
+    <div class="game-area">
+      <div class="deck-container">
+        <div class="deck-header">
+          <span class="deck-label">Барабан объектов</span>
+          <span class="deck-label" id="deck-count">0 / 10</span>
+        </div>
+        <div class="deck-stack" id="deck-stack"></div>
+      </div>
+
+      <div class="zones-wrapper">
+        <div class="drop-zone" id="zone-capital" data-type="capital">
+          <h3>Объект капитального строительства</h3>
+          <p>Здания и сооружения, прочно связанные с землёй</p>
+          <div class="zone-cards" id="zone-capital-cards"></div>
+        </div>
+        <div class="drop-zone" id="zone-non-capital" data-type="non-capital">
+          <h3>Не объект капитального строительства</h3>
+          <p>Временные, мобильные, перемещаемые конструкции</p>
+          <div class="zone-cards" id="zone-non-capital-cards"></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+
+    <div class="controls">
+      <button class="btn-reset btn-action" id="btn-reset">Начать заново</button>
+      <button class="btn-check btn-action" id="btn-check" disabled>Проверить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+<div class="modal" id="modal-rules">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Правила</h3><button class="modal-x" data-modal-close>&times;</button></div>
+    <div class="modal-body">
+      <ul>
+        <li>Карточки лежат в барабане. Берите верхнюю и перетаскивайте в одну из двух зон.</li>
+        <li>Если ошиблись, карточку можно вернуть в барабан или перетащить в другую зону.</li>
+        <li>Когда все 10 карточек распределены, нажмите «Проверить».</li>
+        <li>После проверки правильные ответы подсветятся зелёным, неправильные – оранжевым.</li>
+        <li><strong>Нажмите на любую карточку в зоне,</strong> чтобы увидеть полезный комментарий к решению.</li>
+      </ul>
+    </div>
+    <div class="modal-foot"><button class="btn-modal-close" data-modal-close>Понятно</button></div>
+  </div>
+</div>
+
+<div class="modal" id="modal-important">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Что важно запомнить</h3><button class="modal-x" data-modal-close>&times;</button></div>
+    <div class="modal-body">
+      <p>Для проекта СЗЗ важно сначала правильно выделить объекты капитального строительства, а потом уже оценивать их НВОС.</p>
+      <ul>
+        <li><strong>Капитальное строительство</strong> – здания и сооружения на фундаменте, прочно связанные с землёй и инженерными сетями.</li>
+        <li><strong>Не капитальное</strong> – временные, мобильные, перемещаемые конструкции, а также просто благоустроенные площадки.</li>
+        <li>Наличие или отсутствие капитального фундамента – главный критерий различия.</li>
+      </ul>
+    </div>
+    <div class="modal-foot"><button class="btn-modal-close" data-modal-close>Понятно</button></div>
+  </div>
+</div>
+
+<div class="modal" id="modal-comment">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="comment-title">Разбор решения</h3><button class="modal-x" data-modal-close>&times;</button></div>
+    <div class="modal-body" id="comment-body"></div>
+    <div class="modal-foot"><button class="btn-modal-close" data-modal-close>Закрыть</button></div>
+  </div>
+</div>
+
+<script>
+  const items = [
+    { 
+      id: 'c1', text: 'Здание цеха площадью 3 000 м², на фундаменте, с инженерными сетями.', 
+      isCapital: true,
+      comment: 'Это классический пример капитального объекта. Наличие ленточного или плитного фундамента, жесткая связь с землёй и подключение к сетям однозначно относят здание к капитальному строительству. Для него обязательно рассчитывается СЗЗ.'
+    },
+    { 
+      id: 'n1', text: 'Контейнерная мобильная котельная, которую можно перевезти.', 
+      isCapital: false,
+      comment: 'Контейнерные модули устанавливаются на временные опоры или площадки без заглубления. Их можно демонтировать и перевезти без разрушения. Такие объекты не формируют постоянную нагрузку на грунт и не требуют СЗЗ.'
+    },
+    { 
+      id: 'n2', text: 'Открытая асфальтированная площадка для временного складирования.', 
+      isCapital: false,
+      comment: 'Площадка без надстроек, ограждений и фундаментов считается элементом благоустройства или временного использования земли. Она не создает постоянного источника воздействия и не является объектом капстроительства.'
+    },
+    { 
+      id: 'c2', text: 'Административное здание с офисами на территории завода.', 
+      isCapital: true,
+      comment: 'Стационарные административные корпуса прочно связаны с землёй и эксплуатируются постоянно. Они входят в состав капитальных сооружений предприятия и учитываются при формировании границ СЗЗ.'
+    },
+    { 
+      id: 'n3', text: 'Тентовый склад на металлическом каркасе без капитального фундамента.', 
+      isCapital: false,
+      comment: 'Лёгкие каркасные конструкции без заглублённого фундамента относятся к некапитальным объектам. Тент и сборный каркас легко демонтируются, поэтому такая постройка не требует расчёта СЗЗ.'
+    },
+    { 
+      id: 'c3', text: 'Очистные сооружения сточных вод с резервуарами и зданиями.', 
+      isCapital: true,
+      comment: 'Очистные сооружения – это сложный инженерный комплекс. Резервуары заглублены, здания имеют фундаменты, оборудование подключено к сетям. Это капитальный объект с постоянным режимом эксплуатации.'
+    },
+    { 
+      id: 'n4', text: 'Передвижная дробильная установка, которую перевозят между карьерами.', 
+      isCapital: false,
+      comment: 'Мобильное оборудование на колёсной или гусеничной базе не имеет стационарного фундамента. Оно работает временно и перемещается, поэтому не подпадает под критерии капитального строительства.'
+    },
+    { 
+      id: 'c4', text: 'Стационарная компрессорная станция в отдельном здании.', 
+      isCapital: true,
+      comment: 'Слово «стационарная» и наличие отдельного здания указывают на капитальный характер. Компрессорные станции эксплуатируются постоянно и требуют жёсткой привязки к фундаменту.'
+    },
+    { 
+      id: 'n5', text: 'Грунтовая площадка для отстоя автотранспорта без построек.', 
+      isCapital: false,
+      comment: 'Просто отведенная земля без возведения зданий или сооружений не создает объект капитального строительства. Это зона временного или хозяйственного использования территории.'
+    },
+    { 
+      id: 'c5', text: 'Стационарная градирня и насосная станция системы охлаждения.', 
+      isCapital: true,
+      comment: 'Градирни и насосные станции являются частью инженерной инфраструктуры завода. Они имеют капитальные основания, подключены к сетям и работают постоянно. Это объекты капстроительства.'
+    }
+  ];
+
+  let queue = [];
+  let draggedEl = null;
+  let offsetX = 0, offsetY = 0;
+  let isChecked = false;
+
+  const deckStack = document.getElementById('deck-stack');
+  const deckCount = document.getElementById('deck-count');
+  const btnCheck = document.getElementById('btn-check');
+  const btnReset = document.getElementById('btn-reset');
+  const summary = document.getElementById('summary');
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function renderDeck() {
+    queue = shuffle(items);
+    deckStack.innerHTML = '';
+    document.getElementById('zone-capital-cards').innerHTML = '';
+    document.getElementById('zone-non-capital-cards').innerHTML = '';
+    summary.classList.remove('show');
+    summary.className = 'summary';
+    btnCheck.disabled = true;
+    isChecked = false;
+    updateCounter();
+    showTopCards();
+  }
+
+  function showTopCards() {
+    deckStack.innerHTML = '';
+    const visible = queue.slice(0, 3);
+    visible.forEach((item, i) => {
+      const card = document.createElement('div');
+      card.className = 'deck-card';
+      card.dataset.id = item.id;
+      card.innerHTML = `
+        <div class="card-icon">🏗</div>
+        <div class="card-text">${item.text}</div>
+      `;
+      if (i === 0) {
+        card.addEventListener('pointerdown', handlePointerDown);
+      } else {
+        card.style.pointerEvents = 'none';
+      }
+      deckStack.appendChild(card);
+    });
+  }
+
+  function updateCounter() {
+    const total = items.length;
+    const remaining = queue.length;
+    deckCount.textContent = `${remaining} / ${total}`;
+    if (remaining === 0) btnCheck.disabled = false;
+  }
+
+  function handlePointerDown(e) {
+    const deckCard = e.target.closest('.deck-card');
+    if (!deckCard) return;
+    
+    draggedEl = deckCard;
+    const rect = deckCard.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    
+    draggedEl.style.position = 'fixed';
+    draggedEl.style.width = rect.width + 'px';
+    draggedEl.style.zIndex = 1000;
+    draggedEl.style.left = rect.left + 'px';
+    draggedEl.style.top = rect.top + 'px';
+    draggedEl.classList.add('dragging');
+    
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+  }
+
+  function onPointerMove(e) {
+    if (!draggedEl) return;
+    draggedEl.style.left = (e.clientX - offsetX) + 'px';
+    draggedEl.style.top = (e.clientY - offsetY) + 'px';
+    
+    document.querySelectorAll('.drop-zone').forEach(z => {
+      const rect = z.getBoundingClientRect();
+      if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        z.classList.add('drag-over');
+      } else {
+        z.classList.remove('drag-over');
+      }
+    });
+  }
+
+  function onPointerUp(e) {
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+    
+    if (!draggedEl) return;
+    
+    // Reset styles
+    draggedEl.style.position = '';
+    draggedEl.style.width = '';
+    draggedEl.style.zIndex = '';
+    draggedEl.style.left = '';
+    draggedEl.style.top = '';
+    draggedEl.style.transform = '';
+    draggedEl.classList.remove('dragging');
+    
+    const itemId = draggedEl.dataset.id;
+    const itemText = draggedEl.querySelector('.card-text').textContent;
+    const isCapital = items.find(i => i.id === itemId).isCapital;
+    
+    // Check drop target
+    draggedEl.style.display = 'none';
+    let elemBelow = document.elementFromPoint(e.clientX, e.clientY);
+    draggedEl.style.display = '';
+    
+    let placed = false;
+    if (elemBelow) {
+      const target = elemBelow.closest('.drop-zone');
+      if (target) {
+        const zoneCards = target.querySelector('.zone-cards');
+        const zoneCard = document.createElement('div');
+        zoneCard.className = 'zone-card';
+        zoneCard.dataset.id = itemId;
+        zoneCard.dataset.capital = isCapital;
+        zoneCard.innerHTML = `
+          <div class="card-icon">🏗</div>
+          <div style="flex:1">
+            <div>${itemText}</div>
+            <div class="click-hint">Нажмите для разбора</div>
+          </div>
+        `;
+        zoneCards.appendChild(zoneCard);
+        placed = true;
+      }
+    }
+    
+    if (placed) {
+      // Remove from queue
+      queue = queue.filter(q => q.id !== itemId);
+      showTopCards();
+      updateCounter();
+    }
+    draggedEl = null;
+  }
+
+  // Check Logic
+  btnCheck.addEventListener('click', () => {
+    if (isChecked) return;
+    isChecked = true;
+    
+    let errors = 0;
+    let total = 0;
+    
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+      const zoneType = zone.dataset.type;
+      const cards = zone.querySelectorAll('.zone-card');
+      let zoneErrors = 0;
+      
+      cards.forEach(card => {
+        total++;
+        const isCapital = card.dataset.capital === 'true';
+        const shouldBeCapital = zoneType === 'capital';
+        
+        card.classList.remove('correct', 'incorrect');
+        card.classList.add('interactive');
+        
+        if (isCapital === shouldBeCapital) {
+          card.classList.add('correct');
+        } else {
+          card.classList.add('incorrect');
+          errors++;
+          zoneErrors++;
+        }
+      });
+      
+      zone.classList.remove('success', 'error');
+      if (cards.length > 0) {
+        zone.classList.add(zoneErrors === 0 ? 'success' : 'error');
+      }
+    });
+    
+    summary.classList.remove('success', 'error', 'show');
+    if (errors === 0) {
+      summary.innerHTML = '<strong>Отлично!</strong> Все объекты распределены верно. Нажмите на любую карточку, чтобы увидеть полезный комментарий.';
+      summary.classList.add('success', 'show');
+    } else {
+      summary.innerHTML = `<strong>Есть ошибки (${errors} из ${total}).</strong> Красные карточки размещены неверно. Нажмите на любую, чтобы разобраться в нюансах.`;
+      summary.classList.add('error', 'show');
+    }
+  });
+
+  // Comment Modal Logic
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('.zone-card.interactive');
+    if (!card || !isChecked) return;
+    
+    const id = card.dataset.id;
+    const isCapital = card.dataset.capital === 'true';
+    const parentZone = card.closest('.drop-zone');
+    const zoneType = parentZone ? parentZone.dataset.type : 'unknown';
+    
+    const item = items.find(i => i.id === id);
+    const isCorrect = (isCapital && zoneType === 'capital') || (!isCapital && zoneType === 'non-capital');
+    
+    let title = isCorrect ? '✓ Верное решение' : '✗ Ошибка в размещении';
+    let body = `<p><strong>Объект:</strong> ${item.text}</p>`;
+    body += `<p><strong>Правильный ответ:</strong> ${isCapital ? 'Объект капитального строительства' : 'Не объект капитального строительства'}</p>`;
+    body += `<hr style="border:0; border-top:1px solid var(--line); margin:12px 0;">`;
+    body += `<p><strong>Комментарий:</strong> ${item.comment}</p>`;
+    
+    if (!isCorrect) {
+      body += `<p style="margin-top:8px; color:#b4532a;"><strong>Почему не подошло:</strong> Вы отнесли объект к неправильной категории. Запомните: наличие капитального фундамента и стационарность эксплуатации – ключевые признаки.</p>`;
+    }
+    
+    document.getElementById('comment-title').textContent = title;
+    document.getElementById('comment-body').innerHTML = body;
+    document.getElementById('modal-comment').classList.add('active');
+  });
+
+  // Reset Logic
+  btnReset.addEventListener('click', () => {
+    renderDeck();
+    document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('success', 'error'));
+  });
+
+  // Modal Controls
+  function openModal(id) { document.getElementById(id).classList.add('active'); }
+  function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+  
+  document.getElementById('btn-rules').onclick = () => openModal('modal-rules');
+  document.getElementById('btn-important').onclick = () => openModal('modal-important');
+  
+  document.querySelectorAll('[data-modal-close]').forEach(btn => {
+    btn.onclick = function() {
+      const modal = this.closest('.modal');
+      if (modal) closeModal(modal.id);
+    };
+  });
+  
+  document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(modal.id); });
+  });
+  
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') document.querySelectorAll('.modal.active').forEach(m => closeModal(m.id));
+  });
+
+  // Init
+  renderDeck();
+</script>
+</body>
+</html>
