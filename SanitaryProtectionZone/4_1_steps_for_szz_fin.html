@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>6 этапов установления СЗЗ: путь Олега</title>
+<style>
+  :root {
+    --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
+    --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
+    --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
+    --radius: 16px; --transition: 160ms ease;
+    --step1: #84cc16; --step2: #10b981; --step3: #14b8a6;
+    --step4: #06b6d4; --step5: #3b82f6; --step6: #1e40af;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px; background: #ffffff;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    color: var(--text); line-height: 1.4;
+  }
+  .szz-wrap {
+    max-width: 650px; max-height: 700px; background: var(--card);
+    margin: 0 auto; border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: var(--shadow);
+  }
+  .szz-header {
+    background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%);
+    padding: 16px 20px; border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  .szz-header h2 { margin: 0 0 4px; font-size: 1.2rem; font-weight: 600; color: var(--green); }
+  .szz-header p { margin: 0; font-size: 0.85rem; color: var(--muted); }
+  
+  .top-actions { display: flex; gap: 6px; padding: 10px 20px; border-bottom: 1px solid var(--line); background: #fff; flex-shrink: 0; }
+  .btn-sm { padding: 6px 10px; border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 500; transition: var(--transition); color: var(--muted); }
+  .btn-sm:hover { border-color: var(--green); color: var(--green); background: var(--green-soft-2); }
+  
+  .szz-content { padding: 14px 20px; flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
+  
+  .oleg-preview { 
+    display: flex; gap: 10px; align-items: flex-start; 
+    background: var(--green-soft-2); border-radius: 10px; padding: 10px; margin-bottom: 12px;
+  }
+  .oleg-avatar { width: 36px; height: 36px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid #fff; }
+  .oleg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .oleg-preview .text { font-size: 0.82rem; color: var(--text); line-height: 1.3; }
+  .oleg-preview .text strong { display: block; margin-bottom: 2px; color: var(--green); font-weight: 600; font-size: 0.88rem; }
+  
+  .instruction { font-size: 0.85rem; color: var(--muted); margin: 0 0 12px; padding-bottom: 10px; border-bottom: 1px dashed var(--line); }
+  
+  .timeline { display: flex; flex-direction: column; gap: 8px; margin: 8px 0; }
+  .timeline-item {
+    display: flex; gap: 10px; align-items: stretch;
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px;
+    cursor: pointer; transition: var(--transition); overflow: hidden;
+  }
+  .timeline-item:hover { border-color: var(--green); transform: translateX(2px); }
+  .timeline-item.viewed { border-color: var(--green); background: var(--green-soft); }
+  
+  .step-number {
+    width: 44px; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1.1rem; flex-shrink: 0;
+  }
+  .timeline-item:nth-child(1) .step-number { background: var(--step1); color: #fff; }
+  .timeline-item:nth-child(2) .step-number { background: var(--step2); color: #fff; }
+  .timeline-item:nth-child(3) .step-number { background: var(--step3); color: #fff; }
+  .timeline-item:nth-child(4) .step-number { background: var(--step4); color: #fff; }
+  .timeline-item:nth-child(5) .step-number { background: var(--step5); color: #fff; }
+  .timeline-item:nth-child(6) .step-number { background: var(--step6); color: #fff; }
+  .timeline-item.viewed .step-number { opacity: 0.9; }
+  
+  .step-content { padding: 10px 12px; flex: 1; }
+  .step-title { font-weight: 600; font-size: 0.88rem; color: var(--text); margin-bottom: 3px; }
+  .step-desc { font-size: 0.78rem; color: var(--muted); line-height: 1.3; }
+  .step-status { font-size: 0.72rem; color: var(--green); margin-top: 4px; font-weight: 500; display: none; }
+  .timeline-item.viewed .step-status { display: block; }
+  
+  .bottom-actions { display: flex; gap: 8px; padding: 12px 20px; border-top: 1px solid var(--line); background: #fff; flex-shrink: 0; }
+  .btn-reset { padding: 10px 14px; border: 1px solid var(--line); background: #fff; border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: var(--transition); color: var(--muted); }
+  .btn-reset:hover { border-color: var(--green); color: var(--green); background: var(--green-soft-2); }
+  
+  .summary-block { display: none; background: var(--green-soft-2); border: 1px solid var(--line); border-radius: 10px; padding: 14px; margin: 10px 0; animation: fade 0.2s; }
+  .summary-block.show { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  .summary-block h4 { margin: 0 0 8px; font-size: 0.92rem; color: var(--green); }
+  .summary-block p { font-size: 0.84rem; color: var(--text); line-height: 1.35; }
+  
+  .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(31,42,36,0.4); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px; backdrop-filter: blur(2px); }
+  .modal.active { display: flex; animation: fadeIn 0.15s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal-box { background: var(--card); border-radius: var(--radius); max-width: 480px; width: 100%; box-shadow: var(--shadow); overflow: hidden; animation: slideUp 0.2s; max-height: 85vh; display: flex; flex-direction: column; border: 1px solid var(--line); }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-header { padding: 12px 16px; background: var(--green-soft-2); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h3 { margin: 0; font-size: 0.95rem; font-weight: 600; color: var(--green); }
+  .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); padding: 0; line-height: 1; }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 14px 16px; font-size: 0.86rem; line-height: 1.45; color: var(--text); overflow-y: auto; flex: 1; }
+  .modal-body p { margin: 0 0 10px; }
+  .modal-body ul { padding-left: 18px; margin: 8px 0; }
+  .modal-body li { margin-bottom: 6px; }
+  .modal-body strong { color: var(--green); }
+  .apply-block { background: var(--green-soft-2); border-left: 3px solid var(--green); padding: 10px 12px; border-radius: 0 8px 8px 0; margin: 10px 0; font-size: 0.85rem; }
+  .apply-block strong { display: block; margin-bottom: 4px; color: var(--green); }
+  .modal-footer { padding: 10px 16px; border-top: 1px solid var(--line); background: var(--card); text-align: right; flex-shrink: 0; }
+  .btn-ok { background: var(--green); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.82rem; font-weight: 500; transition: var(--transition); }
+  .btn-ok:hover { filter: brightness(0.95); }
+  
+  @media (max-width: 500px) { 
+    .szz-wrap { max-height: 100vh; border-radius: 0; border: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="szz-wrap">
+  <div class="szz-header">
+    <h2>6 этапов установления СЗЗ: путь Олега</h2>
+    <p>От подготовки данных до внесения в ЕГРН</p>
+  </div>
+
+  <div class="top-actions">
+    <button class="btn-sm" id="btn-about">О процессе</button>
+    <button class="btn-sm" id="btn-tips">Советы новичку</button>
+  </div>
+
+  <div class="szz-content">
+    <div class="oleg-preview">
+      <div class="oleg-avatar"><img src="oleg.jpg" alt="Олег"></div>
+      <div class="text">
+        <strong>Олег:</strong> Мне показали схему из 6 этапов установления СЗЗ. Хочу разобрать каждый шаг подробно, чтобы понимать, что делать на заводе фенолформальдегидной смолы.
+      </div>
+    </div>
+
+    <p class="instruction">Нажимайте на любой этап, чтобы увидеть, что делает Олег, зачем это нужно и как применить к вашему предприятию. Изучайте в любом порядке, возвращайтесь к изученным шагам.</p>
+    
+    <div class="timeline" id="timeline"></div>
+    
+    <div class="summary-block" id="summary-block">
+      <h4>Памятка по этапам</h4>
+      <p>Полный цикл установления СЗЗ включает 6 обязательных этапов. Нарушение последовательности или пропуск любого шага делает согласование невозможным.</p>
+      <p style="margin-top:8px"><strong>Примените к своему предприятию:</strong> Откройте текущий статус СЗЗ вашего объекта. Определите, на каком этапе находится процесс. Если проект ещё не прошёл экспертизу, замеры не имеют юридической силы. Если решение Роспотребнадзора получено, но сведений в ЕГРН нет, граница не защищена юридически.</p>
+    </div>
+  </div>
+
+  <div class="bottom-actions">
+    <button class="btn-reset" id="btn-reset">Сбросить отметки</button>
+  </div>
+</div>
+
+<!-- Modals -->
+<div class="modal" id="about">
+  <div class="modal-box">
+    <div class="modal-header"><h3>О процессе</h3><button class="modal-close" data-close>&times;</button></div>
+    <div class="modal-body">
+      <p>Установление СЗЗ – это последовательный процесс из 6 этапов. Каждый этап логически опирается на предыдущий.</p>
+      <p><strong>Как устроен каждый этап:</strong></p>
+      <ul>
+        <li><strong>Что делает Олег</strong> – конкретное действие на его заводе.</li>
+        <li><strong>Зачем это нужно</strong> – логика и нормативное обоснование.</li>
+        <li><strong>Примените к своему предприятию</strong> – практический совет для вашей работы.</li>
+      </ul>
+      <p style="background:var(--green-soft-2);padding:8px 10px;border-radius:6px;border-left:3px solid var(--green)">
+        <strong>Как работать:</strong> Кликайте на этапы в любом порядке. Возвращайтесь к изученным, сравнивайте, открывайте несколько раз. Внизу есть памятка – она появится после изучения всех этапов.
+      </p>
+    </div>
+    <div class="modal-footer"><button class="btn-ok" data-close>Понятно</button></div>
+  </div>
+</div>
+
+<div class="modal" id="tips">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Советы новичку</h3><button class="modal-close" data-close>&times;</button></div>
+    <div class="modal-body">
+      <ul>
+        <li><strong>Не перескакивайте этапы.</strong> Нельзя начать расчёты без класса опасности. Нельзя передать данные в Росреестр без решения надзора.</li>
+        <li><strong>Документируйте каждый шаг.</strong> Сохраняйте протоколы, заключения, выписки. Они понадобятся при проверках.</li>
+        <li><strong>Сверяйтесь с нормативами.</strong> На каждом этапе есть свои СанПиН и методики. Не работайте «на глаз».</li>
+        <li><strong>Применяйте сразу.</strong> После каждого этапа спросите себя: «А как это выглядит на моём предприятии?»</li>
+        <li><strong>Записывайте вопросы.</strong> Возникли сомнения? Запишите и обсудите с наставником или коллегами.</li>
+      </ul>
+    </div>
+    <div class="modal-footer"><button class="btn-ok" data-close>Понятно</button></div>
+  </div>
+</div>
+
+<div class="modal" id="step-modal">
+  <div class="modal-box">
+    <div class="modal-header"><h3 id="step-title">Этап</h3><button class="modal-close" data-close>&times;</button></div>
+    <div class="modal-body" id="step-body"></div>
+    <div class="modal-footer"><button class="btn-ok" data-close>Закрыть</button></div>
+  </div>
+</div>
+
+<script>
+const steps = [
+  {
+    num: 1,
+    title: 'Подготовить исходные данные',
+    oleg: 'Олег собирает информацию о заводе: класс опасности (1.1.29), перечень выбросов (формальдегид, фенол, метанол), технологические процессы, расположение источников выбросов.',
+    why: 'Без исходных данных невозможно начать работу. Класс опасности определяет ориентировочный размер СЗЗ по СанПиН. Состав выбросов задаёт перечень веществ для расчётов и замеров.',
+    tip: 'Для своего предприятия: откройте реестр НВОС, техническую документацию. Запишите класс опасности, основные вещества, их концентрации. Это основа для всех дальнейших расчётов.'
+  },
+  {
+    num: 2,
+    title: 'Разработать проект СЗЗ',
+    oleg: 'Олег передаёт данные проектировщикам. Те делают расчёты рассеивания формальдегида, фенола, метанола, оценивают уровень шума от оборудования. Получают расчётную границу, где концентрации падают ниже 0,1 ПДК.',
+    why: 'Расчёты показывают, как далеко распространяются выбросы в реальных метеоусловиях. Это основа для уточнения границы – она может быть меньше или больше ориентировочного размера из таблиц СанПиН.',
+    tip: 'Уточните, кто делает расчёты на вашем предприятии. Запросите результаты по ключевым веществам. Проверьте, учтены ли рельеф, роза ветров, фоновое загрязнение.'
+  },
+  {
+    num: 3,
+    title: 'Согласовать проект СЗЗ',
+    oleg: 'Олег подаёт проект в территориальное управление Роспотребнадзора. Проходит санитарно-эпидемиологическая экспертиза. Эксперты проверяют полноту расчётов, соответствие методикам, правильность границ.',
+    why: 'Экспертиза подтверждает, что проект соответствует нормативам. Без положительного заключения Роспотребнадзор не примет решение. Это обязательный этап перед получением решения.',
+    tip: 'Уточните статус экспертизы для вашего проекта. Если есть замечания – устраните их до подачи на решение. Экспертиза может занять от 1 до 3 месяцев.'
+  },
+  {
+    num: 4,
+    title: 'Провести натурные исследования',
+    oleg: 'После пуска производства Олег организует замеры на границе расчётной зоны. Проверяет формальдегид, фенол, метанол, шум. Сравнивает фактические концентрации с расчётными и ПДК.',
+    why: 'Расчёт – это модель. Замеры показывают реальность. Если фактические концентрации ниже расчётных, границу можно скорректировать. Если выше – зону нужно расширить или модернизировать очистные.',
+    tip: 'Проверьте, есть ли программа натурных исследований для вашего объекта. Замеры должны проводить аккредитованные лаборатории. Результаты оформляются протоколами.'
+  },
+  {
+    num: 5,
+    title: 'Получить решение Роспотребнадзора',
+    oleg: 'Олег получает решение территориального управления Роспотребнадзора об установлении СЗЗ. В решении указаны координаты границы, режим зоны, ограничения на использование территории.',
+    why: 'Решение Роспотребнадзора – это юридический документ, который устанавливает границу СЗЗ. Без него любые расчёты и замеры не имеют юридической силы. Решение обязательно для всех: застройщиков, проектировщиков, надзора.',
+    tip: 'Проверьте, есть ли решение для вашего объекта. Если решения нет или оно устарело – это риск при проверках. Решение действует бессрочно, но требует актуализации при изменении технологии.'
+  },
+  {
+    num: 6,
+    title: 'Внести сведения о границе СЗЗ в ЕГРН',
+    oleg: 'После получения решения Олег подаёт документы в Росреестр. Граница СЗЗ появляется в выписках ЕГРН. Теперь она видна всем: застройщикам, проектировщикам, покупателям земли.',
+    why: 'Внесение в ЕГРН – финальный этап. Только после этого граница становится юридическим фактом. Любое строительство в пределах зоны теперь требует учёта санитарного режима. Без внесения в ЕГРН решение Роспотребнадзора не защищает границу.',
+    tip: 'Закажите выписку ЕГРН на земельный участок вашего предприятия. Найдите сведения о СЗЗ. Если их нет – подайте документы в Росреестр. Внесение занимает от 5 до 14 рабочих дней.'
+  }
+];
+
+let viewedSteps = [];
+
+const timelineContainer = document.getElementById('timeline');
+const summaryBlock = document.getElementById('summary-block');
+
+function renderTimeline() {
+  timelineContainer.innerHTML = '';
+  steps.forEach((step, idx) => {
+    const item = document.createElement('div');
+    item.className = 'timeline-item';
+    if(viewedSteps.includes(idx)) item.classList.add('viewed');
+    item.innerHTML = `
+      <div class="step-number">${step.num}</div>
+      <div class="step-content">
+        <div class="step-title">${step.title}</div>
+        <div class="step-desc">${viewedSteps.includes(idx) ? '✓ Изучено' : 'Нажмите, чтобы открыть'}</div>
+        <div class="step-status">Просмотрено</div>
+      </div>
+    `;
+    item.onclick = () => openStep(idx);
+    timelineContainer.appendChild(item);
+  });
+  if(viewedSteps.length === steps.length) summaryBlock.classList.add('show');
+}
+
+function openStep(idx) {
+  const step = steps[idx];
+  document.getElementById('step-title').textContent = `Этап ${step.num}: ${step.title}`;
+  document.getElementById('step-body').innerHTML = `
+    <p><strong>Что делает Олег:</strong> ${step.oleg}</p>
+    <p><strong>Зачем это нужно:</strong> ${step.why}</p>
+    <div class="apply-block">
+      <strong>Примените к своему предприятию:</strong>
+      ${step.tip}
+    </div>
+  `;
+  document.getElementById('step-modal').classList.add('active');
+  if(!viewedSteps.includes(idx)) {
+    viewedSteps.push(idx);
+    renderTimeline();
+  }
+}
+
+function closeModal(e) {
+  const btn = e?.target?.closest('[data-close]');
+  const modal = btn?.closest('.modal') || e?.target?.closest('.modal');
+  if(modal) modal.classList.remove('active');
+}
+
+document.querySelectorAll('.modal').forEach(modal => {
+  modal.querySelectorAll('[data-close]').forEach(btn => { btn.onclick = closeModal; });
+  modal.onclick = (e) => { if(e.target === modal) closeModal(e); };
+});
+
+document.getElementById('btn-reset').onclick = function() {
+  viewedSteps = []; summaryBlock.classList.remove('show');
+  renderTimeline(); document.querySelector('.szz-content').scrollTop = 0;
+};
+
+document.getElementById('btn-about').onclick = () => document.getElementById('about').classList.add('active');
+document.getElementById('btn-tips').onclick = () => document.getElementById('tips').classList.add('active');
+
+document.addEventListener('keydown', e => {
+  if(e.key === 'Escape') document.querySelectorAll('.modal.active').forEach(m => m.classList.remove('active'));
+});
+
+renderTimeline();
+</script>
+</body>
+</html>
