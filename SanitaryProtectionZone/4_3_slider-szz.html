@@ -1,784 +1,508 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-  <meta charset="UTF-8" />
-  <title>Интерактив СЗЗ: если сосед успел раньше</title>
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <style>
-    :root {
-      --accent: #1d8f5a;
-      --accent-soft: #e2f4ec;
-      --border-soft: #d9e2ea;
-      --text-main: #1f2933;
-      --text-muted: #62727f;
-      --danger: #b3261e;
-      --overlay-bg: rgba(15, 23, 42, 0.6);
-      --card-radius: 12px;
-      --transition-fast: 0.2s ease;
-      --shadow-soft: 0 10px 30px rgba(15, 23, 42, 0.12);
-    }
-
-    * {
-      box-sizing: border-box;
-    }
-
-    body {
-      margin: 0;
-      padding: 24px;
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-      background: #f5f7fa;
-      color: var(--text-main);
-      display: flex;
-      justify-content: center;
-    }
-
-    .wrapper {
-      width: 100%;
-      max-width: 900px;
-    }
-
-    .card {
-      background: #ffffff;
-      border-radius: var(--card-radius);
-      box-shadow: var(--shadow-soft);
-      padding: 20px 20px 24px;
-    }
-
-    @media (min-width: 768px) {
-      .card {
-        padding: 24px 28px 28px;
-      }
-    }
-
-    .title {
-      font-size: 22px;
-      font-weight: 600;
-      margin-bottom: 6px;
-    }
-
-    .subtitle {
-      font-size: 14px;
-      color: var(--text-muted);
-      line-height: 1.5;
-      margin-bottom: 16px;
-    }
-
-    .slider-header {
-      font-size: 14px;
-      font-weight: 500;
-      color: var(--text-main);
-      margin-bottom: 8px;
-    }
-
-    .toggle-group {
-      display: inline-flex;
-      border-radius: 999px;
-      background: #edf2f7;
-      padding: 3px;
-      margin-bottom: 16px;
-    }
-
-    .toggle-btn {
-      border: none;
-      background: transparent;
-      padding: 6px 14px;
-      font-size: 13px;
-      border-radius: 999px;
-      cursor: pointer;
-      color: var(--text-muted);
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: background var(--transition-fast), color var(--transition-fast), transform var(--transition-fast);
-      white-space: nowrap;
-    }
-
-    .toggle-btn span.dot {
-      display: inline-block;
-      width: 8px;
-      height: 8px;
-      border-radius: 50%;
-      background: #cbd2e1;
-    }
-
-    .toggle-btn.active {
-      background: #ffffff;
-      color: var(--accent);
-      box-shadow: 0 1px 4px rgba(15, 23, 42, 0.14);
-      transform: translateY(-1px);
-    }
-
-    .toggle-btn.active .dot {
-      background: var(--accent);
-    }
-
-    .map-frame {
-      background: #0f172a;
-      border-radius: 14px;
-      padding: 10px;
-      margin-bottom: 10px;
-      border: 1px solid #020617;
-    }
-
-    .map-inner {
-      background: #020617;
-      border-radius: 12px;
-      overflow: hidden;
-      position: relative;
-      max-height: 520px;
-    }
-
-    .map-inner img {
-      display: block;
-      width: 100%;
-      height: auto;
-    }
-
-    .map-badge {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: rgba(15, 23, 42, 0.85);
-      color: #e5e7eb;
-      font-size: 11px;
-      padding: 4px 8px;
-      border-radius: 999px;
-      border: 1px solid rgba(148, 163, 184, 0.7);
-      display: flex;
-      align-items: center;
-      gap: 5px;
-      backdrop-filter: blur(6px);
-    }
-
-    .map-badge-dot {
-      width: 6px;
-      height: 6px;
-      border-radius: 50%;
-      background: #22c55e;
-      box-shadow: 0 0 0 3px rgba(34, 197, 94, 0.25);
-    }
-
-    .map-legend {
-      position: absolute;
-      bottom: 10px;
-      right: 10px;
-      font-size: 10px;
-      color: #e5e7eb;
-      background: rgba(15, 23, 42, 0.82);
-      border-radius: 8px;
-      padding: 6px 8px;
-      border: 1px solid rgba(148, 163, 184, 0.6);
-      display: flex;
-      flex-direction: column;
-      gap: 3px;
-      backdrop-filter: blur(8px);
-      max-width: 190px;
-    }
-
-    .legend-row {
-      display: flex;
-      align-items: center;
-      gap: 5px;
-    }
-
-    .legend-swatch {
-      width: 10px;
-      height: 10px;
-      border-radius: 3px;
-    }
-
-    .legend-swatch.s1 {
-      background: rgba(34, 197, 94, 0.9);
-    }
-
-    .legend-swatch.s2 {
-      background: rgba(59, 130, 246, 0.9);
-    }
-
-    .legend-swatch.s3 {
-      background: rgba(129, 140, 248, 0.95);
-    }
-
-    .legend-swatch.overlap {
-      background: linear-gradient(135deg, rgba(34, 197, 94, 0.9), rgba(59, 130, 246, 0.95));
-    }
-
-    .map-caption {
-      font-size: 13px;
-      color: var(--text-muted);
-      margin-bottom: 10px;
-      line-height: 1.5;
-    }
-
-    .oleg {
-      display: flex;
-      gap: 8px;
-      align-items: flex-start;
-      background: var(--accent-soft);
-      border-radius: 10px;
-      padding: 8px 10px;
-      border: 1px solid rgba(11, 122, 76, 0.2);
-      font-size: 13px;
-      margin-bottom: 12px;
-    }
-
-    .oleg-avatar {
-      width: 26px;
-      height: 26px;
-      border-radius: 50%;
-      background: #ffffff;
-      border: 1px solid rgba(15, 23, 42, 0.06);
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      font-size: 12px;
-      font-weight: 600;
-      color: var(--accent);
-      flex-shrink: 0;
-    }
-
-    .oleg-name {
-      font-weight: 600;
-      margin-bottom: 2px;
-      font-size: 12px;
-      color: var(--accent);
-    }
-
-    .oleg-text {
-      font-size: 13px;
-      color: var(--text-main);
-    }
-
-    .actions {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 8px;
-      margin-top: 4px;
-    }
-
-    .btn {
-      border-radius: 999px;
-      border: 1px solid var(--border-soft);
-      padding: 7px 14px;
-      font-size: 13px;
-      cursor: pointer;
-      background: #ffffff;
-      color: var(--text-main);
-      display: inline-flex;
-      align-items: center;
-      gap: 6px;
-      transition: background var(--transition-fast), transform var(--transition-fast), box-shadow var(--transition-fast), border-color var(--transition-fast);
-    }
-
-    .btn-primary {
-      background: var(--accent);
-      color: #ffffff;
-      border-color: var(--accent);
-      box-shadow: 0 4px 10px rgba(16, 185, 129, 0.35);
-    }
-
-    .btn-primary:hover {
-      background: #166c43;
-      border-color: #166c43;
-      transform: translateY(-0.5px);
-      box-shadow: 0 7px 16px rgba(16, 185, 129, 0.4);
-    }
-
-    .btn-outline {
-      background: #ffffff;
-      color: var(--accent);
-      border-color: rgba(16, 185, 129, 0.6);
-    }
-
-    .btn-outline:hover {
-      background: #e6f6ef;
-      transform: translateY(-0.5px);
-      box-shadow: 0 3px 10px rgba(15, 23, 42, 0.1);
-    }
-
-    .btn-ghost {
-      border-style: dashed;
-      color: var(--text-muted);
-      background: #f9fafb;
-    }
-
-    .btn-ghost:hover {
-      background: #edf2f7;
-      transform: translateY(-0.5px);
-    }
-
-    .btn-icon {
-      font-size: 14px;
-      line-height: 1;
-    }
-
-    .btn-danger {
-      background: #ffffff;
-      border-color: rgba(179, 38, 30, 0.6);
-      color: var(--danger);
-    }
-
-    .btn-danger:hover {
-      background: #fef2f2;
-      transform: translateY(-0.5px);
-      box-shadow: 0 3px 10px rgba(185, 28, 28, 0.15);
-    }
-
-    .muted {
-      font-size: 11px;
-      color: var(--text-muted);
-      margin-top: 6px;
-    }
-
-    .modal-backdrop {
-      position: fixed;
-      inset: 0;
-      background: var(--overlay-bg);
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 50;
-      padding: 16px;
-    }
-
-    .modal-backdrop.active {
-      display: flex;
-    }
-
-    .modal {
-      background: #ffffff;
-      border-radius: 14px;
-      box-shadow: 0 20px 60px rgba(15, 23, 42, 0.55);
-      max-width: 520px;
-      width: 100%;
-      max-height: 90vh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-      border: 1px solid rgba(15, 23, 42, 0.25);
-    }
-
-    .modal-header {
-      padding: 12px 16px 8px;
-      border-bottom: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      gap: 8px;
-    }
-
-    .modal-title {
-      font-size: 15px;
-      font-weight: 600;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-      color: var(--text-main);
-    }
-
-    .modal-title-pill {
-      font-size: 11px;
-      padding: 2px 6px;
-      border-radius: 999px;
-      background: #fef2f2;
-      color: var(--danger);
-      border: 1px solid rgba(185, 28, 28, 0.2);
-    }
-
-    .modal-close {
-      border: none;
-      background: transparent;
-      cursor: pointer;
-      font-size: 16px;
-      color: var(--text-muted);
-      padding: 4px;
-      line-height: 1;
-      border-radius: 999px;
-    }
-
-    .modal-close:hover {
-      background: #f3f4f6;
-    }
-
-    .modal-body {
-      padding: 10px 16px 4px;
-      overflow-y: auto;
-      font-size: 14px;
-      color: var(--text-main);
-      line-height: 1.5;
-    }
-
-    .modal-body p {
-      margin: 0 0 8px;
-    }
-
-    .modal-body p:last-child {
-      margin-bottom: 0;
-    }
-
-    .modal-body-strong {
-      font-weight: 600;
-      color: var(--danger);
-    }
-
-    .modal-footer {
-      padding: 8px 16px 12px;
-      border-top: 1px solid #e5e7eb;
-      display: flex;
-      justify-content: flex-end;
-      gap: 8px;
-      background: #f9fafb;
-    }
-
-    .modal-img-wrapper {
-      background: #020617;
-      border-radius: 10px;
-      padding: 8px;
-      margin-bottom: 8px;
-      border: 1px solid #0b1220;
-    }
-
-    .modal-img-wrapper img {
-      display: block;
-      width: 100%;
-      border-radius: 8px;
-    }
-
-    .modal-img-caption {
-      font-size: 12px;
-      color: #e5e7eb;
-      margin-top: 4px;
-      text-align: right;
-      opacity: 0.9;
-    }
-
-    @media (max-width: 600px) {
-      body {
-        padding: 12px;
-      }
-
-      .title {
-        font-size: 18px;
-      }
-
-      .toggle-group {
-        width: 100%;
-        justify-content: space-between;
-      }
-
-      .toggle-btn {
-        flex: 1;
-        justify-content: center;
-        padding-inline: 8px;
-        font-size: 12px;
-      }
-
-      .map-legend {
-        max-width: 60%;
-      }
-
-      .modal {
-        max-width: 100%;
-      }
-    }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Если сосед успел раньше</title>
+<style>
+  :root {
+    --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
+    --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
+    --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
+    --radius: 16px; --transition: 160ms ease;
+    --warning-bg: #fff1ea; --warning-border: #b4532a; --warning-text: #92400e;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px; background: var(--bg);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    color: var(--text); line-height: 1.4;
+  }
+  
+  .szz-wrap {
+    max-width: 650px; max-height: 700px; background: var(--card);
+    margin: 0 auto; border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: var(--shadow);
+  }
+  
+  .szz-header { padding: 20px 24px; background: var(--green-soft-2); border-bottom: 1px solid var(--line); }
+  .szz-header h2 { margin: 0 0 8px; font-size: 1.25rem; font-weight: 600; color: var(--green); }
+  .szz-header p { margin: 0; font-size: 0.9rem; color: var(--muted); line-height: 1.4; }
+  
+  .top-actions { display: flex; gap: 6px; padding: 10px 20px; border-bottom: 1px solid var(--line); background: #fff; flex-shrink: 0; flex-wrap: wrap; }
+  .btn-sm { padding: 6px 10px; border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 500; transition: var(--transition); color: var(--muted); }
+  .btn-sm:hover { border-color: var(--green); color: var(--green); background: var(--green-soft-2); }
+  
+  .oleg-intro {
+    display: flex; gap: 12px; align-items: flex-start; padding: 16px 24px;
+    background: var(--green-soft-2); margin: 0; border-bottom: 1px solid var(--line);
+  }
+  .oleg-avatar { width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; flex-shrink: 0; }
+  .oleg-text { font-size: 0.88rem; color: var(--text); line-height: 1.35; }
+  .oleg-text strong { display: block; margin-bottom: 2px; color: var(--green); font-weight: 600; }
+  
+  .szz-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+  
+  /* Slider Container */
+  .slider-container {
+    position: relative;
+    width: 100%;
+    height: 320px;
+    border-radius: 12px;
+    overflow: hidden;
+    margin-bottom: 20px;
+    border: 1px solid var(--line);
+    background: #f8fafc;
+    cursor: col-resize;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  
+  .slider-container img {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    object-fit: cover;
+    pointer-events: none;
+  }
+  
+  /* Left Overlay (With neighbor - shown when slider is left) */
+  .slider-overlay {
+    position: absolute;
+    top: 0; left: 0;
+    height: 100%;
+    width: 70%; /* Start at 70% */
+    overflow: hidden;
+    z-index: 2;
+    border-right: 2px solid #fff;
+    box-shadow: 4px 0 8px rgba(0,0,0,0.15);
+  }
+  
+  /* Slider Handle */
+  .slider-handle {
+    position: absolute;
+    top: 50%; left: 70%;
+    transform: translate(-50%, -50%);
+    width: 44px; height: 44px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
+    z-index: 3;
+    display: flex; align-items: center; justify-content: center;
+    pointer-events: none;
+    transition: left 0.1s ease;
+  }
+  .slider-handle svg { width: 22px; height: 22px; fill: var(--green); }
+  
+  /* Labels */
+  .slider-labels {
+    position: absolute;
+    bottom: 14px; left: 0; right: 0;
+    display: flex; justify-content: space-between;
+    padding: 0 16px;
+    z-index: 4;
+    pointer-events: none;
+  }
+  .label-badge {
+    background: rgba(255,255,255,0.92);
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: var(--text);
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--line);
+  }
+  .label-badge.active { background: var(--green); color: #fff; border-color: var(--green); }
+
+  /* Hidden Range Input */
+  input[type="range"].slider-range {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    opacity: 0;
+    cursor: col-resize;
+    z-index: 5;
+    margin: 0;
+  }
+
+  /* Dynamic Text */
+  .dynamic-text {
+    background: var(--green-soft-2); padding: 16px; border-radius: 10px; border-left: 3px solid var(--green);
+    margin-bottom: 20px; min-height: 70px; transition: opacity 0.3s ease;
+  }
+  .dynamic-text p { margin: 0 0 8px; font-size: 0.9rem; color: var(--text); line-height: 1.4; }
+  .dynamic-text .oleg-voice { font-style: italic; color: var(--muted); font-size: 0.85rem; margin-top: 4px; display: block; }
+  
+  /* Buttons */
+  .btn-action {
+    display: block; width: 100%; padding: 12px; border: none; border-radius: 8px;
+    cursor: pointer; font-size: 0.9rem; font-weight: 600; transition: var(--transition);
+    text-align: center; margin-bottom: 10px;
+  }
+  .btn-primary { background: var(--green); color: #fff; }
+  .btn-primary:hover { filter: brightness(0.95); }
+  .btn-secondary { background: #fff; color: var(--green); border: 1px solid var(--green); }
+  .btn-secondary:hover { background: var(--green-soft-2); }
+  
+  /* Info blocks */
+  .info-block {
+    background: var(--green-soft-2);
+    border-left: 3px solid var(--green);
+    padding: 14px 16px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 16px;
+  }
+  .info-block h4 {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    color: var(--green);
+    font-weight: 600;
+  }
+  .info-block ul {
+    margin: 0;
+    padding-left: 18px;
+  }
+  .info-block li {
+    margin-bottom: 6px;
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .info-block strong {
+    color: var(--green);
+  }
+  
+  .warning-block {
+    background: var(--warning-bg);
+    border-left: 3px solid var(--warning-border);
+    padding: 14px 16px;
+    border-radius: 0 8px 8px 0;
+    margin-bottom: 16px;
+  }
+  .warning-block h4 {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    color: var(--warning-text);
+    font-weight: 600;
+  }
+  .warning-block p {
+    margin: 0 0 8px 0;
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  .warning-block strong {
+    color: var(--warning-border);
+  }
+  
+  .tip-block {
+    background: #fff;
+    border: 1px solid var(--line);
+    padding: 14px 16px;
+    border-radius: 8px;
+    margin-bottom: 16px;
+  }
+  .tip-block h4 {
+    margin: 0 0 10px 0;
+    font-size: 0.9rem;
+    color: var(--green);
+    font-weight: 600;
+  }
+  .tip-block p {
+    margin: 0;
+    font-size: 0.88rem;
+    color: var(--text);
+    line-height: 1.4;
+  }
+  
+  /* Modals */
+  .modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(31,42,36,0.45); display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; backdrop-filter: blur(3px);
+  }
+  .modal.active { display: flex; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  
+  .modal-box {
+    background: #fff; border-radius: 12px; max-width: 520px; width: 100%;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.15); overflow: hidden; animation: slideUp 0.25s;
+    max-height: 90vh; display: flex; flex-direction: column;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .modal-head { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: var(--green-soft-2); }
+  .modal-head h3 { margin: 0; font-size: 1rem; color: var(--green); }
+  .modal-x { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); line-height: 1; }
+  .modal-x:hover { color: var(--text); }
+  
+  .modal-body { padding: 20px; overflow-y: auto; font-size: 0.9rem; line-height: 1.5; color: var(--text); }
+  .modal-body img { width: 100%; border-radius: 8px; margin: 12px 0; border: 1px solid var(--line); }
+  .modal-body ul { padding-left: 18px; margin: 8px 0; }
+  .modal-body li { margin-bottom: 6px; }
+  
+  .modal-foot { padding: 12px 20px; border-top: 1px solid var(--line); text-align: right; background: #fff; }
+  .btn-modal-close { background: var(--green); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+  .btn-modal-close:hover { filter: brightness(0.95); }
+
+  @media (max-width: 500px) {
+    .szz-wrap { max-height: 100vh; border-radius: 0; border: none; }
+    .slider-container { height: 240px; }
+  }
+</style>
 </head>
 <body>
-  <div class="wrapper">
-    <section class="card" aria-label="Интерактив о пересечении санитарно защитных зон">
-      <h1 class="title">Если сосед успел раньше</h1>
-      <p class="subtitle">
-        На этой схеме видно, как санитарно защитные зоны соседних предприятий могут перекрываться.
-        Сначала посмотрите на обычную ситуацию, потом добавьте на карту третье предприятие и посмотрите, что меняется.
-      </p>
 
-      <div class="slider-header">Выберите вариант обстановки на карте</div>
-      <div class="toggle-group" role="tablist" aria-label="Состояния карты санитарных зон">
-        <button
-          type="button"
-          class="toggle-btn active"
-          id="state-base"
-          role="tab"
-          aria-selected="true"
-          aria-controls="map-caption"
-          data-state="base"
-        >
-          <span class="dot"></span>
-          Без пересечения
-        </button>
-        <button
-          type="button"
-          class="toggle-btn"
-          id="state-third"
-          role="tab"
-          aria-selected="false"
-          aria-controls="map-caption"
-          data-state="third"
-        >
-          <span class="dot"></span>
-          Появился сосед с «ломаной» СЗЗ
-        </button>
-      </div>
-
-      <div class="map-frame">
-        <div class="map-inner">
-          <img
-            id="map-image"
-            src="map-base.jpg"
-            alt="Карта СЗЗ двух предприятий, санитарные зоны не пересекаются"
-          />
-          <div class="map-badge" id="map-badge">
-            <span class="map-badge-dot"></span>
-            <span id="badge-text">СЗЗ предприятий 1 и 2 не пересекаются</span>
-          </div>
-          <div class="map-legend" aria-label="Легенда карты санитарных зон">
-            <div class="legend-row">
-              <span class="legend-swatch s1"></span>
-              <span>СЗЗ предприятия 1</span>
-            </div>
-            <div class="legend-row">
-              <span class="legend-swatch s2"></span>
-              <span>СЗЗ предприятия 2</span>
-            </div>
-            <div class="legend-row">
-              <span class="legend-swatch s3"></span>
-              <span>СЗЗ предприятия 3</span>
-            </div>
-            <div class="legend-row">
-              <span class="legend-swatch overlap"></span>
-              <span>Пересечение зон</span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <p class="map-caption" id="map-caption">
-        СЗЗ предприятий 1 и 2 не пересекаются. У каждого свой санитарный разрыв и своя граница контроля.
-        На участке между зонами еще можно разместить СЗЗ нового объекта или другие объекты инфраструктуры.
-      </p>
-
-      <div class="oleg" id="oleg-box">
-        <div class="oleg-avatar" aria-hidden="true">О</div>
-        <div>
-          <div class="oleg-name">Олег</div>
-          <div class="oleg-text" id="oleg-text">
-            Пока вокруг нас свободная земля, кажется, что с проектом СЗЗ можно не спешить.
-          </div>
-        </div>
-      </div>
-
-      <div class="actions">
-        <button
-          type="button"
-          class="btn btn-primary"
-          id="btn-meaning"
-          aria-haspopup="dialog"
-          aria-controls="modal-meaning"
-        >
-          <span class="btn-icon">⚠️</span>
-          Что это значит для предприятий 1 и 2
-        </button>
-
-        <button
-          type="button"
-          class="btn btn-outline"
-          id="btn-public"
-          aria-haspopup="dialog"
-          aria-controls="modal-public"
-        >
-          <span class="btn-icon">🗺️</span>
-          Посмотреть пример на публичной карте
-        </button>
-      </div>
-
-      <p class="muted">
-        Подвиньте переключатель и посмотрите, как меняются СЗЗ и нагрузка на границе.
-      </p>
-    </section>
+<div class="szz-wrap">
+  <div class="szz-header">
+    <h2>Если сосед успел раньше</h2>
+    <p>Как санитарные зоны соседних предприятий могут перекрываться и что из этого следует для режима использования территории.</p>
   </div>
 
-  <div
-    class="modal-backdrop"
-    id="backdrop-meaning"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="modal-meaning-title"
-    aria-hidden="true"
-  >
-    <div class="modal">
-      <header class="modal-header">
-        <div class="modal-title">
-          Чем опасно пересечение СЗЗ
-          <span class="modal-title-pill">Суммарный риск</span>
-        </div>
-        <button type="button" class="modal-close" data-close="meaning" aria-label="Закрыть окно">
-          ×
-        </button>
-      </header>
-      <div class="modal-body">
-        <p>
-          <span class="modal-body-strong">Во первых усиливается контроль на границе.</span>
-          В зоне пересечения надзор смотрит на суммарное воздействие всех предприятий, а не только на ваши выбросы.
-        </p>
-        <p>
-          <span class="modal-body-strong">Во вторых могут понадобиться новые мероприятия.</span>
-          Если суммарный фон превышает нормативы, предприятиям 1 и 2 придется договариваться с соседом, снижать выбросы
-          или менять размещение источников.
-        </p>
-        <p>
-          <span class="modal-body-strong">В третьих растут риски претензий.</span>
-          Пересекающиеся СЗЗ становятся поводом для жалоб жителей и вопросов на экспертизе, особенно если в зоне есть
-          жилая застройка или социальные объекты.
-        </p>
-      </div>
-      <footer class="modal-footer">
-        <button type="button" class="btn btn-danger" data-close="meaning">
-          Понятно
-        </button>
-      </footer>
+  <div class="top-actions">
+    <button class="btn-sm" id="btn-howto">Как пользоваться</button>
+    <button class="btn-sm" id="btn-what">Что показывает</button>
+  </div>
+
+  <div class="oleg-intro">
+    <img src="oleg.jpg" alt="Олег" class="oleg-avatar">
+    <div class="oleg-text">
+      <strong>Олег:</strong> Я изучаю карту района. У нас есть два старых завода, и тут хотят построить третий. Сдвигайте ползунок, чтобы увидеть, что произойдет с зонами.
     </div>
   </div>
 
-  <div
-    class="modal-backdrop"
-    id="backdrop-public"
-    role="dialog"
-    aria-modal="true"
-    aria-labelledby="modal-public-title"
-    aria-hidden="true"
-  >
-    <div class="modal">
-      <header class="modal-header">
-        <div class="modal-title" id="modal-public-title">
-          Пример пересечения СЗЗ на публичной карте
-        </div>
-        <button type="button" class="modal-close" data-close="public" aria-label="Закрыть окно">
-          ×
-        </button>
-      </header>
-      <div class="modal-body">
-        <div class="modal-img-wrapper">
-          <img
-            src="map-public-example.jpg"
-            alt="Публичная карта с несколькими пересекающимися санитарными зонами предприятий"
-          />
-          <div class="modal-img-caption">Учебный пример перекрытия СЗЗ соседних предприятий</div>
-        </div>
-        <p>
-          Так выглядят пересекающиеся СЗЗ на публичной карте. В учебном примере вы разберете, как считывать такие зоны
-          и какие выводы делать для своего предприятия.
-        </p>
+  <div class="szz-body">
+    <!-- Slider Control -->
+    <div class="slider-container" id="slider-container">
+      <!-- Right/Background image (Without overlap - 2 plants) -->
+      <img src="map-base.jpg" alt="Без наложения">
+      
+      <!-- Left/Overlay image (With overlap - 3 plants) -->
+      <div class="slider-overlay" id="slider-overlay">
+        <img src="map-with-third.jpg" alt="С наложением" id="overlay-img">
       </div>
-      <footer class="modal-footer">
-        <button type="button" class="btn btn-primary" data-close="public">
-          Закрыть
-        </button>
-      </footer>
+      
+      <!-- Handle -->
+      <div class="slider-handle" id="slider-handle">
+        <svg viewBox="0 0 24 24"><path d="M10 16.5l-4.5-4.5 4.5-4.5v9zm4-9l4.5 4.5-4.5 4.5v-9z"/></svg>
+      </div>
+      
+      <!-- Labels -->
+      <div class="slider-labels">
+        <span class="label-badge active" id="label-left">Без наложения</span>
+        <span class="label-badge" id="label-right">С наложением СЗЗ</span>
+      </div>
+      
+      <!-- Invisible Range Input -->
+      <input type="range" min="0" max="100" value="70" class="slider-range" id="zone-slider">
+    </div>
+
+    <!-- Dynamic Text & Oleg -->
+    <div class="dynamic-text">
+      <p id="desc-text">Два предприятия (1 и 2). Их санитарно-защитные зоны не пересекаются. Между ними остается свободная территория.</p>
+      <span class="oleg-voice" id="oleg-voice">"Здесь всё понятно: заводы далеко друг от друга, их зоны не касаются."</span>
+    </div>
+
+    <!-- Buttons -->
+    <button class="btn-action btn-primary" onclick="openModal('modal-explain')">Что это значит для предприятий 1 и 2</button>
+    <button class="btn-action btn-secondary" onclick="openModal('modal-public')">Посмотреть пример на публичной карте</button>
+  </div>
+</div>
+
+<!-- Modal: How to use -->
+<div class="modal" id="modal-howto">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Как пользоваться интерактивом</h3>
+      <button class="modal-x" onclick="closeModal('modal-howto')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p><strong>Слайдер сравнения:</strong></p>
+      <ul>
+        <li>Перетаскивайте ползунок влево-вправо мышью или пальцем (на сенсорных экранах).</li>
+        <li>Можно также использовать колёсико мыши или стрелки клавиатуры, когда ползунок в фокусе.</li>
+        <li>Ползунок показывает границу между двумя состояниями карты.</li>
+      </ul>
+      <p><strong>Что вы видите:</strong></p>
+      <ul>
+        <li><strong>Слева (по умолчанию):</strong> ситуация без наложения – два предприятия с отдельными СЗЗ.</li>
+        <li><strong>Справа:</strong> ситуация с наложением – появилось третье предприятие, и его СЗЗ перекрывает зоны первых двух.</li>
+      </ul>
+      <p>Под картой меняется описание и реплика Олега в зависимости от положения ползунка.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-modal-close" onclick="closeModal('modal-howto')">Понятно</button>
     </div>
   </div>
+</div>
 
-  <script>
-    (function () {
-      var stateBaseBtn = document.getElementById('state-base');
-      var stateThirdBtn = document.getElementById('state-third');
-      var mapImage = document.getElementById('map-image');
-      var caption = document.getElementById('map-caption');
-      var badgeText = document.getElementById('badge-text');
-      var olegText = document.getElementById('oleg-text');
+<!-- Modal: What it shows -->
+<div class="modal" id="modal-what">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Что показывает этот интерактив</h3>
+      <button class="modal-x" onclick="closeModal('modal-what')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Этот интерактив демонстрирует, как <strong>наложение санитарно-защитных зон</strong> от разных предприятий меняет режим использования территории.</p>
+      <p><strong>Ключевые моменты:</strong></p>
+      <ul>
+        <li>Когда СЗЗ не пересекаются, между ними может оставаться пространство.</li>
+        <li>При появлении нового предприятия его СЗЗ может «вклиниться» между существующими зонами.</li>
+        <li>В зоне наложения действуют ограничения всех предприятий одновременно.</li>
+        <li>Суммарная нагрузка на атмосферу возрастает, что требует усиленного контроля.</li>
+      </ul>
+      <p>Это важно для эколога, потому что при планировании нового объекта или расширении существующего нужно учитывать не только свою СЗЗ, но и зоны соседних предприятий.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-modal-close" onclick="closeModal('modal-what')">Понятно</button>
+    </div>
+  </div>
+</div>
 
-      var stateContent = {
-        base: {
-          src: 'map-base.jpg',
-          alt: 'Карта СЗЗ двух предприятий, санитарные зоны не пересекаются',
-          caption:
-            'СЗЗ предприятий 1 и 2 не пересекаются. У каждого свой санитарный разрыв и своя граница контроля. На участке между зонами еще можно разместить СЗЗ нового объекта или другие объекты инфраструктуры.',
-          badge: 'СЗЗ предприятий 1 и 2 не пересекаются',
-          oleg: 'Пока вокруг нас свободная земля, кажется, что с проектом СЗЗ можно не спешить.'
-        },
-        third: {
-          src: 'map-with-third.jpg',
-          alt: 'Карта с тремя предприятиями, санитарная зона третьего частично перекрывает зоны первых двух',
-          caption:
-            'Предприятие 3 устанавливает СЗЗ сложной формы. Его зона перекрывает части санитарных зон предприятий 1 и 2. В местах пересечения санитарный риск складывается, нельзя смотреть только на выбросы одного предприятия.',
-          badge: 'СЗЗ пересекаются и влияют друг на друга',
-          oleg: 'Как только сосед первым оформил свою СЗЗ, часть территории под нашу зону мы уже потеряли.'
-        }
-      };
+<!-- Modal 1: Explanation -->
+<div class="modal" id="modal-explain">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Влияние третьего предприятия</h3>
+      <button class="modal-x" onclick="closeModal('modal-explain')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>Когда добавляется предприятие 3, его СЗЗ вклинивается в пространство между первыми двумя зонами. Форма зоны часто бывает «ломаной» из-за рельефа или розы ветров.</p>
+      <p><strong>Последствия:</strong></p>
+      <ul>
+        <li>Свободная территория между зонами 1 и 2 исчезает.</li>
+        <li>Образовывается единый санитарный коридор с более жестким режимом использования.</li>
+        <li>Суммарная нагрузка на атмосферу возрастает, что может потребовать ужесточения требований к очистным сооружениям для всех трех заводов.</li>
+      </ul>
+      <p>Новое строительство не просто добавляет зону, а может «сшить» существующие ограничения в единый барьер.</p>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-modal-close" onclick="closeModal('modal-explain')">Понятно</button>
+    </div>
+  </div>
+</div>
 
-      function setState(key) {
-        var data = stateContent[key];
-        mapImage.src = data.src;
-        mapImage.alt = data.alt;
-        caption.textContent = data.caption;
-        badgeText.textContent = data.badge;
-        olegText.textContent = data.oleg;
+<!-- Modal 2: Public Map -->
+<div class="modal" id="modal-public">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3>Пример на публичной карте</h3>
+      <button class="modal-x" onclick="closeModal('modal-public')">&times;</button>
+    </div>
+    <div class="modal-body">
+      <p>На скриншоте из публичной кадастровой карты видно реальное наложение СЗЗ в промышленном районе.</p>
+      <img src="map-public-example.jpg" alt="Тройное наложение СЗЗ на публичной карте">
+      
+      <div class="info-block">
+        <h4>Что важно знать:</h4>
+        <ul>
+          <li><strong>СЗЗ считаются совокупно.</strong> При планировании нового объекта учитываются уже существующие зоны соседей. Изолированный расчет может быть отклонен экспертизой.</li>
+          <li><strong>Принцип «самого строгого режима».</strong> В зоне наложения действуют ограничения всех пересекающихся СЗЗ. Это меняет вид разрешенного использования земли.</li>
+          <li><strong>Фоновая нагрузка ≠ отдельный выброс.</strong> Даже если каждый завод вписывается в ПДК, их суммарный вклад может превышать норматив. Требуются расчеты рассеивания.</li>
+        </ul>
+      </div>
+      
+      <div class="tip-block">
+        <h4>💡 Лайфхак для проектировщика</h4>
+        <p>Если СЗЗ соседних объектов еще не утверждены, закладывайте запас 10–15% в расчетах рассеивания. Это спасет от доработок после экспертизы.</p>
+      </div>
+      
+      <div class="warning-block">
+        <h4>⚠️ Частая ошибка новичков</h4>
+        <p><strong>«Если мой завод маленький и его СЗЗ всего 100 м, я могу не учитывать соседей».</strong></p>
+        <p><strong>Реальность:</strong> Даже малая СЗЗ, наложившись на чужую, создает зону с новым режимом. Роспотребнадзор оценивает совокупный риск, а не изолированные объекты.</p>
+      </div>
+    </div>
+    <div class="modal-foot">
+      <button class="btn-modal-close" onclick="closeModal('modal-public')">Понятно</button>
+    </div>
+  </div>
+</div>
 
-        if (key === 'base') {
-          stateBaseBtn.classList.add('active');
-          stateBaseBtn.setAttribute('aria-selected', 'true');
-          stateThirdBtn.classList.remove('active');
-          stateThirdBtn.setAttribute('aria-selected', 'false');
-        } else {
-          stateThirdBtn.classList.add('active');
-          stateThirdBtn.setAttribute('aria-selected', 'true');
-          stateBaseBtn.classList.remove('active');
-          stateBaseBtn.setAttribute('aria-selected', 'false');
-        }
-      }
+<script>
+  const slider = document.getElementById('zone-slider');
+  const overlay = document.getElementById('slider-overlay');
+  const handle = document.getElementById('slider-handle');
+  const overlayImg = document.getElementById('overlay-img');
+  const container = document.getElementById('slider-container');
+  
+  const descText = document.getElementById('desc-text');
+  const olegVoice = document.getElementById('oleg-voice');
+  const labelLeft = document.getElementById('label-left');
+  const labelRight = document.getElementById('label-right');
 
-      stateBaseBtn.addEventListener('click', function () {
-        setState('base');
-      });
+  const stateNoOverlap = {
+    desc: 'Два предприятия (1 и 2). Их санитарно-защитные зоны не пересекаются. Между ними остается свободная территория.',
+    oleg: '"Здесь всё понятно: заводы далеко друг от друга, их зоны не касаются."'
+  };
 
-      stateThirdBtn.addEventListener('click', function () {
-        setState('third');
-      });
+  const stateOverlap = {
+    desc: 'Появилось предприятие 3. Его СЗЗ вклинилась в пространство между зонами 1 и 2, заблокировав свободное пространство.',
+    oleg: '"Смотри, как зона третьего завода закрыла все «лазейки» между первыми двумя. Теперь места вообще не осталось."'
+  };
 
-      function openModal(id) {
-        var backdrop = document.getElementById('backdrop-' + id);
-        if (!backdrop) return;
-        backdrop.classList.add('active');
-        backdrop.setAttribute('aria-hidden', 'false');
-      }
+  function resizeOverlayImage() {
+    overlayImg.style.width = container.offsetWidth + 'px';
+  }
 
-      function closeModal(id) {
-        var backdrop = document.getElementById('backdrop-' + id);
-        if (!backdrop) return;
-        backdrop.classList.remove('active');
-        backdrop.setAttribute('aria-hidden', 'true');
-      }
+  function updateUI(val) {
+    overlay.style.width = val + '%';
+    handle.style.left = val + '%';
+    
+    // Update text and labels
+    if(val >= 50) {
+      // Right side - With overlap (third plant)
+      descText.textContent = stateOverlap.desc;
+      olegVoice.textContent = stateOverlap.oleg;
+      labelLeft.classList.remove('active');
+      labelRight.classList.add('active');
+    } else {
+      // Left side - No overlap (base map)
+      descText.textContent = stateNoOverlap.desc;
+      olegVoice.textContent = stateNoOverlap.oleg;
+      labelLeft.classList.add('active');
+      labelRight.classList.remove('active');
+    }
+  }
 
-      document.getElementById('btn-meaning').addEventListener('click', function () {
-        openModal('meaning');
-      });
+  slider.addEventListener('input', function() {
+    updateUI(this.value);
+  });
 
-      document.getElementById('btn-public').addEventListener('click', function () {
-        openModal('public');
-      });
+  // Initialize
+  window.addEventListener('resize', resizeOverlayImage);
+  resizeOverlayImage();
+  updateUI(70); // Start at 70% (shows overlap by default)
 
-      document.querySelectorAll('[data-close]').forEach(function (btn) {
-        btn.addEventListener('click', function () {
-          var target = btn.getAttribute('data-close');
-          closeModal(target);
-        });
-      });
+  // Modal Logic
+  function openModal(id) {
+    document.getElementById(id).classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
 
-      document.querySelectorAll('.modal-backdrop').forEach(function (backdrop) {
-        backdrop.addEventListener('click', function (e) {
-          if (e.target === backdrop) {
-            var id = backdrop.id.replace('backdrop-', '');
-            closeModal(id);
-          }
-        });
-      });
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+    document.body.style.overflow = '';
+  }
 
-      document.addEventListener('keydown', function (e) {
-        if (e.key === 'Escape') {
-          closeModal('meaning');
-          closeModal('public');
-        }
-      });
-    })();
-  </script>
+  // Button handlers
+  document.getElementById('btn-howto').onclick = () => openModal('modal-howto');
+  document.getElementById('btn-what').onclick = () => openModal('modal-what');
+
+  document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+      if (e.target === modal) closeModal(modal.id);
+    });
+  });
+  
+  // Close on Escape
+  document.addEventListener('keydown', e => {
+    if(e.key === 'Escape') document.querySelectorAll('.modal.active').forEach(m => closeModal(m.id));
+  });
+</script>
+
 </body>
 </html>
