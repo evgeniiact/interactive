@@ -1,0 +1,405 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>4 причины не устанавливать СЗЗ</title>
+<style>
+  :root {
+    --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
+    --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
+    --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
+    --radius: 16px; --transition: 160ms ease;
+    --warning: #b4532a; --warning-soft: #fff1ea;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px; background: var(--bg);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    color: var(--text); line-height: 1.4;
+  }
+  
+  .szz-wrap {
+    width: 100%; max-width: 680px; height: 700px; margin: 0 auto; background: var(--card);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
+  }
+  
+  .szz-header { 
+    padding: 16px 20px; background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%); 
+    border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  .szz-header h2 { margin: 0 0 4px; font-size: 1.2rem; font-weight: 600; color: var(--green); }
+  .szz-header p { margin: 0; font-size: 0.85rem; color: var(--muted); }
+  
+  .oleg-intro {
+    display: flex; gap: 10px; align-items: flex-start; padding: 14px 20px;
+    background: var(--green-soft-2); border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  .oleg-avatar { 
+    width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+    border: 2px solid #fff;
+  }
+  .oleg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .oleg-text { font-size: 0.82rem; color: var(--text); line-height: 1.35; }
+  .oleg-text strong { display: block; margin-bottom: 2px; color: var(--green); font-weight: 600; font-size: 0.85rem; }
+  
+  .instruction {
+    padding: 10px 20px; background: #fff; border-bottom: 1px solid var(--line);
+    font-size: 0.82rem; color: var(--muted); flex-shrink: 0;
+  }
+  
+  /* Scrollable Game Area */
+  .game-area { 
+    padding: 20px; position: relative; background: #fff; 
+    overflow-y: auto; flex: 1;
+    scrollbar-width: thin;
+    scrollbar-color: var(--line) transparent;
+  }
+  
+  /* Grid Layout */
+  .cards-grid {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  
+  /* Flip Card Logic */
+  .flip-card {
+    background-color: transparent;
+    height: 200px; /* Fixed compact height */
+    perspective: 1000px;
+    cursor: pointer;
+  }
+  
+  .flip-card-inner {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    text-align: center;
+    transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
+    transform-style: preserve-3d;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+    border-radius: 12px;
+  }
+  
+  .flip-card.flipped .flip-card-inner {
+    transform: rotateY(180deg);
+  }
+  
+  .flip-card-front, .flip-card-back {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    -webkit-backface-visibility: hidden;
+    backface-visibility: hidden;
+    border-radius: 12px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    padding: 16px;
+    border: 1px solid var(--line);
+  }
+  
+  /* Front Styling */
+  .flip-card-front {
+    background-color: var(--card);
+    align-items: center;
+  }
+  .flip-card-front:hover {
+    border-color: var(--green);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
+  }
+  .card-icon {
+    width: 40px; height: 40px; background: var(--green-soft); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; margin-bottom: 10px; color: var(--green);
+  }
+  .card-title {
+    font-weight: 600; font-size: 0.9rem; color: var(--text); margin-bottom: 4px;
+  }
+  .card-hint {
+    font-size: 0.75rem; color: var(--muted);
+  }
+  
+  /* Back Styling */
+  .flip-card-back {
+    background-color: var(--green-soft-2);
+    color: var(--text);
+    transform: rotateY(180deg);
+    border: 2px solid var(--green);
+    align-items: flex-start;
+    text-align: left;
+    justify-content: space-between;
+  }
+  .memo-title {
+    font-weight: 700; color: var(--green); margin-bottom: 8px; font-size: 0.9rem;
+  }
+  .memo-text {
+    font-size: 0.8rem; line-height: 1.4; color: var(--text);
+  }
+  .memo-tag {
+    font-size: 0.7rem; color: var(--green); font-weight: 600; text-transform: uppercase;
+    background: #fff; padding: 4px 8px; border-radius: 4px; align-self: flex-start;
+  }
+  
+  /* Summary Warning Section */
+  .summary-warning {
+    margin-top: 20px; padding: 14px; 
+    background: var(--warning-soft); border: 1px solid var(--warning);
+    border-radius: 12px; 
+    display: none; animation: fadeIn 0.4s;
+  }
+  .summary-warning.show { display: block; }
+  
+  .warning-header {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
+    font-weight: 600; color: var(--warning);
+  }
+  .warning-text {
+    font-size: 0.85rem; color: #4a1f10; line-height: 1.4;
+  }
+  .warning-text ul { margin: 6px 0; padding-left: 20px; }
+  
+  /* Controls */
+  .controls {
+    display: flex; gap: 10px; justify-content: center; padding: 16px 20px;
+    border-top: 1px solid var(--line); background: #fff; flex-shrink: 0;
+  }
+  .btn-action {
+    padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer;
+    font-size: 0.85rem; font-weight: 600; transition: var(--transition);
+  }
+  .btn-reset { background: #fff; color: var(--text); border: 1px solid var(--line); }
+  .btn-reset:hover { border-color: var(--green); background: var(--green-soft-2); }
+  
+  /* Modal */
+  .modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(31,42,36,0.45); display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; backdrop-filter: blur(3px);
+  }
+  .modal.active { display: flex; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  
+  .modal-box {
+    background: #fff; border-radius: 12px; max-width: 440px; width: 100%;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.15); overflow: hidden; animation: slideUp 0.25s;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .modal-header {
+    padding: 14px 18px; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--green-soft-2);
+  }
+  .modal-header h3 { margin: 0; font-size: 1rem; color: var(--green); }
+  .modal-close {
+    background: none; border: none; font-size: 1.4rem; cursor: pointer;
+    color: var(--muted); line-height: 1;
+  }
+  .modal-close:hover { color: var(--text); }
+  
+  .modal-body { padding: 18px; }
+  .modal-body p { margin: 0 0 10px; font-size: 0.9rem; line-height: 1.5; color: var(--text); }
+  
+  .modal-footer {
+    padding: 12px 18px; border-top: 1px solid var(--line); text-align: right;
+  }
+  .btn-modal-close {
+    background: var(--green); color: #fff; border: none; padding: 8px 16px;
+    border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.85rem;
+  }
+  .btn-modal-close:hover { filter: brightness(0.95); }
+
+  @media (max-width: 680px) {
+    .szz-wrap { height: auto; min-height: 100vh; }
+    .flip-card { height: 180px; }
+    .cards-grid { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="szz-wrap">
+  <div class="szz-header">
+    <h2>4 причины не устанавливать СЗЗ</h2>
+    <p>Карточки-памятки для принятия решений</p>
+  </div>
+
+  <div class="oleg-intro">
+    <div class="oleg-avatar"><img src="oleg.jpg" alt="Олег"></div>
+    <div class="oleg-text">
+      <strong>Олег:</strong> Нам нужно понять, можно ли отказаться от СЗЗ для нашего завода. Я собрал 4 критерия. Нажмите на карточку, чтобы увидеть памятку с решением.
+    </div>
+  </div>
+
+  <div class="instruction">
+    Нажмите на карточку, чтобы узнать подробности и условия отказа. Можно переворачивать сколько угодно раз.
+  </div>
+
+  <div class="game-area" id="game-area">
+    <div class="cards-grid">
+      
+      <!-- Card 1: Liquidation -->
+      <div class="flip-card" onclick="flipCard(this)">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="card-icon">🏗</div>
+            <div class="card-title">Ликвидация или разделение</div>
+            <div class="card-hint">Планируете реорганизацию?</div>
+          </div>
+          <div class="flip-card-back">
+            <div class="memo-title">Стоит повременить с СЗЗ</div>
+            <div class="memo-text">Если утвердите зону сейчас, а потом разделите завод и продадите участок, придется переделывать проектную документацию под новый объект. Это лишние траты.</div>
+            <div class="memo-tag">Совет: подождите реорганизации</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 2: Distance -->
+      <div class="flip-card" onclick="flipCard(this)">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="card-icon">📏</div>
+            <div class="card-title">Объект стоит далеко</div>
+            <div class="card-hint">Расстояние > 2x нормы?</div>
+          </div>
+          <div class="flip-card-back">
+            <div class="memo-title">СЗЗ может не понадобиться</div>
+            <div class="memo-text">Если до жилой застройки или садов более чем в 2 раза превышает нормативный размер СЗЗ, устанавливать её нет смысла. Застройка не попадает в зону риска.</div>
+            <div class="memo-tag">Совет: проверьте расстояние</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 3: Overlapping -->
+      <div class="flip-card" onclick="flipCard(this)">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="card-icon">🔄</div>
+            <div class="card-title">Перекрывающиеся зоны</div>
+            <div class="card-hint">Соседний завод ближе?</div>
+          </div>
+          <div class="flip-card-back">
+            <div class="memo-title">Войдите в сводную СЗЗ</div>
+            <div class="memo-text">Если ваше предприятие попало в зону влияния соседа, делать отдельную СЗЗ невыгодно. Предоставьте данные для формирования единой сводной СЗЗ на несколько заводов.</div>
+            <div class="memo-tag">Совет: согласуйте с соседями</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Card 4: Calculations -->
+      <div class="flip-card" onclick="flipCard(this)">
+        <div class="flip-card-inner">
+          <div class="flip-card-front">
+            <div class="card-icon">📉</div>
+            <div class="card-title">Нулевые расчеты</div>
+            <div class="card-hint">ПДК не превышены?</div>
+          </div>
+          <div class="flip-card-back">
+            <div class="memo-title">Установление не требуется</div>
+            <div class="memo-text">Если расчеты рассеивания показывают, что на границе предприятия концентрация веществ не превышает ПДК, СЗЗ устанавливать не нужно. Нет риска — нет зоны.</div>
+            <div class="memo-tag">Совет: опирайтесь на расчеты</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Summary Warning -->
+    <div class="summary-warning" id="summary-warning">
+      <div class="warning-header">⚠️ Важно понимать: отказ — это тоже работа</div>
+      <div class="warning-text">
+        <p>Отказ от СЗЗ — это не позиция «мы ничего не делаем». Чтобы доказать, что зона не нужна, придется выполнить почти тот же объем работ:</p>
+        <ul>
+          <li>Провести инвентаризацию источников выбросов.</li>
+          <li>Выполнить расчеты рассеивания и натурные замеры.</li>
+          <li>Подготовить проектное обоснование.</li>
+        </ul>
+        <p><strong>Итог:</strong> Официальное письмо от Роспотребнадзора, подтверждающее отсутствие необходимости в СЗЗ.</p>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-action btn-reset" onclick="resetGame()">Начать заново</button>
+  </div>
+</div>
+
+<!-- Rules Modal -->
+<div class="modal" id="modal-rules">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Как работать</h3><button class="modal-close" data-close>&times;</button></div>
+    <div class="modal-body">
+      <p>В этом блоке собраны 4 ситуации, при которых можно избежать установления СЗЗ или отложить его.</p>
+      <ul>
+        <li>Нажмите на карточку, чтобы прочитать памятку.</li>
+        <li>Изучите все 4 варианта (можно переворачивать обратно).</li>
+        <li>В конце появится важное предупреждение о процессе оформления отказа.</li>
+      </ul>
+    </div>
+    <div class="modal-footer"><button class="btn-modal-close" data-close>Понятно</button></div>
+  </div>
+</div>
+
+<script>
+  let flippedCount = 0;
+  const totalCards = 4;
+
+  function flipCard(card) {
+    // Toggle flip state
+    const isFlipped = card.classList.toggle('flipped');
+    
+    // Track if a NEW card has been viewed at least once
+    if (isFlipped && !card.dataset.viewed) {
+      card.dataset.viewed = 'true';
+      flippedCount++;
+      
+      // Show warning when all unique cards have been viewed
+      if (flippedCount === totalCards) {
+        setTimeout(() => {
+          const warningBlock = document.getElementById('summary-warning');
+          warningBlock.classList.add('show');
+          // Smooth scroll to warning
+          warningBlock.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+        }, 600);
+      }
+    }
+  }
+
+  function resetGame() {
+    flippedCount = 0;
+    document.querySelectorAll('.flip-card').forEach(card => {
+      card.classList.remove('flipped');
+      delete card.dataset.viewed;
+    });
+    document.getElementById('summary-warning').classList.remove('show');
+    // Scroll to top
+    document.getElementById('game-area').scrollTop = 0;
+  }
+
+  // Modal Logic
+  function openModal(id) {
+    document.getElementById(id).classList.add('active');
+  }
+  
+  function closeModal() {
+    document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
+  }
+
+  // Event Listeners
+  document.querySelectorAll('[data-close]').forEach(btn => {
+    btn.onclick = closeModal;
+  });
+
+  document.querySelectorAll('.modal').forEach(modal => {
+    modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+  });
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+</script>
+
+</body>
+</html>
