@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Парковки и СЗЗ: найдите пару</title>
+<style>
+  :root {
+    --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
+    --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
+    --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
+    --radius: 16px; --transition: 160ms ease;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px; background: var(--bg);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    color: var(--text); line-height: 1.4;
+  }
+  
+  .szz-wrap {
+    max-width: 900px; margin: 0 auto; background: var(--card);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow);
+  }
+  
+  .szz-header { 
+    padding: 24px; background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%); 
+    border-bottom: 1px solid var(--line); 
+  }
+  .szz-header h2 { margin: 0 0 8px; font-size: 1.35rem; font-weight: 600; color: var(--green); }
+  .szz-header p { margin: 0; font-size: 0.95rem; color: var(--muted); }
+  
+  .oleg-intro {
+    display: flex; gap: 12px; align-items: flex-start; padding: 16px 24px;
+    background: var(--green-soft-2); border-bottom: 1px solid var(--line);
+  }
+  .oleg-avatar { 
+    width: 40px; height: 40px; border-radius: 50%; background: var(--green); 
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 600; flex-shrink: 0; 
+  }
+  .oleg-text { font-size: 0.9rem; color: var(--text); line-height: 1.4; }
+  .oleg-text strong { display: block; margin-bottom: 4px; color: var(--green); font-weight: 600; }
+  
+  .instruction {
+    padding: 16px 24px; background: #fff; border-bottom: 1px solid var(--line);
+    font-size: 0.9rem; color: var(--text);
+  }
+  
+  .game-area { padding: 24px; }
+  
+  .pairs-container {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 24px;
+  }
+  
+  .parking-card {
+    background: var(--card); border: 2px solid var(--line); border-radius: 12px;
+    overflow: hidden; cursor: pointer; transition: var(--transition);
+  }
+  .parking-card:hover { border-color: var(--green); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(45,106,79,0.1); }
+  .parking-card.selected { border-color: var(--green); background: var(--green-soft); }
+  .parking-card.matched { border-color: var(--green); opacity: 0.7; pointer-events: none; }
+  
+  .parking-image {
+    width: 100%; height: 160px; background: #f0f4f2; display: flex;
+    align-items: center; justify-content: center; font-size: 3rem;
+  }
+  .parking-info { padding: 14px; }
+  .parking-title { font-weight: 600; font-size: 0.95rem; margin-bottom: 6px; color: var(--text); }
+  .parking-desc { font-size: 0.85rem; color: var(--muted); line-height: 1.3; }
+  
+  .description-card {
+    background: var(--card); border: 2px solid var(--line); border-radius: 12px;
+    padding: 16px; cursor: pointer; transition: var(--transition);
+    display: flex; flex-direction: column; justify-content: center;
+    min-height: 240px;
+  }
+  .description-card:hover { border-color: var(--green); background: var(--green-soft-2); }
+  .description-card.selected { border-color: var(--green); background: var(--green-soft); }
+  .description-card.matched { border-color: var(--green); opacity: 0.6; pointer-events: none; }
+  .description-text { font-size: 0.9rem; line-height: 1.4; color: var(--text); }
+  .description-hint { 
+    font-size: 0.8rem; color: var(--green); margin-top: 8px; font-style: italic; 
+    display: none; 
+  }
+  .description-card.selected .description-hint { display: block; }
+  
+  .controls {
+    display: flex; gap: 12px; justify-content: center; padding: 20px 24px;
+    border-top: 1px solid var(--line); background: #fff;
+  }
+  .btn-action {
+    padding: 12px 28px; border: none; border-radius: 8px; cursor: pointer;
+    font-size: 0.95rem; font-weight: 600; transition: var(--transition);
+  }
+  .btn-check { background: var(--green); color: #fff; }
+  .btn-check:hover:not(:disabled) { filter: brightness(0.95); }
+  .btn-check:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+  .btn-reset { background: #fff; color: var(--text); border: 1px solid var(--line); }
+  .btn-reset:hover { border-color: var(--green); background: var(--green-soft-2); }
+  
+  .summary {
+    padding: 20px 24px; background: var(--green-soft-2); border-top: 1px solid var(--line);
+    display: none;
+  }
+  .summary.show { display: block; }
+  .summary h3 { margin: 0 0 12px; color: var(--green); font-size: 1.05rem; }
+  .summary p { margin: 0 0 8px; font-size: 0.9rem; line-height: 1.4; color: var(--text); }
+  
+  .feedback-modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(31,42,36,0.45); display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; backdrop-filter: blur(3px);
+  }
+  .feedback-modal.active { display: flex; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  
+  .feedback-box {
+    background: #fff; border-radius: 12px; max-width: 500px; width: 100%;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.15); overflow: hidden; animation: slideUp 0.25s;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .feedback-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--green-soft-2);
+  }
+  .feedback-header h3 { margin: 0; font-size: 1.05rem; color: var(--green); }
+  .feedback-close {
+    background: none; border: none; font-size: 1.5rem; cursor: pointer;
+    color: var(--muted); line-height: 1;
+  }
+  .feedback-close:hover { color: var(--text); }
+  
+  .feedback-body { padding: 20px; }
+  .feedback-body p { margin: 0 0 12px; font-size: 0.9rem; line-height: 1.5; color: var(--text); }
+  .feedback-body strong { color: var(--green); }
+  .feedback-body .parking-type {
+    background: var(--green-soft); padding: 10px 12px; border-radius: 8px;
+    margin: 12px 0; border-left: 3px solid var(--green);
+  }
+  
+  .feedback-footer {
+    padding: 14px 20px; border-top: 1px solid var(--line); text-align: right;
+  }
+  .btn-feedback-close {
+    background: var(--green); color: #fff; border: none; padding: 10px 20px;
+    border-radius: 6px; cursor: pointer; font-weight: 500;
+  }
+  .btn-feedback-close:hover { filter: brightness(0.95); }
+  
+  @media (max-width: 768px) {
+    .pairs-container { grid-template-columns: 1fr; }
+    .parking-image { height: 120px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="szz-wrap">
+  <div class="szz-header">
+    <h2>Парковки и СЗЗ: найдите пару</h2>
+    <p>Определите, каким парковкам нужна санитарно-защитная зона</p>
+  </div>
+
+  <div class="oleg-intro">
+    <div class="oleg-avatar">О</div>
+    <div class="oleg-text">
+      <strong>Олег:</strong> Мне нужно разобраться, для каких парковок устанавливать СЗЗ. Помогите сопоставить типы парковок с правильными решениями по СЗЗ.
+    </div>
+  </div>
+
+  <div class="instruction">
+    Нажмите на карточку с парковкой, затем на соответствующее описание. После проверки вы увидите подробный разбор каждого случая.
+  </div>
+
+  <div class="game-area">
+    <div class="pairs-container">
+      <!-- Parking Cards -->
+      <div class="parking-card" data-id="open">
+        <div class="parking-image">🚗</div>
+        <div class="parking-info">
+          <div class="parking-title">Открытая наземная парковка у дома</div>
+          <div class="parking-desc">Асфальтированная площадка с разметкой, без навесов и построек</div>
+        </div>
+      </div>
+      
+      <div class="description-card" data-match="underground">
+        <div class="description-text">
+          <strong>Такой парковке нужна отдельная СЗЗ.</strong><br>
+          Это объект капитального строительства, должна стоять на учете НВОС
+        </div>
+        <div class="description-hint">Выбрана пара</div>
+      </div>
+      
+      <div class="parking-card" data-id="underground">
+        <div class="parking-image">🏢</div>
+        <div class="parking-info">
+          <div class="parking-title">Подземная парковка в ТЦ</div>
+          <div class="parking-desc">Многоуровневая подземная стоянка с системой вентиляции</div>
+        </div>
+      </div>
+      
+      <div class="description-card" data-match="open">
+        <div class="description-text">
+          <strong>Такой парковке СЗЗ не нужна.</strong><br>
+          Она не объект капитального строительства, на учет НВОС не ставится
+        </div>
+        <div class="description-hint">Выбрана пара</div>
+      </div>
+      
+      <div class="parking-card" data-id="multilevel">
+        <div class="parking-image">🏗</div>
+        <div class="parking-info">
+          <div class="parking-title">Многоуровневая парковка</div>
+          <div class="parking-desc">Отдельно стоящее здание парковки на 300+ машиномест</div>
+        </div>
+      </div>
+      
+      <div class="description-card" data-match="multilevel">
+        <div class="description-text">
+          <strong>Такая парковка будет частью объекта НВОС и капитального строительства,</strong><br>
+          для которого устанавливают СЗЗ
+        </div>
+        <div class="description-hint">Выбрана пара</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-action btn-reset" id="btn-reset">Начать заново</button>
+    <button class="btn-action btn-check" id="btn-check" disabled>Проверить результат</button>
+  </div>
+
+  <div class="summary" id="summary">
+    <h3>Что вы разобрали</h3>
+    <p>Вы определили, каким парковкам нужна СЗЗ. Главное правило: СЗЗ требуется для объектов капитального строительства, которые стоят на учете НВОС.</p>
+    <p><strong>Открытые площадки</strong> без построек не являются капитальными объектами. <strong>Подземные и многоуровневые парковки</strong> — это капитальные сооружения с инженерными системами, для них СЗЗ обязательна.</p>
+  </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="feedback-modal" id="feedback-modal">
+  <div class="feedback-box">
+    <div class="feedback-header">
+      <h3 id="feedback-title">Разбор решения</h3>
+      <button class="feedback-close" onclick="closeFeedback()">&times;</button>
+    </div>
+    <div class="feedback-body" id="feedback-body"></div>
+    <div class="feedback-footer">
+      <button class="btn-feedback-close" onclick="closeFeedback()">Понятно</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const parkingData = {
+    open: {
+      title: 'Открытая наземная парковка у дома',
+      needsSZZ: false,
+      explanation: 'Открытая асфальтированная площадка без навесов, ограждений и капитальных построек не считается объектом капитального строительства. Это элемент благоустройства территории.',
+      whyNoSZZ: 'Поскольку это не капитальный объект и не источник НВОС, СЗЗ не требуется. Достаточно соблюдения санитарных разрывов от жилых домов.',
+      keyPoint: 'Отсутствие капитальных конструкций и инженерных систем'
+    },
+    underground: {
+      title: 'Подземная парковка в ТЦ',
+      needsSZZ: true,
+      explanation: 'Подземная парковка — это капитальное сооружение с фундаментом, системами вентиляции, водоотведения и пожаротушения. Является частью торгово-развлекательного центра.',
+      whySZZ: 'Парковка входит в состав объекта НВОС (ТЦ), для которого устанавливается общая СЗЗ. Вентиляционные шахты могут быть источниками выбросов.',
+      keyPoint: 'Капитальное сооружение с инженерными системами, часть объекта НВОС'
+    },
+    multilevel: {
+      title: 'Многоуровневая парковка',
+      needsSZZ: true,
+      explanation: 'Отдельно стоящее многоуровневое здание парковки — это объект капитального строительства с фундаментом, перекрытиями, системами вентиляции и безопасности.',
+      whySZZ: 'Является самостоятельным объектом НВОС (источники выбросов от автомобилей, вентиляция). Для неё устанавливается СЗЗ по тем же правилам, что и для других капитальных объектов.',
+      keyPoint: 'Самостоятельный объект капитального строительства и НВОС'
+    }
+  };
+
+  let selectedParking = null;
+  let matches = {};
+  let checked = false;
+
+  const parkingCards = document.querySelectorAll('.parking-card');
+  const descriptionCards = document.querySelectorAll('.description-card');
+  const btnCheck = document.getElementById('btn-check');
+  const btnReset = document.getElementById('btn-reset');
+  const summary = document.getElementById('summary');
+
+  parkingCards.forEach(card => {
+    card.addEventListener('click', () => selectParking(card));
+  });
+
+  descriptionCards.forEach(card => {
+    card.addEventListener('click', () => selectDescription(card));
+  });
+
+  function selectParking(card) {
+    if (checked) return;
+    
+    // Remove previous selection
+    parkingCards.forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedParking = card.dataset.id;
+  }
+
+  function selectDescription(card) {
+    if (!selectedParking || checked) return;
+    
+    const matchType = card.dataset.match;
+    
+    // Check if correct match
+    if (matchType === selectedParking) {
+      // Correct match
+      card.classList.add('selected');
+      matches[selectedParking] = true;
+      
+      // Mark both cards as matched
+      document.querySelector(`.parking-card[data-id="${selectedParking}"]`).classList.add('matched');
+      card.classList.add('matched');
+      
+      // Show feedback
+      showFeedback(selectedParking, true);
+      
+      // Clear selection
+      selectedParking = null;
+      parkingCards.forEach(c => c.classList.remove('selected'));
+      
+      // Check if all matched
+      if (Object.keys(matches).length === 3) {
+        btnCheck.disabled = false;
+      }
+    } else {
+      // Wrong match - shake animation
+      card.style.animation = 'shake 0.5s';
+      setTimeout(() => {
+        card.style.animation = '';
+        card.classList.remove('selected');
+      }, 500);
+    }
+  }
+
+  function showFeedback(parkingId, isCorrect) {
+    const data = parkingData[parkingId];
+    const modal = document.getElementById('feedback-modal');
+    const title = document.getElementById('feedback-title');
+    const body = document.getElementById('feedback-body');
+    
+    title.textContent = isCorrect ? '✓ Верно!' : '✗ Неверно';
+    
+    body.innerHTML = `
+      <div class="parking-type">
+        <strong>${data.title}</strong>
+      </div>
+      <p><strong>Объяснение:</strong> ${data.explanation}</p>
+      <p><strong>СЗЗ:</strong> ${data.needsSZZ ? data.whySZZ : data.whyNoSZZ}</p>
+      <p style="background: var(--green-soft); padding: 10px; border-radius: 6px; margin-top: 12px;">
+        <strong>Ключевой момент:</strong> ${data.keyPoint}
+      </p>
+    `;
+    
+    modal.classList.add('active');
+  }
+
+  function closeFeedback() {
+    document.getElementById('feedback-modal').classList.remove('active');
+  }
+
+  btnCheck.addEventListener('click', () => {
+    if (checked) return;
+    checked = true;
+    
+    summary.classList.add('show');
+    btnCheck.style.display = 'none';
+    
+    // Scroll to summary
+    summary.scrollIntoView({ behavior: 'smooth' });
+  });
+
+  btnReset.addEventListener('click', () => {
+    location.reload();
+  });
+
+  // Add shake animation
+  const style = document.createElement('style');
+  style.textContent = `
+    @keyframes shake {
+      0%, 100% { transform: translateX(0); }
+      25% { transform: translateX(-10px); }
+      75% { transform: translateX(10px); }
+    }
+  `;
+  document.head.appendChild(style);
+</script>
+
+</body>
+</html>
