@@ -1,9 +1,10 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>4 причины не устанавливать СЗЗ</title>
+<title>Стоит ли устанавливать СЗЗ сейчас?</title>
 <style>
   :root {
     --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
@@ -20,160 +21,87 @@
   }
   
   .szz-wrap {
-    width: 100%; max-width: 680px; height: 700px; margin: 0 auto; background: var(--card);
-    border: 1px solid var(--line); border-radius: var(--radius);
-    overflow: hidden; box-shadow: var(--shadow);
-    display: flex; flex-direction: column;
+    max-width: 650px; max-height: 700px; background: var(--card);
+    margin: 0 auto; border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: var(--shadow);
   }
   
-  .szz-header { 
-    padding: 16px 20px; background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%); 
+  .szz-header {
+    padding: 20px 24px; background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%);
     border-bottom: 1px solid var(--line); flex-shrink: 0;
   }
-  .szz-header h2 { margin: 0 0 4px; font-size: 1.2rem; font-weight: 600; color: var(--green); }
-  .szz-header p { margin: 0; font-size: 0.85rem; color: var(--muted); }
+  .szz-header h2 { margin: 0 0 6px; font-size: 1.25rem; font-weight: 600; color: var(--green); }
+  .szz-header p { margin: 0; font-size: 0.9rem; color: var(--muted); }
+  
+  .top-actions { display: flex; gap: 6px; padding: 10px 24px; border-bottom: 1px solid var(--line); background: #fff; flex-shrink: 0; }
+  .btn-sm { padding: 6px 10px; border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 500; transition: var(--transition); color: var(--muted); }
+  .btn-sm:hover { border-color: var(--green); color: var(--green); background: var(--green-soft-2); }
   
   .oleg-intro {
-    display: flex; gap: 10px; align-items: flex-start; padding: 14px 20px;
+    display: flex; gap: 10px; align-items: flex-start; padding: 14px 24px;
     background: var(--green-soft-2); border-bottom: 1px solid var(--line); flex-shrink: 0;
   }
   .oleg-avatar { 
-    width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+    width: 36px; height: 36px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
     border: 2px solid #fff;
   }
   .oleg-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .oleg-text { font-size: 0.82rem; color: var(--text); line-height: 1.35; }
-  .oleg-text strong { display: block; margin-bottom: 2px; color: var(--green); font-weight: 600; font-size: 0.85rem; }
+  .oleg-text { font-size: 0.85rem; color: var(--text); line-height: 1.35; }
+  .oleg-text strong { display: block; margin-bottom: 3px; color: var(--green); font-weight: 600; font-size: 0.9rem; }
   
-  .instruction {
-    padding: 10px 20px; background: #fff; border-bottom: 1px solid var(--line);
-    font-size: 0.82rem; color: var(--muted); flex-shrink: 0;
+  .szz-body { padding: 20px 24px; overflow-y: auto; flex: 1; }
+  
+  .step-indicator {
+    display: flex; justify-content: center; gap: 6px; margin-bottom: 16px;
   }
-  
-  /* Scrollable Game Area */
-  .game-area { 
-    padding: 20px; position: relative; background: #fff; 
-    overflow-y: auto; flex: 1;
-    scrollbar-width: thin;
-    scrollbar-color: var(--line) transparent;
+  .step-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: var(--line); transition: var(--transition);
   }
+  .step-dot.active { background: var(--green); }
+  .step-dot.done { background: var(--green-soft); border: 1px solid var(--green); }
   
-  /* Grid Layout */
-  .cards-grid {
-    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  .step-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px; margin-bottom: 16px; display: none;
   }
+  .step-card.active { display: block; animation: fadeIn 0.3s; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
   
-  /* Flip Card Logic */
-  .flip-card {
-    background-color: transparent;
-    height: 200px; /* Fixed compact height */
-    perspective: 1000px;
-    cursor: pointer;
-  }
+  .step-title { font-weight: 600; font-size: 1rem; color: var(--text); margin-bottom: 10px; }
+  .step-desc { font-size: 0.9rem; color: var(--text); line-height: 1.4; margin-bottom: 14px; }
   
-  .flip-card-inner {
-    position: relative;
-    width: 100%;
-    height: 100%;
+  .decision-buttons { display: flex; gap: 10px; flex-wrap: wrap; }
+  .btn-decision {
+    flex: 1; min-width: 120px; padding: 10px 12px; border: 1px solid var(--line);
+    background: var(--card); border-radius: 8px; cursor: pointer;
+    font-size: 0.85rem; font-weight: 500; transition: var(--transition);
     text-align: center;
-    transition: transform 0.6s cubic-bezier(0.4, 0.0, 0.2, 1);
-    transform-style: preserve-3d;
-    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
-    border-radius: 12px;
+  }
+  .btn-decision:hover { border-color: var(--green); background: var(--green-soft-2); }
+  .btn-decision.yes { border-color: var(--green); color: var(--green); }
+  .btn-decision.no { border-color: var(--warning); color: var(--warning); }
+  
+  .progress-bar {
+    height: 4px; background: var(--line); border-radius: 2px; margin: 0 0 16px;
+    overflow: hidden; flex-shrink: 0;
+  }
+  .progress-fill {
+    height: 100%; background: var(--green); width: 0%;
+    transition: width 0.3s ease; border-radius: 2px;
   }
   
-  .flip-card.flipped .flip-card-inner {
-    transform: rotateY(180deg);
+  .summary-block {
+    display: none; background: var(--green-soft-2); border: 1px solid var(--line);
+    border-radius: 12px; padding: 16px; margin-top: 10px; animation: fadeIn 0.3s;
   }
+  .summary-block.show { display: block; }
+  .summary-block h4 { margin: 0 0 10px; font-size: 1rem; color: var(--green); }
+  .summary-block p { font-size: 0.9rem; color: var(--text); line-height: 1.4; margin-bottom: 8px; }
+  .summary-block ul { padding-left: 18px; margin: 8px 0; }
+  .summary-block li { font-size: 0.85rem; color: var(--text); margin-bottom: 4px; }
   
-  .flip-card-front, .flip-card-back {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    -webkit-backface-visibility: hidden;
-    backface-visibility: hidden;
-    border-radius: 12px;
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    padding: 16px;
-    border: 1px solid var(--line);
-  }
-  
-  /* Front Styling */
-  .flip-card-front {
-    background-color: var(--card);
-    align-items: center;
-  }
-  .flip-card-front:hover {
-    border-color: var(--green);
-    transform: translateY(-2px);
-    box-shadow: 0 6px 16px rgba(0,0,0,0.08);
-  }
-  .card-icon {
-    width: 40px; height: 40px; background: var(--green-soft); border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 1.2rem; margin-bottom: 10px; color: var(--green);
-  }
-  .card-title {
-    font-weight: 600; font-size: 0.9rem; color: var(--text); margin-bottom: 4px;
-  }
-  .card-hint {
-    font-size: 0.75rem; color: var(--muted);
-  }
-  
-  /* Back Styling */
-  .flip-card-back {
-    background-color: var(--green-soft-2);
-    color: var(--text);
-    transform: rotateY(180deg);
-    border: 2px solid var(--green);
-    align-items: flex-start;
-    text-align: left;
-    justify-content: space-between;
-  }
-  .memo-title {
-    font-weight: 700; color: var(--green); margin-bottom: 8px; font-size: 0.9rem;
-  }
-  .memo-text {
-    font-size: 0.8rem; line-height: 1.4; color: var(--text);
-  }
-  .memo-tag {
-    font-size: 0.7rem; color: var(--green); font-weight: 600; text-transform: uppercase;
-    background: #fff; padding: 4px 8px; border-radius: 4px; align-self: flex-start;
-  }
-  
-  /* Summary Warning Section */
-  .summary-warning {
-    margin-top: 20px; padding: 14px; 
-    background: var(--warning-soft); border: 1px solid var(--warning);
-    border-radius: 12px; 
-    display: none; animation: fadeIn 0.4s;
-  }
-  .summary-warning.show { display: block; }
-  
-  .warning-header {
-    display: flex; align-items: center; gap: 8px; margin-bottom: 8px;
-    font-weight: 600; color: var(--warning);
-  }
-  .warning-text {
-    font-size: 0.85rem; color: #4a1f10; line-height: 1.4;
-  }
-  .warning-text ul { margin: 6px 0; padding-left: 20px; }
-  
-  /* Controls */
-  .controls {
-    display: flex; gap: 10px; justify-content: center; padding: 16px 20px;
-    border-top: 1px solid var(--line); background: #fff; flex-shrink: 0;
-  }
-  .btn-action {
-    padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer;
-    font-size: 0.85rem; font-weight: 600; transition: var(--transition);
-  }
-  .btn-reset { background: #fff; color: var(--text); border: 1px solid var(--line); }
-  .btn-reset:hover { border-color: var(--green); background: var(--green-soft-2); }
-  
-  /* Modal */
   .modal {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(31,42,36,0.45); display: none; align-items: center; justify-content: center;
@@ -183,8 +111,9 @@
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   
   .modal-box {
-    background: #fff; border-radius: 12px; max-width: 440px; width: 100%;
+    background: var(--card); border-radius: 12px; max-width: 480px; width: 100%;
     box-shadow: 0 16px 40px rgba(0,0,0,0.15); overflow: hidden; animation: slideUp 0.25s;
+    max-height: 85vh; display: flex; flex-direction: column;
   }
   @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   
@@ -201,7 +130,17 @@
   .modal-close:hover { color: var(--text); }
   
   .modal-body { padding: 18px; }
-  .modal-body p { margin: 0 0 10px; font-size: 0.9rem; line-height: 1.5; color: var(--text); }
+  .modal-body p { margin: 0 0 12px; font-size: 0.9rem; line-height: 1.5; color: var(--text); }
+  .modal-body strong { color: var(--green); }
+  .modal-body .tip {
+    background: var(--green-soft); padding: 12px; border-radius: 8px;
+    border-left: 3px solid var(--green); font-size: 0.85rem; margin-top: 12px;
+  }
+  .modal-body .warning {
+    background: var(--warning-soft); padding: 12px; border-radius: 8px;
+    border-left: 3px solid var(--warning); font-size: 0.85rem; margin-top: 12px;
+    color: var(--warning);
+  }
   
   .modal-footer {
     padding: 12px 18px; border-top: 1px solid var(--line); text-align: right;
@@ -211,11 +150,17 @@
     border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.85rem;
   }
   .btn-modal-close:hover { filter: brightness(0.95); }
-
+  
+  .btn-next {
+    display: none; width: 100%; padding: 12px; border: none; border-radius: 8px;
+    background: var(--green); color: #fff; font-size: 0.9rem; font-weight: 600;
+    cursor: pointer; transition: var(--transition); margin-top: 12px;
+  }
+  .btn-next.show { display: block; }
+  .btn-next:hover { filter: brightness(0.95); }
+  
   @media (max-width: 680px) {
-    .szz-wrap { height: auto; min-height: 100vh; }
-    .flip-card { height: 180px; }
-    .cards-grid { grid-template-columns: 1fr; }
+    .szz-wrap { max-height: 100vh; border-radius: 0; border: none; }
   }
 </style>
 </head>
@@ -223,162 +168,267 @@
 
 <div class="szz-wrap">
   <div class="szz-header">
-    <h2>4 причины не устанавливать СЗЗ</h2>
-    <p>Карточки-памятки для принятия решений</p>
+    <h2>Стоит ли устанавливать СЗЗ сейчас?</h2>
+    <p>Чек-лист для принятия решения</p>
+  </div>
+
+  <div class="top-actions">
+    <button class="btn-sm" onclick="openModal('modal-rules')">Как работать</button>
+    <button class="btn-sm" onclick="openModal('modal-tips')">Советы Олегу</button>
   </div>
 
   <div class="oleg-intro">
     <div class="oleg-avatar"><img src="oleg.jpg" alt="Олег"></div>
     <div class="oleg-text">
-      <strong>Олег:</strong> Нам нужно понять, можно ли отказаться от СЗЗ для нашего завода. Я собрал 4 критерия. Нажмите на карточку, чтобы увидеть памятку с решением.
+      <strong>Олег:</strong> Я изучаю, нужно ли сейчас устанавливать СЗЗ для нашего предприятия. Помогите пройти по чек-листу и принять взвешенное решение.
     </div>
   </div>
 
-  <div class="instruction">
-    Нажмите на карточку, чтобы узнать подробности и условия отказа. Можно переворачивать сколько угодно раз.
-  </div>
+  <div class="szz-body">
+    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    <div class="step-indicator" id="step-indicator"></div>
 
-  <div class="game-area" id="game-area">
-    <div class="cards-grid">
-      
-      <!-- Card 1: Liquidation -->
-      <div class="flip-card" onclick="flipCard(this)">
-        <div class="flip-card-inner">
-          <div class="flip-card-front">
-            <div class="card-icon">🏗</div>
-            <div class="card-title">Ликвидация или разделение</div>
-            <div class="card-hint">Планируете реорганизацию?</div>
-          </div>
-          <div class="flip-card-back">
-            <div class="memo-title">Стоит повременить с СЗЗ</div>
-            <div class="memo-text">Если утвердите зону сейчас, а потом разделите завод и продадите участок, придется переделывать проектную документацию под новый объект. Это лишние траты.</div>
-            <div class="memo-tag">Совет: подождите реорганизации</div>
-          </div>
-        </div>
+    <!-- Step 1: Ликвидация/разделение -->
+    <div class="step-card active" id="step-1">
+      <div class="step-title">1. Планируется ликвидация или разделение предприятия?</div>
+      <div class="step-desc">
+        Если в ближайшее время вы планируете ликвидировать предприятие или разделить его на части, установление СЗЗ может создать сложности при продаже участков.
       </div>
-
-      <!-- Card 2: Distance -->
-      <div class="flip-card" onclick="flipCard(this)">
-        <div class="flip-card-inner">
-          <div class="flip-card-front">
-            <div class="card-icon">📏</div>
-            <div class="card-title">Объект стоит далеко</div>
-            <div class="card-hint">Расстояние > 2x нормы?</div>
-          </div>
-          <div class="flip-card-back">
-            <div class="memo-title">СЗЗ может не понадобиться</div>
-            <div class="memo-text">Если до жилой застройки или садов более чем в 2 раза превышает нормативный размер СЗЗ, устанавливать её нет смысла. Застройка не попадает в зону риска.</div>
-            <div class="memo-tag">Совет: проверьте расстояние</div>
-          </div>
-        </div>
+      <div class="decision-buttons">
+        <button class="btn-decision yes" onclick="handleAnswer(1, 'yes')">Да, планируется</button>
+        <button class="btn-decision no" onclick="handleAnswer(1, 'no')">Нет, не планируется</button>
       </div>
-
-      <!-- Card 3: Overlapping -->
-      <div class="flip-card" onclick="flipCard(this)">
-        <div class="flip-card-inner">
-          <div class="flip-card-front">
-            <div class="card-icon">🔄</div>
-            <div class="card-title">Перекрывающиеся зоны</div>
-            <div class="card-hint">Соседний завод ближе?</div>
-          </div>
-          <div class="flip-card-back">
-            <div class="memo-title">Войдите в сводную СЗЗ</div>
-            <div class="memo-text">Если ваше предприятие попало в зону влияния соседа, делать отдельную СЗЗ невыгодно. Предоставьте данные для формирования единой сводной СЗЗ на несколько заводов.</div>
-            <div class="memo-tag">Совет: согласуйте с соседями</div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Card 4: Calculations -->
-      <div class="flip-card" onclick="flipCard(this)">
-        <div class="flip-card-inner">
-          <div class="flip-card-front">
-            <div class="card-icon">📉</div>
-            <div class="card-title">Нулевые расчеты</div>
-            <div class="card-hint">ПДК не превышены?</div>
-          </div>
-          <div class="flip-card-back">
-            <div class="memo-title">Установление не требуется</div>
-            <div class="memo-text">Если расчеты рассеивания показывают, что на границе предприятия концентрация веществ не превышает ПДК, СЗЗ устанавливать не нужно. Нет риска — нет зоны.</div>
-            <div class="memo-tag">Совет: опирайтесь на расчеты</div>
-          </div>
-        </div>
-      </div>
+      <button class="btn-next" id="btn-next-1" onclick="nextStep(1)">Дальше</button>
     </div>
 
-    <!-- Summary Warning -->
-    <div class="summary-warning" id="summary-warning">
-      <div class="warning-header">⚠️ Важно понимать: отказ — это тоже работа</div>
-      <div class="warning-text">
-        <p>Отказ от СЗЗ — это не позиция «мы ничего не делаем». Чтобы доказать, что зона не нужна, придется выполнить почти тот же объем работ:</p>
-        <ul>
-          <li>Провести инвентаризацию источников выбросов.</li>
-          <li>Выполнить расчеты рассеивания и натурные замеры.</li>
-          <li>Подготовить проектное обоснование.</li>
-        </ul>
-        <p><strong>Итог:</strong> Официальное письмо от Роспотребнадзора, подтверждающее отсутствие необходимости в СЗЗ.</p>
+    <!-- Step 2: Удаленность -->
+    <div class="step-card" id="step-2">
+      <div class="step-title">2. Объект стоит далеко от других?</div>
+      <div class="step-desc">
+        Если предприятие расположено на расстоянии более чем в 2 раза превышающем нормативный размер СЗЗ от жилой застройки, садов, курортных зон и других предприятий.
+      </div>
+      <div class="decision-buttons">
+        <button class="btn-decision yes" onclick="handleAnswer(2, 'yes')">Да, стоит далеко</button>
+        <button class="btn-decision no" onclick="handleAnswer(2, 'no')">Нет, рядом есть объекты</button>
+      </div>
+      <button class="btn-next" id="btn-next-2" onclick="nextStep(2)">Дальше</button>
+    </div>
+
+    <!-- Step 3: Перекрывающиеся СЗЗ -->
+    <div class="step-card" id="step-3">
+      <div class="step-title">3. СЗЗ соседних предприятий перекрывают вашу?</div>
+      <div class="step-desc">
+        Если ваше предприятие находится в зоне влияния других заводов, и их СЗЗ уже покрывают вашу территорию, устанавливать отдельную СЗЗ может быть нецелесообразно.
+      </div>
+      <div class="decision-buttons">
+        <button class="btn-decision yes" onclick="handleAnswer(3, 'yes')">Да, перекрывают</button>
+        <button class="btn-decision no" onclick="handleAnswer(3, 'no')">Нет, своя зона нужна</button>
+      </div>
+      <button class="btn-next" id="btn-next-3" onclick="nextStep(3)">Дальше</button>
+    </div>
+
+    <!-- Step 4: Расчеты рассеивания -->
+    <div class="step-card" id="step-4">
+      <div class="step-title">4. Расчеты показывают, что ПДК не превышены?</div>
+      <div class="step-desc">
+        Если выполненные расчеты рассеивания на границе предприятия с жилой зоной показывают, что концентрации загрязняющих веществ не превышают ПДК.
+      </div>
+      <div class="decision-buttons">
+        <button class="btn-decision yes" onclick="handleAnswer(4, 'yes')">Да, не превышены</button>
+        <button class="btn-decision no" onclick="handleAnswer(4, 'no')">Нет, есть превышения</button>
+      </div>
+      <button class="btn-next" id="btn-next-4" onclick="nextStep(4)">Показать итог</button>
+    </div>
+
+    <!-- Summary -->
+    <div class="summary-block" id="summary">
+      <h4>Итоговая рекомендация</h4>
+      <p id="summary-text"></p>
+      <div class="tip" style="margin-top:12px;">
+        <strong>Примените к своему предприятию:</strong> Пройдите этот чек-лист для вашего объекта. Если хотя бы один пункт подходит – это повод обсудить с проектировщиками возможность отложить установление СЗЗ.
       </div>
     </div>
-  </div>
-
-  <div class="controls">
-    <button class="btn-action btn-reset" onclick="resetGame()">Начать заново</button>
   </div>
 </div>
 
-<!-- Rules Modal -->
+<!-- Modals -->
 <div class="modal" id="modal-rules">
   <div class="modal-box">
     <div class="modal-header"><h3>Как работать</h3><button class="modal-close" data-close>&times;</button></div>
     <div class="modal-body">
-      <p>В этом блоке собраны 4 ситуации, при которых можно избежать установления СЗЗ или отложить его.</p>
       <ul>
-        <li>Нажмите на карточку, чтобы прочитать памятку.</li>
-        <li>Изучите все 4 варианта (можно переворачивать обратно).</li>
-        <li>В конце появится важное предупреждение о процессе оформления отказа.</li>
+        <li>Отвечайте на вопросы по очереди, выбирая «Да» или «Нет».</li>
+        <li>После выбора откроется окно с пояснением и советом.</li>
+        <li>Закройте окно и нажмите «Дальше» для перехода к следующему вопросу.</li>
+        <li>В конце вы получите итоговую рекомендацию для вашего случая.</li>
       </ul>
     </div>
     <div class="modal-footer"><button class="btn-modal-close" data-close>Понятно</button></div>
   </div>
 </div>
 
-<script>
-  let flippedCount = 0;
-  const totalCards = 4;
+<div class="modal" id="modal-tips">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Советы Олегу</h3><button class="modal-close" data-close>&times;</button></div>
+    <div class="modal-body">
+      <p>Решение об установлении СЗЗ – это баланс между нормативными требованиями и практической целесообразностью.</p>
+      <ul>
+        <li><strong>Не спешите.</strong> Если предприятие планируется к реорганизации, подождите с проектом СЗЗ.</li>
+        <li><strong>Проверяйте соседей.</strong> Если рядом есть заводы с большими СЗЗ, ваша зона может «раствориться» в их границах.</li>
+        <li><strong>Доверяйте расчетам.</strong> Если рассеивание показывает безопасность на границе, это основание не устанавливать СЗЗ.</li>
+        <li><strong>Фиксируйте решения.</strong> Любое решение об отсрочке СЗЗ должно быть обосновано в проектной документации.</li>
+      </ul>
+    </div>
+    <div class="modal-footer"><button class="btn-modal-close" data-close>Понятно</button></div>
+  </div>
+</div>
 
-  function flipCard(card) {
-    // Toggle flip state
-    const isFlipped = card.classList.toggle('flipped');
-    
-    // Track if a NEW card has been viewed at least once
-    if (isFlipped && !card.dataset.viewed) {
-      card.dataset.viewed = 'true';
-      flippedCount++;
-      
-      // Show warning when all unique cards have been viewed
-      if (flippedCount === totalCards) {
-        setTimeout(() => {
-          const warningBlock = document.getElementById('summary-warning');
-          warningBlock.classList.add('show');
-          // Smooth scroll to warning
-          warningBlock.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-        }, 600);
+<div class="modal" id="modal-feedback">
+  <div class="modal-box">
+    <div class="modal-header"><h3 id="fb-title">Пояснение</h3><button class="modal-close" data-close>&times;</button></div>
+    <div class="modal-body" id="fb-body"></div>
+    <div class="modal-footer"><button class="btn-modal-close" data-close>Понятно</button></div>
+  </div>
+</div>
+
+<script>
+  const steps = [
+    {
+      id: 1,
+      yes: {
+        title: 'Рекомендуется отложить',
+        text: 'Если утвердить СЗЗ сейчас, а затем выделить и продать участок, потребуется переделывать проектную документацию с учетом нового объекта. Это дополнительные затраты и время.',
+        tip: 'Подождите с установлением СЗЗ до завершения реорганизации. Это сэкономит ресурсы и избежит доработок.',
+        type: 'warning'
+      },
+      no: {
+        title: 'Переходим к следующему пункту',
+        text: 'Если ликвидация или разделение не планируются, этот фактор не влияет на решение. Оцениваем другие критерии.',
+        tip: 'Зафиксируйте этот вывод в рабочей документации – он может пригодиться при согласовании проекта.',
+        type: 'tip'
       }
+    },
+    {
+      id: 2,
+      yes: {
+        title: 'Можно не устанавливать СЗЗ',
+        text: 'Если объект стоит на расстоянии более чем в 2 раза превышающем нормативный размер СЗЗ от других объектов, установление зоны может быть необязательным.',
+        tip: 'Подтвердите удаленность расчетами или картой. Это основание для отказа от установления СЗЗ в текущей ситуации.',
+        type: 'tip'
+      },
+      no: {
+        title: 'Учитываем соседние объекты',
+        text: 'Если рядом есть жилая застройка, сады, курортные зоны или другие предприятия, этот фактор требует установления СЗЗ или учета в сводной зоне.',
+        tip: 'Соберите данные о соседних объектах – они понадобятся для расчета границы СЗЗ или обоснования сводной зоны.',
+        type: 'warning'
+      }
+    },
+    {
+      id: 3,
+      yes: {
+        title: 'Рассмотрите сводную СЗЗ',
+        text: 'Если СЗЗ соседних предприятий перекрывают вашу территорию, устанавливать отдельную зону может быть нецелесообразно. Организация должна предоставлять данные для формирования сводной СЗЗ единой промплощадки.',
+        tip: 'Свяжитесь с соседними предприятиями и уточните статус их СЗЗ. Возможно, ваша зона уже учтена в их границах.',
+        type: 'tip'
+      },
+      no: {
+        title: 'Требуется своя СЗЗ',
+        text: 'Если перекрытия нет, ваше предприятие должно установить собственную СЗЗ по общим правилам.',
+        tip: 'Начните подготовку проектной документации для установления СЗЗ – это обязательный этап для вашего случая.',
+        type: 'warning'
+      }
+    },
+    {
+      id: 4,
+      yes: {
+        title: 'Установление СЗЗ не требуется',
+        text: 'Если расчеты рассеивания показывают, что концентрации загрязняющих веществ на границе с жилой зоной не превышают ПДК, установление СЗЗ не является обязательным.',
+        tip: 'Сохраните протоколы расчетов – они станут основанием для отказа от установления СЗЗ при проверках.',
+        type: 'tip'
+      },
+      no: {
+        title: 'Требуется установление СЗЗ',
+        text: 'Если превышения есть, необходимо установить СЗЗ для защиты населения и соблюдения нормативов.',
+        tip: 'Начните работу над проектом СЗЗ: расчеты рассеивания, программа замеров, согласование с Роспотребнадзором.',
+        type: 'warning'
+      }
+    }
+  ];
+
+  let currentStep = 1;
+  let answers = {};
+
+  // Render step indicators
+  function renderIndicators() {
+    const container = document.getElementById('step-indicator');
+    container.innerHTML = '';
+    for (let i = 1; i <= 4; i++) {
+      const dot = document.createElement('div');
+      dot.className = 'step-dot';
+      if (i < currentStep) dot.classList.add('done');
+      if (i === currentStep) dot.classList.add('active');
+      container.appendChild(dot);
+    }
+    // Update progress bar
+    document.getElementById('progress').style.width = `${(currentStep - 1) * 25}%`;
+  }
+
+  function handleAnswer(stepId, answer) {
+    answers[stepId] = answer;
+    const step = steps.find(s => s.id === stepId);
+    const data = step[answer];
+    
+    // Show feedback modal
+    const modal = document.getElementById('modal-feedback');
+    document.getElementById('fb-title').textContent = data.title;
+    
+    let body = `<p>${data.text}</p>`;
+    if (data.type === 'tip') {
+      body += `<div class="tip"><strong>Совет:</strong> ${data.tip}</div>`;
+    } else {
+      body += `<div class="warning"><strong>Внимание:</strong> ${data.tip}</div>`;
+    }
+    document.getElementById('fb-body').innerHTML = body;
+    
+    modal.classList.add('active');
+    
+    // Show next button after modal close
+    document.getElementById(`btn-next-${stepId}`).classList.add('show');
+  }
+
+  function nextStep(stepId) {
+    // Hide current step
+    document.getElementById(`step-${stepId}`).classList.remove('active');
+    document.getElementById(`btn-next-${stepId}`).classList.remove('show');
+    
+    if (stepId < 4) {
+      currentStep = stepId + 1;
+      document.getElementById(`step-${currentStep}`).classList.add('active');
+      renderIndicators();
+    } else {
+      // Show summary
+      generateSummary();
+      document.getElementById('summary').classList.add('show');
+      renderIndicators();
     }
   }
 
-  function resetGame() {
-    flippedCount = 0;
-    document.querySelectorAll('.flip-card').forEach(card => {
-      card.classList.remove('flipped');
-      delete card.dataset.viewed;
-    });
-    document.getElementById('summary-warning').classList.remove('show');
-    // Scroll to top
-    document.getElementById('game-area').scrollTop = 0;
+  function generateSummary() {
+    const yesCount = Object.values(answers).filter(a => a === 'yes').length;
+    const noCount = 4 - yesCount;
+    
+    let summary = '';
+    if (yesCount >= 2) {
+      summary = `<strong>Рекомендация:</strong> На основании ваших ответов, установление СЗЗ в текущий момент может быть отложено или не требуется. Рекомендуется зафиксировать обоснование в проектной документации и проконсультироваться с проектировщиками.`;
+    } else if (yesCount === 1) {
+      summary = `<strong>Рекомендация:</strong> Один из факторов позволяет рассмотреть отсрочку установления СЗЗ, но остальные требуют проработки. Рекомендуется подготовить проект СЗЗ с учетом специфики вашего случая.`;
+    } else {
+      summary = `<strong>Рекомендация:</strong> На основании ваших ответов, установление СЗЗ является необходимым. Рекомендуется начать работу над проектной документацией в ближайшее время.`;
+    }
+    
+    document.getElementById('summary-text').innerHTML = summary;
   }
 
-  // Modal Logic
   function openModal(id) {
     document.getElementById(id).classList.add('active');
   }
@@ -386,19 +436,22 @@
   function closeModal() {
     document.querySelectorAll('.modal').forEach(m => m.classList.remove('active'));
   }
-
-  // Event Listeners
+  
+  // Close modals
   document.querySelectorAll('[data-close]').forEach(btn => {
     btn.onclick = closeModal;
   });
-
+  
   document.querySelectorAll('.modal').forEach(modal => {
     modal.onclick = (e) => { if (e.target === modal) closeModal(); };
   });
-
+  
   document.addEventListener('keydown', e => {
     if (e.key === 'Escape') closeModal();
   });
+  
+  // Init
+  renderIndicators();
 </script>
 
 </body>
