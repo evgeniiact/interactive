@@ -24,7 +24,6 @@
     border: 1px solid var(--line); border-radius: var(--radius);
     overflow: hidden; box-shadow: var(--shadow);
     display: flex; flex-direction: column;
-    position: relative;
   }
   
   .szz-header { 
@@ -57,36 +56,40 @@
   
   /* Game Area */
   .game-area { 
-    padding: 16px 20px; position: relative; 
-    background: #fff;
+    padding: 20px; position: relative; background: #fff; flex: 1;
   }
   
-  /* SVG for Lines */
+  /* SVG Container for Lines */
   #lines-svg {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
     pointer-events: none; z-index: 5;
   }
-  #lines-svg line {
+  .connection-line {
     stroke: var(--green); stroke-width: 3; stroke-linecap: round;
-    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.1));
+    filter: drop-shadow(0 2px 4px rgba(45,106,79,0.25));
+  }
+  .connection-dot {
+    fill: var(--green); stroke: #fff; stroke-width: 2;
   }
   
   .pairs-container {
     display: grid; 
     grid-template-columns: 1fr 1fr; 
-    gap: 20px 30px;
-    position: relative;
-    z-index: 10;
+    gap: 24px 40px;
+    position: relative; z-index: 10;
   }
   
-  .column-label { font-size: 0.75rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; text-align: center; }
+  .column-label { 
+    font-size: 0.75rem; font-weight: 600; color: var(--muted); 
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; text-align: center; 
+  }
   
-  /* Cards - Uniform Size */
+  /* Cards - Fixed Height */
   .object-card, .impact-card {
     background: var(--card); border: 2px solid var(--line); border-radius: 12px;
     overflow: hidden; cursor: pointer; transition: var(--transition);
     display: flex; flex-direction: column;
-    aspect-ratio: 1.3; /* Enforce same shape */
+    height: 140px;
     box-shadow: 0 2px 6px rgba(0,0,0,0.04);
   }
   
@@ -101,30 +104,35 @@
   /* Matched State */
   .object-card.matched, .impact-card.matched { 
     border-color: var(--green); background: var(--green-soft-2); opacity: 0.85;
-    cursor: default;
   }
-  /* Allow clicking matched cards ONLY after check */
-  .object-card.matched.clickable, .impact-card.matched.clickable { cursor: pointer; opacity: 1; }
-  .object-card.matched.clickable:hover, .impact-card.matched.clickable:hover { transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+  .object-card.matched.clickable, .impact-card.matched.clickable { 
+    cursor: pointer; opacity: 1; 
+  }
+  .object-card.matched.clickable:hover, .impact-card.matched.clickable:hover { 
+    transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+  }
   
   .object-card.incorrect, .impact-card.incorrect { border-color: var(--error); background: var(--error-soft); }
   
-  /* Object Card Content */
+  /* Compact Text Blocks */
   .object-image {
-    width: 100%; height: 60%; background: #f0f4f2; display: flex;
+    width: 100%; height: 85px; background: #f0f4f2; display: flex;
     align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;
   }
   .object-image img { width: 100%; height: 100%; object-fit: cover; }
   .object-info { 
-    padding: 8px 10px; text-align: center; flex: 1; 
-    display: flex; align-items: center; justify-content: center; 
+    flex: 1; display: flex; align-items: center; justify-content: center; 
+    padding: 6px 8px; text-align: center; background: rgba(255,255,255,0.85);
   }
-  .object-title { font-weight: 600; font-size: 0.85rem; color: var(--text); }
+  .object-title { font-weight: 600; font-size: 0.82rem; color: var(--text); line-height: 1.2; }
   
-  /* Impact Card Content */
-  .impact-card { padding: 12px; align-items: center; justify-content: center; text-align: center; }
-  .impact-text strong { color: var(--green); display: block; margin-bottom: 4px; font-size: 0.9rem; }
-  .impact-desc { font-size: 0.78rem; color: var(--muted); }
+  /* Impact Cards - Light & Compact */
+  .impact-card { 
+    padding: 10px 12px; align-items: center; justify-content: center; text-align: center;
+    background: rgba(255,255,255,0.6); backdrop-filter: blur(4px);
+  }
+  .impact-text strong { color: var(--green); display: block; margin-bottom: 3px; font-size: 0.85rem; }
+  .impact-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.3; }
   
   /* Controls */
   .controls {
@@ -188,8 +196,9 @@
   .btn-modal-close:hover { filter: brightness(0.95); }
 
   @media (max-width: 680px) {
-    .pairs-container { gap: 12px; }
-    .object-card, .impact-card { aspect-ratio: auto; min-height: 100px; }
+    .pairs-container { gap: 16px 20px; }
+    .object-card, .impact-card { height: 120px; }
+    .object-image { height: 65px; }
   }
 </style>
 </head>
@@ -222,7 +231,7 @@
     <div class="pairs-container" id="pairs-container">
       
       <!-- Left Column: Objects -->
-      <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;flex-direction:column;gap:12px;">
         <div class="column-label">Объекты</div>
         
         <div class="object-card" data-id="airport" onclick="selectObject(this)">
@@ -247,7 +256,7 @@
       </div>
 
       <!-- Right Column: Impacts -->
-      <div style="display:flex;flex-direction:column;gap:10px;">
+      <div style="display:flex;flex-direction:column;gap:12px;">
         <div class="column-label">Воздействие</div>
         
         <div class="impact-card" data-match="chemical" onclick="selectImpact(this)">
@@ -282,7 +291,7 @@
   </div>
 
   <div class="controls">
-    <button class="btn-action btn-reset" onclick="resetGame()">Начать заново</button>
+    <button class="btn-action btn-reset" onclick="resetGame()">Пройти заново</button>
     <button class="btn-action btn-check" id="btn-check" onclick="checkGame()">Проверить результат</button>
   </div>
 </div>
@@ -382,7 +391,6 @@
   const pairs = {}; // leftId -> rightMatch
 
   function selectObject(card) {
-    // If checked, show details
     if (isChecked) {
       showDetails(card.dataset.id);
       return;
@@ -395,7 +403,6 @@
   }
 
   function selectImpact(card) {
-    // If checked, show details of corresponding object
     if (isChecked) {
       const leftId = card.dataset.matchedWith;
       if (leftId) showDetails(leftId);
@@ -404,12 +411,8 @@
     if (card.classList.contains('matched')) return;
     if (!selectedLeft) return;
 
-    // Create connection
     createConnection(selectedLeft, card.dataset.match);
-    card.classList.remove('selected'); // Remove selection style from right card
     document.querySelectorAll('.object-card').forEach(c => c.classList.remove('selected'));
-    
-    // Reset selection
     selectedLeft = null;
   }
 
@@ -417,7 +420,6 @@
     const leftCard = document.querySelector(`.object-card[data-id="${leftId}"]`);
     const rightCard = document.querySelector(`.impact-card[data-match="${rightMatch}"]`);
 
-    // Check if cards are already matched (should not happen with current logic but good to be safe)
     if (leftCard.classList.contains('matched') || rightCard.classList.contains('matched')) return;
 
     leftCard.classList.add('matched');
@@ -425,10 +427,7 @@
     leftCard.dataset.matchedWith = rightMatch;
     rightCard.dataset.matchedWith = leftId;
 
-    // Store pair
     pairs[leftId] = rightMatch;
-
-    // Draw line
     drawLine(leftCard, rightCard);
 
     matchedPairs++;
@@ -445,21 +444,50 @@
     const leftRect = leftCard.getBoundingClientRect();
     const rightRect = rightCard.getBoundingClientRect();
 
-    // Calculate centers relative to container
+    // Calculate coordinates relative to container
     const x1 = leftRect.right - containerRect.left;
     const y1 = leftRect.top + leftRect.height / 2 - containerRect.top;
     const x2 = rightRect.left - containerRect.left;
     const y2 = rightRect.top + rightRect.height / 2 - containerRect.top;
 
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', x1);
-    line.setAttribute('y1', y1);
-    line.setAttribute('x2', x2);
-    line.setAttribute('y2', y2);
-    line.dataset.left = leftCard.dataset.id;
-    line.dataset.right = rightCard.dataset.match;
+    const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
 
+    // Create line
+    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
+    line.setAttribute('class', 'connection-line');
+    
+    // Smooth animation setup
+    line.style.strokeDasharray = length;
+    line.style.strokeDashoffset = length;
+    line.style.transition = 'stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+    
     svg.appendChild(line);
+
+    // Trigger animation
+    requestAnimationFrame(() => {
+      line.style.strokeDashoffset = '0';
+    });
+
+    // Add polished endpoint dots (appear after line draws)
+    setTimeout(() => {
+      const c1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c1.setAttribute('cx', x1); c1.setAttribute('cy', y1); c1.setAttribute('r', 5);
+      c1.setAttribute('class', 'connection-dot');
+      c1.style.opacity = 0;
+      c1.style.transition = 'opacity 0.3s ease';
+      svg.appendChild(c1);
+      requestAnimationFrame(() => c1.style.opacity = 1);
+
+      const c2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c2.setAttribute('cx', x2); c2.setAttribute('cy', y2); c2.setAttribute('r', 5);
+      c2.setAttribute('class', 'connection-dot');
+      c2.style.opacity = 0;
+      c2.style.transition = 'opacity 0.3s ease';
+      svg.appendChild(c2);
+      requestAnimationFrame(() => c2.style.opacity = 1);
+    }, 500);
   }
 
   function checkGame() {
@@ -472,11 +500,9 @@
       const rightCard = document.querySelector(`.impact-card[data-match="${rightMatch}"]`);
 
       if (rightMatch === correctType) {
-        // Correct
         leftCard.classList.add('correct');
         if (rightCard) rightCard.classList.add('correct');
       } else {
-        // Incorrect
         leftCard.classList.add('incorrect');
         if (rightCard) rightCard.classList.add('incorrect');
         allCorrect = false;
@@ -484,21 +510,15 @@
     });
 
     if (allCorrect) {
-      // Show success modal
       setTimeout(() => {
         openModal('success-modal');
-        enableClickThrough();
+        document.querySelectorAll('.object-card, .impact-card').forEach(card => {
+          card.classList.add('clickable');
+        });
       }, 300);
     } else {
-      // If incorrect, just highlight errors, user must reset
-      alert('Есть ошибки в сопоставлении. Нажмите "Начать заново" и попробуйте снова.');
+      alert('Есть ошибки в сопоставлении. Нажмите "Пройти заново" и попробуйте снова.');
     }
-  }
-
-  function enableClickThrough() {
-    document.querySelectorAll('.object-card, .impact-card').forEach(card => {
-      card.classList.add('clickable');
-    });
   }
 
   function showDetails(id) {
@@ -526,11 +546,11 @@
     location.reload();
   }
   
-  // Redraw lines on resize
+  // Redraw lines on resize to keep them aligned
   window.addEventListener('resize', () => {
     if (matchedPairs > 0) {
       const svg = document.getElementById('lines-svg');
-      svg.innerHTML = ''; // Clear
+      svg.innerHTML = ''; 
       Object.entries(pairs).forEach(([leftId, rightMatch]) => {
         const leftCard = document.querySelector(`.object-card[data-id="${leftId}"]`);
         const rightCard = document.querySelector(`.impact-card[data-match="${rightMatch}"]`);
