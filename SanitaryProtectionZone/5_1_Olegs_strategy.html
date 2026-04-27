@@ -1,0 +1,278 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Стратегия Олега: Сокращение или отмена СЗЗ</title>
+<style>
+  :root {
+    --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
+    --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
+    --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
+    --radius: 16px; --transition: 160ms ease;
+    --warning: #b4532a; --warning-soft: #fff1ea;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px; background: var(--bg);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    color: var(--text); line-height: 1.4;
+  }
+  
+  .szz-wrap {
+    max-width: 650px; margin: 0 auto; background: var(--card);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; display: flex; flex-direction: column;
+    box-shadow: var(--shadow);
+  }
+  
+  .szz-header {
+    padding: 20px 24px; background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%);
+    border-bottom: 1px solid var(--line);
+  }
+  .szz-header h2 { margin: 0 0 6px; font-size: 1.3rem; font-weight: 600; color: var(--green); }
+  .szz-header p { margin: 0; font-size: 0.9rem; color: var(--muted); }
+  
+  .oleg-intro {
+    display: flex; gap: 12px; align-items: flex-start; padding: 16px 24px;
+    background: var(--green-soft-2); margin: 0; border-bottom: 1px solid var(--line);
+  }
+  .oleg-avatar {
+    width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; flex-shrink: 0;
+    background: #0ea5e9; /* Fallback color */
+  }
+  .oleg-text { font-size: 0.88rem; color: var(--text); line-height: 1.35; }
+  .oleg-text strong { display: block; margin-bottom: 4px; color: var(--green); font-weight: 600; font-size: 0.92rem; }
+  
+  .strategy-grid {
+    padding: 20px 24px;
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 12px;
+    flex: 1;
+    overflow-y: auto;
+  }
+  
+  .strategy-card {
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    padding: 16px; cursor: pointer; transition: var(--transition);
+    display: flex; gap: 12px; align-items: flex-start;
+    position: relative;
+  }
+  .strategy-card:hover { border-color: var(--green); background: var(--green-soft-2); }
+  .strategy-card.active { border-color: var(--green); background: var(--green-soft); }
+  
+  .icon-box {
+    width: 40px; height: 40px; border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 1.2rem; flex-shrink: 0;
+  }
+  .icon-wait { background: #fef3c7; color: #b45309; }
+  .icon-remote { background: #dbeafe; color: #1d4ed8; }
+  .icon-merge { background: #e0e7ff; color: #4338ca; }
+  .icon-calc { background: #dcfce7; color: #166534; }
+  
+  .card-content { flex: 1; }
+  .card-title { font-weight: 600; font-size: 0.95rem; color: var(--text); margin-bottom: 4px; }
+  .card-desc { font-size: 0.82rem; color: var(--muted); line-height: 1.4; }
+  
+  /* Modals */
+  .modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(31,42,36,0.45); display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; backdrop-filter: blur(3px);
+  }
+  .modal.active { display: flex; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  
+  .modal-box {
+    background: var(--card); border-radius: 14px; max-width: 500px; width: 100%;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.15); overflow: hidden; animation: slideUp 0.25s;
+    max-height: 85vh; display: flex; flex-direction: column;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .modal-header {
+    padding: 16px 20px; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--green-soft-2);
+  }
+  .modal-header h3 { margin: 0; font-size: 1.05rem; color: var(--green); font-weight: 700; }
+  .modal-close { background: none; border: none; font-size: 1.5rem; cursor: pointer; color: var(--muted); line-height: 1; }
+  .modal-close:hover { color: var(--text); }
+  
+  .modal-body { padding: 20px; font-size: 0.92rem; line-height: 1.5; color: var(--text); overflow-y: auto; }
+  .modal-body p { margin: 0 0 12px; }
+  .modal-body strong { color: var(--green); }
+  
+  .verdict-box {
+    padding: 12px; border-radius: 8px; margin-top: 16px;
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .verdict-red { background: #fff1ea; border: 1px solid #fca5a5; }
+  .verdict-green { background: #f0fdf4; border: 1px solid #86efac; }
+  .verdict-yellow { background: #fffbeb; border: 1px solid #fcd34d; }
+  
+  .modal-footer { padding: 14px 20px; border-top: 1px solid var(--line); text-align: right; }
+  .btn-ok { background: var(--green); color: #fff; border: none; padding: 10px 20px; border-radius: 8px; cursor: pointer; font-weight: 600; }
+  .btn-ok:hover { filter: brightness(0.95); }
+</style>
+</head>
+<body>
+
+<div class="szz-wrap">
+  <div class="szz-header">
+    <h2>Стратегия Олега: Сокращение или отмена СЗЗ</h2>
+    <p>Анализ вариантов для завода фенолформальдегидной смолы</p>
+  </div>
+
+  <div class="oleg-intro">
+    <img src="oleg.jpg" alt="Олег" class="oleg-avatar">
+    <div class="oleg-text">
+      <strong>Олег:</strong> Зона в 1 000 метров занимает полгорода. Жилье вплотную. Я хочу понять: действительно ли мне нужна такая огромная зона, или я могу её отменить или сократить? Какие аргументы я могу использовать?
+    </div>
+  </div>
+
+  <div class="strategy-grid">
+    <div style="font-size: 0.85rem; color: var(--muted); margin-bottom: 4px;">Нажмите на карточку, чтобы узнать стратегию:</div>
+    
+    <!-- Card 1 -->
+    <div class="strategy-card" onclick="openModal('modal1')">
+      <div class="icon-box icon-wait">⏳</div>
+      <div class="card-content">
+        <div class="card-title">Планируете ликвидацию или продажу?</div>
+        <div class="card-desc">Если предприятие скоро закроется или будет разделено.</div>
+      </div>
+    </div>
+
+    <!-- Card 2 -->
+    <div class="strategy-card" onclick="openModal('modal2')">
+      <div class="icon-box icon-remote">🏞️</div>
+      <div class="card-content">
+        <div class="card-title">Удаленное расположение (Пустырь)</div>
+        <div class="card-desc">Если вокруг нет жилья и нет чувствительных объектов.</div>
+      </div>
+    </div>
+
+    <!-- Card 3 -->
+    <div class="strategy-card" onclick="openModal('modal3')">
+      <div class="icon-box icon-merge">🤝</div>
+      <div class="card-content">
+        <div class="card-title">Слияние с соседями</div>
+        <div class="card-desc">Если ваша СЗЗ полностью накрывается соседним заводом.</div>
+      </div>
+    </div>
+
+    <!-- Card 4 -->
+    <div class="strategy-card" onclick="openModal('modal4')">
+      <div class="icon-box icon-calc">📊</div>
+      <div class="card-content">
+        <div class="card-title">Чистые расчеты (ПДК)</div>
+        <div class="card-desc">Если расчеты показывают безопасность без зоны.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modals -->
+
+<!-- Modal 1: Liquidation -->
+<div class="modal" id="modal1">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Стратегия: Ликвидация / Продажа</h3><button class="modal-close" data-close>&times;</button></div>
+    <div class="modal-body">
+      <p><strong>Суть правила:</strong> Если в ближайшее время планируется ликвидация или разделение предприятия, с установлением СЗЗ стоит повременить.</p>
+      <p>Если утвердить СЗЗ в текущих границах, а затем продать часть участка под жилье, придется переделывать проектную документацию с нуля.</p>
+      
+      <div class="verdict-box verdict-yellow">
+        <div style="font-size: 1.2rem">⚠️</div>
+        <div>
+          <strong>Вердикт для Олега:</strong> Его завод работает стабильно, ликвидация не планируется. Эта стратегия <strong>не подходит</strong> для решения проблемы с зоной.
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-ok" data-close>Понятно</button></div>
+  </div>
+</div>
+
+<!-- Modal 2: Remote -->
+<div class="modal" id="modal2">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Стратегия: Удаленность</h3><button class="modal-close" data-close>&times;</button></div>
+    <div class="modal-body">
+      <p><strong>Суть правила:</strong> Если объект стоит на расстоянии более чем в 2 раза превышающем нормативный размер СЗЗ от других объектов.</p>
+      <p>Если вокруг только поля, леса и нет жилых домов, садовых участков или лечебниц — СЗЗ можно не устанавливать.</p>
+      
+      <div class="verdict-box verdict-red">
+        <div style="font-size: 1.2rem">❌</div>
+        <div>
+          <strong>Вердикт для Олега:</strong> Город разросся. Жилые дома и торговый центр находятся прямо у границы 1 000 м. Эта стратегия <strong>невозможна</strong>.
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-ok" data-close>Понятно</button></div>
+  </div>
+</div>
+
+<!-- Modal 3: Merge -->
+<div class="modal" id="modal3">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Стратегия: Слияние зон</h3><button class="modal-close" data-close>&times;</button></div>
+    <div class="modal-body">
+      <p><strong>Суть правила:</strong> Если СЗЗ предприятий «перекрывают» друг друга.</p>
+      <p>Если Олег находится внутри большой санитарной зоны соседнего гиганта, ему может быть не выгодно делать свою зону. Организация должна предоставить данные для формирования <strong>сводной СЗЗ</strong> единой промплощадки.</p>
+      
+      <div class="verdict-box verdict-yellow">
+        <div style="font-size: 1.2rem">🤔</div>
+        <div>
+          <strong>Вердикт для Олега:</strong> Нужно проверить карту соседей. Если рядом есть завод с зоной 2 000 м, который полностью накрывает Олега, можно попробовать включить Олега в общую зону соседа.
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-ok" data-close>Понятно</button></div>
+  </div>
+</div>
+
+<!-- Modal 4: Calculation -->
+<div class="modal" id="modal4">
+  <div class="modal-box">
+    <div class="modal-header"><h3>Стратегия: Чистые расчеты</h3><button class="modal-close" data-close>&times;</button></div>
+    <div class="modal-body">
+      <p><strong>Суть правила:</strong> Если расчеты рассеивания на границе не превышают ПДК.</p>
+      <p>Это самый реальный способ <strong>сократить</strong> СЗЗ. Если расчеты показывают, что концентрации веществ безопасны уже на 500 м (а не на 1 000 м), проект меняется.</p>
+      
+      <div class="verdict-box verdict-green">
+        <div style="font-size: 1.2rem">✅</div>
+        <div>
+          <strong>Вердикт для Олега:</strong> Это лучший вариант! Олег заказывает новые расчеты рассеивания. Если они докажут, что выбросы безопасны ближе к заводу, СЗЗ можно сократить с 1 000 м до расчетного размера.
+        </div>
+      </div>
+    </div>
+    <div class="modal-footer"><button class="btn-ok" data-close>Понятно</button></div>
+  </div>
+</div>
+
+<script>
+  // Modal Logic
+  function openModal(id) {
+    document.getElementById(id).classList.add('active');
+  }
+  
+  // Close Logic (Event Delegation)
+  document.addEventListener('click', function(e) {
+    if (e.target.hasAttribute('data-close')) {
+      const modal = e.target.closest('.modal');
+      if(modal) modal.classList.remove('active');
+    }
+  });
+
+  // Close on outside click
+  document.querySelectorAll('.modal').forEach(modal => {
+    modal.addEventListener('click', (e) => {
+      if(e.target === modal) modal.classList.remove('active');
+    });
+  });
+</script>
+
+</body>
+</html>
