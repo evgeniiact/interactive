@@ -1,0 +1,737 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Игра: баланс мер и экономики СЗЗ</title>
+  <style>
+    :root {
+      --bg: #f6f4f0;
+      --surface: #fbfaf7;
+      --surface-2: #f1eee8;
+      --border: #d5d0c7;
+      --text: #26231c;
+      --muted: #6a665f;
+      --primary: #0d6b62;
+      --primary-soft: #d6e7e3;
+      --danger: #a13544;
+      --danger-soft: #f3dde1;
+      --warn: #9b5b1f;
+      --warn-soft: #f0e0d0;
+      --radius-lg: 18px;
+      --radius-xl: 22px;
+      --shadow: 0 14px 36px rgba(0,0,0,.08);
+      --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: var(--font);
+      background: radial-gradient(circle at 0 0, #ffffff 0, #f3f0ea 40%, #e7e0d4 100%);
+      color: var(--text);
+    }
+    button { font: inherit; cursor: pointer; border: none; }
+    .app {
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 1.5rem 1rem 3rem;
+    }
+    .screen { display: none; }
+    .screen.active { display: block; animation: fade .3s ease-out; }
+    @keyframes fade { from { opacity: 0; transform: translateY(6px);} to { opacity:1; transform: translateY(0);} }
+    .card {
+      background: rgba(251,250,247,.96);
+      border-radius: var(--radius-xl);
+      border: 1px solid rgba(213,208,199,.9);
+      box-shadow: var(--shadow);
+      padding: 1.75rem 1.75rem 2rem;
+    }
+    .grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: 1.5rem;
+      align-items: flex-start;
+    }
+    .eyebrow {
+      display: inline-block;
+      padding: .2rem .6rem;
+      border-radius: 999px;
+      background: var(--primary-soft);
+      color: var(--primary);
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .04em;
+      margin-bottom: .5rem;
+    }
+    h1 { font-size: 1.8rem; margin: 0 0 .75rem; }
+    h2 { font-size: 1.5rem; margin: 0 0 .75rem; }
+    p { margin: 0 0 .75rem; line-height: 1.6; }
+    .muted { color: var(--muted); }
+
+    /* Карта первого экрана */
+    .layout-map {
+      border-radius: var(--radius-lg);
+      background: linear-gradient(135deg,#dbe9d9,#e6ecdd,#eaddcf);
+      padding: 1.25rem;
+      position: relative;
+      overflow: hidden;
+      min-height: 260px;
+    }
+    .layout-map::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background-image:
+        radial-gradient(circle at 10% 10%, rgba(255,255,255,.4) 0 4px, transparent 5px),
+        radial-gradient(circle at 80% 80%, rgba(255,255,255,.4) 0 4px, transparent 5px);
+      opacity: .6;
+    }
+    .map-inner { position: relative; z-index: 1; min-height: 220px; }
+    .plant {
+      position: absolute;
+      left: 50%; top: 50%; transform: translate(-50%,-50%);
+      width: 140px; height: 110px;
+      border-radius: 18px;
+      background: #57687a;
+      color: #fff;
+      padding: .8rem;
+      font-size: .8rem;
+      box-shadow: 0 12px 26px rgba(0,0,0,.22);
+    }
+    .ring {
+      position: absolute;
+      left: 50%; top: 50%; transform: translate(-50%,-50%);
+      width: 260px; height: 260px;
+      border-radius: 50%;
+      border: 3px solid rgba(161,53,68,.85);
+      background: radial-gradient(circle, rgba(161,53,68,.16) 0, rgba(161,53,68,.03) 58%, transparent 60%);
+    }
+    .marker {
+      position: absolute;
+      background: rgba(252,251,248,.95);
+      border-radius: 999px;
+      border: 1px solid rgba(210,205,196,.9);
+      padding: .35rem .55rem;
+      font-size: .75rem;
+      white-space: nowrap;
+    }
+    .marker.h1 { left: 6%; top: 18%; }
+    .marker.h2 { right: 6%; top: 22%; }
+    .marker.h3 { left: 10%; bottom: 18%; }
+    .marker.sch { right: 8%; bottom: 32%; }
+    .marker.park { right: 10%; bottom: 10%; }
+
+    .actions { margin-top: 1.2rem; display: flex; flex-wrap: wrap; gap: .75rem; }
+    .btn {
+      border-radius: 999px;
+      padding: .55rem 1.2rem;
+      font-weight: 600;
+      border: 1px solid transparent;
+      background: #fff;
+    }
+    .btn-primary { background: var(--primary); color: #fff; }
+    .btn-primary:hover { background: #0b5750; }
+    .btn-ghost { background: transparent; border-color: var(--border); color: var(--muted); }
+    .btn-small {
+      padding: .25rem .6rem;
+      border-radius: 999px;
+      font-size: .8rem;
+      border: 1px solid #d5d0c7;
+      background: #fff;
+    }
+
+    /* Второй экран: компоновка */
+    .screen-2-wrapper {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+      max-height: calc(100vh - 96px);
+    }
+    .top-panel {
+      position: sticky;
+      top: 0;
+      z-index: 10;
+      background: rgba(251,250,247,.98);
+      border-radius: 18px;
+      border: 1px solid #d5d0c7;
+      padding: .9rem 1rem;
+      box-shadow: 0 8px 22px rgba(0,0,0,.04);
+    }
+    .top-panel-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr);
+      gap: .75rem;
+      align-items: center;
+    }
+    .mini-map {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+    }
+    .mini-circle-wrap {
+      width: 80px;
+      height: 80px;
+      border-radius: 50%;
+      border: 2px dashed rgba(161,53,68,.6);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #f1eee8;
+    }
+    .mini-circle {
+      width: 64px;
+      height: 64px;
+      border-radius: 50%;
+      border: 3px solid rgba(161,53,68,.9);
+      background: rgba(161,53,68,.12);
+      transform-origin: center center;
+      transition: transform .35s ease;
+    }
+    .mini-caption {
+      font-size: .8rem;
+      color: var(--muted);
+    }
+    .mini-caption strong { display: block; color: var(--text); }
+
+    .side-panel {
+      border-radius: var(--radius-lg);
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      padding: .7rem .8rem;
+      font-size: .82rem;
+    }
+    .metric-row { display: flex; justify-content: space-between; margin-bottom: .15rem; font-size: .8rem; }
+    .bar {
+      height: 9px;
+      background: #ddd6cb;
+      border-radius: 999px;
+      overflow: hidden;
+      margin-bottom: .35rem;
+    }
+    .bar > div {
+      height: 100%; width: 0;
+      border-radius: inherit;
+      background: linear-gradient(90deg,#0d6b62,#4b9a93);
+      transition: width .3s ease;
+    }
+    .bar.danger > div { background: linear-gradient(90deg,#a13544,#ca6d7b); }
+
+    .panelComment {
+      margin-top: .25rem;
+      padding: .45rem .55rem;
+      border-radius: 12px;
+      font-size: .8rem;
+    }
+    .panelComment.ok { background: var(--primary-soft); }
+    .panelComment.warn { background: var(--warn-soft); }
+    .panelComment.bad { background: var(--danger-soft); }
+
+    .cards-scroll {
+      flex: 1;
+      overflow-y: auto;
+      margin-top: .5rem;
+      padding-right: .25rem;
+    }
+
+    .measure-row {
+      border-radius: 12px;
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: .55rem .65rem;
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      gap: .5rem;
+      align-items: center;
+      font-size: .85rem;
+      margin-bottom: .35rem;
+    }
+    .measure-row.selected {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 2px rgba(13,107,98,.12);
+    }
+    .measure-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: baseline;
+      gap: .4rem;
+      margin-bottom: .1rem;
+    }
+    .measure-title {
+      font-weight: 600;
+      font-size: .9rem;
+    }
+    .measure-tag {
+      font-size: .7rem;
+      border-radius: 999px;
+      padding: .1rem .45rem;
+      white-space: nowrap;
+    }
+    .tag-good { background: #dceadc; color: #2f6d37; }
+    .tag-bad { background: #f2d8db; color: #9c3846; }
+    .tag-soft { background: #ece3d5; color: #6e6040; }
+    .measure-desc {
+      color: var(--muted);
+      font-size: .8rem;
+      max-height: 2.4em;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    .measure-numbers {
+      margin-top: .15rem;
+      font-size: .8rem;
+      color: var(--muted);
+      display: flex;
+      gap: .75rem;
+      flex-wrap: wrap;
+    }
+    .measure-actions {
+      display: flex;
+      flex-direction: column;
+      gap: .25rem;
+      align-items: flex-end;
+    }
+    .measure-comment {
+      display: none;
+      margin: .1rem 0 .45rem;
+      padding: .4rem .55rem;
+      font-size: .8rem;
+      border-radius: 10px;
+      background: #f1eee8;
+      color: var(--muted);
+    }
+    .measure-comment.show {
+      display: block;
+    }
+
+    .step-feedback {
+      margin-top: .5rem;
+      font-size: .82rem;
+    }
+    .step-feedback .msg {
+      padding: .5rem .6rem;
+      border-radius: 12px;
+    }
+    .msg.bad { background: var(--danger-soft); }
+    .msg.warn { background: var(--warn-soft); }
+
+    /* Итоговый экран */
+    .result-box {
+      margin-top: 1rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      background: var(--surface);
+      padding: 1.1rem 1.2rem;
+      font-size: .9rem;
+    }
+    .badge-score {
+      display: inline-flex;
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      background: #1c756b;
+      color: #fff;
+      font-size: .75rem;
+      font-weight: 600;
+      margin-bottom: .25rem;
+    }
+
+    @media (max-width: 880px) {
+      .grid { grid-template-columns: minmax(0,1fr); }
+    }
+  </style>
+</head>
+<body>
+  <main class="app">
+    <!-- Экран 1 -->
+    <section class="screen active" id="screen1">
+      <div class="card grid">
+        <div>
+          <span class="eyebrow">Финальный кейс</span>
+          <h1>Олег решает, какие меры реально сократят СЗЗ</h1>
+          <p>Олег пришел экологом на производство фенолформальдегидной смолы. Для завода когда-то без споров установили максимальную санитарно-защитную зону 1000 м. Город разросся, к границе зоны подошли дома, парк и новый жилой комплекс.</p>
+          <p class="muted">Застройщик предлагает оплатить 75% модернизации, если предприятие сможет обосновать меньшую зону. Ваша задача – помочь Олегу собрать пакет мероприятий так, чтобы он был и санитарно, и экономически осмысленным.</p>
+          <p>У вас есть условный бюджет 100 млн. На следующем экране вы выберете меры. Каждая из них одновременно тратит деньги и влияет или не влияет на снижение санитарного риска.</p>
+          <p>В финале вы увидите, к какому типу стратегии вы ближе: разумный баланс, «дорого, но мощно» или экономия вместо решения.</p>
+          <div class="actions">
+            <button class="btn btn-primary" onclick="goScreen(2)">Перейти к выбору решений</button>
+          </div>
+        </div>
+        <div class="layout-map" aria-hidden="true">
+          <div class="map-inner">
+            <div class="ring"></div>
+            <div class="plant">
+              <strong>Завод Олега</strong><br />
+              <span>СЗЗ 1000 м</span>
+            </div>
+            <div class="marker h1">Старая застройка</div>
+            <div class="marker h2">Новый ЖК</div>
+            <div class="marker h3">Жилые дома</div>
+            <div class="marker sch">Школа (проект)</div>
+            <div class="marker park">Лесопарк</div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Экран 2 -->
+    <section class="screen" id="screen2">
+      <div class="card">
+        <span class="eyebrow">Шаг 1</span>
+        <h2>Выберите пакет мер для завода</h2>
+        <p>У вас есть 100 млн. Можно выбрать любую комбинацию мер. Сверху вы видите, как меняются условный радиус СЗЗ, потраченный бюджет, снижение риска и «эффект на 10 млн».</p>
+        <p class="muted">Цель – не столько «купить» максимум, сколько собрать разумный баланс между санитарным эффектом и затратами.</p>
+
+        <div class="screen-2-wrapper">
+          <div class="top-panel">
+            <div class="top-panel-grid">
+              <div class="mini-map">
+                <div class="mini-circle-wrap">
+                  <div class="mini-circle" id="miniCircle"></div>
+                </div>
+                <div class="mini-caption">
+                  <strong>Условный радиус СЗЗ</strong>
+                  <span id="miniCaptionText">≈ 1000 м, пакет мер не выбран</span>
+                </div>
+              </div>
+              <div class="side-panel">
+                <div class="metric-row"><span>Бюджет</span><span id="budgetLabel"></span></div>
+                <div class="bar danger"><div id="budgetBar"></div></div>
+                <div class="metric-row"><span>Снижение риска</span><span id="riskLabel"></span></div>
+                <div class="bar"><div id="riskBar"></div></div>
+                <div class="metric-row"><span>Эффект на 10 млн</span><span id="effLabel"></span></div>
+                <div class="bar"><div id="effBar"></div></div>
+                <div id="panelComment" class="panelComment"></div>
+              </div>
+            </div>
+          </div>
+
+          <div class="cards-scroll" id="cardsScroll">
+            <!-- Карточки подставляются JS -->
+          </div>
+
+          <div class="actions">
+            <button class="btn btn-primary" onclick="finishGame()">Посмотреть результат переговоров</button>
+            <button class="btn btn-ghost" onclick="resetMeasures()">Сбросить выбор</button>
+          </div>
+          <div class="step-feedback" id="stepFeedback"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Экран 3 -->
+    <section class="screen" id="screen3">
+      <div class="card">
+        <span class="eyebrow">Итог</span>
+        <h2>Как выглядит ваш баланс мер и экономики</h2>
+        <div class="result-box">
+          <div id="resultHeader"></div>
+          <p id="resultText"></p>
+        </div>
+        <div class="grid" style="margin-top:1rem; gap:1rem;">
+          <div class="side-panel">
+            <span class="badge-score" id="badgeProfile"></span>
+            <p id="numbers"></p>
+          </div>
+          <div class="side-panel">
+            <h3 style="margin-top:0; margin-bottom:.4rem;">Главное в этом кейсе</h3>
+            <p id="lesson"></p>
+          </div>
+        </div>
+        <div class="actions" style="margin-top:1.1rem;">
+          <button class="btn btn-primary" onclick="goScreen(2)">Попробовать другой пакет</button>
+          <button class="btn btn-ghost" onclick="goScreen(1)">Вернуться к началу кейса</button>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    const measures = [
+      {
+        id: 'noise',
+        name: 'Шумозащитный экран',
+        desc: 'Снижает шумовое воздействие, но не влияет на концентрации химических загрязняющих веществ.',
+        cost: 20,
+        effect: 0,
+        type: 'bad',
+        tag: 'Про шум, не про выбросы',
+        comment: 'Экран важен для акустического комфорта, но в этом кейсе санитарная задача связана с веществами. Для пересмотра химической СЗЗ эта мера почти ничего не дает.'
+      },
+      {
+        id: 'raw',
+        name: 'Заменить сырье',
+        desc: 'Переходим на сырье с пониженным содержанием фенола и более чистые отвердители.',
+        cost: 35,
+        effect: 30,
+        type: 'good',
+        tag: 'Бьет по источнику выбросов',
+        comment: 'Вы уменьшаете образование фенола и формальдегида прямо в процессе. Это один из ключевых аргументов для снижения санитарного риска.'
+      },
+      {
+        id: 'vibration',
+        name: 'Виброизоляция',
+        desc: 'Уменьшает вибрацию, но наше производство не создает значимой вибрационной нагрузки.',
+        cost: 15,
+        effect: 0,
+        type: 'bad',
+        tag: 'Не про нашу проблему',
+        comment: 'Мера полезна на виброопасных объектах. Здесь она почти не связана с фенолом, формальдегидом и метанолом и только отнимает бюджет.'
+      },
+      {
+        id: 'scrubber',
+        name: 'Газоочистка (абсорбция)',
+        desc: 'Ставим абсорбционную установку на ключевые источники выбросов.',
+        cost: 30,
+        effect: 25,
+        type: 'good',
+        tag: 'Чистит выброс',
+        comment: 'Газоочистка уменьшает концентрации веществ на выходе. Это прямое снижение санитарной нагрузки на границе СЗЗ.'
+      },
+      {
+        id: 'green',
+        name: 'Озеленение вдоль забора',
+        desc: 'Повышает визуальный комфорт и немного улучшает микроклимат, но слабо влияет на расчет СЗЗ.',
+        cost: 10,
+        effect: 5,
+        type: 'soft',
+        tag: 'Имиджевая мера',
+        comment: 'Озеленение хорошо как дополнение, но не может заменить меры, которые реально режут выбросы ключевых веществ.'
+      },
+      {
+        id: 'reactors',
+        name: 'Герметичные реакторы',
+        desc: 'Меняем открытые или полугерметичные аппараты на герметичные хемореакторы замкнутого цикла.',
+        cost: 35,
+        effect: 25,
+        type: 'good',
+        tag: 'Урезает утечки',
+        comment: 'Вы снижаете неорганизованные выбросы и потери сырья. Для формальдегида и фенола это существенный вклад в снижение концентраций.'
+      },
+      {
+        id: 'filters',
+        name: '«Новая мера»: чистка фильтров',
+        desc: 'Регулярная очистка фильтров – обязательное условие эксплуатации газоочистки.',
+        cost: 10,
+        effect: 0,
+        type: 'bad',
+        tag: 'Эксплуатационный минимум',
+        comment: 'Это обязанность, а не «мероприятие». Если включать такие пункты в проект, экспертиза увидит попытку выдать норму за достижение.'
+      }
+    ];
+
+    const state = {
+      selected: new Set(),
+      budgetTotal: 100,
+      spent: 0,
+      effect: 0,
+      effPer10: 0
+    };
+
+    function goScreen(n) {
+      document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+      document.getElementById('screen' + n).classList.add('active');
+      if (n === 2) updatePanel();
+    }
+
+    function renderCards() {
+      const box = document.getElementById('cardsScroll');
+      box.innerHTML = '';
+      measures.forEach(m => {
+        const row = document.createElement('div');
+        row.className = 'measure-row';
+        if (state.selected.has(m.id)) row.classList.add('selected');
+        const tagClass = m.type === 'good' ? 'tag-good' : m.type === 'bad' ? 'tag-bad' : 'tag-soft';
+        row.innerHTML = `
+          <div>
+            <div class="measure-header">
+              <div class="measure-title">${m.name}</div>
+              <div class="measure-tag ${tagClass}">${m.tag}</div>
+            </div>
+            <div class="measure-desc">${m.desc}</div>
+            <div class="measure-numbers">
+              <span>Стоимость: ${m.cost} млн</span>
+              <span>Эффект: ${m.effect}</span>
+            </div>
+          </div>
+          <div class="measure-actions">
+            <button class="btn-small" data-action="toggle" data-id="${m.id}">${state.selected.has(m.id) ? 'Убрать' : 'Добавить'}</button>
+            <button class="btn-small" data-action="comment" data-id="${m.id}" style="background:#f1eee8; border-color:#d5d0c7; color:#6a665f;">Комментарий</button>
+          </div>
+        `;
+        const comment = document.createElement('div');
+        comment.className = 'measure-comment';
+        comment.dataset.commentId = m.id;
+        comment.textContent = m.comment;
+        box.appendChild(row);
+        box.appendChild(comment);
+      });
+    }
+
+    function recompute() {
+      let spent = 0;
+      let eff = 0;
+      state.selected.forEach(id => {
+        const m = measures.find(x => x.id === id);
+        if (!m) return;
+        spent += m.cost;
+        eff += m.effect;
+      });
+      state.spent = spent;
+      state.effect = eff;
+      if (spent > 0) {
+        state.effPer10 = +(eff / (spent / 10)).toFixed(2);
+      } else {
+        state.effPer10 = 0;
+      }
+    }
+
+    function updateMiniCircle() {
+      const circle = document.getElementById('miniCircle');
+      const caption = document.getElementById('miniCaptionText');
+      const effect = state.effect;
+      const baseRadius = 1000;
+      const newRadius = Math.round(baseRadius * (1 - effect / 200)); // слегка нелинейно, чтобы не схлопывалось
+      const scale = Math.max(0.6, 1 - effect * 0.003);
+      circle.style.transform = 'scale(' + scale + ')';
+      if (effect === 0) {
+        caption.textContent = '≈ 1000 м, пакет мер не выбран';
+      } else {
+        caption.textContent = '≈ ' + newRadius + ' м, с учетом выбранных мер';
+      }
+    }
+
+    function updatePanel() {
+      recompute();
+      const budgetLabel = document.getElementById('budgetLabel');
+      const riskLabel = document.getElementById('riskLabel');
+      const effLabel = document.getElementById('effLabel');
+      const budgetBar = document.getElementById('budgetBar');
+      const riskBar = document.getElementById('riskBar');
+      const effBar = document.getElementById('effBar');
+      const comment = document.getElementById('panelComment');
+
+      budgetLabel.textContent = state.spent + ' из ' + state.budgetTotal + ' млн';
+      riskLabel.textContent = state.effect + ' из 100';
+      effLabel.textContent = state.effPer10.toFixed(2);
+
+      const budgetPct = Math.min(100, (state.spent / state.budgetTotal) * 100);
+      budgetBar.style.width = budgetPct + '%';
+      riskBar.style.width = Math.min(100, state.effect) + '%';
+      const effPct = Math.min(100, state.effPer10 * 100 / 1.2);
+      effBar.style.width = effPct + '%';
+
+      updateMiniCircle();
+
+      let text = '';
+      let cls = 'panelComment';
+
+      if (state.spent === 0 && state.effect === 0) {
+        text = 'Мер пока нет. СЗЗ остается такой же, как была.';
+        cls += ' warn';
+      } else if (state.effect < 50 && state.spent > 0) {
+        text = 'Расходы есть, но риск снижается слабо. Для СЗЗ такой пакет выглядит декоративно.';
+        cls += ' bad';
+      } else if (state.effect >= 70 && state.effPer10 >= 0.8 && state.spent <= state.budgetTotal) {
+        text = 'Санитарный эффект заметный, и на каждый 10 млн есть понятный результат. Это хороший баланс.';
+        cls += ' ok';
+      } else if (state.effect >= 70 && state.effPer10 < 0.8) {
+        text = 'Риск снижен сильно, но цена высока. Такой пакет потребует жесткого экономического обоснования.';
+        cls += ' warn';
+      } else if (state.effect >= 50 && state.effect < 70) {
+        text = 'Риск снижается, но до уверенного уровня не дотягивает. Пакет пограничный.';
+        cls += ' warn';
+      } else {
+        text = 'Комбинация мер пока не дает сильного санитарного эффекта.';
+        cls += ' warn';
+      }
+
+      comment.className = cls;
+      comment.textContent = text;
+
+      const stepFeedback = document.getElementById('stepFeedback');
+      if (state.spent > state.budgetTotal) {
+        stepFeedback.innerHTML = '<div class="msg bad">Бюджет превышен. В реальном проекте такой пакет не пройдет без серьезной корректировки.</div>';
+      } else {
+        stepFeedback.innerHTML = '';
+      }
+    }
+
+    function toggleMeasure(id) {
+      if (state.selected.has(id)) {
+        state.selected.delete(id);
+      } else {
+        state.selected.add(id);
+      }
+      renderCards();
+      updatePanel();
+    }
+
+    function toggleComment(id) {
+      const comment = document.querySelector('.measure-comment[data-comment-id="' + id + '"]');
+      if (!comment) return;
+      comment.classList.toggle('show');
+    }
+
+    function resetMeasures() {
+      state.selected.clear();
+      renderCards();
+      updatePanel();
+    }
+
+    function finishGame() {
+      recompute();
+      const spent = state.spent;
+      const eff = state.effect;
+      const eff10 = state.effPer10;
+
+      let header = '';
+      let text = '';
+      let badge = '';
+      let lesson = '';
+
+      if (eff >= 70 && eff10 >= 0.8 && spent <= state.budgetTotal) {
+        header = 'Вы нашли рабочий баланс между санитарным эффектом и затратами';
+        text = 'Вы собрали пакет, который реально снижает риск по фенолу, формальдегиду и метанолу и при этом не перегревает бюджет. Такой проект можно защищать и санитарно, и экономически.';
+        badge = 'Профиль: сильный баланс';
+        lesson = 'В практике эколога важно не только знать, какие меры уменьшают концентрации веществ, но и уметь объяснить, почему именно такой набор затрат оправдан. Здесь вы удержали обе части задачи.';
+      } else if (eff >= 70 && eff10 < 0.8 && spent <= state.budgetTotal) {
+        header = 'Пакет сильный по экологии, но тяжелый по деньгам';
+        text = 'Санитарный эффект высокий, но цена велика. Часть средств уходит на меры с сомнительной отдачей. В реальном проекте такой пакет потребует переработки, чтобы убрать лишние решения.';
+        badge = 'Профиль: дорогой сильный пакет';
+        lesson = 'Слишком дорогие решения могут быть не менее проблемными, чем слабые. Эколог должен уметь предложить варианты, где санитарный выигрыш не разрушает экономику проекта.';
+      } else if (eff < 70) {
+        header = 'Экономия не заменила решение санитарной задачи';
+        text = 'Вы сохранили часть бюджета, но санитарный риск остается на уровне, недостаточном для уверенного разговора о сокращении СЗЗ. Девелопер может быть доволен затратами, но санитарный врач будет смотреть на превышения, а не на экономию.';
+        badge = 'Профиль: недотягивающий пакет';
+        lesson = 'Если меры не уменьшают выбросы ключевых веществ до безопасного уровня, проект по сокращению СЗЗ останется на бумаге. Экономия здесь не компенсирует нехватку санитарного эффекта.';
+      }
+
+      document.getElementById('resultHeader').innerHTML = '<strong>' + header + '</strong>';
+      document.getElementById('resultText').textContent = text;
+      document.getElementById('badgeProfile').textContent = badge;
+      document.getElementById('numbers').textContent =
+        'Потрачено ' + spent + ' из 100 млн. Снижение риска ' + eff + ' из 100. Эффект на 10 млн ' + eff10.toFixed(2) + '.';
+      document.getElementById('lesson').textContent = lesson;
+      goScreen(3);
+    }
+
+    // Инициализация
+    renderCards();
+    updatePanel();
+
+    // Делегирование кликов по карточкам
+    document.getElementById('cardsScroll').addEventListener('click', function(e) {
+      const btn = e.target.closest('button[data-action]');
+      if (!btn) return;
+      const action = btn.dataset.action;
+      const id = btn.dataset.id;
+      if (action === 'toggle') {
+        toggleMeasure(id);
+      } else if (action === 'comment') {
+        toggleComment(id);
+      }
+    });
+  </script>
+</body>
+</html>
