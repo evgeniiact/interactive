@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Олег: баланс мер и СЗЗ</title>
+  <title>Олег: многошаговый кейс по СЗЗ</title>
   <style>
     :root {
       --bg: #f6f4f0;
@@ -47,6 +47,7 @@
       overflow: hidden;
       display: flex;
       flex-direction: column;
+      position: relative;
     }
     .app {
       flex: 1;
@@ -74,6 +75,7 @@
       height: 100%;
       display: flex;
       flex-direction: column;
+      overflow: hidden;
     }
     .eyebrow {
       display: inline-block;
@@ -115,6 +117,7 @@
       object-fit: cover;
       display: block;
     }
+
     .layout-map {
       border-radius: 16px;
       background: var(--surface-2);
@@ -163,22 +166,142 @@
       background: #fff;
     }
 
-    .screen-2-wrapper {
-      display: flex;
-      flex-direction: column;
-      gap: .5rem;
+    /* Экран 2: многошаговый сценарий */
+    .scenario-layout {
+      display: grid;
+      grid-template-columns: auto minmax(0,1fr);
+      gap: .6rem;
       height: 100%;
       overflow: hidden;
     }
+    .scenario-nav {
+      width: 145px;
+      border-right: 1px solid #e0dbd2;
+      padding-right: .5rem;
+      display: flex;
+      flex-direction: column;
+      gap: .3rem;
+      font-size: .8rem;
+    }
+    .scenario-step {
+      display: flex;
+      align-items: center;
+      gap: .35rem;
+      padding: .25rem .4rem;
+      border-radius: 999px;
+      border: 1px solid transparent;
+      background: transparent;
+      cursor: pointer;
+      text-align: left;
+      color: var(--muted);
+    }
+    .scenario-step__num {
+      width: 18px;
+      height: 18px;
+      border-radius: 50%;
+      background: #d5d0c7;
+      color: #fff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: .7rem;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    .scenario-step__label {
+      white-space: nowrap;
+    }
+    .scenario-step.active {
+      border-color: #0d6b62;
+      background: #e5f1ee;
+      color: #26231c;
+    }
+    .scenario-step.active .scenario-step__num {
+      background: #0d6b62;
+    }
+    .scenario-step.done .scenario-step__num {
+      background: #4b9a93;
+    }
+
+    .scenario-main {
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+    .scenario-main-inner {
+      flex: 1;
+      overflow-y: auto;
+      padding-left: .2rem;
+    }
+    .scenario-question {
+      margin-bottom: .4rem;
+      font-size: .9rem;
+    }
+    .scenario-options {
+      display: flex;
+      flex-direction: column;
+      gap: .3rem;
+      margin-bottom: .4rem;
+    }
+    .scenario-option {
+      display: flex;
+      align-items: flex-start;
+      gap: .35rem;
+      padding: .35rem .45rem;
+      border-radius: 10px;
+      border: 1px solid #d5d0c7;
+      background: #fbfaf7;
+      font-size: .84rem;
+      cursor: pointer;
+    }
+    .scenario-option input {
+      margin-top: .15rem;
+    }
+    .scenario-feedback {
+      margin-top: .35rem;
+      font-size: .84rem;
+      padding: .4rem .45rem;
+      border-radius: 10px;
+      background: #f5f5f3;
+      color: var(--muted);
+    }
+
+    .result-box {
+      margin-top: .7rem;
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      background: #fbfaf7;
+      padding: .8rem .9rem;
+      font-size: .86rem;
+    }
+    .badge-score {
+      display: inline-flex;
+      padding: .15rem .5rem;
+      border-radius: 999px;
+      background: #1c756b;
+      color: #fff;
+      font-size: .75rem;
+      font-weight: 600;
+      margin-bottom: .25rem;
+    }
+    .result-grid {
+      display: grid;
+      grid-template-columns: minmax(0,1.1fr) minmax(0,1fr);
+      gap: .75rem;
+      margin-top: .7rem;
+    }
+
+    /* Встроенный шаг 3 с выбором мер */
     .top-panel {
       position: sticky;
       top: 0;
-      z-index: 5;
+      z-index: 2;
       background: rgba(255,255,255,.98);
-      border-radius: 16px;
+      border-radius: 12px;
       border: 1px solid #d5d0c7;
       padding: .6rem .7rem;
       box-shadow: 0 6px 18px rgba(0,0,0,.04);
+      margin-bottom: .4rem;
     }
     .top-panel-grid {
       display: grid;
@@ -250,7 +373,6 @@
     .bar.danger > div {
       background: linear-gradient(90deg,#a13544,#ca6d7b);
     }
-
     .panelComment {
       margin-top: .2rem;
       padding: .4rem .45rem;
@@ -262,9 +384,8 @@
     .panelComment.bad { background: var(--danger-soft); }
 
     .cards-scroll {
-      flex: 1;
+      max-height: 220px;
       overflow-y: auto;
-      margin-top: .4rem;
       padding-right: .25rem;
     }
     .cards-grid {
@@ -348,135 +469,9 @@
     .msg.bad { background: var(--danger-soft); }
     .msg.warn { background: var(--warn-soft); }
 
-    .result-box {
-      margin-top: .7rem;
-      border-radius: var(--radius-lg);
-      border: 1px solid var(--border);
-      background: #fbfaf7;
-      padding: .8rem .9rem;
-      font-size: .86rem;
-    }
-    .badge-score {
-      display: inline-flex;
-      padding: .15rem .5rem;
-      border-radius: 999px;
-      background: #1c756b;
-      color: #fff;
-      font-size: .75rem;
-      font-weight: 600;
-      margin-bottom: .25rem;
-    }
-    .result-grid {
-      display: grid;
-      grid-template-columns: minmax(0,1.1fr) minmax(0,1fr);
-      gap: .75rem;
-      margin-top: .7rem;
-    }
-
-    .szz-steps {
-      margin-top: 1.2rem;
-      padding-top: .8rem;
-      border-top: 1px solid #e0dbd2;
-    }
-    .szz-steps__title {
-      margin: 0 0 .35rem;
-      font-size: .98rem;
-    }
-    .szz-steps__lead {
-      margin: 0 0 .7rem;
-      font-size: .86rem;
-      color: #6a665f;
-    }
-    .szz-steps__timeline {
-      display: flex;
-      flex-wrap: wrap;
-      gap: .4rem;
-      align-items: center;
-    }
-    .szz-step {
-      display: inline-flex;
-      align-items: center;
-      gap: .3rem;
-      padding: .25rem .55rem;
-      border-radius: 999px;
-      border: 1px solid #d5d0c7;
-      background: #fff;
-      font-size: .78rem;
-      color: #26231c;
-      cursor: pointer;
-    }
-    .szz-step__num {
-      width: 18px;
-      height: 18px;
-      border-radius: 50%;
-      background: #0d6b62;
-      color: #fff;
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      font-size: .7rem;
-      font-weight: 600;
-    }
-    .szz-step__label {
-      white-space: nowrap;
-    }
-
-    .szz-modal {
-      position: fixed;
-      inset: 0;
-      display: none;
-      align-items: center;
-      justify-content: center;
-      z-index: 1000;
-    }
-    .szz-modal.active {
-      display: flex;
-    }
-    .szz-modal__backdrop {
-      position: absolute;
-      inset: 0;
-      background: rgba(0,0,0,.3);
-    }
-    .szz-modal__dialog {
-      position: relative;
-      z-index: 1;
-      max-width: 460px;
-      width: calc(100% - 2rem);
-      background: #ffffff;
-      border-radius: 18px;
-      border: 1px solid #d5d0c7;
-      box-shadow: 0 18px 40px rgba(0,0,0,.22);
-      padding: 1.1rem 1.2rem 1rem;
-      font-size: .9rem;
-    }
-    .szz-modal__title {
-      margin: 0 0 .4rem;
-      font-size: 1rem;
-    }
-    .szz-modal__text {
-      margin: 0 0 .7rem;
-      font-size: .86rem;
-      color: #26231c;
-    }
-    .szz-modal__footer {
-      display: flex;
-      justify-content: flex-end;
-    }
-    .szz-modal__close {
-      position: absolute;
-      top: .4rem;
-      right: .6rem;
-      border-radius: 50%;
-      width: 22px;
-      height: 22px;
-      border: 1px solid #d5d0c7;
-      background: #fbfaf7;
-      font-size: .9rem;
-      line-height: 1;
-      cursor: pointer;
-    }
-
     @media (max-width: 720px) {
+      .scenario-layout { grid-template-columns: minmax(0,1fr); }
+      .scenario-nav { display: none; }
       .cards-grid { grid-template-columns: minmax(0,1fr); }
       .result-grid { grid-template-columns: minmax(0,1fr); }
     }
@@ -485,7 +480,7 @@
 <body>
   <div class="app-wrapper">
     <main class="app">
-      <!-- Экран 1 -->
+      <!-- Экран 1: ввод -->
       <section class="screen active" id="screen1">
         <div class="card">
           <div class="top-row">
@@ -494,70 +489,80 @@
             </div>
             <div>
               <span class="eyebrow">Финальный кейс</span>
-              <h1>Олег решает, какие меры реально сократят СЗЗ</h1>
+              <h1>Олег и проект санитарно-защитной зоны</h1>
             </div>
           </div>
           <p>Олег работает экологом на производстве фенолформальдегидной смолы. Для завода установлена санитарно-защитная зона 1000 м. Городская застройка приблизилась к границе зоны: рядом появились жилые дома и новый жилой комплекс.</p>
-          <p class="muted">Застройщик готов софинансировать модернизацию, если предприятие обоснует сокращение СЗЗ. Ваша задача – выбрать пакет мероприятий, который снижает санитарный риск и не выходит за рамки бюджета.</p>
-          <p>В игре есть условный бюджет 100 млн. На следующем экране вы выберете меры. Каждая мера по-разному влияет на выбросы и затратную часть.</p>
-          <p>В финале вы увидите, к какому типу решения ближе ваш набор: сбалансированному, избыточно дорогому или недостаточному по санитарному эффекту.</p>
+          <p class="muted">Застройщик готов софинансировать модернизацию, если предприятие обоснует сокращение СЗЗ. Олегу предстоит пройти весь цикл работ – от постановки задачи до мониторинга.</p>
+          <p>В интерактиве вы примете решения на ключевых этапах: формулировании задачи для руководства, сборе исходных данных, выборе технических мер, работе с проектом и расчетами, организации замеров, согласовании с Роспотребнадзором и дальнейшем сопровождении зоны.</p>
           <div class="layout-map" aria-hidden="true">
             <img src="szz.jpg" alt="Схема предприятия Олега и санитарно-защитной зоны" />
           </div>
           <div class="actions">
-            <button class="btn btn-primary" onclick="goScreen(2)">Перейти к выбору решений</button>
+            <button class="btn btn-primary" onclick="goScreen(2)">Перейти к этапам процесса</button>
           </div>
         </div>
       </section>
 
-      <!-- Экран 2 -->
+      <!-- Экран 2: многошаговый сценарий -->
       <section class="screen" id="screen2">
         <div class="card">
-          <span class="eyebrow">Шаг 1</span>
-          <h2>Выберите пакет мер для завода</h2>
-          <p>Отметьте меры, которые помогут обосновать сокращение СЗЗ. В верхней панели отображаются условный радиус зоны, расходы и санитарный эффект.</p>
-          <div class="screen-2-wrapper">
-            <div class="top-panel">
-              <div class="top-panel-grid">
-                <div class="mini-map">
-                  <div class="mini-circle-wrap">
-                    <div class="mini-circle" id="miniCircle"></div>
-                  </div>
-                  <div class="mini-caption">
-                    <strong>Условный радиус СЗЗ</strong>
-                    <span id="miniCaptionText">≈ 1000 м, пакет мер не выбран</span>
-                  </div>
-                </div>
-                <div class="side-panel">
-                  <div class="metric-row"><span>Бюджет</span><span id="budgetLabel"></span></div>
-                  <div class="bar danger"><div id="budgetBar"></div></div>
-                  <div class="metric-row"><span>Снижение риска</span><span id="riskLabel"></span></div>
-                  <div class="bar"><div id="riskBar"></div></div>
-                  <div class="metric-row"><span>Эффект на 10 млн</span><span id="effLabel"></span></div>
-                  <div class="bar"><div id="effBar"></div></div>
-                  <div id="panelComment" class="panelComment"></div>
-                </div>
+          <span class="eyebrow">Сценарий</span>
+          <h2>Этапы работы Олега по СЗЗ</h2>
+          <p class="muted" style="margin-bottom:.6rem;">Выберите варианты действий на каждом этапе. После выбора вы увидите разбор ситуации. На этапе 3 вы соберете пакет мероприятий и оцените баланс между санитарным эффектом и затратами.</p>
+          <div class="scenario-layout">
+            <nav class="scenario-nav">
+              <button class="scenario-step active" data-step="1">
+                <span class="scenario-step__num">1</span>
+                <span class="scenario-step__label">Решение</span>
+              </button>
+              <button class="scenario-step" data-step="2">
+                <span class="scenario-step__num">2</span>
+                <span class="scenario-step__label">Исходные данные</span>
+              </button>
+              <button class="scenario-step" data-step="3">
+                <span class="scenario-step__num">3</span>
+                <span class="scenario-step__label">Мероприятия</span>
+              </button>
+              <button class="scenario-step" data-step="4">
+                <span class="scenario-step__num">4</span>
+                <span class="scenario-step__label">Расчеты</span>
+              </button>
+              <button class="scenario-step" data-step="5">
+                <span class="scenario-step__num">5</span>
+                <span class="scenario-step__label">Замеры</span>
+              </button>
+              <button class="scenario-step" data-step="6">
+                <span class="scenario-step__num">6</span>
+                <span class="scenario-step__label">Роспотребнадзор</span>
+              </button>
+              <button class="scenario-step" data-step="7">
+                <span class="scenario-step__num">7</span>
+                <span class="scenario-step__label">ЕГРН</span>
+              </button>
+              <button class="scenario-step" data-step="8">
+                <span class="scenario-step__num">8</span>
+                <span class="scenario-step__label">Мониторинг</span>
+              </button>
+            </nav>
+            <div class="scenario-main">
+              <div class="scenario-main-inner" id="scenarioContainer">
+                <!-- сюда подставляются шаги 1,2,4-8 или игра шаг 3 -->
+              </div>
+              <div class="actions">
+                <button class="btn btn-ghost" onclick="goScreen(1)">Назад к описанию кейса</button>
+                <button class="btn btn-primary" onclick="goResult()">Перейти к общему разбору</button>
               </div>
             </div>
-
-            <div class="cards-scroll">
-              <div class="cards-grid" id="cardsGrid"></div>
-            </div>
-
-            <div class="actions">
-              <button class="btn btn-primary" onclick="finishGame()">Посмотреть результат переговоров</button>
-              <button class="btn btn-ghost" onclick="resetMeasures()">Сбросить выбор</button>
-            </div>
-            <div class="step-feedback" id="stepFeedback"></div>
           </div>
         </div>
       </section>
 
-      <!-- Экран 3 -->
+      <!-- Экран 3: итог -->
       <section class="screen" id="screen3">
         <div class="card">
           <span class="eyebrow">Итог</span>
-          <h2>Разбор вашего решения</h2>
+          <h2>Общий разбор решений по кейсу Олега</h2>
           <div class="result-box">
             <div id="resultHeader"></div>
             <p id="resultText"></p>
@@ -573,83 +578,213 @@
             </div>
           </div>
           <div class="result-box" style="margin-top:.7rem;">
-            <h3>Что можно было бы улучшить</h3>
+            <h3>Что можно было бы скорректировать</h3>
             <p id="improve"></p>
           </div>
-
-          <section class="szz-steps">
-            <h3 class="szz-steps__title">Что происходит после выбора мер на реальном предприятии</h3>
-            <p class="szz-steps__lead">
-              В игре вы собрали пакет мероприятий и оценили его влияние на бюджет и санитарный риск. На реальном предприятии за этим следует последовательность шагов. Нажмите на этап, чтобы посмотреть краткое содержание работы.
-            </p>
-            <div class="szz-steps__timeline">
-              <button class="szz-step" data-step="1">
-                <span class="szz-step__num">1</span>
-                <span class="szz-step__label">Решение</span>
-              </button>
-              <button class="szz-step" data-step="2">
-                <span class="szz-step__num">2</span>
-                <span class="szz-step__label">Исходные данные</span>
-              </button>
-              <button class="szz-step" data-step="3">
-                <span class="szz-step__num">3</span>
-                <span class="szz-step__label">Мероприятия</span>
-              </button>
-              <button class="szz-step" data-step="4">
-                <span class="szz-step__num">4</span>
-                <span class="szz-step__label">Расчеты</span>
-              </button>
-              <button class="szz-step" data-step="5">
-                <span class="szz-step__num">5</span>
-                <span class="szz-step__label">Замеры</span>
-              </button>
-              <button class="szz-step" data-step="6">
-                <span class="szz-step__num">6</span>
-                <span class="szz-step__label">Роспотребнадзор</span>
-              </button>
-              <button class="szz-step" data-step="7">
-                <span class="szz-step__num">7</span>
-                <span class="szz-step__label">ЕГРН</span>
-              </button>
-              <button class="szz-step" data-step="8">
-                <span class="szz-step__num">8</span>
-                <span class="szz-step__label">Мониторинг</span>
-              </button>
-            </div>
-          </section>
-
           <div class="actions" style="margin-top:.7rem;">
-            <button class="btn btn-primary" onclick="goScreen(2)">Попробовать другой пакет</button>
-            <button class="btn btn-ghost" onclick="goScreen(1)">Вернуться к началу кейса</button>
+            <button class="btn btn-primary" onclick="goScreen(2)">Вернуться к этапам процесса</button>
+            <button class="btn btn-ghost" onclick="goScreen(1)">С начала кейса</button>
           </div>
         </div>
       </section>
     </main>
   </div>
 
-  <div class="szz-modal" id="szzModal" aria-hidden="true">
-    <div class="szz-modal__backdrop" data-role="close"></div>
-    <div class="szz-modal__dialog" role="dialog" aria-modal="true" aria-labelledby="szzModalTitle">
-      <button class="szz-modal__close" data-role="close" type="button">×</button>
-      <h3 class="szz-modal__title" id="szzModalTitle"></h3>
-      <p class="szz-modal__text" id="szzModalText"></p>
-      <div class="szz-modal__footer">
-        <button class="btn" data-role="close" type="button">Понятно</button>
-      </div>
-    </div>
-  </div>
-
   <script>
+    // Состояние по шагам 1,2,4-8
+    const scenarioState = {
+      1: null,
+      2: null,
+      3: null, // сюда будем писать профиль по мероприятиям
+      4: null,
+      5: null,
+      6: null,
+      7: null,
+      8: null
+    };
+
+    const stepsMeta = {
+      1: {
+        title: 'Этап 1. Решение руководства и постановка задачи',
+        question: 'Олег готовит служебную записку руководству по вопросу санитарно-защитной зоны. Как корректнее сформулировать задачу?',
+        options: [
+          {
+            id: '1a',
+            text: 'Сформулировать цель как сокращение СЗЗ любой ценой для реализации проекта застройщика.',
+            score: -1,
+            feedback: 'Фокус только на интересах застройщика без оценки санитарных рисков и технических возможностей создает для предприятия регуляторные риски.'
+          },
+          {
+            id: '1b',
+            text: 'Зафиксировать, что сокращение СЗЗ невозможно, и предложить отказ от проекта без анализа вариантов модернизации.',
+            score: 0,
+            feedback: 'Полный отказ без анализа мер не отражает роль эколога как специалиста, который предлагает варианты управления риском.'
+          },
+          {
+            id: '1c',
+            text: 'Поставить задачу как оценку возможности сокращения СЗЗ через модернизацию и пересмотр расчетов с учетом санитарных требований.',
+            score: 2,
+            feedback: 'Такое формулирование показывает руководству и застройщику реальную рамку: сначала меры и расчеты, затем выводы по СЗЗ.'
+          }
+        ]
+      },
+      2: {
+        title: 'Этап 2. Исходные данные для проекта СЗЗ',
+        question: 'Перед расчетами СЗЗ необходимо обновить исходные данные. Какой подход выбрать?',
+        options: [
+          {
+            id: '2a',
+            text: 'Использовать существующую инвентаризацию пятилетней давности без актуализации.',
+            score: -2,
+            feedback: 'Невыверенные исходные данные делают расчеты ненадежными. Такой подход повышает риск отказа при экспертизе.'
+          },
+          {
+            id: '2b',
+            text: 'Обновить только список источников, не оценивая изменения режимов работы и фона.',
+            score: 0,
+            feedback: 'Частичная актуализация позволяет сдвинуться с места, но оставляет пробелы по режимам и фоновым концентрациям.'
+          },
+          {
+            id: '2c',
+            text: 'Провести полную актуализацию исходных данных с учетом источников, режимов, фона и состояния газоочистки.',
+            score: 2,
+            feedback: 'Полная актуализация исходных данных дает основу для корректных расчетов и убедительного проекта СЗЗ.'
+          }
+        ]
+      },
+      4: {
+        title: 'Этап 4. Расчеты рассеивания и проект',
+        question: 'Подрядчик представил проект СЗЗ с расчетами. В нем не учтен фон и сокращен радиус зоны до значений, удобных для застройки. Как действовать?',
+        options: [
+          {
+            id: '4a',
+            text: 'Согласовать проект без замечаний, чтобы не задерживать сроки строительства.',
+            score: -2,
+            feedback: 'Согласование без анализа методики и исходных данных повышает риск отказа и ответственности для предприятия.'
+          },
+          {
+            id: '4b',
+            text: 'Вернуть проект на доработку с конкретными замечаниями по методике и учету фона.',
+            score: 2,
+            feedback: 'Формулирование конкретных замечаний помогает получить документ, который можно защищать перед регулятором.'
+          },
+          {
+            id: '4c',
+            text: 'Устно попросить подрядчика «подправить» проект, не фиксируя замечания письменно.',
+            score: 0,
+            feedback: 'Не зафиксированные замечания усложняют контроль качества и ответственность сторон.'
+          }
+        ]
+      },
+      5: {
+        title: 'Этап 5. Натурные замеры на границе зоны',
+        question: 'Нужно организовать натурные измерения воздуха на границе проектируемой СЗЗ. Как определить точки и режимы?',
+        options: [
+          {
+            id: '5a',
+            text: 'Проводить измерения в удобных для доступа точках в дневное время и при благоприятной погоде.',
+            score: -1,
+            feedback: 'Такой подход удобен организационно, но мало информативен для оценки максимальных концентраций.'
+          },
+          {
+            id: '5b',
+            text: 'Определить точки по расчётным максимумам и проводить замеры в репрезентативные режимы работы и неблагоприятные метеоусловия.',
+            score: 2,
+            feedback: 'Привязка к расчетным максимумам и репрезентативным условиям делает результаты замеров значимыми для обоснования СЗЗ.'
+          },
+          {
+            id: '5c',
+            text: 'Сделать ограниченный набор замеров только у жилой застройки без учета прогнозных максимумов.',
+            score: 0,
+            feedback: 'Такой вариант частично показывает ситуацию для жителей, но не закрывает весь спектр условий.'
+          }
+        ]
+      },
+      6: {
+        title: 'Этап 6. Согласование с Роспотребнадзором',
+        question: 'Олег готовит пакет документов для Роспотребнадзора. Как формализовать подачу проекта?',
+        options: [
+          {
+            id: '6a',
+            text: 'Направить только сам отчет по расчетам без пояснений и сопроводительных материалов.',
+            score: -1,
+            feedback: 'Минимальный комплект усложняет экспертизу и может привести к дополнительным запросам и задержкам.'
+          },
+          {
+            id: '6b',
+            text: 'Приложить отчет, протоколы замеров и структурированное сопроводительное письмо с обоснованием мер и выводов.',
+            score: 2,
+            feedback: 'Структурированная подача облегчает экспертизу и показывает, что предприятие контролирует весь процесс.'
+          },
+          {
+            id: '6c',
+            text: 'Передать пакет через посредника без участия эколога в подготовке сопроводительных документов.',
+            score: 0,
+            feedback: 'Отсутствие участия эколога в формировании позиции предприятия снижает управляемость процесса согласования.'
+          }
+        ]
+      },
+      7: {
+        title: 'Этап 7. Фиксация зоны в ЕГРН и градостроительных документах',
+        question: 'После получения положительного заключения по СЗЗ какие действия нужны со стороны предприятия?',
+        options: [
+          {
+            id: '7a',
+            text: 'Ограничиться хранением заключения в архиве предприятия.',
+            score: -1,
+            feedback: 'Если сведения о СЗЗ не попадают в ЕГРН и градостроительные документы, юридически значимые ограничения могут не учитываться.'
+          },
+          {
+            id: '7b',
+            text: 'Инициировать внесение сведений о СЗЗ в ЕГРН и убедиться, что они учтены в документах планировки территории.',
+            score: 2,
+            feedback: 'Фиксация зоны в реестрах и градостроительных документах делает решение по СЗЗ юридически значимым.'
+          },
+          {
+            id: '7c',
+            text: 'Передать заключение застройщику и не контролировать дальнейшие действия.',
+            score: 0,
+            feedback: 'Перенос ответственности на третьих лиц без контроля со стороны предприятия увеличивает риски несогласованного использования территории.'
+          }
+        ]
+      },
+      8: {
+        title: 'Этап 8. Мониторинг и последующие изменения',
+        question: 'Через год после проекта предприятие увеличивает объем производства. Какова роль эколога?',
+        options: [
+          {
+            id: '8a',
+            text: 'Сохранить действующую СЗЗ без пересмотра, если нет жалоб.',
+            score: -1,
+            feedback: 'Изменение производительности и выбросов может потребовать пересмотра проекта СЗЗ независимо от жалоб.'
+          },
+          {
+            id: '8b',
+            text: 'Оценить изменения выбросов и принять решение о необходимости актуализации проекта СЗЗ.',
+            score: 2,
+            feedback: 'Связка изменений в технологическом режиме и актуализации СЗЗ соответствует практике управления рисками.'
+          },
+          {
+            id: '8c',
+            text: 'Ограничиться внутренним мониторингом без анализа влияния на СЗЗ.',
+            score: 0,
+            feedback: 'Отсутствие связи между мониторингом и статусом СЗЗ делает систему управления зоной формальной.'
+          }
+        ]
+      }
+    };
+
+    // Шаг 3: игра по мероприятиям
     const measures = [
       {
         id: 'noise',
         name: 'Шумозащитный экран',
-        desc: 'Понижает уровень шума для соседей, но не меняет состав выбросов.',
+        desc: 'Понижает уровень шума, но не меняет состав выбросов.',
         cost: 20,
         effect: 0,
         type: 'bad',
         tag: 'Про шум',
-        comment: 'Экран полезен при жалобах на шум. Здесь ключевая проблема в химических веществах, поэтому для обоснования СЗЗ эта мера вторична.'
+        comment: 'Экран актуален при проблемах с шумом, но в данном кейсе ключевой вопрос связан с химическими веществами.'
       },
       {
         id: 'raw',
@@ -659,7 +794,7 @@
         effect: 30,
         type: 'good',
         tag: 'Состав сырья',
-        comment: 'Снижение содержания фенола и формальдегида в исходном сырье уменьшает санитарно значимые выбросы уже на этапе синтеза.'
+        comment: 'Снижение содержания фенола и формальдегида в исходном сырье напрямую уменьшает санитарно значимые выбросы.'
       },
       {
         id: 'vibration',
@@ -669,7 +804,7 @@
         effect: 0,
         type: 'bad',
         tag: 'Про вибрацию',
-        comment: 'Мера нужна, когда есть риск по вибронагрузке. В этом кейсе речь о феноле, формальдегиде и метаноле, поэтому санитарный эффект для СЗЗ минимален.'
+        comment: 'Мера уместна при рисках по вибронагрузке. Для задач по СЗЗ в этом кейсе она практически не влияет на результат.'
       },
       {
         id: 'scrubber',
@@ -679,7 +814,7 @@
         effect: 25,
         type: 'good',
         tag: 'Очистка выброса',
-        comment: 'Газоочистка уменьшает концентрации веществ в выбросе. Это прямое снижение санитарного риска на границе СЗЗ.'
+        comment: 'Газоочистка снижает концентрации веществ в выбросе и является прямым инструментом управления санитарным риском.'
       },
       {
         id: 'green',
@@ -689,7 +824,7 @@
         effect: 5,
         type: 'soft',
         tag: 'Внешняя среда',
-        comment: 'Насаждения частично влияют на пылевую и газовую нагрузку, но для пересмотра СЗЗ этого недостаточно. Это дополнение, а не базовая мера.'
+        comment: 'Озеленение полезно как дополнение, но не заменяет технические меры по снижению выбросов.'
       },
       {
         id: 'reactors',
@@ -699,7 +834,7 @@
         effect: 25,
         type: 'good',
         tag: 'Негерметичность',
-        comment: 'Герметизация снижает неорганизованные выбросы и потери сырья. Для летучих токсичных веществ это существенный фактор.'
+        comment: 'Герметизация снижает неорганизованные выбросы и потери сырья. Для летучих веществ это значимый фактор.'
       },
       {
         id: 'filters',
@@ -709,11 +844,11 @@
         effect: 0,
         type: 'bad',
         tag: 'Эксплуатация',
-        comment: 'Это эксплуатационная обязанность, а не отдельное мероприятие. Экспертиза увидит попытку выдать такой пункт за достижение.'
+        comment: 'Регулярное обслуживание ГОУ – эксплуатационная обязанность. Включать ее как отдельную меру в проект некорректно.'
       }
     ];
 
-    const state = {
+    const measuresState = {
       selected: new Set(),
       budgetTotal: 100,
       spent: 0,
@@ -724,7 +859,122 @@
     function goScreen(n) {
       document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
       document.getElementById('screen' + n).classList.add('active');
-      if (n === 2) updatePanel();
+      if (n === 2) {
+        setActiveScenarioStep(1);
+        renderScenarioStep(1);
+      }
+    }
+
+    function setActiveScenarioStep(step) {
+      document.querySelectorAll('.scenario-step').forEach(btn => {
+        btn.classList.toggle('active', Number(btn.dataset.step) === step);
+        if (scenarioState[btn.dataset.step] !== null) {
+          btn.classList.add('done');
+        }
+      });
+    }
+
+    function renderScenarioStep(step) {
+      const container = document.getElementById('scenarioContainer');
+      container.innerHTML = '';
+      if (step === 3) {
+        renderMeasuresStep(container);
+        return;
+      }
+      const meta = stepsMeta[step];
+      if (!meta) return;
+      const wrapper = document.createElement('div');
+      wrapper.innerHTML = `
+        <h3 style="margin-bottom:.4rem;">${meta.title}</h3>
+        <p class="scenario-question">${meta.question}</p>
+      `;
+      const optionsBox = document.createElement('div');
+      optionsBox.className = 'scenario-options';
+      meta.options.forEach(opt => {
+        const row = document.createElement('label');
+        row.className = 'scenario-option';
+        row.innerHTML = `
+          <input type="radio" name="scenario-${step}" value="${opt.id}">
+          <span>${opt.text}</span>
+        `;
+        optionsBox.appendChild(row);
+      });
+      const feedbackBox = document.createElement('div');
+      feedbackBox.className = 'scenario-feedback';
+      feedbackBox.id = 'scenarioFeedback';
+      feedbackBox.textContent = 'Выберите вариант, чтобы увидеть комментарий.';
+      wrapper.appendChild(optionsBox);
+      wrapper.appendChild(feedbackBox);
+      container.appendChild(wrapper);
+
+      optionsBox.addEventListener('change', e => {
+        const value = e.target.value;
+        const selected = meta.options.find(o => o.id === value);
+        if (!selected) return;
+        scenarioState[step] = selected.score;
+        feedbackBox.textContent = selected.feedback;
+        document.querySelector(`.scenario-step[data-step="${step}"]`)?.classList.add('done');
+      });
+    }
+
+    function renderMeasuresStep(container) {
+      container.innerHTML = '';
+      const header = document.createElement('div');
+      header.innerHTML = `
+        <h3 style="margin-bottom:.4rem;">Этап 3. Выбор мероприятий и бюджета</h3>
+        <p class="scenario-question">Выберите мероприятия, которые, по вашему мнению, снизят санитарный риск и позволят обосновать сокращение СЗЗ. В панели сверху отображаются условный радиус зоны, затраты и санитарный эффект.</p>
+      `;
+      container.appendChild(header);
+
+      const panel = document.createElement('div');
+      panel.className = 'top-panel';
+      panel.innerHTML = `
+        <div class="top-panel-grid">
+          <div class="mini-map">
+            <div class="mini-circle-wrap">
+              <div class="mini-circle" id="miniCircle"></div>
+            </div>
+            <div class="mini-caption">
+              <strong>Условный радиус СЗЗ</strong>
+              <span id="miniCaptionText">≈ 1000 м, пакет мер не выбран</span>
+            </div>
+          </div>
+          <div class="side-panel">
+            <div class="metric-row"><span>Бюджет</span><span id="budgetLabel"></span></div>
+            <div class="bar danger"><div id="budgetBar"></div></div>
+            <div class="metric-row"><span>Снижение риска</span><span id="riskLabel"></span></div>
+            <div class="bar"><div id="riskBar"></div></div>
+            <div class="metric-row"><span>Эффект на 10 млн</span><span id="effLabel"></span></div>
+            <div class="bar"><div id="effBar"></div></div>
+            <div id="panelComment" class="panelComment"></div>
+          </div>
+        </div>
+      `;
+      container.appendChild(panel);
+
+      const cardsWrap = document.createElement('div');
+      cardsWrap.className = 'cards-scroll';
+      cardsWrap.innerHTML = '<div class="cards-grid" id="cardsGrid"></div>';
+      container.appendChild(cardsWrap);
+
+      const feedback = document.createElement('div');
+      feedback.className = 'step-feedback';
+      feedback.id = 'stepFeedback';
+      container.appendChild(feedback);
+
+      renderCards();
+      updatePanel();
+      document.getElementById('cardsGrid').addEventListener('click', function(e) {
+        const btn = e.target.closest('button[data-action]');
+        if (!btn) return;
+        const action = btn.dataset.action;
+        const id = btn.dataset.id;
+        if (action === 'toggle') {
+          toggleMeasure(id);
+        } else if (action === 'comment') {
+          toggleComment(id);
+        }
+      });
     }
 
     function shuffle(array) {
@@ -743,7 +993,7 @@
       shuffled.forEach(m => {
         const row = document.createElement('div');
         row.className = 'measure-row';
-        if (state.selected.has(m.id)) row.classList.add('selected');
+        if (measuresState.selected.has(m.id)) row.classList.add('selected');
         const tagClass = m.type === 'good' ? 'tag-good' : m.type === 'bad' ? 'tag-bad' : 'tag-soft';
         row.innerHTML = `
           <div class="measure-header">
@@ -756,7 +1006,7 @@
             <span>Эффект ${m.effect}</span>
           </div>
           <div class="measure-actions">
-            <button class="btn-small" data-action="toggle" data-id="${m.id}">${state.selected.has(m.id) ? 'Убрать' : 'Добавить'}</button>
+            <button class="btn-small" data-action="toggle" data-id="${m.id}">${measuresState.selected.has(m.id) ? 'Убрать' : 'Добавить'}</button>
             <button class="btn-small" data-action="comment" data-id="${m.id}" style="background:#f1eee8; border-color:#d5d0c7; color:#6a665f;">Комментарий</button>
           </div>
         `;
@@ -769,28 +1019,29 @@
       });
     }
 
-    function recompute() {
+    function recomputeMeasures() {
       let spent = 0;
       let eff = 0;
-      state.selected.forEach(id => {
+      measuresState.selected.forEach(id => {
         const m = measures.find(x => x.id === id);
         if (!m) return;
         spent += m.cost;
         eff += m.effect;
       });
-      state.spent = spent;
-      state.effect = eff;
+      measuresState.spent = spent;
+      measuresState.effect = eff;
       if (spent > 0) {
-        state.effPer10 = +(eff / (spent / 10)).toFixed(2);
+        measuresState.effPer10 = +(eff / (spent / 10)).toFixed(2);
       } else {
-        state.effPer10 = 0;
+        measuresState.effPer10 = 0;
       }
     }
 
     function updateMiniCircle() {
       const circle = document.getElementById('miniCircle');
       const caption = document.getElementById('miniCaptionText');
-      const effect = state.effect;
+      if (!circle || !caption) return;
+      const effect = measuresState.effect;
       const baseRadius = 1000;
       const newRadius = Math.round(baseRadius * (1 - effect / 200));
       const scale = Math.max(0.6, 1 - effect * 0.003);
@@ -803,7 +1054,7 @@
     }
 
     function updatePanel() {
-      recompute();
+      recomputeMeasures();
       const budgetLabel = document.getElementById('budgetLabel');
       const riskLabel = document.getElementById('riskLabel');
       const effLabel = document.getElementById('effLabel');
@@ -812,14 +1063,16 @@
       const effBar = document.getElementById('effBar');
       const comment = document.getElementById('panelComment');
 
-      budgetLabel.textContent = state.spent + ' из ' + state.budgetTotal + ' млн';
-      riskLabel.textContent = state.effect + ' из 100';
-      effLabel.textContent = state.effPer10.toFixed(2);
+      if (!budgetLabel) return;
 
-      const budgetPct = Math.min(100, (state.spent / state.budgetTotal) * 100);
+      budgetLabel.textContent = measuresState.spent + ' из ' + measuresState.budgetTotal + ' млн';
+      riskLabel.textContent = measuresState.effect + ' из 100';
+      effLabel.textContent = measuresState.effPer10.toFixed(2);
+
+      const budgetPct = Math.min(100, (measuresState.spent / measuresState.budgetTotal) * 100);
       budgetBar.style.width = budgetPct + '%';
-      riskBar.style.width = Math.min(100, state.effect) + '%';
-      const effPct = Math.min(100, state.effPer10 * 100 / 1.2);
+      riskBar.style.width = Math.min(100, measuresState.effect) + '%';
+      const effPct = Math.min(100, measuresState.effPer10 * 100 / 1.2);
       effBar.style.width = effPct + '%';
 
       updateMiniCircle();
@@ -827,23 +1080,23 @@
       let text = '';
       let cls = 'panelComment';
 
-      if (state.spent === 0 && state.effect === 0) {
-        text = 'Пока вы не выбрали ни одной меры. Ситуация на границе СЗЗ не меняется.';
+      if (measuresState.spent === 0 && measuresState.effect === 0) {
+        text = 'Пока меры не выбраны. Ситуация на границе СЗЗ не меняется.';
         cls += ' warn';
-      } else if (state.effect < 50 && state.spent > 0) {
-        text = 'Расходы есть, а снижение риска невелико. Пакет похож на набор второстепенных или имиджевых решений.';
+      } else if (measuresState.effect < 50 && measuresState.spent > 0) {
+        text = 'Расходы есть, но снижение риска невелико. Пакет выглядит как набор второстепенных решений.';
         cls += ' bad';
-      } else if (state.effect >= 70 && state.effPer10 >= 0.8 && state.spent <= state.budgetTotal) {
-        text = 'Санитарный эффект заметный, на каждый 10 млн есть понятный результат. Это близко к рабочему балансу.';
+      } else if (measuresState.effect >= 70 && measuresState.effPer10 >= 0.8 && measuresState.spent <= measuresState.budgetTotal) {
+        text = 'Санитарный эффект заметный, а затраты выглядят обоснованными. Это близко к рабочему балансу.';
         cls += ' ok';
-      } else if (state.effect >= 70 && state.effPer10 < 0.8) {
-        text = 'Риск снижен, но цена высока. В таком пакете часть мер может выглядеть избыточной.';
+      } else if (measuresState.effect >= 70 && measuresState.effPer10 < 0.8) {
+        text = 'Риск снижен, но цена высока. В таком пакете часть мер может быть избыточной.';
         cls += ' warn';
-      } else if (state.effect >= 50 && state.effect < 70) {
-        text = 'Есть движение в сторону снижения риска, но до уверенного уровня не хватает. Пакет пограничный.';
+      } else if (measuresState.effect >= 50 && measuresState.effect < 70) {
+        text = 'Есть движение в сторону снижения риска, но не до устойчивого уровня. Пакет пограничный.';
         cls += ' warn';
       } else {
-        text = 'Комбинация мер пока не дает устойчивого санитарного эффекта.';
+        text = 'Комбинация мер пока не дает выраженного санитарного эффекта.';
         cls += ' warn';
       }
 
@@ -851,18 +1104,34 @@
       comment.textContent = text;
 
       const stepFeedback = document.getElementById('stepFeedback');
-      if (state.spent > state.budgetTotal) {
-        stepFeedback.innerHTML = '<div class="msg bad">Бюджет превышен. В реальном проекте такой пакет не согласуют без пересмотра состава мер.</div>';
+      if (measuresState.spent > measuresState.budgetTotal) {
+        stepFeedback.innerHTML = '<div class="msg bad">Бюджет превышен. В реальном проекте такой пакет необходимо корректировать.</div>';
       } else {
         stepFeedback.innerHTML = '';
       }
+
+      // Сохраняем интегральную оценку в сценарий (шаг 3)
+      const goodCount = Array.from(measuresState.selected).filter(id => measures.find(m => m.id === id)?.type === 'good').length;
+      let score3 = 0;
+      if (measuresState.effect >= 70 && measuresState.effPer10 >= 0.8 && measuresState.spent <= measuresState.budgetTotal && goodCount >= 2) {
+        score3 = 2;
+      } else if (measuresState.effect >= 70) {
+        score3 = 1;
+      } else if (measuresState.effect < 50 && measuresState.spent > 0) {
+        score3 = -1;
+      } else if (measuresState.spent === 0) {
+        score3 = -2;
+      } else {
+        score3 = 0;
+      }
+      scenarioState[3] = score3;
     }
 
     function toggleMeasure(id) {
-      if (state.selected.has(id)) {
-        state.selected.delete(id);
+      if (measuresState.selected.has(id)) {
+        measuresState.selected.delete(id);
       } else {
-        state.selected.add(id);
+        measuresState.selected.add(id);
       }
       renderCards();
       updatePanel();
@@ -874,19 +1143,23 @@
       comment.classList.toggle('show');
     }
 
-    function resetMeasures() {
-      state.selected.clear();
-      renderCards();
-      updatePanel();
-    }
+    // Навигация по шагам
+    document.addEventListener('click', function(e) {
+      const stepBtn = e.target.closest('.scenario-step');
+      if (stepBtn) {
+        const step = Number(stepBtn.dataset.step);
+        setActiveScenarioStep(step);
+        renderScenarioStep(step);
+      }
+    });
 
-    function finishGame() {
-      recompute();
-      const spent = state.spent;
-      const eff = state.effect;
-      const eff10 = state.effPer10;
-
-      const goodCount = Array.from(state.selected).filter(id => measures.find(m => m.id === id)?.type === 'good').length;
+    function goResult() {
+      // Подсчитываем общую сумму
+      let scoreSum = 0;
+      Object.keys(scenarioState).forEach(k => {
+        const val = scenarioState[k];
+        if (typeof val === 'number') scoreSum += val;
+      });
 
       let header = '';
       let text = '';
@@ -894,126 +1167,39 @@
       let lesson = '';
       let improve = '';
 
-      if (eff >= 70 && eff10 >= 0.8 && spent <= state.budgetTotal && goodCount >= 2) {
-        header = 'Вы собрали пакет, который можно защищать как рабочий';
-        text = 'В вашем наборе есть меры, которые реально уменьшают выбросы фенола, формальдегида и метанола, и при этом бюджет не перегрет. Такой пакет можно использовать как основу для обсуждения сокращения СЗЗ.';
-        badge = 'Профиль: сильный баланс';
-        lesson = 'Это соответствует целям курса: анализ источников, выбор эффективных технических решений и корректная оценка влияния на санитарный риск и градостроительные ограничения.';
-        improve = 'В реальной практике к этому набору добавили бы расчеты рассеивания, обоснование по фону и чувствительной застройке, а также план взаимодействия с регулятором. Подумайте, какие документы вы приложили бы к своему решению.';
-      } else if (eff >= 70 && eff10 < 0.8 && spent <= state.budgetTotal) {
-        header = 'Санитарный эффект есть, но пакет трудно обосновать по затратам';
-        text = 'Вы существенно снизили условный риск, но с высокой нагрузкой на бюджет. В пакете присутствуют решения с низкой отдачей по отношению к вложениям.';
-        badge = 'Профиль: дорогой сильный пакет';
-        lesson = 'На практике от эколога ожидают не только максимального санитарного эффекта, но и разумного расходования средств. Важно уметь предложить более экономичные варианты при сохранении приемлемого уровня риска.';
-        improve = 'Оцените, какие меры дали основной вклад в снижение риска, а какие можно заменить или исключить. В реальном проекте это обсуждается совместно с экономическими службами и руководством.';
-      } else if (eff < 70 && goodCount >= 1) {
-        header = 'Есть отдельные сильные решения, но целостный пакет не сформирован';
-        text = 'В набор включены меры, влияющие на выбросы, однако их недостаточно для устойчивого снижения санитарного риска. Решение требует доработки.';
-        badge = 'Профиль: частичное решение';
-        lesson = 'Для пересмотра СЗЗ важен не просто перечень мероприятий, а последовательная линия: анализ источников, выбор мер, расчеты, выводы. В данном случае эта цепочка пока не завершена.';
-        improve = 'Подумайте, какие дополнительные меры могли бы усилить санитарный эффект. Возможно, требуется сочетание работы с сырьем, технологией и газоочисткой.';
+      if (scoreSum >= 10) {
+        header = 'Решения выстроены в сильную и последовательную линию';
+        text = 'На большинстве этапов вы выбрали варианты, которые соответствуют устойчивой практике: проработанные исходные данные, прицельные меры, корректные расчеты и формализованная работа с регулятором.';
+        badge = 'Профиль: системный подход к СЗЗ';
+        lesson = 'Такой подход показывает, что эколог управляет процессом: от постановки задачи до мониторинга. Это то, чего ожидают от специалиста при пересмотре санитарно-защитной зоны.';
+        improve = 'В реальной работе важно дополнить такой набор решений детальными расчетами и документами, а также договоренностями с внутренними подразделениями и внешними подрядчиками.';
+      } else if (scoreSum >= 4) {
+        header = 'Основные решения выстроены, но есть пробелы';
+        text = 'По ключевым этапам вы выбрали разумные варианты, однако на части шагов остались компромиссные или нейтральные решения.';
+        badge = 'Профиль: частично выстроенный процесс';
+        lesson = 'Такой результат показывает базовое понимание логики работы с СЗЗ. Для практики важно усилить отдельные элементы – работу с исходными данными, взаимодействие с проектировщиками и фиксацию зоны в реестрах.';
+        improve = 'Определите, на каких этапах вы чаще выбирали промежуточные или компромиссные варианты, и вернитесь к ним в сценарии, чтобы проработать альтернативные решения.';
       } else {
-        header = 'Экономия и имиджевые шаги не заменили санитарное решение';
-        text = 'Большая часть выбранных мер слабо влияет на выбросы ключевых веществ. В такой конфигурации обоснование сокращения СЗЗ будет недостаточно убедительным.';
-        badge = 'Профиль: недотягивающий пакет';
-        lesson = 'Сокращение СЗЗ основывается на фактических концентрациях в контрольных точках, а не на общем числе инициатив. Важно концентрироваться на мероприятиях, которые напрямую изменяют картину выбросов.';
-        improve = 'Вернитесь к перечню мер и попробуйте собрать альтернативный пакет с приоритетом решений по фенолу, формальдегиду и метанолу. Сравните результаты и аргументацию.';
+        header = 'Процесс по СЗЗ формален и несвязный';
+        text = 'Часть этапов осталась без проработки или решена вариантами, которые дают формальный результат без устойчивого управления санитарными рисками.';
+        badge = 'Профиль: формальное сопровождение СЗЗ';
+        lesson = 'Для реального пересмотра СЗЗ важна связанная линия: корректные исходные данные, устойчивые технические решения, расчеты, натурный контроль, согласование и мониторинг. Без этого решение по СЗЗ остается уязвимым.';
+        improve = 'Вернитесь к шагам, где вы выбирали минимальные или упрощающие варианты. Попробуйте собрать альтернативный маршрут и сравните, как изменится общий профиль.';
       }
 
       document.getElementById('resultHeader').innerHTML = '<strong>' + header + '</strong>';
       document.getElementById('resultText').textContent = text;
       document.getElementById('badgeProfile').textContent = badge;
       document.getElementById('numbers').textContent =
-        'Потрачено ' + spent + ' из 100 млн. Снижение риска ' + eff + ' из 100. Эффект на 10 млн ' + eff10.toFixed(2) + '.';
+        'Суммарная оценка решений по этапам процесса: ' + scoreSum + '.';
       document.getElementById('lesson').textContent = lesson;
       document.getElementById('improve').textContent = improve;
+
       goScreen(3);
     }
 
-    const szzStepsData = {
-      1: {
-        title: 'Решение руководства и постановка задачи',
-        text: 'После выбора мер эколог готовит записку для руководства. В документе фиксируются цель изменения СЗЗ, перечень мероприятий, ожидаемое снижение выбросов и ориентировочные затраты. Руководство принимает решение запускать проект СЗЗ и утверждает бюджет на дальнейшие действия.'
-      },
-      2: {
-        title: 'Исходные данные для проекта СЗЗ',
-        text: 'Перед расчетами необходимо актуализировать исходные данные. Проводится инвентаризация источников, уточняются режимы работы, состав и объемы выбросов, фоновые концентрации и состояние действующей газоочистки. Качество этих данных определяет достоверность последующих расчетов.'
-      },
-      3: {
-        title: 'Реализация выбранных мероприятий',
-        text: 'Мероприятия, выбранные на схеме, в реальности необходимо спроектировать и внедрить. После монтажа и ввода в эксплуатацию проводят повторную оценку выбросов и обновляют параметры источников. Проект сокращения СЗЗ должен опираться на фактически реализованные изменения, а не на планируемые.'
-      },
-      4: {
-        title: 'Расчеты рассеивания и проект СЗЗ',
-        text: 'Проектная организация выполняет расчеты рассеивания по действующим методикам. На основе расчетов формируется проект СЗЗ или ее сокращения: схемы, карты концентраций, таблицы по контрольным точкам, анализ фонового загрязнения и пояснительная записка. На этом этапе пакет мер превращается в формализованное обоснование.'
-      },
-      5: {
-        title: 'Натурный контроль на границе зоны',
-        text: 'Для подтверждения расчетов могут проводиться натурные измерения качества воздуха на границе проектируемой СЗЗ. Измерения выполняют аккредитованные лаборатории с оформлением протоколов. Полученные данные сопоставляются с расчетами и при необходимости используются для их корректировки.'
-      },
-      6: {
-        title: 'Согласование проекта с Роспотребнадзором',
-        text: 'Проект СЗЗ с расчетами и материалами натурного контроля направляется в территориальный орган Роспотребнадзора. Проводится санитарно-эпидемиологическая экспертиза. По результатам выдается санитарно-эпидемиологическое заключение об установлении или изменении СЗЗ либо мотивированный отказ.'
-      },
-      7: {
-        title: 'Фиксация СЗЗ в ЕГРН и документах планировки',
-        text: 'После получения положительного заключения сведения о СЗЗ подлежат внесению в ЕГРН и учет в градостроительной документации. Новые границы зоны становятся обязательным ограничением для землепользования и размещения объектов капитального строительства.'
-      },
-      8: {
-        title: 'Мониторинг и поддержание условий',
-        text: 'После изменения СЗЗ предприятие должно поддерживать технологические параметры, под которые зона рассчитывалась и согласовывалась. При изменении производительности, сырья или состава выбросов необходимо оценивать, требуется ли пересмотр проекта СЗЗ и повторное согласование.'
-      }
-    };
-
-    (function() {
-      const modal = document.getElementById('szzModal');
-      const titleEl = document.getElementById('szzModalTitle');
-      const textEl = document.getElementById('szzModalText');
-
-      function openStep(step) {
-        const data = szzStepsData[step];
-        if (!data) return;
-        titleEl.textContent = data.title;
-        textEl.textContent = data.text;
-        modal.classList.add('active');
-        modal.setAttribute('aria-hidden', 'false');
-      }
-
-      function closeModal() {
-        modal.classList.remove('active');
-        modal.setAttribute('aria-hidden', 'true');
-      }
-
-      document.addEventListener('click', function(e) {
-        const stepBtn = e.target.closest('.szz-step');
-        if (stepBtn && stepBtn.dataset.step) {
-          openStep(stepBtn.dataset.step);
-          return;
-        }
-        if (e.target.closest('[data-role="close"]')) {
-          closeModal();
-        }
-      });
-
-      document.addEventListener('keydown', function(e) {
-        if (e.key === 'Escape') closeModal();
-      });
-    })();
-
-    renderCards();
-    updatePanel();
-
-    document.getElementById('cardsGrid').addEventListener('click', function(e) {
-      const btn = e.target.closest('button[data-action]');
-      if (!btn) return;
-      const action = btn.dataset.action;
-      const id = btn.dataset.id;
-      if (action === 'toggle') {
-        toggleMeasure(id);
-      } else if (action === 'comment') {
-        toggleComment(id);
-      }
-    });
+    // Стартовая инициализация
+    // (Экран 2 подставится при переходе)
   </script>
 </body>
 </html>
