@@ -228,7 +228,7 @@
     .layout-map img {
       width: 100%;
       border-radius: 12px;
-      border: 1px solid #d5d0c7;
+      border: 1px solid #d5d2c7;
       display: block;
     }
 
@@ -486,7 +486,7 @@
 
         <div class="oleg-block">
           <div class="oleg-avatar">
-            <img src="oleg.jpg" alt="Олег" />
+            <img src="oleg.jpg" alt="Олег" onerror="this.style.display='none'; this.parentNode.style.background='#dde4dd';" />
           </div>
           <div class="oleg-text">
             <span class="oleg-name">Олег</span>
@@ -557,7 +557,7 @@
           </div>
 
           <div class="actions">
-            <button class="btn btn-primary" type="button" onclick="startScenario()">Начать интерактив</button>
+            <button class="btn btn-primary" type="button" id="startBtn">Начать интерактив</button>
           </div>
         </section>
       </main>
@@ -668,41 +668,32 @@
             note: 'Такой выбор оставляет разумный резерв на технические меры и расчеты.'
           },
           {
-            id: 2,
-            short: 'Исходные данные',
-            title: 'Подход к исходным данным',
-            goal: 'Определить объем работ по актуализации исходных данных перед расчетами.',
-            question: 'Инвентаризация пять лет назад проведена корректно, но режимы работы и фон могли измениться. Как Олег предлагает обновить исходные данные?',
-            options: [
-              {
-                id: '2c',
-                title: 'Полная переинвентаризация',
-                cost: 15,
-                desc: 'Провести полную инвентаризацию по всем источникам, режимам и фону с привлечением сторонней организации.',
-                tags: [
-                  {label:'Максимальная точность', type:'green', explain:'Расчеты опираются на полный массив свежих данных.'},
-                  {label:'Высокий бюджет', type:'orange', explain:'Существенные затраты и сроки выполнения.'}
-                ],
-                scores: {san:2, proc:1, eco:-1},
-                feedbackTitle: 'Надежный, но затратный вариант',
-                feedback: 'Качество исходных данных будет высоким, но на этом этапе расходуется значительная часть бюджета. На технические меры и усиленные расчеты останется меньше средств.',
-                note: 'Если вы выбрали этот вариант, далее придется точнее выбирать, где экономить.'
-              },
-              {
-                id: '2d',
-                title: 'Отдельное исследование фона',
-                cost: 6,
-                desc: 'Оставить инвентаризацию без изменений, но выполнить серию замеров фона у чувствительной застройки.',
-                tags: [
-                  {label:'Фокус на населении', type:'blue', explain:'Дает более точную картину по жилой застройке.'},
-                  {label:'Разрыв с моделью источников', type:'orange', explain:'Источники и режимы остаются на старом уровне детализации.'}
-                ],
-                scores: {san:0, proc:1, eco:1},
-                feedbackTitle: 'Уточнение фона без обновления источников',
-                feedback: 'Данные по населению становятся детальнее, но связка «источники – режимы – фон» остается неполной.',
-                note: 'Рационально сочетать этот вариант с умеренными затратами на другие этапы.'
-              }
-            ]
+            id: '2c',
+            title: 'Полная переинвентаризация',
+            cost: 15,
+            desc: 'Провести полную инвентаризацию по всем источникам, режимам и фону с привлечением сторонней организации.',
+            tags: [
+              {label:'Максимальная точность', type:'green', explain:'Расчеты опираются на полный массив свежих данных.'},
+              {label:'Высокий бюджет', type:'orange', explain:'Существенные затраты и сроки выполнения.'}
+            ],
+            scores: {san:2, proc:1, eco:-1},
+            feedbackTitle: 'Надежный, но затратный вариант',
+            feedback: 'Качество исходных данных будет высоким, но на этом этапе расходуется значительная часть бюджета. На технические меры и усиленные расчеты останется меньше средств.',
+            note: 'Если вы выбрали этот вариант, далее придется точнее выбирать, где экономить.'
+          },
+          {
+            id: '2d',
+            title: 'Отдельное исследование фона',
+            cost: 6,
+            desc: 'Оставить инвентаризацию без изменений, но выполнить серию замеров фона у чувствительной застройки.',
+            tags: [
+              {label:'Фокус на населении', type:'blue', explain:'Дает более точную картину по жилой застройке.'},
+              {label:'Разрыв с моделью источников', type:'orange', explain:'Источники и режимы остаются на старом уровне детализации.'}
+            ],
+            scores: {san:0, proc:1, eco:1},
+            feedbackTitle: 'Уточнение фона без обновления источников',
+            feedback: 'Данные по населению становятся детальнее, но связка «источники – режимы – фон» остается неполной.',
+            note: 'Рационально сочетать этот вариант с умеренными затратами на другие этапы.'
           }
         ]
       },
@@ -827,7 +818,7 @@
     let currentStepIndex = 0;
     let contentArea, introScreen, statusBar, progressBar, stepsTabs;
     let axesSanEl, axesProcEl, axesEcoEl, axesTechEl, axesOtherEl, axesTotalEl, axesRestEl;
-    let modal, modalTitle, modalText, modalNote, modalFooter;
+    let modal, modalTitle, modalText, modalNote;
     let queuedNext = null;
     let stepDetailForModal = null;
 
@@ -883,7 +874,8 @@
         tab.className = 'step-tab';
         if (idx === currentStepIndex) tab.classList.add('current');
         if (answers[step.id]) tab.classList.add('done');
-        tab.innerHTML = `<span class="step-tab-badge">${idx+1}</span><span>${step.short}</span>`;
+        tab.innerHTML = '<span class="step-tab-badge">' + (idx+1) +
+          '</span><span>' + step.short + '</span>';
         stepsTabs.appendChild(tab);
       });
     }
@@ -1313,7 +1305,7 @@
 
     function closeModal() {
       modal.classList.remove('active');
-      modal.setAttribute('aria-hidden','false');
+      modal.setAttribute('aria-hidden','true');
       if (stepDetailForModal) {
         stepDetailForModal = null;
         return;
@@ -1504,7 +1496,6 @@
       modalTitle = document.getElementById('modalTitle');
       modalText = document.getElementById('modalText');
       modalNote = document.getElementById('modalNote');
-      modalFooter = document.getElementById('modalFooter');
 
       const rulesToggleBtn = document.getElementById('rulesToggleBtn');
       const rulesBox = document.getElementById('rulesBox');
@@ -1515,6 +1506,9 @@
         rulesBox.style.display = isHidden ? 'block' : 'none';
         rulesToggleBtn.textContent = isHidden ? 'Скрыть правила кейса' : 'Показать правила кейса';
       });
+
+      const startBtn = document.getElementById('startBtn');
+      startBtn.addEventListener('click', startScenario);
 
       modal.addEventListener('click', e => {
         if (e.target.dataset.role === 'close' || e.target.closest('[data-role="close"]')) {
