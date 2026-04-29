@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Олег: Меры для разных предприятий</title>
+<style>
+  :root {
+    --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
+    --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
+    --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
+    --radius: 16px; --transition: 160ms ease;
+    --red: #b4532a; --red-soft: #fff1ea;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px; background: var(--bg);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    color: var(--text); line-height: 1.4;
+  }
+  
+  .szz-wrap {
+    max-width: 800px; margin: 0 auto; background: var(--card);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow);
+    max-height: 90vh; display: flex; flex-direction: column;
+  }
+  
+  .szz-header {
+    padding: 18px 24px; background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%);
+    border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  .szz-header h2 { margin: 0 0 4px; font-size: 1.25rem; font-weight: 600; color: var(--green); }
+  .szz-header p { margin: 0; font-size: 0.88rem; color: var(--muted); }
+  
+  .oleg-intro {
+    display: flex; gap: 10px; align-items: flex-start; padding: 14px 24px;
+    background: var(--green-soft-2); border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  .oleg-avatar { 
+    width: 36px; height: 36px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid #fff; 
+  }
+  .oleg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .oleg-text { font-size: 0.85rem; color: var(--text); line-height: 1.35; }
+  .oleg-text strong { display: block; margin-bottom: 2px; color: var(--green); font-weight: 600; font-size: 0.9rem; }
+  
+  .instruction {
+    padding: 10px 24px; font-size: 0.85rem; color: var(--muted); background: #fff;
+    border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  
+  /* Compact enterprise buttons */
+  .enterprise-bar {
+    padding: 12px 24px; background: #fff; border-bottom: 1px solid var(--line); flex-shrink: 0;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .enterprise-bar .label { font-size: 0.82rem; color: var(--muted); font-weight: 500; white-space: nowrap; }
+  .ent-btn {
+    padding: 6px 12px; border: 2px solid var(--line); border-radius: 20px;
+    background: #fff; cursor: pointer; font-size: 0.8rem; font-weight: 500;
+    transition: var(--transition); white-space: nowrap;
+  }
+  .ent-btn:hover { border-color: var(--green); }
+  .ent-btn.active { border-color: var(--green); background: var(--green-soft); color: var(--green); }
+  
+  .game-area { 
+    padding: 16px 24px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 14px;
+  }
+  
+  /* Current enterprise banner */
+  .current-banner {
+    background: var(--green-soft-2); border: 1px solid var(--green); border-radius: 8px;
+    padding: 8px 12px; font-size: 0.82rem; color: var(--green); display: none; align-items: center; gap: 8px; flex-shrink: 0;
+  }
+  .current-banner.show { display: flex; }
+  
+  /* Барабан */
+  .drum-container {
+    background: #f8fafc; border: 2px dashed var(--line); border-radius: 12px;
+    padding: 14px; position: relative; flex-shrink: 0;
+  }
+  .drum-label { 
+    font-size: 0.82rem; color: var(--muted); font-weight: 500; margin-bottom: 8px;
+    display: flex; justify-content: space-between;
+  }
+  .drum-count { color: var(--green); font-weight: 700; }
+  
+  .drum-stack {
+    position: relative; height: 85px;
+  }
+  
+  .drum-card {
+    position: absolute; top: 0; left: 0; right: 0;
+    background: #fff; border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px; cursor: grab; user-select: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    transition: transform 0.2s;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .drum-card:nth-child(1) { z-index: 3; transform: translateY(0); }
+  .drum-card:nth-child(2) { z-index: 2; transform: translateY(6px); opacity: 0.8; }
+  .drum-card:nth-child(3) { z-index: 1; transform: translateY(12px); opacity: 0.6; }
+  .drum-card.dragging { z-index: 100; transform: scale(1.03) translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); cursor: grabbing; }
+  .drum-card.placed { display: none; }
+  
+  .card-icon { width: 24px; height: 24px; background: var(--green-soft); border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+  .card-text { font-size: 0.8rem; line-height: 1.3; color: var(--text); font-weight: 500; }
+  
+  /* Зоны */
+  .zones-wrapper {
+    display: flex; flex-direction: row; gap: 12px; flex: 1; min-height: 0;
+  }
+  
+  .drop-zone {
+    background: #fff; border: 2px dashed var(--line); border-radius: 12px;
+    padding: 12px; min-width: 0; flex: 1; display: flex; flex-direction: column;
+    transition: var(--transition); min-height: 160px;
+  }
+  .drop-zone.drag-over { border-color: var(--green); background: var(--green-soft-2); }
+  .drop-zone h3 { margin: 0 0 2px; font-size: 0.85rem; color: var(--text); text-align: center; }
+  .drop-zone p { margin: 0 0 8px; font-size: 0.75rem; color: var(--muted); text-align: center; }
+  .zone-cards { display: flex; flex-direction: column; gap: 6px; flex: 1; overflow-y: auto; }
+  
+  .zone-card {
+    background: var(--green-soft-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px; font-size: 0.78rem; cursor: pointer; transition: var(--transition);
+  }
+  .zone-card:hover { border-color: var(--green); background: var(--green-soft); }
+  .zone-card.correct { border-color: var(--green); background: var(--green-soft); }
+  .zone-card.incorrect { border-color: var(--red); background: var(--red-soft); }
+  .zone-card-title { font-weight: 600; margin-bottom: 1px; }
+  .zone-card-desc { font-size: 0.7rem; color: var(--muted); }
+  
+  .controls {
+    display: flex; gap: 10px; justify-content: center; padding: 12px 24px;
+    border-top: 1px solid var(--line); background: #fff; flex-shrink: 0;
+  }
+  .btn-action {
+    padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;
+    font-size: 0.85rem; font-weight: 600; transition: var(--transition);
+  }
+  .btn-check { background: var(--green); color: #fff; }
+  .btn-check:hover:not(:disabled) { filter: brightness(0.95); }
+  .btn-check:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+  .btn-reset { background: #fff; color: var(--text); border: 1px solid var(--line); }
+  .btn-reset:hover { border-color: var(--green); background: var(--green-soft-2); }
+  
+  .summary {
+    padding: 12px; border-radius: 8px; display: none; animation: fadeIn 0.3s; flex-shrink: 0;
+  }
+  .summary.show { display: block; }
+  .summary.success { background: var(--green-soft); border: 1px solid var(--green); color: var(--green); }
+  
+  .modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(31,42,36,0.5); display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; backdrop-filter: blur(3px);
+  }
+  .modal.active { display: flex; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal-box {
+    background: #fff; border-radius: 12px; max-width: 550px; width: 100%;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.15); overflow: hidden; animation: slideUp 0.25s;
+    max-height: 85vh; display: flex; flex-direction: column;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-head { padding: 14px 18px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: var(--green-soft-2); }
+  .modal-head h3 { margin: 0; font-size: 1rem; color: var(--green); }
+  .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); }
+  .modal-close:hover { color: var(--text); }
+  .modal-body { padding: 18px; overflow-y: auto; }
+  .modal-body p { margin: 0 0 10px; font-size: 0.88rem; line-height: 1.5; color: var(--text); }
+  .modal-body strong { color: var(--green); }
+  .verdict-box { margin-top: 14px; padding: 12px; border-radius: 8px; font-size: 0.88rem; line-height: 1.5; }
+  .verdict-ok { background: #dcfce7; border: 1px solid #86efac; color: #14532d; }
+  .verdict-warn { background: #fff7ed; border: 1px solid #fdba74; color: #7c2d12; }
+  .verdict-fail { background: #fff1ea; border: 1px solid #fca5a5; color: #7f1d1d; }
+  
+  .lesson-section {
+    margin-top: 16px; padding: 14px; background: var(--green-soft-2);
+    border-left: 3px solid var(--green); border-radius: 0 8px 8px 0;
+  }
+  .lesson-section h4 { margin: 0 0 8px; color: var(--green); font-size: 0.9rem; }
+  .lesson-section ul { margin: 0; padding-left: 18px; font-size: 0.85rem; }
+  .lesson-section li { margin-bottom: 4px; }
+  .tip-box {
+    background: #fffbeb; border: 1px solid #fcd34d; border-radius: 8px;
+    padding: 12px; margin-top: 12px; font-size: 0.85rem;
+  }
+  .tip-box strong { color: #92400e; }
+  
+  .modal-foot { padding: 12px 18px; border-top: 1px solid var(--line); text-align: right; flex-shrink: 0; }
+  .btn-modal-close { background: var(--green); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+  .btn-modal-close:hover { filter: brightness(0.95); }
+
+  @media (max-width: 600px) {
+    .enterprise-bar { flex-wrap: wrap; }
+    .zones-wrapper { flex-direction: column; }
+    .szz-wrap { max-height: 100vh; border-radius: 0; border: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="szz-wrap">
+  <div class="szz-header">
+    <h2>Какие меры для каких предприятий?</h2>
+    <p>Учимся подбирать меры под тип воздействия</p>
+  </div>
+
+  <div class="oleg-intro">
+    <div class="oleg-avatar"><img src="oleg.jpg" alt="Олег"></div>
+    <div class="oleg-text">
+      <strong>Олег:</strong> Я работаю с разными предприятиями. Для каждого типа СЗЗ сокращается по-разному. Помогите разобраться: какие меры работают для химии, какие для шума, а какие — нет?
+    </div>
+  </div>
+
+  <!-- Compact enterprise buttons -->
+  <div class="enterprise-bar">
+    <span class="label">Тип предприятия:</span>
+    <button class="ent-btn" onclick="selectEnt('chem')">🏭 Химия</button>
+    <button class="ent-btn" onclick="selectEnt('bio')">🐔 Биология</button>
+    <button class="ent-btn" onclick="selectEnt('phys')">⚡ Шум/Вибрация</button>
+    <button class="ent-btn" onclick="selectEnt('combined')">🏗️ ТЭЦ</button>
+  </div>
+
+  <div class="instruction">
+    Перетаскивайте карточки из барабана в одну из двух зон. <strong>«Сокращает СЗЗ»</strong> — меры, реально снижающие воздействие для этого типа. <strong>«Не сокращает»</strong> — не влияют на данный тип.
+  </div>
+
+  <div class="game-area">
+    <!-- Current enterprise banner -->
+    <div class="current-banner" id="current-banner">
+      <span id="banner-icon">🏭</span>
+      <span id="banner-text"></span>
+    </div>
+
+    <!-- Барабан -->
+    <div class="drum-container">
+      <div class="drum-label">
+        <span>Барабан мероприятий</span>
+        <span class="drum-count" id="drum-count">0 / 8</span>
+      </div>
+      <div class="drum-stack" id="drum-stack"></div>
+    </div>
+
+    <!-- Зоны -->
+    <div class="zones-wrapper">
+      <div class="drop-zone" id="zone-reduce" data-type="reduce">
+        <h3>✅ Сокращает СЗЗ</h3>
+        <p>Влияет на данный тип предприятия</p>
+        <div class="zone-cards" id="zone-reduce-cards"></div>
+      </div>
+      <div class="drop-zone" id="zone-no-reduce" data-type="no-reduce">
+        <h3>❌ Не сокращает СЗЗ</h3>
+        <p>Не влияет на данный тип</p>
+        <div class="zone-cards" id="zone-no-reduce-cards"></div>
+      </div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-action btn-reset" id="btn-reset">Сбросить</button>
+    <button class="btn-action btn-check" id="btn-check" disabled>Проверить</button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal" id="result-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="res-title">Комментарий</h3>
+      <button class="modal-close" id="close-modal">&times;</button>
+    </div>
+    <div class="modal-body" id="res-body"></div>
+    <div class="modal-foot">
+      <button class="btn-modal-close" id="close-modal-btn">Понятно</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // === DATA: Simplified measures for beginners ===
+  const enterprises = {
+    chem: {
+      icon: '🏭', title: 'Химический завод',
+      desc: 'Формальдегид, фенол, метанол в воздухе. СЗЗ — химический фактор.',
+      measures: [
+        { id: 'abs', text: 'Абсорберы', desc: 'Фильтры, улавливающие пары до выброса в трубу.', works: true, detail: 'Абсорберы напрямую снижают концентрацию вредных веществ. Это главная мера для химзаводов.' },
+        { id: 'herm', text: 'Герметизация', desc: 'Замена открытых емкостей на закрытые.', works: true, detail: 'Закрытые реакторы не выпускают пары наружу. Это снижает неорганизованные выбросы.' },
+        { id: 'raw', text: 'Замена сырья', desc: 'Использование менее токсичных материалов.', works: true, detail: 'Если в сырье меньше вредных веществ, их меньше в выбросах.' },
+        { id: 'flare', text: 'Факельная установка', desc: 'Сжигание опасных газов.', works: true, detail: 'Сжигание превращает токсичные газы в безопасные продукты.' },
+        { id: 'noise', text: 'Шумозащитные экраны', desc: 'Барьеры от шума вдоль границы.', works: false, detail: 'Экраны защищают от шума, но не от химических выбросов. Для химзавода это не работает.' },
+        { id: 'vibro', text: 'Виброизоляция', desc: 'Демпферы под оборудованием.', works: false, detail: 'Вибрация не влияет на химическую СЗЗ.' },
+        { id: 'fence', text: 'Ремонт забора', desc: 'Покраска ограждения.', works: false, detail: 'Косметика не влияет на выбросы.' },
+        { id: 'clean', text: 'Чистка фильтров (ТО)', desc: 'Плановая замена сорбентов.', works: false, detail: 'Это эксплуатация, а не модернизация. Не снижает СЗЗ.' }
+      ]
+    },
+    bio: {
+      icon: '🐔', title: 'Птицефабрика',
+      desc: 'Аммиак, запахи, микроорганизмы. СЗЗ — биологический фактор.',
+      measures: [
+        { id: 'biofilter', text: 'Биофильтры', desc: 'Очистка воздуха через бактерии, поедающие аммиак.', works: true, detail: 'Биофильтры разлагают аммиак и запахи. Ключевая мера для ферм.' },
+        { id: 'vent', text: 'Вентиляция', desc: 'Принудительный воздухообмен в корпусах.', works: true, detail: 'Вентиляция удаляет загрязненный воздух и направляет его на очистку.' },
+        { id: 'waste', text: 'Переработка помета', desc: 'Компостирование отходов.', works: true, detail: 'Утилизация помета снижает эмиссию аммиака и запахов.' },
+        { id: 'disinfect', text: 'Дезинфекция', desc: 'Обработка помещений.', works: true, detail: 'Дезинфекция снижает количество патогенных микроорганизмов.' },
+        { id: 'noise', text: 'Шумозащитные экраны', desc: 'Барьеры вдоль границы.', works: false, detail: 'Главный фактор фермы — биологический, а не акустический.' },
+        { id: 'fence', text: 'Ремонт забора', desc: 'Косметический ремонт.', works: false, detail: 'Не влияет на биологическую нагрузку.' },
+        { id: 'green', text: 'Озеленение', desc: 'Посадка деревьев.', works: false, detail: 'Деревья не снижают концентрацию газов или микробов.' },
+        { id: 'abs', text: 'Абсорберы', desc: 'Очистка паров фенола.', works: false, detail: 'Абсорберы для фенола не работают против аммиака.' }
+      ]
+    },
+    phys: {
+      icon: '⚡', title: 'Компрессорная станция',
+      desc: 'Шум, вибрация от компрессоров. СЗЗ — физический фактор.',
+      measures: [
+        { id: 'noise', text: 'Шумозащитные экраны', desc: 'Акустические барьеры 3–4 м.', works: true, detail: 'Экраны отражают звуковые волны. Это главная мера для снижения шума.' },
+        { id: 'vibro', text: 'Виброизоляция', desc: 'Демпферы и плавающие фундаменты.', works: true, detail: 'Снижает передачу вибрации на грунт и здания.' },
+        { id: 'soundproof', text: 'Звукоизоляция здания', desc: 'Обшивка стен звукопоглощающими материалами.', works: true, detail: 'Звукоизоляция удерживает шум внутри здания.' },
+        { id: 'schedule', text: 'Ограничение ночной работы', desc: 'Снижение нагрузки ночью.', works: true, detail: 'Ночные нормативы строже. Это снижает риск превышения.' },
+        { id: 'abs', text: 'Абсорберы', desc: 'Очистка паров фенола.', works: false, detail: 'Абсорберы не влияют на шум.' },
+        { id: 'biofilter', text: 'Биофильтры', desc: 'Биологическая очистка.', works: false, detail: 'Биофильтры работают против аммиака, не против шума.' },
+        { id: 'fence', text: 'Ремонт забора', desc: 'Косметический ремонт.', works: false, detail: 'Не снижает физические факторы.' },
+        { id: 'green', text: 'Озеленение', desc: 'Посадка деревьев.', works: false, detail: 'Деревья не заменяют шумозащитные экраны.' }
+      ]
+    },
+    combined: {
+      icon: '🏗️', title: 'ТЭЦ',
+      desc: 'Выбросы SO2/NOx (химия) + шум турбин (физика). Оба фактора.',
+      measures: [
+        { id: 'scrubber', text: 'Скрубберы', desc: 'Очистка дымовых газов от SO2.', works: true, detail: 'Скрубберы улавливают кислотные газы до выброса.' },
+        { id: 'fuel', text: 'Замена топлива', desc: 'Переход с угля на газ.', works: true, detail: 'Газ горит чище, снижая выбросы.' },
+        { id: 'noise_turb', text: 'Шумоизоляция турбин', desc: 'Кожухи на турбогенераторах.', works: true, detail: 'Кожухи снижают шум от турбин.' },
+        { id: 'ash', text: 'Улавливание золы', desc: 'Электрофильтры.', works: true, detail: 'Электрофильтры улавливают частицы до 99%.' },
+        { id: 'fence', text: 'Ремонт забора', desc: 'Косметический ремонт.', works: false, detail: 'Не влияет ни на химические, ни на физические факторы.' },
+        { id: 'green', text: 'Озеленение', desc: 'Посадка деревьев.', works: false, detail: 'Не снижает выбросы или шум.' },
+        { id: 'biofilter', text: 'Биофильтры', desc: 'Биологическая очистка.', works: false, detail: 'Не применимо для ТЭЦ.' },
+        { id: 'disinfect', text: 'Дезинфекция', desc: 'Обработка помещений.', works: false, detail: 'Не влияет на выбросы ТЭЦ.' }
+      ]
+    }
+  };
+
+  let currentEnt = null;
+  let queue = [];
+  let draggedEl = null;
+  let offsetX = 0, offsetY = 0;
+  let isChecked = false;
+
+  const drumStack = document.getElementById('drum-stack');
+  const drumCount = document.getElementById('drum-count');
+  const btnCheck = document.getElementById('btn-check');
+  const btnReset = document.getElementById('btn-reset');
+  const summary = document.getElementById('summary');
+  const banner = document.getElementById('current-banner');
+
+  function selectEnt(id) {
+    currentEnt = id;
+    document.querySelectorAll('.ent-btn').forEach(b => b.classList.remove('active'));
+    event.currentTarget.classList.add('active');
+    
+    const ent = enterprises[id];
+    document.getElementById('banner-icon').textContent = ent.icon;
+    document.getElementById('banner-text').textContent = ent.desc;
+    banner.classList.add('show');
+    
+    initDrum();
+  }
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function initDrum() {
+    if (!currentEnt) return;
+    const ent = enterprises[currentEnt];
+    queue = shuffle(ent.measures);
+    document.getElementById('zone-reduce-cards').innerHTML = '';
+    document.getElementById('zone-no-reduce-cards').innerHTML = '';
+    summary.classList.remove('show');
+    summary.className = 'summary';
+    btnCheck.disabled = true;
+    isChecked = false;
+    updateCounter();
+    showTopCards();
+  }
+
+  function showTopCards() {
+    drumStack.innerHTML = '';
+    const visible = queue.slice(0, 3);
+    visible.forEach((item, i) => {
+      const card = document.createElement('div');
+      card.className = 'drum-card';
+      card.dataset.id = item.id;
+      card.innerHTML = `
+        <div class="card-icon">⚙️</div>
+        <div style="flex:1">
+          <div class="card-text">${item.text}</div>
+          <div style="font-size:0.7rem;color:var(--muted);margin-top:2px;">${item.desc}</div>
+        </div>
+      `;
+      if (i === 0) {
+        card.addEventListener('pointerdown', handlePointerDown);
+      } else {
+        card.style.pointerEvents = 'none';
+      }
+      drumStack.appendChild(card);
+    });
+  }
+
+  function updateCounter() {
+    drumCount.textContent = `${queue.length} / ${enterprises[currentEnt].measures.length}`;
+    if (queue.length === 0) btnCheck.disabled = false;
+  }
+
+  function handlePointerDown(e) {
+    const drumCard = e.target.closest('.drum-card');
+    if (!drumCard) return;
+    
+    draggedEl = drumCard;
+    const rect = drumCard.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    
+    draggedEl.style.position = 'fixed';
+    draggedEl.style.width = rect.width + 'px';
+    draggedEl.style.zIndex = 1000;
+    draggedEl.style.left = rect.left + 'px';
+    draggedEl.style.top = rect.top + 'px';
+    draggedEl.classList.add('dragging');
+    
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+  }
+
+  function onPointerMove(e) {
+    if (!draggedEl) return;
+    draggedEl.style.left = (e.clientX - offsetX) + 'px';
+    draggedEl.style.top = (e.clientY - offsetY) + 'px';
+    
+    document.querySelectorAll('.drop-zone').forEach(z => {
+      const rect = z.getBoundingClientRect();
+      if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        z.classList.add('drag-over');
+      } else {
+        z.classList.remove('drag-over');
+      }
+    });
+  }
+
+  function onPointerUp(e) {
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+    
+    if (!draggedEl) return;
+    
+    draggedEl.style.position = '';
+    draggedEl.style.width = '';
+    draggedEl.style.zIndex = '';
+    draggedEl.style.left = '';
+    draggedEl.style.top = '';
+    draggedEl.style.transform = '';
+    draggedEl.classList.remove('dragging');
+    
+    const itemId = draggedEl.dataset.id;
+    const ent = enterprises[currentEnt];
+    const item = ent.measures.find(m => m.id === itemId);
+    
+    draggedEl.style.display = 'none';
+    let elemBelow = document.elementFromPoint(e.clientX, e.clientY);
+    draggedEl.style.display = '';
+    
+    if (elemBelow) {
+      const target = elemBelow.closest('.drop-zone');
+      if (target) {
+        const zoneCards = target.querySelector('.zone-cards');
+        const zoneCard = document.createElement('div');
+        zoneCard.className = 'zone-card';
+        zoneCard.dataset.id = itemId;
+        zoneCard.dataset.works = item.works;
+        zoneCard.innerHTML = `
+          <div class="zone-card-title">${item.text}</div>
+          <div class="zone-card-desc">${item.desc}</div>
+        `;
+        zoneCards.appendChild(zoneCard);
+        
+        queue = queue.filter(q => q.id !== itemId);
+        showTopCards();
+        updateCounter();
+      }
+    }
+    draggedEl = null;
+  }
+
+  btnCheck.addEventListener('click', () => {
+    if (isChecked) return;
+    isChecked = true;
+    
+    const ent = enterprises[currentEnt];
+    let errors = 0;
+    let total = 0;
+    
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+      const zoneType = zone.dataset.type;
+      const cards = zone.querySelectorAll('.zone-card');
+      
+      cards.forEach(card => {
+        total++;
+        const works = card.dataset.works === 'true';
+        const shouldBeReduce = zoneType === 'reduce';
+        
+        card.classList.remove('correct', 'incorrect');
+        
+        if (works === shouldBeReduce) {
+          card.classList.add('correct');
+        } else {
+          card.classList.add('incorrect');
+          errors++;
+        }
+      });
+      
+      zone.classList.remove('success', 'error');
+      if (cards.length > 0) {
+        zone.classList.add(errors === 0 ? 'success' : 'error');
+      }
+    });
+
+    summary.classList.remove('success', 'error', 'show');
+    
+    let verdictTitle, verdictText, verdictClass, lessonHTML;
+    
+    if (errors === 0) {
+      verdictTitle = '✓ Отлично!';
+      verdictClass = 'verdict-ok';
+      verdictText = `<strong>Вы верно определили все меры для ${ent.title}.</strong>`;
+    } else {
+      verdictTitle = `⚠️ Ошибки: ${errors} из ${total}`;
+      verdictClass = errors > 2 ? 'verdict-fail' : 'verdict-warn';
+      verdictText = `<strong>Нажмите на красные карточки</strong>, чтобы увидеть разбор.`;
+    }
+    
+    // Lesson section based on enterprise type
+    if (currentEnt === 'chem') {
+      lessonHTML = `
+        <div class="lesson-section">
+          <h4>💡 Что работает для химии:</h4>
+          <ul>
+            <li><strong>Абсорберы и фильтры</strong> — улавливают вредные вещества до выброса в атмосферу</li>
+            <li><strong>Герметизация</strong> — закрывает неорганизованные выбросы через щели</li>
+            <li><strong>Замена сырья</strong> — меньше токсинов в начале = меньше в конце</li>
+            <li><strong>Факел</strong> — сжигает опасные газы</li>
+          </ul>
+        </div>
+        <div class="tip-box">
+          <strong>Совет новичку:</strong> Для химзавода главное — снизить концентрацию веществ. Шумозащита и виброизоляция здесь не помогут, даже если они эффективны для других типов предприятий.
+        </div>
+      `;
+    } else if (currentEnt === 'bio') {
+      lessonHTML = `
+        <div class="lesson-section">
+          <h4>💡 Что работает для биологии:</h4>
+          <ul>
+            <li><strong>Биофильтры</strong> — бактерии разлагают аммиак и запахи</li>
+            <li><strong>Вентиляция</strong> — удаляет загрязненный воздух</li>
+            <li><strong>Переработка отходов</strong> — правильный компостинг снижает эмиссию</li>
+            <li><strong>Дезинфекция</strong> — убивает патогены</li>
+          </ul>
+        </div>
+        <div class="tip-box">
+          <strong>Совет новичку:</strong> Для ферм и птицефабрик главное — биологическая безопасность. Абсорберы для фенола здесь бесполезны, нужны биофильтры.
+        </div>
+      `;
+    } else if (currentEnt === 'phys') {
+      lessonHTML = `
+        <div class="lesson-section">
+          <h4>💡 Что работает для шума:</h4>
+          <ul>
+            <li><strong>Шумозащитные экраны</strong> — отражают и поглощают звук</li>
+            <li><strong>Виброизоляция</strong> — демпферы гасят вибрацию</li>
+            <li><strong>Звукоизоляция здания</strong> — удерживает шум внутри</li>
+            <li><strong>Режим работы</strong> — ограничение ночью снижает риск</li>
+          </ul>
+        </div>
+        <div class="tip-box">
+          <strong>Совет новичку:</strong> Посадка деревьев помогает немного снизить шум, но <strong>не заменяет экраны</strong>. Деревья работают как дополнение, а не как основная мера. Для реальной защиты нужны акустические барьеры высотой 3-4 метра.
+        </div>
+      `;
+    } else if (currentEnt === 'combined') {
+      lessonHTML = `
+        <div class="lesson-section">
+          <h4>💡 Что работает для ТЭЦ:</h4>
+          <ul>
+            <li><strong>Скрубберы</strong> — очистка дымовых газов от SO₂ и NOₓ</li>
+            <li><strong>Замена топлива</strong> — газ чище угля</li>
+            <li><strong>Шумоизоляция турбин</strong> — кожухи на генераторах</li>
+            <li><strong>Электрофильтры</strong> — улавливание золы до 99%</li>
+          </ul>
+        </div>
+        <div class="tip-box">
+          <strong>Совет новичку:</strong> Для ТЭЦ нужен <strong>комплексный подход</strong>: и химия (очистка газов), и физика (шум турбин). Нельзя сократить СЗЗ, работая только с одним фактором.
+        </div>
+      `;
+    }
+    
+    document.getElementById('res-title').textContent = verdictTitle;
+    document.getElementById('res-body').innerHTML = `
+      <p><strong>${ent.icon} ${ent.title}</strong></p>
+      <p>${ent.desc}</p>
+      <div class="verdict-box ${verdictClass}">${verdictText}</div>
+      ${lessonHTML}
+    `;
+    document.getElementById('result-modal').classList.add('active');
+    
+    document.querySelectorAll('.zone-card').forEach(card => {
+      card.style.cursor = 'pointer';
+      card.onclick = () => showCardFeedback(card);
+    });
+  });
+
+  function showCardFeedback(card) {
+    const id = card.dataset.id;
+    const ent = enterprises[currentEnt];
+    const item = ent.measures.find(m => m.id === id);
+    if (!item) return;
+    
+    const isCorrect = (item.works && card.closest('#zone-reduce')) || (!item.works && card.closest('#zone-no-reduce'));
+    
+    let title = isCorrect ? '✓ Верно' : '✗ Ошибка';
+    let body = `<p><strong>${item.text}</strong></p>`;
+    body += `<p>${item.detail}</p>`;
+    
+    if (!isCorrect) {
+      body += `<p style="color:var(--red);margin-top:12px;"><strong>Правильно:</strong> ${item.works ? 'Сокращает' : 'Не сокращает'} СЗЗ для ${ent.title}</p>`;
+    }
+    
+    document.getElementById('res-title').textContent = title;
+    document.getElementById('res-body').innerHTML = body;
+    document.getElementById('result-modal').classList.add('active');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+  }
+
+  btnReset.addEventListener('click', () => {
+    currentEnt = null;
+    document.querySelectorAll('.ent-btn').forEach(b => b.classList.remove('active'));
+    banner.classList.remove('show');
+    drumStack.innerHTML = '';
+    document.getElementById('zone-reduce-cards').innerHTML = '';
+    document.getElementById('zone-no-reduce-cards').innerHTML = '';
+    summary.classList.remove('show');
+    btnCheck.disabled = true;
+    isChecked = false;
+  });
+
+  document.getElementById('close-modal').onclick = () => closeModal('result-modal');
+  document.getElementById('close-modal-btn').onclick = () => closeModal('result-modal');
+  document.getElementById('result-modal').onclick = (e) => { if(e.target.id === 'result-modal') closeModal('result-modal'); };
+</script>
+
+</body>
+</html>
