@@ -540,7 +540,7 @@
           <p class="muted">Руководство завода видит в этом возможность снизить градостроительные ограничения. Олегу нужно выстроить цепочку решений: от постановки задачи и исходных данных до пакета мер, расчетов, натурного контроля и согласования.</p>
 
           <div class="layout-map" aria-hidden="true">
-            <img src="szz.png" alt="Схема завода Олега и санитарно-защитной зоны" />
+            <img src="szz.jpg" alt="Схема завода Олега и санитарно-защитной зоны" />
           </div>
 
           <div class="rules-toggle">
@@ -668,32 +668,41 @@
             note: 'Такой выбор оставляет разумный резерв на технические меры и расчеты.'
           },
           {
-            id: '2c',
-            title: 'Полная переинвентаризация',
-            cost: 15,
-            desc: 'Провести полную инвентаризацию по всем источникам, режимам и фону с привлечением сторонней организации.',
-            tags: [
-              {label:'Максимальная точность', type:'green', explain:'Расчеты опираются на полный массив свежих данных.'},
-              {label:'Высокий бюджет', type:'orange', explain:'Существенные затраты и сроки выполнения.'}
-            ],
-            scores: {san:2, proc:1, eco:-1},
-            feedbackTitle: 'Надежный, но затратный вариант',
-            feedback: 'Качество исходных данных будет высоким, но на этом этапе расходуется значительная часть бюджета. На технические меры и усиленные расчеты останется меньше средств.',
-            note: 'Если вы выбрали этот вариант, далее придется точнее выбирать, где экономить.'
-          },
-          {
-            id: '2d',
-            title: 'Отдельное исследование фона',
-            cost: 6,
-            desc: 'Оставить инвентаризацию без изменений, но выполнить серию замеров фона у чувствительной застройки.',
-            tags: [
-              {label:'Фокус на населении', type:'blue', explain:'Дает более точную картину по жилой застройке.'},
-              {label:'Разрыв с моделью источников', type:'orange', explain:'Источники и режимы остаются на старом уровне детализации.'}
-            ],
-            scores: {san:0, proc:1, eco:1},
-            feedbackTitle: 'Уточнение фона без обновления источников',
-            feedback: 'Данные по населению становятся детальнее, но связка «источники – режимы – фон» остается неполной.',
-            note: 'Рационально сочетать этот вариант с умеренными затратами на другие этапы.'
+            id: 2,
+            short: 'Исходные данные',
+            title: 'Подход к исходным данным',
+            goal: 'Определить объем работ по актуализации исходных данных перед расчетами.',
+            question: 'Инвентаризация пять лет назад проведена корректно, но режимы работы и фон могли измениться. Как Олег предлагает обновить исходные данные?',
+            options: [
+              {
+                id: '2c',
+                title: 'Полная переинвентаризация',
+                cost: 15,
+                desc: 'Провести полную инвентаризацию по всем источникам, режимам и фону с привлечением сторонней организации.',
+                tags: [
+                  {label:'Максимальная точность', type:'green', explain:'Расчеты опираются на полный массив свежих данных.'},
+                  {label:'Высокий бюджет', type:'orange', explain:'Существенные затраты и сроки выполнения.'}
+                ],
+                scores: {san:2, proc:1, eco:-1},
+                feedbackTitle: 'Надежный, но затратный вариант',
+                feedback: 'Качество исходных данных будет высоким, но на этом этапе расходуется значительная часть бюджета. На технические меры и усиленные расчеты останется меньше средств.',
+                note: 'Если вы выбрали этот вариант, далее придется точнее выбирать, где экономить.'
+              },
+              {
+                id: '2d',
+                title: 'Отдельное исследование фона',
+                cost: 6,
+                desc: 'Оставить инвентаризацию без изменений, но выполнить серию замеров фона у чувствительной застройки.',
+                tags: [
+                  {label:'Фокус на населении', type:'blue', explain:'Дает более точную картину по жилой застройке.'},
+                  {label:'Разрыв с моделью источников', type:'orange', explain:'Источники и режимы остаются на старом уровне детализации.'}
+                ],
+                scores: {san:0, proc:1, eco:1},
+                feedbackTitle: 'Уточнение фона без обновления источников',
+                feedback: 'Данные по населению становятся детальнее, но связка «источники – режимы – фон» остается неполной.',
+                note: 'Рационально сочетать этот вариант с умеренными затратами на другие этапы.'
+              }
+            ]
           }
         ]
       },
@@ -816,25 +825,9 @@
     const axisScores = {san:0, proc:0, eco:0};
 
     let currentStepIndex = 0;
-    const contentArea = document.getElementById('contentArea');
-    const introScreen = document.getElementById('introScreen');
-    const statusBar = document.getElementById('statusBar');
-    const progressBar = document.getElementById('progressBar');
-    const stepsTabs = document.getElementById('stepsTabs');
-
-    const axesSanEl = document.getElementById('axesSan');
-    const axesProcEl = document.getElementById('axesProc');
-    const axesEcoEl = document.getElementById('axesEco');
-    const axesTechEl = document.getElementById('axesTech');
-    const axesOtherEl = document.getElementById('axesOther');
-    const axesTotalEl = document.getElementById('axesTotal');
-    const axesRestEl = document.getElementById('axesRest');
-
-    const modal = document.getElementById('feedbackModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const modalText = document.getElementById('modalText');
-    const modalNote = document.getElementById('modalNote');
-    const modalFooter = document.getElementById('modalFooter');
+    let contentArea, introScreen, statusBar, progressBar, stepsTabs;
+    let axesSanEl, axesProcEl, axesEcoEl, axesTechEl, axesOtherEl, axesTotalEl, axesRestEl;
+    let modal, modalTitle, modalText, modalNote, modalFooter;
     let queuedNext = null;
     let stepDetailForModal = null;
 
@@ -1320,7 +1313,7 @@
 
     function closeModal() {
       modal.classList.remove('active');
-      modal.setAttribute('aria-hidden','true');
+      modal.setAttribute('aria-hidden','false');
       if (stepDetailForModal) {
         stepDetailForModal = null;
         return;
@@ -1335,34 +1328,6 @@
         queuedNext = null;
       }
     }
-
-    modal.addEventListener('click', e => {
-      if (e.target.dataset.role === 'close' || e.target.closest('[data-role="close"]')) {
-        closeModal();
-      }
-    });
-    document.addEventListener('keydown', e => {
-      if (e.key === 'Escape') closeModal();
-    });
-
-    document.getElementById('axesBar').addEventListener('click', e => {
-      const btn = e.target.closest('[data-axes-info]');
-      if (!btn) return;
-      const key = btn.dataset.axesInfo;
-      const info = axesExplanations[key];
-      if (!info) return;
-      queuedNext = null;
-      stepDetailForModal = true;
-      openModal(info.title, info.text, info.note);
-    });
-
-    const rulesToggleBtn = document.getElementById('rulesToggleBtn');
-    const rulesBox = document.getElementById('rulesBox');
-    rulesToggleBtn.addEventListener('click', () => {
-      const isHidden = rulesBox.style.display === 'none' || rulesBox.style.display === '';
-      rulesBox.style.display = isHidden ? 'block' : 'none';
-      rulesToggleBtn.textContent = isHidden ? 'Скрыть правила кейса' : 'Показать правила кейса';
-    });
 
     function showSummary() {
       contentArea.innerHTML = '';
@@ -1520,15 +1485,57 @@
       }
     }
 
-    const rulesToggleBtn = document.getElementById('rulesToggleBtn');
-    const rulesBox = document.getElementById('rulesBox');
+    document.addEventListener('DOMContentLoaded', () => {
+      contentArea = document.getElementById('contentArea');
+      introScreen = document.getElementById('introScreen');
+      statusBar = document.getElementById('statusBar');
+      progressBar = document.getElementById('progressBar');
+      stepsTabs = document.getElementById('stepsTabs');
 
-    function initIntro() {
+      axesSanEl = document.getElementById('axesSan');
+      axesProcEl = document.getElementById('axesProc');
+      axesEcoEl = document.getElementById('axesEco');
+      axesTechEl = document.getElementById('axesTech');
+      axesOtherEl = document.getElementById('axesOther');
+      axesTotalEl = document.getElementById('axesTotal');
+      axesRestEl = document.getElementById('axesRest');
+
+      modal = document.getElementById('feedbackModal');
+      modalTitle = document.getElementById('modalTitle');
+      modalText = document.getElementById('modalText');
+      modalNote = document.getElementById('modalNote');
+      modalFooter = document.getElementById('modalFooter');
+
+      const rulesToggleBtn = document.getElementById('rulesToggleBtn');
+      const rulesBox = document.getElementById('rulesBox');
       rulesBox.style.display = 'none';
       rulesToggleBtn.textContent = 'Показать правила кейса';
-    }
-    initIntro();
+      rulesToggleBtn.addEventListener('click', () => {
+        const isHidden = rulesBox.style.display === 'none' || rulesBox.style.display === '';
+        rulesBox.style.display = isHidden ? 'block' : 'none';
+        rulesToggleBtn.textContent = isHidden ? 'Скрыть правила кейса' : 'Показать правила кейса';
+      });
 
+      modal.addEventListener('click', e => {
+        if (e.target.dataset.role === 'close' || e.target.closest('[data-role="close"]')) {
+          closeModal();
+        }
+      });
+      document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') closeModal();
+      });
+
+      document.getElementById('axesBar').addEventListener('click', e => {
+        const btn = e.target.closest('[data-axes-info]');
+        if (!btn) return;
+        const key = btn.dataset.axesInfo;
+        const info = axesExplanations[key];
+        if (!info) return;
+        queuedNext = null;
+        stepDetailForModal = true;
+        openModal(info.title, info.text, info.note);
+      });
+    });
   </script>
 </body>
 </html>
