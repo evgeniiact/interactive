@@ -1,0 +1,544 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>За счет чего можно сократить СЗЗ?</title>
+<style>
+  :root {
+    --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
+    --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
+    --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
+    --radius: 16px; --transition: 160ms ease;
+    --red: #b4532a; --red-soft: #fff1ea;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; padding: 16px; background: var(--bg);
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    color: var(--text); line-height: 1.4;
+  }
+  
+  .szz-wrap {
+    max-width: 800px; margin: 0 auto; background: var(--card);
+    border: 1px solid var(--line); border-radius: var(--radius);
+    overflow: hidden; box-shadow: var(--shadow);
+    max-height: 90vh; display: flex; flex-direction: column;
+  }
+  
+  .szz-header {
+    padding: 20px 24px; background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%);
+    border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  .szz-header h2 { margin: 0 0 6px; font-size: 1.3rem; font-weight: 600; color: var(--green); }
+  .szz-header p { margin: 0; font-size: 0.9rem; color: var(--muted); }
+  
+  .oleg-intro {
+    display: flex; gap: 12px; align-items: flex-start; padding: 16px 24px;
+    background: var(--green-soft-2); border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  .oleg-avatar { 
+    width: 40px; height: 40px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; flex-shrink: 0;
+  }
+  .oleg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .oleg-text { font-size: 0.88rem; color: var(--text); line-height: 1.35; }
+  .oleg-text strong { display: block; margin-bottom: 3px; color: var(--green); font-weight: 600; font-size: 0.92rem; }
+  
+  .instruction {
+    padding: 12px 24px; font-size: 0.88rem; color: var(--muted); background: #fff;
+    border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  
+  .game-area { 
+    padding: 20px; flex: 1; overflow-y: auto; display: flex; flex-direction: column; gap: 16px;
+  }
+  
+  /* Барабан карточек */
+  .drum-container {
+    background: #f8fafc; border: 2px dashed var(--line); border-radius: 12px;
+    padding: 16px; position: relative; min-height: 120px;
+  }
+  .drum-label { 
+    font-size: 0.85rem; color: var(--muted); font-weight: 500; margin-bottom: 12px;
+    display: flex; justify-content: space-between;
+  }
+  .drum-count { color: var(--green); font-weight: 700; }
+  
+  .drum-stack {
+    position: relative; height: 100px;
+  }
+  
+  .drum-card {
+    position: absolute; top: 0; left: 0; right: 0;
+    background: #fff; border: 1px solid var(--line); border-radius: 8px;
+    padding: 12px; cursor: grab; user-select: none;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+    transition: transform 0.2s;
+  }
+  .drum-card:nth-child(1) { z-index: 3; transform: translateY(0); }
+  .drum-card:nth-child(2) { z-index: 2; transform: translateY(8px); opacity: 0.8; }
+  .drum-card:nth-child(3) { z-index: 1; transform: translateY(16px); opacity: 0.6; }
+  .drum-card.dragging { z-index: 100; transform: scale(1.05) translateY(-4px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); cursor: grabbing; }
+  .drum-card.placed { display: none; }
+  
+  .card-icon { width: 28px; height: 28px; background: var(--green-soft); border-radius: 6px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 1rem; }
+  .card-text { font-size: 0.85rem; line-height: 1.3; color: var(--text); font-weight: 500; }
+  
+  /* Зоны */
+  .zones-wrapper {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 16px;
+  }
+  
+  .drop-zone {
+    background: #fff; border: 2px dashed var(--line); border-radius: 12px;
+    padding: 16px; min-height: 200px; display: flex; flex-direction: column;
+    transition: var(--transition);
+  }
+  .drop-zone.drag-over { border-color: var(--green); background: var(--green-soft-2); }
+  .drop-zone h3 { margin: 0 0 4px; font-size: 0.95rem; color: var(--text); text-align: center; }
+  .drop-zone p { margin: 0 0 12px; font-size: 0.8rem; color: var(--muted); text-align: center; }
+  .zone-cards { display: flex; flex-direction: column; gap: 8px; flex: 1; }
+  
+  .zone-card {
+    background: var(--green-soft-2); border: 1px solid var(--line); border-radius: 8px;
+    padding: 10px; font-size: 0.82rem; cursor: pointer;
+    transition: var(--transition);
+  }
+  .zone-card:hover { border-color: var(--green); background: var(--green-soft); }
+  .zone-card.correct { border-color: var(--green); background: var(--green-soft); }
+  .zone-card.incorrect { border-color: var(--red); background: var(--red-soft); }
+  .zone-card-title { font-weight: 600; margin-bottom: 2px; }
+  .zone-card-desc { font-size: 0.75rem; color: var(--muted); }
+  
+  .controls {
+    display: flex; gap: 12px; justify-content: center; padding: 16px 24px;
+    border-top: 1px solid var(--line); background: #fff; flex-shrink: 0;
+  }
+  .btn-action {
+    padding: 12px 24px; border: none; border-radius: 8px; cursor: pointer;
+    font-size: 0.9rem; font-weight: 600; transition: var(--transition);
+  }
+  .btn-check { background: var(--green); color: #fff; }
+  .btn-check:hover:not(:disabled) { filter: brightness(0.95); }
+  .btn-check:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+  .btn-reset { background: #fff; color: var(--text); border: 1px solid var(--line); }
+  .btn-reset:hover { border-color: var(--green); background: var(--green-soft-2); }
+  
+  .summary {
+    padding: 16px; border-radius: 8px; display: none; animation: fadeIn 0.3s;
+  }
+  .summary.show { display: block; }
+  .summary.success { background: var(--green-soft); border: 1px solid var(--green); color: var(--green); }
+  
+  .modal {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(31,42,36,0.5); display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; backdrop-filter: blur(3px);
+  }
+  .modal.active { display: flex; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  
+  .modal-box {
+    background: #fff; border-radius: 12px; max-width: 500px; width: 100%;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.15); overflow: hidden; animation: slideUp 0.25s;
+    max-height: 85vh; display: flex; flex-direction: column;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .modal-head { padding: 16px 20px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: var(--green-soft-2); }
+  .modal-head h3 { margin: 0; font-size: 1.05rem; color: var(--green); }
+  .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); }
+  .modal-close:hover { color: var(--text); }
+  
+  .modal-body { padding: 20px; overflow-y: auto; }
+  .modal-body p { margin: 0 0 12px; font-size: 0.9rem; line-height: 1.5; color: var(--text); }
+  .modal-body strong { color: var(--green); }
+  .verdict-box { margin-top: 16px; padding: 14px; border-radius: 8px; font-size: 0.88rem; line-height: 1.5; }
+  .verdict-ok { background: #dcfce7; border: 1px solid #86efac; color: #14532d; }
+  .verdict-warn { background: #fff7ed; border: 1px solid #fdba74; color: #7c2d12; }
+  .verdict-fail { background: #fff1ea; border: 1px solid #fca5a5; color: #7f1d1d; }
+  
+  .modal-foot { padding: 14px 20px; border-top: 1px solid var(--line); text-align: right; flex-shrink: 0; }
+  .btn-modal-close { background: var(--green); color: #fff; border: none; padding: 10px 20px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+  .btn-modal-close:hover { filter: brightness(0.95); }
+
+  @media (max-width: 700px) {
+    .zones-wrapper { grid-template-columns: 1fr; }
+    .szz-wrap { max-height: 100vh; border-radius: 0; border: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="szz-wrap">
+  <div class="szz-header">
+    <h2>За счет чего можно сократить СЗЗ?</h2>
+    <p>Распределите мероприятия по их реальному влиянию на границу зоны</p>
+  </div>
+
+  <div class="oleg-intro">
+    <div class="oleg-avatar"><img src="oleg.jpg" alt="Олег"></div>
+    <div class="oleg-text">
+      <strong>Олег:</strong> Застройщик предлагает оплатить модернизацию, чтобы мы уменьшили СЗЗ. Но не все меры работают одинаково. Помогите мне отделить реальные способы сокращения от бесполезных трат.
+    </div>
+  </div>
+
+  <div class="instruction">
+    Перетаскивайте карточки из барабана в одну из двух зон. <strong>«Сокращает СЗЗ»</strong> — меры, реально снижающие химические выбросы. <strong>«Не сокращает СЗЗ»</strong> — меры, не влияющие на химический фактор.
+  </div>
+
+  <div class="game-area">
+    <!-- Барабан -->
+    <div class="drum-container">
+      <div class="drum-label">
+        <span>Барабан мероприятий</span>
+        <span class="drum-count" id="drum-count">0 / 8</span>
+      </div>
+      <div class="drum-stack" id="drum-stack"></div>
+    </div>
+
+    <!-- Зоны -->
+    <div class="zones-wrapper">
+      <div class="drop-zone" id="zone-reduce" data-type="reduce">
+        <h3>Сокращает СЗЗ</h3>
+        <p>Меры, снижающие химические выбросы</p>
+        <div class="zone-cards" id="zone-reduce-cards"></div>
+      </div>
+      <div class="drop-zone" id="zone-no-reduce" data-type="no-reduce">
+        <h3>Не сокращает СЗЗ</h3>
+        <p>Меры, не влияющие на химический фактор</p>
+        <div class="zone-cards" id="zone-no-reduce-cards"></div>
+      </div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-action btn-reset" id="btn-reset">Начать заново</button>
+    <button class="btn-action btn-check" id="btn-check" disabled>Проверить решение</button>
+  </div>
+</div>
+
+<!-- Result Modal -->
+<div class="modal" id="result-modal">
+  <div class="modal-box">
+    <div class="modal-head">
+      <h3 id="res-title">Итоговый комментарий</h3>
+      <button class="modal-close" id="close-modal">&times;</button>
+    </div>
+    <div class="modal-body" id="res-body"></div>
+    <div class="modal-foot">
+      <button class="btn-modal-close" id="close-modal-btn">Понятно</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const measures = [
+    { 
+      id: 'absorber', 
+      text: 'Абсорберы с КПД 99%', 
+      desc: 'Локальная очистка на выходе из реакторов. Улавливает пары фенола.', 
+      reduce: true,
+      comment: 'Верно! Абсорберы напрямую снижают концентрацию вредных веществ в выбросах, что уменьшает расчетный радиус СЗЗ.'
+    },
+    { 
+      id: 'reactors', 
+      text: 'Герметизация реакторов', 
+      desc: 'Переход на замкнутый цикл вместо открытых емкостей.', 
+      reduce: true,
+      comment: 'Верно! Исключение неорганизованных выбросов через неплотности значительно снижает общую эмиссию.'
+    },
+    { 
+      id: 'raw', 
+      text: 'Замена сырья', 
+      desc: 'Смолы с низким содержанием свободного фенола.', 
+      reduce: true,
+      comment: 'Верно! Меньше летучих компонентов в исходном продукте = меньше испарений при нагреве и синтезе.'
+    },
+    { 
+      id: 'flaring', 
+      text: 'Факельная установка', 
+      desc: 'Сжигание отходящих газов. Эффективно для метанола.', 
+      reduce: true,
+      comment: 'Верно! Сжигание преобразует вредные газы в менее опасные продукты, снижая токсичность выбросов.'
+    },
+    { 
+      id: 'noise', 
+      text: 'Шумозащитные экраны', 
+      desc: 'Акустические барьеры вдоль границы со стороны ЖК.', 
+      reduce: false,
+      comment: 'Ошибка. Экраны снижают шум, но СЗЗ для химзавода определяется химическими выбросами, а не акустикой.'
+    },
+    { 
+      id: 'vibro', 
+      text: 'Виброизоляция насосов', 
+      desc: 'Монтаж демпферов под компрессорным оборудованием.', 
+      reduce: false,
+      comment: 'Ошибка. Виброизоляция важна для комфорта и долговечности оборудования, но не влияет на состав выбросов.'
+    },
+    { 
+      id: 'fence', 
+      text: 'Ремонт забора и знаков', 
+      desc: 'Косметическое улучшение ограждения территории.', 
+      reduce: false,
+      comment: 'Ошибка. Это визуальная мера. Она не меняет физические параметры выбросов и рассеивания.'
+    },
+    { 
+      id: 'clean', 
+      text: 'Плановая чистка фильтров', 
+      desc: 'Замена сорбентов по регламенту эксплуатации.', 
+      reduce: false,
+      comment: 'Ошибка. Это обязательная эксплуатация, а не модернизация. Она поддерживает текущий уровень, но не снижает его.'
+    }
+  ];
+
+  let queue = [];
+  let placedCards = [];
+  let draggedEl = null;
+  let offsetX = 0, offsetY = 0;
+  let isChecked = false;
+
+  const drumStack = document.getElementById('drum-stack');
+  const drumCount = document.getElementById('drum-count');
+  const btnCheck = document.getElementById('btn-check');
+  const btnReset = document.getElementById('btn-reset');
+  const summary = document.getElementById('summary');
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function initDrum() {
+    queue = shuffle(measures);
+    placedCards = [];
+    drumStack.innerHTML = '';
+    document.getElementById('zone-reduce-cards').innerHTML = '';
+    document.getElementById('zone-no-reduce-cards').innerHTML = '';
+    summary.classList.remove('show');
+    summary.className = 'summary';
+    btnCheck.disabled = true;
+    isChecked = false;
+    updateCounter();
+    showTopCards();
+  }
+
+  function showTopCards() {
+    drumStack.innerHTML = '';
+    const visible = queue.slice(0, 3);
+    visible.forEach((item, i) => {
+      const card = document.createElement('div');
+      card.className = 'drum-card';
+      card.dataset.id = item.id;
+      card.innerHTML = `
+        <div style="display:flex;gap:10px;align-items:flex-start;">
+          <div class="card-icon">⚙️</div>
+          <div>
+            <div class="card-text">${item.text}</div>
+            <div style="font-size:0.75rem;color:var(--muted);margin-top:2px;">${item.desc}</div>
+          </div>
+        </div>
+      `;
+      if (i === 0) {
+        card.addEventListener('pointerdown', handlePointerDown);
+      } else {
+        card.style.pointerEvents = 'none';
+      }
+      drumStack.appendChild(card);
+    });
+  }
+
+  function updateCounter() {
+    const total = measures.length;
+    const remaining = queue.length;
+    drumCount.textContent = `${remaining} / ${total}`;
+    if (remaining === 0) btnCheck.disabled = false;
+  }
+
+  function handlePointerDown(e) {
+    const drumCard = e.target.closest('.drum-card');
+    if (!drumCard) return;
+    
+    draggedEl = drumCard;
+    const rect = drumCard.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    
+    draggedEl.style.position = 'fixed';
+    draggedEl.style.width = rect.width + 'px';
+    draggedEl.style.zIndex = 1000;
+    draggedEl.style.left = rect.left + 'px';
+    draggedEl.style.top = rect.top + 'px';
+    draggedEl.classList.add('dragging');
+    
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+  }
+
+  function onPointerMove(e) {
+    if (!draggedEl) return;
+    draggedEl.style.left = (e.clientX - offsetX) + 'px';
+    draggedEl.style.top = (e.clientY - offsetY) + 'px';
+    
+    document.querySelectorAll('.drop-zone').forEach(z => {
+      const rect = z.getBoundingClientRect();
+      if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        z.classList.add('drag-over');
+      } else {
+        z.classList.remove('drag-over');
+      }
+    });
+  }
+
+  function onPointerUp(e) {
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+    
+    if (!draggedEl) return;
+    
+    draggedEl.style.position = '';
+    draggedEl.style.width = '';
+    draggedEl.style.zIndex = '';
+    draggedEl.style.left = '';
+    draggedEl.style.top = '';
+    draggedEl.style.transform = '';
+    draggedEl.classList.remove('dragging');
+    
+    const itemId = draggedEl.dataset.id;
+    const item = measures.find(m => m.id === itemId);
+    const itemText = draggedEl.querySelector('.card-text').textContent;
+    const itemDesc = draggedEl.querySelector('div[style*="font-size:0.75rem"]').textContent;
+    
+    draggedEl.style.display = 'none';
+    let elemBelow = document.elementFromPoint(e.clientX, e.clientY);
+    draggedEl.style.display = '';
+    
+    let placed = false;
+    if (elemBelow) {
+      const target = elemBelow.closest('.drop-zone');
+      if (target) {
+        const zoneCards = target.querySelector('.zone-cards');
+        const zoneCard = document.createElement('div');
+        zoneCard.className = 'zone-card';
+        zoneCard.dataset.id = itemId;
+        zoneCard.dataset.reduce = item.reduce;
+        zoneCard.innerHTML = `
+          <div class="zone-card-title">${itemText}</div>
+          <div class="zone-card-desc">${itemDesc}</div>
+        `;
+        zoneCard.onclick = () => showCardFeedback(zoneCard);
+        zoneCards.appendChild(zoneCard);
+        placed = true;
+      }
+    }
+    
+    if (placed) {
+      queue = queue.filter(q => q.id !== itemId);
+      placedCards.push(item);
+      showTopCards();
+      updateCounter();
+    }
+    draggedEl = null;
+  }
+
+  btnCheck.addEventListener('click', () => {
+    if (isChecked) return;
+    isChecked = true;
+    
+    let errors = 0;
+    let correctCount = 0;
+    
+    document.querySelectorAll('.drop-zone').forEach(zone => {
+      const zoneType = zone.dataset.type;
+      const cards = zone.querySelectorAll('.zone-card');
+      
+      cards.forEach(card => {
+        const isReduce = card.dataset.reduce === 'true';
+        const shouldBeReduce = zoneType === 'reduce';
+        
+        card.classList.remove('correct', 'incorrect');
+        
+        if (isReduce === shouldBeReduce) {
+          card.classList.add('correct');
+          correctCount++;
+        } else {
+          card.classList.add('incorrect');
+          errors++;
+        }
+      });
+      
+      zone.classList.remove('success', 'error');
+      if (cards.length > 0) {
+        zone.classList.add(errors === 0 ? 'success' : 'error');
+      }
+    });
+
+    summary.classList.remove('success', 'error', 'show');
+    
+    let verdictTitle, verdictText, verdictClass;
+    
+    if (errors === 0) {
+      verdictTitle = '✓ Отлично!';
+      verdictClass = 'verdict-ok';
+      verdictText = '<strong>Вы верно определили все меры.</strong> Реальное сокращение СЗЗ достигается только за счет снижения химических выбросов. Абсорберы, герметизация, замена сырья и факельные установки — это работающие меры. Шумозащита, виброизоляция и косметический ремонт не влияют на химическую составляющую СЗЗ.';
+    } else {
+      verdictTitle = `⚠️ Есть ошибки (${errors} из ${placedCards.length})`;
+      verdictClass = errors > 2 ? 'verdict-fail' : 'verdict-warn';
+      verdictText = `<strong>Не все меры определены верно.</strong> Нажмите на красные карточки, чтобы увидеть подробный разбор каждой ошибки.`;
+    }
+    
+    document.getElementById('res-title').textContent = verdictTitle;
+    document.getElementById('res-body').innerHTML = `
+      <div class="verdict-box ${verdictClass}">${verdictText}</div>
+      <p style="margin-top:16px;font-size:0.85rem;color:var(--muted);">
+        <strong>Совет:</strong> При планировании модернизации фокусируйтесь на мерах, которые реально снижают концентрацию вредных веществ. Это абсорбция, герметизация, замена сырья и сжигание отходящих газов.
+      </p>
+    `;
+    document.getElementById('result-modal').classList.add('active');
+  });
+
+  function showCardFeedback(card) {
+    const id = card.dataset.id;
+    const item = measures.find(m => m.id === id);
+    if (!item) return;
+    
+    const isCorrect = (item.reduce && card.closest('#zone-reduce')) || (!item.reduce && card.closest('#zone-no-reduce'));
+    
+    let title = isCorrect ? '✓ Верно' : '✗ Ошибка';
+    let body = `<p><strong>${item.text}</strong></p>`;
+    body += `<p>${item.comment}</p>`;
+    
+    if (!isCorrect) {
+      body += `<p style="color:var(--red);margin-top:12px;"><strong>Правильный ответ:</strong> ${item.reduce ? 'Сокращает СЗЗ' : 'Не сокращает СЗЗ'}</p>`;
+    }
+    
+    document.getElementById('res-title').textContent = title;
+    document.getElementById('res-body').innerHTML = body;
+    document.getElementById('result-modal').classList.add('active');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('active');
+  }
+
+  btnReset.addEventListener('click', () => {
+    initDrum();
+  });
+
+  document.getElementById('close-modal').onclick = () => closeModal('result-modal');
+  document.getElementById('close-modal-btn').onclick = () => closeModal('result-modal');
+  document.getElementById('result-modal').onclick = (e) => { if(e.target.id === 'result-modal') closeModal('result-modal'); };
+
+  // Init
+  initDrum();
+</script>
+
+</body>
+</html>
