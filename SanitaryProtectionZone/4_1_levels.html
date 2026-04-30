@@ -29,9 +29,10 @@
   
   .szz-header {
     padding: 20px 24px; background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%);
-    border-bottom: 1px solid var(--line); flex-shrink: 0; display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid var(--line); flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
   }
   .szz-header h2 { margin: 0; font-size: 1.3rem; font-weight: 600; color: var(--green); }
+  .header-buttons { display: flex; gap: 8px; }
   .btn-rules {
     background: #fff; border: 1px solid var(--line); padding: 6px 12px; border-radius: 8px;
     cursor: pointer; font-size: 0.85rem; color: var(--green); font-weight: 500; transition: var(--transition);
@@ -181,6 +182,7 @@
     .selection-area { grid-template-columns: 1fr; }
     .size-scale { height: 90px; }
     .enterprise-card { flex-direction: column; text-align: center; }
+    .header-buttons { width: 100%; justify-content: center; }
   }
 </style>
 </head>
@@ -189,7 +191,10 @@
 <div class="szz-wrap">
   <div class="szz-header">
     <h2>Определяем размер СЗЗ</h2>
-    <button class="btn-rules" onclick="openModal('modal-rules')">📖 Правила и памятка</button>
+    <div class="header-buttons">
+      <button class="btn-rules" onclick="openModal('modal-rules')">📖 Правила</button>
+      <button class="btn-rules" onclick="openModal('modal-cheatsheet')">📊 Памятка по размерам</button>
+    </div>
   </div>
 
   <div class="oleg-intro">
@@ -249,7 +254,7 @@
 <!-- Rules Modal -->
 <div class="modal" id="modal-rules">
   <div class="modal-box">
-    <div class="modal-head"><h3>📖 Правила и памятка</h3><button class="modal-close" onclick="closeModal('modal-rules')">&times;</button></div>
+    <div class="modal-head"><h3>📖 Правила интерактива</h3><button class="modal-close" onclick="closeModal('modal-rules')">&times;</button></div>
     <div class="modal-body">
       <p><strong>Как работать с интерактивом:</strong></p>
       <ul>
@@ -258,18 +263,27 @@
         <li>Нажмите «Проверить». В окне появится подробный разбор.</li>
         <li>После 5 предприятий откроется итоговый разбор темы.</li>
       </ul>
-      <hr style="border:0; border-top:1px solid var(--line); margin:12px 0;">
-      <p><strong>📊 Шпаргалка по СанПин 2.2.1/2.1.1.1200-03:</strong></p>
-      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:8px;">
+      <p style="margin-top:12px; font-size:0.85rem; color:var(--muted);">💡 Подсказка: Класс зависит от вида и объёма выбросов, а не от площади участка. Физические факторы (шум) обычно дают III класс, химические/биологические — I или II.</p>
+    </div>
+    <div class="modal-foot"><button class="btn-modal" onclick="closeModal('modal-rules')">Понятно</button></div>
+  </div>
+</div>
+
+<!-- Cheatsheet Modal -->
+<div class="modal" id="modal-cheatsheet">
+  <div class="modal-box">
+    <div class="modal-head"><h3>📊 Памятка по размерам СЗЗ</h3><button class="modal-close" onclick="closeModal('modal-cheatsheet')">&times;</button></div>
+    <div class="modal-body">
+      <p><strong>Классы опасности по СанПин 2.2.1/2.1.1.1200-03:</strong></p>
+      <div style="display:grid; grid-template-columns:repeat(auto-fit, minmax(140px, 1fr)); gap:8px; margin-top:12px;">
         <div style="padding:8px; background:#fef2f2; border-radius:6px; border-left:3px solid #dc2626;"><strong>I класс</strong><br>1000 м — Химия, металлургия, НПЗ</div>
         <div style="padding:8px; background:#fff7ed; border-radius:6px; border-left:3px solid #ea580c;"><strong>II класс</strong><br>500 м — Животноводство, крупные склады ГСМ</div>
         <div style="padding:8px; background:#fefce8; border-radius:6px; border-left:3px solid #eab308;"><strong>III класс</strong><br>300 м — Компрессорные, котельные, среднее производство</div>
         <div style="padding:8px; background:#f0fdf4; border-radius:6px; border-left:3px solid #22c55e;"><strong>IV класс</strong><br>100 м — Склады, малые производства без вредных выбросов</div>
         <div style="padding:8px; background:#eff6ff; border-radius:6px; border-left:3px solid #3b82f6;"><strong>V класс</strong><br>50 м — Кафе, офисы, бытовые услуги</div>
       </div>
-      <p style="margin-top:12px; font-size:0.85rem; color:var(--muted);">💡 Подсказка: Класс зависит от <strong>вида и объёма выбросов</strong>, а не от площади участка. Физические факторы (шум) обычно дают III класс, химические/биологические — I или II.</p>
     </div>
-    <div class="modal-foot"><button class="btn-modal" onclick="closeModal('modal-rules')">Понятно</button></div>
+    <div class="modal-foot"><button class="btn-modal" onclick="closeModal('modal-cheatsheet')">Понятно</button></div>
   </div>
 </div>
 
@@ -297,7 +311,7 @@
       </ul>
       <div class="tip-box">
         <strong>💡 Совет экологу:</strong><br>
-        Никогда не выбирайте размер «на глаз». Сначала определите <strong>лимитирующий фактор</strong> (химия, биология, шум), затем сверьтесь с таблицей СанПин. Если предприятие комбинированное (например, ТЭЦ), берите <strong>максимальный</strong> размер из всех действующих факторов.
+        Никогда не выбирайте размер «на глаз». Сначала определите лимитирующий фактор (химия, биология, шум), затем сверьтесь с таблицей СанПин. Если предприятие комбинированное (например, ТЭЦ), берите максимальный размер из всех действующих факторов.
       </div>
       <p style="margin-top:12px; font-size:0.85rem; color:var(--muted);">Практикуйтесь на реальных картах предприятий: определяйте класс, сверяйтесь с проектом СЗЗ, ищите расхождения. Это лучший способ закрепить навык.</p>
     </div>
@@ -397,7 +411,12 @@
 
   btnCheck.addEventListener('click', () => {
     if (!selectedClass || !selectedSize) {
-      alert('Пожалуйста, выберите класс опасности И размер СЗЗ перед проверкой.');
+      // Show validation modal instead of alert
+      const fbTitle = document.getElementById('fb-title');
+      const fbBody = document.getElementById('fb-body');
+      fbTitle.textContent = '⚠️ Внимание';
+      fbBody.innerHTML = '<div class="feedback-result fail">Пожалуйста, выберите класс опасности И размер СЗЗ перед проверкой.</div>';
+      openModal('modal-feedback');
       return;
     }
 
