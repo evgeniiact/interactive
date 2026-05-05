@@ -1,0 +1,304 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8" />
+<title>Типы экологических документов</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<style>
+:root{
+  --bg-silk:#f3fbf7;
+  --green:#007760;
+  --green2:#19a86e;
+  --border:#cfd8d3;
+  --error:#c0392b;
+  --ok:#1e9150;
+}
+*{box-sizing:border-box;}
+body{
+  margin:0;
+  padding:8px;
+  display:flex;
+  justify-content:center;
+  background:var(--bg-silk);
+  font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+  color:#222;
+}
+#app{
+  width:min(780px,100%);
+  background:#fff;
+  border:1px solid var(--green2);
+  border-radius:4px;
+  padding:14px 16px 16px;
+  box-shadow:0 14px 36px rgba(0,119,96,0.16);
+}
+h2{
+  margin:0;
+  font-size:15px;
+  color:var(--green);
+}
+.subtitle{
+  margin-top:6px;
+  font-size:12px;
+  line-height:1.4;
+}
+.main{
+  margin-top:10px;
+  display:grid;
+  grid-template-columns:1.2fr 1fr;
+  gap:14px;
+}
+.card{
+  border:1px solid var(--border);
+  border-radius:8px;
+  padding:10px 12px;
+  background:#f9fcfa;
+}
+.doc-code{
+  font-size:11px;
+  text-transform:uppercase;
+  color:var(--green);
+  letter-spacing:0.05em;
+}
+.doc-name{
+  margin-top:4px;
+  font-weight:600;
+  font-size:13px;
+}
+.doc-comment{
+  margin-top:6px;
+  font-size:12px;
+  line-height:1.45;
+}
+.types-title{
+  font-size:11px;
+  text-transform:uppercase;
+  color:#52625b;
+  letter-spacing:0.06em;
+  margin-bottom:6px;
+}
+.type-btn{
+  width:100%;
+  text-align:left;
+  border-radius:999px;
+  border:1px solid var(--border);
+  padding:7px 10px;
+  font-size:12px;
+  margin-bottom:6px;
+  cursor:pointer;
+  background:#fff;
+}
+.type-btn span{
+  font-weight:600;
+  color:var(--green);
+}
+.type-btn.correct{
+  border-color:var(--ok);
+  background:#e7f7ee;
+}
+.type-btn.wrong{
+  border-color:var(--error);
+  background:#ffeceb;
+}
+.feedback{
+  margin-top:6px;
+  font-size:12px;
+  min-height:34px;
+}
+.feedback.ok{color:var(--ok);}
+.feedback.err{color:var(--error);}
+.footer{
+  margin-top:10px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  font-size:11px;
+}
+.btn{
+  border-radius:16px;
+  padding:6px 14px;
+  font-size:11px;
+  border:1px solid var(--green);
+  background:#f4fbf7;
+  color:var(--green);
+  cursor:pointer;
+}
+.score{
+  color:var(--green);
+  font-weight:600;
+}
+@media(max-width:640px){
+  .main{grid-template-columns:1fr;gap:10px;}
+}
+</style>
+</head>
+<body>
+<div id="app">
+  <h2>Типы экологических документов</h2>
+  <div class="subtitle">
+    Перед вами документ предприятия. Выберите, к какому типу он относится. 
+    Сразу увидите, почему выбор верный или нет.
+  </div>
+
+  <div class="main">
+    <div class="card">
+      <div class="doc-code" id="doc-code"></div>
+      <div class="doc-name" id="doc-name"></div>
+      <div class="doc-comment" id="doc-comment"></div>
+    </div>
+    <div>
+      <div class="types-title">Выберите тип документа</div>
+      <button class="type-btn" data-type="разрешительный">
+        <span>Разрешительный</span> – дает право работать и воздействовать на среду
+      </button>
+      <button class="type-btn" data-type="учетный">
+        <span>Учетный</span> – описывает, что есть у предприятия
+      </button>
+      <button class="type-btn" data-type="проектный">
+        <span>Проектный</span> – рассчитывает нормативы и планы
+      </button>
+      <button class="type-btn" data-type="отчетный">
+        <span>Отчетный</span> – показывает фактическое выполнение
+      </button>
+      <div class="feedback" id="feedback"></div>
+    </div>
+  </div>
+
+  <div class="footer">
+    <div class="score" id="score">Верно: 0 из 0</div>
+    <button class="btn" id="next-btn">Следующий документ</button>
+  </div>
+</div>
+
+<script>
+const documents = [
+  {
+    code:'КЭР',
+    name:'Комплексное экологическое разрешение',
+    type:'разрешительный',
+    comment:'КЭР объединяет в одном документе ограничения по выбросам, сбросам и отходам. Без него объект I категории не может работать.'
+  },
+  {
+    code:'ДВОС',
+    name:'Декларация о воздействии на окружающую среду',
+    type:'разрешительный',
+    comment:'ДВОС – главный разрешительный документ для объекта II категории. По ней объект получает право работать при заявленных параметрах воздействия.'
+  },
+  {
+    code:'ПЭК',
+    name:'Программа производственного экоконтроля',
+    type:'разрешительный',
+    comment:'ПЭК фиксирует, как предприятие будет контролировать свое воздействие. Наличие и актуальность ПЭК – условие законной работы объекта НВОС.'
+  },
+  {
+    code:'Договор водопользования',
+    name:'Договор водопользования',
+    type:'разрешительный',
+    comment:'Договор водопользования вместе с решением на водный объект дает право забирать воду или сбрасывать стоки.'
+  },
+  {
+    code:'Сведения НВОС',
+    name:'Сведения об объекте НВОС в госреестре',
+    type:'учетный',
+    comment:'Сведения в реестре описывают объект НВОС: адрес, собственника, категорию, характеристики. При изменении реквизитов их нужно актуализировать.'
+  },
+  {
+    code:'Паспорт отхода',
+    name:'Паспорт отхода I–IV класса опасности',
+    type:'учетный',
+    comment:'Паспорт отхода фиксирует состав, свойства, класс опасности и реквизиты организации, которая с ним работает.'
+  },
+  {
+    code:'Паспорт ГОУ',
+    name:'Паспорт газоочистной установки',
+    type:'учетный',
+    comment:'Паспорт ГОУ подтверждает наличие и характеристики газоочистной установки на источнике выбросов.'
+  },
+  {
+    code:'НДВ',
+    name:'Проект нормативов допустимых выбросов',
+    type:'проектный',
+    comment:'НДВ – расчетный документ. В нем обосновывают нормативы выбросов, на которые потом ссылаются в разрешениях.'
+  },
+  {
+    code:'НДС',
+    name:'Проект нормативов допустимых сбросов',
+    type:'проектный',
+    comment:'НДС задает нормативы по сбросам в воду. Его показатели попадают в разрешения и договоры водопользования.'
+  },
+  {
+    code:'ППЭЭ',
+    name:'Программа повышения экологической эффективности',
+    type:'проектный',
+    comment:'ППЭЭ описывает мероприятия, за счет которых предприятие снижает нагрузку и выполняет целевые показатели КЭР.'
+  },
+  {
+    code:'Отчет по ПЭК',
+    name:'Отчет по производственному экоконтролю',
+    type:'отчетный',
+    comment:'Отчет по ПЭК показывает, как выполняли программу контроля: какие измерения провели и какие нарушения устранили.'
+  },
+  {
+    code:'2-ТП (воздух)',
+    name:'Форма 2-ТП (воздух)',
+    type:'отчетный',
+    comment:'2-ТП (воздух) – отчет по выбросам в атмосферу. В нем сходятся данные учета, измерений и работы источников.'
+  }
+];
+
+const codeEl=document.getElementById('doc-code');
+const nameEl=document.getElementById('doc-name');
+const commentEl=document.getElementById('doc-comment');
+const feedbackEl=document.getElementById('feedback');
+const scoreEl=document.getElementById('score');
+const nextBtn=document.getElementById('next-btn');
+const typeButtons=Array.from(document.querySelectorAll('.type-btn'));
+
+let currentIndex=0;
+let correctCount=0;
+let totalCount=0;
+
+function showDoc(index){
+  const doc=documents[index];
+  codeEl.textContent=doc.code;
+  nameEl.textContent=doc.name;
+  commentEl.textContent=doc.comment;
+  feedbackEl.textContent='';
+  feedbackEl.className='feedback';
+  typeButtons.forEach(btn=>{
+    btn.classList.remove('correct','wrong');
+    btn.disabled=false;
+  });
+}
+
+function handleTypeClick(e){
+  const btn=e.currentTarget;
+  const chosen=btn.dataset.type;
+  const doc=documents[currentIndex];
+  totalCount++;
+  typeButtons.forEach(b=>b.disabled=true);
+  if(chosen===doc.type){
+    correctCount++;
+    btn.classList.add('correct');
+    feedbackEl.textContent='Верно: это '+doc.type+' документ. Изменения реквизитов влияют на него как на '+doc.type+' – дальше в курсе вы будете выбирать, вносить ли изменения или переоформлять.';
+    feedbackEl.className='feedback ok';
+  }else{
+    btn.classList.add('wrong');
+    const rightBtn=typeButtons.find(b=>b.dataset.type===doc.type);
+    if(rightBtn) rightBtn.classList.add('correct');
+    feedbackEl.textContent='Не совсем. Этот документ относится к типу «'+doc.type+'». Важно отличать тип, чтобы при изменениях выбрать правильное действие.';
+    feedbackEl.className='feedback err';
+  }
+  scoreEl.textContent='Верно: '+correctCount+' из '+totalCount;
+}
+
+typeButtons.forEach(btn=>btn.addEventListener('click',handleTypeClick));
+
+nextBtn.addEventListener('click',()=>{
+  currentIndex=(currentIndex+1)%documents.length;
+  showDoc(currentIndex);
+});
+
+showDoc(currentIndex);
+</script>
+</body>
+</html>
