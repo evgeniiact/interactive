@@ -1,0 +1,758 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажер: Алгоритм действий при изменениях</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #fff;
+    --text-main: #1a2b49;
+    --text-light: #5a6b7c;
+    --primary: #4a5cf0;
+    --success: #2e7d32;
+    --error: #c42017;
+    --gray-bg: #f8f9fb;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #fff;
+    color: var(--text-main);
+    padding: 24px;
+    max-width: 760px;
+    margin: 0 auto;
+    line-height: 1.5;
+  }
+  
+  /* Header & Progress */
+  h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; }
+  .subtitle { font-size: 15px; color: var(--text-light); margin-bottom: 24px; }
+  
+  .progress-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 32px;
+    position: relative;
+  }
+  .progress-line {
+    position: absolute;
+    top: 50%;
+    left: 40px;
+    right: 40px;
+    height: 2px;
+    background: #eef1f6;
+    z-index: 0;
+  }
+  .step-indicator {
+    position: relative;
+    z-index: 1;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #eef1f6;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 16px;
+    transition: all 0.3s;
+    margin: 0 20px;
+  }
+  .step-indicator.active { background: var(--primary); color: #fff; transform: scale(1.1); }
+  .step-indicator.completed { background: var(--success); color: #fff; }
+
+  /* Case Selection Screen */
+  .case-grid { display: flex; flex-direction: column; gap: 12px; margin-bottom: 20px; }
+  .case-card {
+    background: #f8f9fb;
+    border: 2px solid #eef1f6;
+    border-radius: 10px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+  }
+  .case-card:hover { border-color: var(--primary); transform: translateX(4px); }
+  .case-card.completed { border-color: var(--success); background: #e8f5e9; }
+  .case-card.completed::after {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 16px;
+    font-size: 24px;
+    color: var(--success);
+    font-weight: 700;
+  }
+  .case-title { font-weight: 700; margin-bottom: 4px; }
+  .case-desc { font-size: 13.5px; color: var(--text-light); }
+
+  /* Case Display */
+  .case-box {
+    background: var(--gray-bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--primary);
+  }
+  .case-title-display { font-size: 13px; color: var(--text-light); margin-bottom: 6px; font-weight: 600; text-transform: uppercase; }
+  .case-desc-display { font-size: 15px; line-height: 1.5; font-weight: 500; }
+
+  /* Question Area */
+  .question-box {
+    background: #fff;
+    border-radius: var(--radius);
+    margin-bottom: 16px;
+  }
+  .question-text { font-size: 18px; font-weight: 700; margin-bottom: 12px; text-align: left; }
+  .hint { font-size: 14px; color: var(--text-light); margin-bottom: 24px; }
+  
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    background: #fff;
+    border: 2px solid #eef1f6;
+    border-radius: 8px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 15px;
+    text-align: left;
+    position: relative;
+  }
+  .option:hover { border-color: var(--primary); background: #f8f9fb; }
+  .option.selected { background: var(--primary); color: #fff; border-color: var(--primary); }
+  .option.correct { background: #e8f5e9; border-color: var(--success); color: var(--success); }
+  .option.wrong { background: #ffe8e6; border-color: var(--error); color: var(--error); }
+
+  /* Hint Button */
+  .hint-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: #e3f2fd;
+    color: var(--primary);
+    border: none;
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 16px;
+    transition: all 0.2s;
+  }
+  .hint-btn:hover { background: #bbdefb; }
+  
+  .hint-popup {
+    background: #fff;
+    border: 1px solid #eef1f6;
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 16px;
+    display: none;
+    animation: fadeIn 0.3s;
+  }
+  .hint-popup.show { display: block; }
+  .hint-popup-title {
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text-main);
+    font-size: 14px;
+  }
+  .hint-popup-list {
+    font-size: 13.5px;
+    color: var(--text-main);
+    padding-left: 20px;
+    line-height: 1.6;
+  }
+  .hint-popup-list li { margin-bottom: 4px; }
+
+  /* Feedback & Controls */
+  .feedback {
+    margin-top: 16px;
+    padding: 16px;
+    border-radius: 8px;
+    font-size: 14.5px;
+    line-height: 1.6;
+    display: none;
+    border-left: 4px solid transparent;
+  }
+  .feedback.show { display: block; animation: fadeIn 0.3s; }
+  .feedback.success { background: #e8f5e9; border-color: var(--success); color: #1b5e20; }
+  .feedback.error { background: #ffe8e6; border-color: var(--error); color: #7f1d1d; }
+  
+  .controls { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
+  .btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #3b4bd6; }
+  .btn-primary:disabled { background: #cfd4e0; cursor: not-allowed; }
+  .btn-secondary { background: #eef1f6; color: var(--text-main); display: none; }
+  .btn-secondary.show { display: block; }
+  .btn-secondary:hover { background: #e0e4eb; }
+
+  /* Result Screen */
+  .result-box { text-align: center; padding: 10px 0; }
+  .result-icon { font-size: 48px; margin-bottom: 12px; }
+  .result-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; color: var(--text-main); }
+  .result-summary {
+    background: var(--gray-bg);
+    padding: 24px;
+    border-radius: 10px;
+    text-align: left;
+    margin-bottom: 24px;
+    font-size: 15px;
+    line-height: 1.6;
+  }
+  .summary-row { margin-bottom: 14px; padding-bottom: 14px; border-bottom: 1px solid #eef1f6; }
+  .summary-row:last-child { border-bottom: none; margin-bottom: 0; padding-bottom: 0; }
+  .summary-label { font-weight: 600; color: var(--text-light); margin-bottom: 4px; font-size: 13px; }
+  .summary-value { color: var(--text-main); }
+
+  /* Final Summary */
+  .final-summary {
+    background: #fff;
+    color: var(--text-main);
+    padding: 0;
+    border-radius: 0;
+    margin-bottom: 24px;
+    display: none;
+  }
+  .final-summary.show { display: block; }
+  .final-summary h3 { 
+    font-size: 20px; 
+    margin-bottom: 20px;
+    text-align: left;
+    color: var(--text-main);
+  }
+  .final-summary p { 
+    font-size: 16px; 
+    line-height: 1.6; 
+    margin-bottom: 16px;
+  }
+  .final-summary strong {
+    font-weight: 700;
+    color: var(--primary);
+  }
+  
+  .practical-guide {
+    background: var(--gray-bg);
+    padding: 24px;
+    border-radius: 12px;
+    margin-top: 20px;
+  }
+  .practical-guide h4 {
+    font-size: 18px;
+    margin-bottom: 16px;
+    color: var(--text-main);
+  }
+  .practical-guide ol {
+    padding-left: 20px;
+    margin: 0;
+  }
+  .practical-guide li {
+    margin-bottom: 16px;
+    line-height: 1.6;
+    font-size: 14.5px;
+  }
+  .practical-guide li strong {
+    color: var(--primary);
+    display: block;
+    margin-bottom: 6px;
+  }
+  
+  .completed-cases {
+    background: #e8f5e9;
+    padding: 16px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    border-left: 4px solid var(--success);
+  }
+  .completed-cases h4 {
+    font-size: 16px;
+    margin-bottom: 12px;
+    color: var(--success);
+  }
+  .case-checklist {
+    list-style: none;
+    padding: 0;
+  }
+  .case-checklist li {
+    padding: 8px 0;
+    padding-left: 28px;
+    position: relative;
+    font-size: 14.5px;
+  }
+  .case-checklist li::before {
+    content: '✓';
+    position: absolute;
+    left: 0;
+    color: var(--success);
+    font-weight: 700;
+  }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 600px) { body { padding: 16px; } .progress-line { left: 20px; right: 20px; } }
+</style>
+</head>
+<body>
+
+<div id="app">
+  <h2>Алгоритм оценки изменений</h2>
+  <p class="subtitle">Выберите ситуацию для отработки. Пройдите по трем шагам алгоритма и получите разбор.</p>
+  
+  <div id="selectionScreen">
+    <div class="final-summary" id="finalSummary">
+      <div class="completed-cases" id="completedCases">
+        <h4>Пройденные кейсы:</h4>
+        <ul class="case-checklist" id="caseChecklist"></ul>
+      </div>
+      
+      <h3>Как применять алгоритм на практике:</h3>
+      
+      <div class="practical-guide">
+        <ol>
+          <li><strong>Сначала определите тип изменения.</strong> Юридические сдвиги (адрес, название, собственник) требуют актуализации реестра НВОС и проверки КЭР/ДВОС. Технологические (новое сырьё, оборудование) — инвентаризации выбросов/сбросов и пересчёта нормативов. Операционные (смена подрядчика, обновление оргтехники) — только внутренних правок в договорах и регламентах.</li>
+          
+          <li><strong>Проверьте привязку к разрешениям.</strong> Если изменились координаты площадки, состав выбросов или объёмы отходов — разрешения нужно обновлять. Если поменялись только реквизиты в титульных листах — достаточно внести правки во внутренние проекты и утвердить их у руководителя.</li>
+          
+          <li><strong>Не трогайте то, что обновляется автоматически.</strong> Лицензии на отходы, сведения о СЗЗ в ЕГРН и некоторые договоры меняются по межведомственному взаимодействию. Ручное переоформление этих документов — лишняя работа.</li>
+          
+          <li><strong>Держите единый реестр разрешений.</strong> Заведите таблицу со списком всех документов, сроками их действия и ответственными. При изменении отмечайте статус каждого пункта: «готово», «в работе», «не требуется». Это исключит пропуск сроков и дублирование задач.</li>
+        </ol>
+      </div>
+      
+      <button class="btn btn-primary" onclick="restart()" style="margin-top: 24px;">Пройти заново</button>
+    </div>
+    <div class="case-grid" id="caseGrid"></div>
+  </div>
+
+  <div id="trainerScreen" style="display:none;">
+    <div class="progress-container">
+      <div class="progress-line"></div>
+      <div class="step-indicator" id="ind1">1</div>
+      <div class="step-indicator" id="ind2">2</div>
+      <div class="step-indicator" id="ind3">3</div>
+    </div>
+
+    <div class="case-box">
+      <div class="case-title-display" id="caseTitle">Ситуация 1</div>
+      <div class="case-desc-display" id="caseText">Загрузка...</div>
+    </div>
+
+    <div class="question-box">
+      <div class="question-text" id="qText"></div>
+      <div class="hint" id="qHint"></div>
+      
+      <button class="hint-btn" id="hintBtn" onclick="toggleHint()" style="display:none;">
+        <span>💡</span>
+        <span>Что такое разрешительные документы?</span>
+      </button>
+      
+      <div class="hint-popup" id="hintPopup">
+        <div class="hint-popup-title">Разрешительные документы – это:</div>
+        <ul class="hint-popup-list">
+          <li>КЭР (комплексное экологическое разрешение)</li>
+          <li>ДВОС (декларация о воздействии на окружающую среду)</li>
+          <li>Разрешение на выбросы (ВРВ)</li>
+          <li>Разрешение на сбросы (ВРС)</li>
+          <li>СЭЗ (санитарно-эпидемиологическое заключение)</li>
+          <li>Решение о предоставлении водного объекта</li>
+          <li>Договор водопользования</li>
+        </ul>
+        <div style="margin-top: 10px; font-size: 13px; color: var(--text-light);">
+          Это документы, которые выдает госорган (Росприроднадзор, Роспотребнадзор) и которые нужно переоформлять при изменениях.
+        </div>
+      </div>
+      
+      <div class="options" id="optsContainer"></div>
+      <div class="feedback" id="feedback"></div>
+    </div>
+
+    <div class="controls">
+      <button class="btn btn-secondary" id="retryBtn" onclick="resetStep()">Выбрать другой вариант</button>
+      <button class="btn btn-primary" id="nextBtn" onclick="nextStep()" disabled>Продолжить</button>
+    </div>
+  </div>
+
+  <div id="resultScreen" class="result-box" style="display:none;">
+    <div class="result-icon">✅</div>
+    <div class="result-title" id="resTitle"></div>
+    <div class="result-summary" id="resSummary"></div>
+    <button class="btn btn-primary" onclick="restart()">Пройти другую ситуацию</button>
+  </div>
+</div>
+
+<script>
+  // Data structure representing the logic tree
+  const cases = [
+    {
+      id: 'c1',
+      title: 'Ситуация 1: Смена названия',
+      desc: 'ООО «Ромашка» сменило название на ООО «Лютик». Производство, адрес и оборудование остались прежними.',
+      completed: false,
+      steps: [
+        {
+          q: 'Шаг 1. Что поменялось?',
+          hint: 'Определите тип изменения',
+          showHintBtn: false,
+          options: [
+            { t: 'Адрес (юридический или фактический)', c: false, f: 'Ошибка. Адрес и координаты не менялись.' },
+            { t: 'Название, собственник, реорганизация', c: true, f: 'Верно. Изменилось наименование юридического лица. Это требует внимания к документам.' },
+            { t: 'Технология, сырье, оборудование', c: false, f: 'Ошибка. Оборудование и процесс не менялись.' },
+            { t: 'Нормативная база', c: false, f: 'Ошибка. Законы и приказы остались прежними.' }
+          ],
+          jumpTo: 'q3'
+        },
+        {
+          q: 'Шаг 3. Есть ли привязка к разрешительным документам?',
+          hint: 'Выданы ли разрешения на текущее юридическое лицо?',
+          showHintBtn: true,
+          options: [
+            { t: 'Да, разрешения привязаны к ЮЛ', c: true, f: 'Верно. Все разрешения (КЭР, ДВОС, лицензии) выданы на ООО «Ромашка». Их нужно переоформить на новое название.' },
+            { t: 'Нет, только внутренние документы', c: false, f: 'Ошибка. Разрешения всегда привязаны к юридическому лицу.' }
+          ]
+        }
+      ],
+      final: {
+        title: 'Результат: Нужно переоформить разрешения',
+        text: 'Смена названия не меняет объект НВОС, но меняет правообладателя. Нужно актуализировать сведения в реестре НВОС и переоформить КЭР, ДВОС и лицензии на новое название.'
+      }
+    },
+    {
+      id: 'c2',
+      title: 'Ситуация 2: Переезд цеха',
+      desc: 'Производственный цех переехал в новое здание на расстоянии 500 метров. Координаты площадки изменились.',
+      completed: false,
+      steps: [
+        {
+          q: 'Шаг 1. Что поменялось?',
+          hint: 'Определите тип изменения',
+          showHintBtn: false,
+          options: [
+            { t: 'Адрес (юридический или фактический)', c: true, f: 'Верно. Изменился фактический адрес и координаты объекта.' },
+            { t: 'Название, собственник, реорганизация', c: false, f: 'Ошибка. Юридическое лицо осталось прежним.' },
+            { t: 'Технология, сырье, оборудование', c: false, f: 'Ошибка. Процесс производства остался прежним.' },
+            { t: 'Нормативная база', c: false, f: 'Ошибка. Законы не менялись.' }
+          ],
+          jumpTo: 'q2'
+        },
+        {
+          q: 'Шаг 2. Затрагивает ли это объекты НВОС?',
+          hint: 'Меняются ли место производства или выбросы?',
+          showHintBtn: false,
+          options: [
+            { t: 'Да, меняются координаты объекта', c: true, f: 'Верно. Координаты объекта НВОС изменились.' },
+            { t: 'Нет, производство не меняется', c: false, f: 'Ошибка. Место ведения деятельности изменилось.' },
+            { t: 'Затрагивает только название', c: false, f: 'Ошибка.' }
+          ],
+          jumpTo: 'q3'
+        },
+        {
+          q: 'Шаг 3. Есть ли привязка к разрешительным документам?',
+          hint: 'Указаны ли координаты в разрешениях?',
+          showHintBtn: true,
+          options: [
+            { t: 'Да, это объект лицензии или разрешения', c: true, f: 'Верно. КЭР и ДВОС привязаны к координатам объекта.' },
+            { t: 'Нет, только внутренние документы', c: false, f: 'Ошибка. Координаты объекта НВОС указаны в КЭР, ДВОС и реестре НВОС, поэтому требуется их актуализация.' },
+            { t: 'Только реестр НВОС', c: false, f: 'Не совсем. Реестр НВОС нужно актуализировать, но также нужно проверить КЭР и ДВОС, которые тоже содержат координаты.' },
+            { t: 'Ничего не нужно менять', c: false, f: 'Ошибка. Изменение координат всегда требует актуализации сведений в реестре НВОС и проверки разрешительной документации.' }
+          ]
+        }
+      ],
+      final: {
+        title: 'Результат: Переоформить разрешения',
+        text: 'Изменение координат требует актуализации сведений в реестре НВОС (30 дней) и переоформления КЭР и ДВОС.'
+      }
+    },
+    {
+      id: 'c3',
+      title: 'Ситуация 3: Новое оборудование с изменением процесса',
+      desc: 'Установили новый котел вместо старого, изменилась технология сжигания топлива. Выбросы могут измениться.',
+      completed: false,
+      steps: [
+        {
+          q: 'Шаг 1. Что поменялось?',
+          hint: 'Определите тип изменения',
+          showHintBtn: false,
+          options: [
+            { t: 'Адрес', c: false, f: 'Ошибка. Адрес прежний.' },
+            { t: 'Название', c: false, f: 'Ошибка.' },
+            { t: 'Технология, сырье, оборудование', c: true, f: 'Верно. Изменилось оборудование и технология.' },
+            { t: 'Нормативка', c: false, f: 'Ошибка.' }
+          ],
+          jumpTo: 'q2'
+        },
+        {
+          q: 'Шаг 2. Затрагивает ли это объекты НВОС?',
+          hint: 'Меняются ли выбросы или технология?',
+          showHintBtn: false,
+          options: [
+            { t: 'Да, меняются параметры воздействия', c: true, f: 'Верно. Новый процесс может изменить состав и объем выбросов.' },
+            { t: 'Нет, производство не меняется', c: false, f: 'Ошибка. Технология изменилась, значит воздействие может измениться.' }
+          ],
+          jumpTo: 'q3'
+        },
+        {
+          q: 'Шаг 3. Есть ли привязка к разрешительным документам?',
+          hint: 'Указаны ли нормативы выбросов в разрешениях?',
+          showHintBtn: true,
+          options: [
+            { t: 'Да, это объект разрешения', c: true, f: 'Верно. Нормативы выбросов прописаны в разрешительной документации.' },
+            { t: 'Нет, только внутренние документы', c: false, f: 'Ошибка. Если выбросы изменились, это влияет на КЭР или ДВОС, которые являются разрешительными документами.' },
+            { t: 'Только реестр НВОС', c: false, f: 'Не совсем. Реестр НВОС нужно актуализировать, но также нужно проверить, нужно ли менять КЭР или ДВОС.' },
+            { t: 'Ничего не нужно менять', c: false, f: 'Ошибка. Изменение технологии и выбросов всегда требует проверки разрешительной документации.' }
+          ]
+        }
+      ],
+      final: {
+        title: 'Результат: Провести инвентаризацию и обновить документы',
+        text: 'При изменении технологии нужно: 1. Провести инвентаризацию выбросов заново. 2. Если нормативы изменились – разработать новый проект НДВ. 3. Внести изменения в КЭР/ДВОС.'
+      }
+    }
+  ];
+
+  let state = {
+    caseId: null,
+    stepIndex: 0,
+    answered: false,
+    currentQuestionType: 'q1',
+    completedCases: []
+  };
+
+  const els = {
+    selectionScreen: document.getElementById('selectionScreen'),
+    trainerScreen: document.getElementById('trainerScreen'),
+    resultScreen: document.getElementById('resultScreen'),
+    caseGrid: document.getElementById('caseGrid'),
+    caseTitle: document.getElementById('caseTitle'),
+    caseText: document.getElementById('caseText'),
+    qText: document.getElementById('qText'),
+    qHint: document.getElementById('qHint'),
+    hintBtn: document.getElementById('hintBtn'),
+    hintPopup: document.getElementById('hintPopup'),
+    optsContainer: document.getElementById('optsContainer'),
+    feedback: document.getElementById('feedback'),
+    nextBtn: document.getElementById('nextBtn'),
+    retryBtn: document.getElementById('retryBtn'),
+    ind1: document.getElementById('ind1'),
+    ind2: document.getElementById('ind2'),
+    ind3: document.getElementById('ind3'),
+    resTitle: document.getElementById('resTitle'),
+    resSummary: document.getElementById('resSummary'),
+    finalSummary: document.getElementById('finalSummary'),
+    caseChecklist: document.getElementById('caseChecklist'),
+    completedCases: document.getElementById('completedCases')
+  };
+
+  function init() {
+    els.caseGrid.innerHTML = '';
+    cases.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'case-card' + (c.completed ? ' completed' : '');
+      card.innerHTML = `
+        <div class="case-title">${c.title}</div>
+        <div class="case-desc">${c.desc}</div>
+      `;
+      card.onclick = () => startCase(c.id);
+      els.caseGrid.appendChild(card);
+    });
+    
+    // Show final summary if all cases completed
+    const allCompleted = cases.every(c => c.completed);
+    if (allCompleted) {
+      showFinalSummary();
+    } else {
+      els.finalSummary.classList.remove('show');
+      els.caseGrid.style.display = 'flex';
+    }
+  }
+
+  function showFinalSummary() {
+    els.caseGrid.style.display = 'none';
+    els.finalSummary.classList.add('show');
+    
+    // Update checklist
+    els.caseChecklist.innerHTML = '';
+    cases.forEach(c => {
+      if (c.completed) {
+        const li = document.createElement('li');
+        li.textContent = c.title;
+        els.caseChecklist.appendChild(li);
+      }
+    });
+  }
+
+  function startCase(id) {
+    state.caseId = id;
+    state.stepIndex = 0;
+    state.answered = false;
+    state.currentQuestionType = 'q1';
+    
+    els.selectionScreen.style.display = 'none';
+    els.trainerScreen.style.display = 'block';
+    els.resultScreen.style.display = 'none';
+    
+    updateProgress();
+    renderStep();
+  }
+
+  function updateProgress() {
+    const type = state.currentQuestionType;
+    els.ind1.className = 'step-indicator ' + (type === 'q1' ? 'active' : 'completed');
+    els.ind2.className = 'step-indicator ' + (type === 'q2' ? 'active' : (type === 'q3' ? 'completed' : ''));
+    els.ind3.className = 'step-indicator ' + (type === 'q3' ? 'active' : '');
+  }
+
+  function toggleHint() {
+    els.hintPopup.classList.toggle('show');
+  }
+
+  function renderStep() {
+    const c = cases.find(x => x.id === state.caseId);
+    const step = c.steps[state.stepIndex];
+    
+    els.caseTitle.textContent = c.title;
+    els.caseText.textContent = c.desc;
+    els.qText.textContent = step.q;
+    els.qHint.textContent = step.hint;
+    
+    // Show/hide hint button
+    if (step.showHintBtn) {
+      els.hintBtn.style.display = 'inline-flex';
+    } else {
+      els.hintBtn.style.display = 'none';
+      els.hintPopup.classList.remove('show');
+    }
+    
+    els.optsContainer.innerHTML = '';
+    els.feedback.className = 'feedback';
+    els.feedback.textContent = '';
+    els.nextBtn.disabled = true;
+    els.retryBtn.classList.remove('show');
+    state.answered = false;
+
+    step.options.forEach((opt, i) => {
+      const btn = document.createElement('div');
+      btn.className = 'option';
+      btn.textContent = opt.t;
+      btn.onclick = () => handleAnswer(i, opt, step);
+      els.optsContainer.appendChild(btn);
+    });
+    updateProgress();
+  }
+
+  function handleAnswer(idx, opt, step) {
+    if (state.answered) return;
+    state.answered = true;
+
+    const btns = els.optsContainer.querySelectorAll('.option');
+    btns.forEach(b => b.onclick = null);
+    btns[idx].classList.add(opt.c ? 'correct' : 'wrong');
+
+    els.feedback.textContent = opt.f;
+    els.feedback.className = 'feedback show ' + (opt.c ? 'success' : 'error');
+    
+    if (opt.c) {
+      els.nextBtn.disabled = false;
+      els.retryBtn.classList.remove('show');
+    } else {
+      els.retryBtn.classList.add('show');
+    }
+  }
+
+  function resetStep() {
+    state.answered = false;
+    els.feedback.className = 'feedback';
+    els.feedback.textContent = '';
+    els.nextBtn.disabled = true;
+    els.retryBtn.classList.remove('show');
+    renderStep();
+  }
+
+  function nextStep() {
+    if (!state.answered) return;
+    
+    const c = cases.find(x => x.id === state.caseId);
+    const currentStep = c.steps[state.stepIndex];
+    
+    // Check if we need to jump to result or next question
+    if (currentStep.jumpTo) {
+      if (currentStep.jumpTo.startsWith('result')) {
+        showResult(c);
+        return;
+      }
+      if (currentStep.jumpTo === 'q3') {
+        state.stepIndex = c.steps.findIndex(s => s.q.includes('Шаг 3'));
+        state.currentQuestionType = 'q3';
+        renderStep();
+        return;
+      }
+      if (currentStep.jumpTo === 'q2') {
+         state.stepIndex = 1;
+         state.currentQuestionType = 'q2';
+         renderStep();
+         return;
+      }
+    }
+
+    // Default: just go to next step in array
+    if (state.stepIndex + 1 >= c.steps.length) {
+      showResult(c);
+    } else {
+      state.stepIndex++;
+      // Determine type based on text content
+      const nextStep = c.steps[state.stepIndex];
+      if (nextStep.q.includes('Шаг 1')) state.currentQuestionType = 'q1';
+      if (nextStep.q.includes('Шаг 2')) state.currentQuestionType = 'q2';
+      if (nextStep.q.includes('Шаг 3')) state.currentQuestionType = 'q3';
+      renderStep();
+    }
+  }
+
+  function showResult(c) {
+    els.trainerScreen.style.display = 'none';
+    els.resultScreen.style.display = 'block';
+    els.resTitle.textContent = c.final.title;
+    els.resSummary.innerHTML = `
+      <div class="summary-row"><div class="summary-label">Выбранная ситуация</div><div class="summary-value">${c.title}</div></div>
+      <div class="summary-row"><div class="summary-label">Решение</div><div class="summary-value">${c.final.text}</div></div>
+    `;
+    // Mark all steps complete
+    els.ind1.classList.add('completed');
+    els.ind2.classList.add('completed');
+    els.ind3.classList.add('completed');
+    
+    // Mark case as completed
+    if (!c.completed) {
+      c.completed = true;
+      state.completedCases.push(c.id);
+    }
+  }
+
+  function restart() {
+    state.caseId = null;
+    state.completedCases = [];
+    cases.forEach(c => c.completed = false);
+    els.selectionScreen.style.display = 'block';
+    els.trainerScreen.style.display = 'none';
+    els.resultScreen.style.display = 'none';
+    els.finalSummary.classList.remove('show');
+    init();
+  }
+
+  init();
+</script>
+</body>
+</html>
