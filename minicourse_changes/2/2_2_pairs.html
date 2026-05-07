@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Соедини пары: юридические изменения</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #fff;
+    --text-main: #1a2b49;
+    --text-light: #5a6b7c;
+    --primary: #4a5cf0;
+    --success: #2e7d32;
+    --error: #c42017;
+    --gray-bg: #f8f9fb;
+    --radius: 10px;
+    --shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .container {
+    width: 100%;
+    max-width: 650px;
+    background: #fff;
+    padding-bottom: 20px;
+  }
+  h2 { font-size: 19px; font-weight: 700; margin-bottom: 8px; }
+  .task { font-size: 14.5px; color: var(--text-light); margin-bottom: 20px; line-height: 1.5; }
+  
+  .game-area {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 24px;
+    position: relative;
+    min-height: 340px;
+    margin-bottom: 24px;
+  }
+  svg.lines {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%; height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+  svg.lines path {
+    stroke: var(--primary);
+    stroke-width: 2;
+    fill: none;
+    stroke-dasharray: 1000;
+    stroke-dashoffset: 1000;
+    animation: drawLine 0.4s forwards;
+  }
+  @keyframes drawLine { to { stroke-dashoffset: 0; } }
+  
+  .col { display: flex; flex-direction: column; gap: 12px; z-index: 2; }
+  .col-label {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--text-light);
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-bottom: 4px;
+    text-align: center;
+  }
+  
+  .card {
+    background: #fff;
+    border: 2px solid #eef1f6;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 13.5px;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-height: 70px;
+    display: flex;
+    align-items: center;
+    user-select: none;
+    position: relative;
+  }
+  .card:hover { border-color: var(--primary); background: #f8f9fb; }
+  .card.selected { border-color: var(--primary); background: #eef1ff; box-shadow: 0 0 0 2px rgba(74,92,240,0.2); }
+  .card.matched { border-color: var(--primary); background: #f0f4ff; cursor: default; }
+  .card.correct { border-color: var(--success); background: #e8f5e9; cursor: pointer; }
+  .card.wrong { border-color: var(--error); background: #ffe8e6; cursor: pointer; }
+  
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 8px;
+  }
+  .btn {
+    padding: 11px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-primary { background: var(--primary); color: #fff; }
+  .btn-primary:hover { background: #3b4bd6; }
+  .btn-primary:disabled { background: #cfd4e0; cursor: not-allowed; }
+  .btn-secondary { background: #eef1f6; color: var(--text-main); display: none; }
+  .btn-secondary.show { display: block; }
+  .btn-secondary:hover { background: #e0e4eb; }
+  .btn-success { background: var(--success); color: #fff; width: 100%; margin-top: 16px; display: none; }
+  .btn-success.show { display: block; }
+  .btn-success:hover { background: #256b2a; }
+  
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 14px;
+    max-width: 580px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 28px;
+    position: relative;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+  }
+  .modal-close {
+    position: absolute;
+    top: 16px; right: 16px;
+    width: 32px; height: 32px;
+    border-radius: 50%; border: none;
+    background: #f0f2f5; cursor: pointer;
+    font-size: 20px; color: #666;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: #e4e6eb; }
+  .modal-title { font-size: 19px; font-weight: 700; margin-bottom: 16px; }
+  .breakdown-item { margin-bottom: 16px; padding-bottom: 16px; border-bottom: 1px solid #eef1f6; }
+  .breakdown-item:last-child { border: none; margin: 0; padding: 0; }
+  .breakdown-header { font-weight: 700; color: var(--primary); margin-bottom: 6px; }
+  .breakdown-text { font-size: 14px; line-height: 1.6; color: #333; }
+  .breakdown-text ul { padding-left: 20px; margin: 8px 0; }
+  .breakdown-text li { margin-bottom: 4px; }
+
+  @media (max-width: 600px) {
+    .game-area { grid-template-columns: 1fr; gap: 16px; }
+    svg.lines { display: none; }
+    .container { padding: 0; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Соедини пары: юридические изменения и действия</h2>
+  <p class="task">Выберите карточку слева и соответствующую карточку справа. Линия появится автоматически. Когда составите все пары, нажмите «Проверить».</p>
+  
+  <div class="game-area" id="gameArea">
+    <svg class="lines" id="svgLines"></svg>
+    <div class="col">
+      <div class="col-label">Тип изменения</div>
+      <div id="leftCol"></div>
+    </div>
+    <div class="col">
+      <div class="col-label">Действие</div>
+      <div id="rightCol"></div>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn btn-secondary" id="retryBtn">Выбрать снова</button>
+    <button class="btn btn-primary" id="checkBtn" disabled>Проверить</button>
+  </div>
+  <button class="btn btn-success" id="finalBtn">Итоговый разбор</button>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title" id="modalTitle"></div>
+    <div id="modalContent"></div>
+    <button class="btn btn-primary" id="modalCloseBtn" style="margin-top:20px; width:100%;">Закрыть</button>
+  </div>
+</div>
+
+<script>
+  const pairs = [
+    { 
+      id: 'L1', 
+      text: 'Изменение юридического адреса', 
+      pairId: 'R1' 
+    },
+    { 
+      id: 'L2', 
+      text: 'Изменение фактического адреса площадки', 
+      pairId: 'R2' 
+    },
+    { 
+      id: 'L3', 
+      text: 'Смена наименования или ОПФ', 
+      pairId: 'R3' 
+    },
+    { 
+      id: 'L4', 
+      text: 'Реорганизация или смена собственника', 
+      pairId: 'R4' 
+    }
+  ];
+
+  const rightCards = [
+    { 
+      id: 'R1', 
+      text: 'Уведомить ОМСУ и операторов ТКО (5 дней). Актуализировать реестр НВОС (30 дней)', 
+      explanation: 'Юридический адрес влияет только на реквизиты. Объект НВОС не перемещается. Нужно уведомить ОМСУ об изменении сведений в реестре площадок ТКО и направить письма операторам в течение 5 рабочих дней [п. 29 постановления № 1039]. Актуализация реестра — 30 дней.' 
+    },
+    { 
+      id: 'R2', 
+      text: 'Переоформить КЭР, ДВОС, СЭЗ на новые координаты', 
+      explanation: 'Фактический адрес привязан к координатам объекта. Меняется место ведения деятельности. Нужно актуализировать реестр НВОС и переоформить КЭР, ДВОС, СЭЗ на новые координаты [п. 17 ст. 31.1 Закона № 7-ФЗ].' 
+    },
+    { 
+      id: 'R3', 
+      text: 'Внести изменения в реквизиты проектов НДВ/НДС и утвердить руководителем', 
+      explanation: 'Производство и координаты не меняются. Требуется обновление идентификационных данных. Замените общие сведения в проектах НДВ, НДС, НООЛР, утвердите новые паспорта отходов у руководителя. Переоформите КЭР.' 
+    },
+    { 
+      id: 'R4', 
+      text: 'Определить правопреемника и переоформить все разрешения на новое юрлицо', 
+      explanation: 'Меняется юридическое лицо-эксплуатант. Требуется полный перенос обязательств. Определите правопреемника по передаточному акту и переоформите КЭР, ДВОС, лицензии в течение 30 дней [п. 7 ст. 69.2 Закона № 7-ФЗ].' 
+    }
+  ];
+
+  let selectedLeft = null;
+  let selectedRight = null;
+  let matches = {};
+  let isChecked = false;
+
+  const leftCol = document.getElementById('leftCol');
+  const rightCol = document.getElementById('rightCol');
+  const svgLines = document.getElementById('svgLines');
+  const checkBtn = document.getElementById('checkBtn');
+  const retryBtn = document.getElementById('retryBtn');
+  const finalBtn = document.getElementById('finalBtn');
+  const modal = document.getElementById('modal');
+
+  function renderCards() {
+    leftCol.innerHTML = '';
+    rightCol.innerHTML = '';
+    
+    pairs.forEach(p => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.id = p.id;
+      card.dataset.type = 'left';
+      card.textContent = p.text;
+      card.onclick = () => handleCardClick(card, 'left');
+      leftCol.appendChild(card);
+    });
+
+    const shuffledRight = [...rightCards].sort(() => Math.random() - 0.5);
+    shuffledRight.forEach(r => {
+      const card = document.createElement('div');
+      card.className = 'card';
+      card.dataset.id = r.id;
+      card.dataset.type = 'right';
+      card.textContent = r.text;
+      card.onclick = () => handleCardClick(card, 'right');
+      rightCol.appendChild(card);
+    });
+  }
+
+  function handleCardClick(card, type) {
+    if (isChecked) {
+      showCardComment(card.dataset.id);
+      return;
+    }
+
+    if (type === 'left') {
+      if (matches[card.dataset.id]) { removeMatch(card.dataset.id); return; }
+      selectedLeft = selectedLeft === card ? null : card;
+    } else {
+      const existingLeft = Object.keys(matches).find(k => matches[k] === card.dataset.id);
+      if (existingLeft) { removeMatch(existingLeft); return; }
+      selectedRight = selectedRight === card ? null : card;
+    }
+    updateSelection();
+
+    if (selectedLeft && selectedRight) {
+      const leftId = selectedLeft.dataset.id;
+      const rightId = selectedRight.dataset.id;
+      
+      if (matches[leftId]) removeMatch(leftId);
+      Object.keys(matches).forEach(k => { if (matches[k] === rightId) removeMatch(k); });
+
+      matches[leftId] = rightId;
+      drawLine(leftId, rightId);
+      
+      selectedLeft.classList.add('matched');
+      selectedRight.classList.add('matched');
+      selectedLeft = null;
+      selectedRight = null;
+      updateSelection();
+      
+      if (Object.keys(matches).length === pairs.length) checkBtn.disabled = false;
+    }
+  }
+
+  function removeMatch(leftId) {
+    const rightId = matches[leftId];
+    delete matches[leftId];
+    
+    const leftCard = document.querySelector(`.card[data-id="${leftId}"]`);
+    const rightCard = document.querySelector(`.card[data-id="${rightId}"]`);
+    if (leftCard) leftCard.classList.remove('matched', 'selected');
+    if (rightCard) rightCard.classList.remove('matched', 'selected');
+    
+    redrawLines();
+    checkBtn.disabled = true;
+  }
+
+  function updateSelection() {
+    document.querySelectorAll('.card.selected').forEach(c => c.classList.remove('selected'));
+    if (selectedLeft) selectedLeft.classList.add('selected');
+    if (selectedRight) selectedRight.classList.add('selected');
+  }
+
+  function getCardCenter(card) {
+    const rect = card.getBoundingClientRect();
+    const containerRect = document.getElementById('gameArea').getBoundingClientRect();
+    return {
+      x: rect.left + rect.width / 2 - containerRect.left,
+      y: rect.top + rect.height / 2 - containerRect.top
+    };
+  }
+
+  function drawLine(leftId, rightId) {
+    const leftCard = document.querySelector(`.card[data-id="${leftId}"]`);
+    const rightCard = document.querySelector(`.card[data-id="${rightId}"]`);
+    if (!leftCard || !rightCard) return;
+
+    const start = getCardCenter(leftCard);
+    const end = getCardCenter(rightCard);
+    
+    const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+    const midX = (start.x + end.x) / 2;
+    const d = `M ${start.x} ${start.y} C ${midX} ${start.y}, ${midX} ${end.y}, ${end.x} ${end.y}`;
+    path.setAttribute('d', d);
+    path.setAttribute('stroke', isChecked ? '#2e7d32' : '#4a5cf0');
+    path.dataset.left = leftId;
+    path.dataset.right = rightId;
+    
+    svgLines.appendChild(path);
+  }
+
+  function redrawLines() {
+    svgLines.innerHTML = '';
+    Object.keys(matches).forEach(leftId => drawLine(leftId, matches[leftId]));
+  }
+
+  checkBtn.onclick = () => {
+    isChecked = true;
+    checkBtn.style.display = 'none';
+    retryBtn.classList.add('show');
+    
+    svgLines.querySelectorAll('path').forEach(path => {
+      const leftId = path.dataset.left;
+      const rightId = path.dataset.right;
+      const isCorrect = pairs.find(p => p.id === leftId)?.pairId === rightId;
+      
+      path.setAttribute('stroke', isCorrect ? '#2e7d32' : '#c42017');
+      const leftCard = document.querySelector(`.card[data-id="${leftId}"]`);
+      const rightCard = document.querySelector(`.card[data-id="${rightId}"]`);
+      leftCard.classList.add(isCorrect ? 'correct' : 'wrong');
+      rightCard.classList.add(isCorrect ? 'correct' : 'wrong');
+    });
+    
+    finalBtn.classList.add('show');
+  };
+
+  retryBtn.onclick = () => {
+    isChecked = false;
+    matches = {};
+    selectedLeft = null;
+    selectedRight = null;
+    checkBtn.style.display = 'block';
+    checkBtn.disabled = true;
+    retryBtn.classList.remove('show');
+    finalBtn.classList.remove('show');
+    document.querySelectorAll('.card').forEach(c => c.classList.remove('correct', 'wrong', 'matched', 'selected'));
+    svgLines.innerHTML = '';
+  };
+
+  function showCardComment(cardId) {
+    const data = [...pairs, ...rightCards].find(c => c.id === cardId);
+    if (!data) return;
+    
+    document.getElementById('modalTitle').textContent = data.text;
+    document.getElementById('modalContent').innerHTML = `<p class="breakdown-text">${data.explanation || 'Составьте пары и проверьте их для получения подробного разбора.'}</p>`;
+    document.getElementById('modalCloseBtn').style.display = 'block';
+    modal.classList.add('show');
+  }
+
+  finalBtn.onclick = () => {
+    let html = '';
+    pairs.forEach(p => {
+      const rightData = rightCards.find(r => r.id === p.pairId);
+      html += `
+        <div class="breakdown-item">
+          <div class="breakdown-header">${p.text} → ${rightData.text}</div>
+          <div class="breakdown-text">${rightData.explanation}</div>
+        </div>
+      `;
+    });
+    document.getElementById('modalTitle').textContent = 'Итоговый разбор действий';
+    document.getElementById('modalContent').innerHTML = html;
+    document.getElementById('modalCloseBtn').style.display = 'block';
+    modal.classList.add('show');
+  };
+
+  document.getElementById('modalCloseBtn').onclick = closeModal;
+  window.closeModal = () => modal.classList.remove('show');
+  modal.onclick = (e) => { if (e.target === modal) closeModal(); };
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+  window.addEventListener('resize', () => { if (!isChecked) redrawLines(); });
+
+  renderCards();
+</script>
+</body>
+</html>
