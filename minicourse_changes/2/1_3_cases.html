@@ -185,7 +185,7 @@
   .feedback.success { background: #e8f5e9; border-color: var(--success); color: #1b5e20; }
   .feedback.error { background: #ffe8e6; border-color: var(--error); color: #7f1d1d; }
   
-  .controls { display: flex; justify-content: center; gap: 12px; margin-top: 24px; }
+  .controls { display: flex; justify-content: center; gap: 12px; margin-top: 24px; flex-wrap: wrap; }
   .btn {
     padding: 12px 28px;
     border: none;
@@ -201,6 +201,8 @@
   .btn-secondary { background: #eef1f6; color: var(--text-main); display: none; }
   .btn-secondary.show { display: block; }
   .btn-secondary:hover { background: #e0e4eb; }
+  .btn-success { background: var(--success); color: #fff; }
+  .btn-success:hover { background: #2e7d32; }
 
   /* Result Screen */
   .result-box { text-align: center; padding: 10px 0; }
@@ -220,68 +222,29 @@
   .summary-label { font-weight: 600; color: var(--text-light); margin-bottom: 4px; font-size: 13px; }
   .summary-value { color: var(--text-main); }
 
-  /* Final Summary */
-  .final-summary {
-    background: #fff;
-    color: var(--text-main);
-    padding: 0;
-    border-radius: 0;
-    margin-bottom: 24px;
+  /* Completed Cases Screen */
+  .completed-screen {
     display: none;
+    text-align: center;
+    padding: 40px 20px;
   }
-  .final-summary.show { display: block; }
-  .final-summary h3 { 
-    font-size: 20px; 
-    margin-bottom: 20px;
-    text-align: left;
-    color: var(--text-main);
+  .completed-screen.show { display: block; }
+  .completed-screen h3 {
+    font-size: 24px;
+    margin-bottom: 24px;
+    color: var(--success);
   }
-  .final-summary p { 
-    font-size: 16px; 
-    line-height: 1.6; 
-    margin-bottom: 16px;
-  }
-  .final-summary strong {
-    font-weight: 700;
-    color: var(--primary);
-  }
-  
-  .practical-guide {
-    background: var(--gray-bg);
-    padding: 24px;
-    border-radius: 12px;
-    margin-top: 20px;
-  }
-  .practical-guide h4 {
-    font-size: 18px;
-    margin-bottom: 16px;
-    color: var(--text-main);
-  }
-  .practical-guide ol {
-    padding-left: 20px;
-    margin: 0;
-  }
-  .practical-guide li {
-    margin-bottom: 16px;
-    line-height: 1.6;
-    font-size: 14.5px;
-  }
-  .practical-guide li strong {
-    color: var(--primary);
-    display: block;
-    margin-bottom: 6px;
-  }
-  
   .completed-cases {
     background: #e8f5e9;
-    padding: 16px;
-    border-radius: 8px;
-    margin-bottom: 20px;
+    padding: 24px;
+    border-radius: 12px;
+    margin-bottom: 24px;
     border-left: 4px solid var(--success);
+    text-align: left;
   }
   .completed-cases h4 {
-    font-size: 16px;
-    margin-bottom: 12px;
+    font-size: 18px;
+    margin-bottom: 16px;
     color: var(--success);
   }
   .case-checklist {
@@ -289,21 +252,131 @@
     padding: 0;
   }
   .case-checklist li {
-    padding: 8px 0;
-    padding-left: 28px;
+    padding: 12px 0;
+    padding-left: 32px;
     position: relative;
-    font-size: 14.5px;
+    font-size: 15px;
+    border-bottom: 1px solid #c8e6c9;
   }
+  .case-checklist li:last-child { border-bottom: none; }
   .case-checklist li::before {
     content: '✓';
     position: absolute;
     left: 0;
     color: var(--success);
     font-weight: 700;
+    font-size: 18px;
+  }
+
+  /* Modal Overlay */
+  .modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  .modal-overlay.show { display: flex; }
+  
+  .modal-content {
+    background: #fff;
+    border-radius: 16px;
+    max-width: 800px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 40px;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+    animation: modalSlideIn 0.3s ease;
+  }
+  
+  @keyframes modalSlideIn {
+    from {
+      opacity: 0;
+      transform: translateY(-30px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+  
+  .modal-close {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    border: none;
+    background: #f0f2f5;
+    cursor: pointer;
+    font-size: 24px;
+    color: var(--text-light);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+  }
+  .modal-close:hover {
+    background: #e4e6eb;
+    color: var(--text-main);
+  }
+  
+  .modal-content h3 {
+    font-size: 24px;
+    margin-bottom: 24px;
+    color: var(--text-main);
+    padding-right: 40px;
+  }
+  
+  .practical-guide {
+    background: var(--gray-bg);
+    padding: 28px;
+    border-radius: 12px;
+    margin-top: 20px;
+  }
+  .practical-guide h4 {
+    font-size: 18px;
+    margin-bottom: 20px;
+    color: var(--text-main);
+  }
+  .practical-guide ol {
+    padding-left: 24px;
+    margin: 0;
+  }
+  .practical-guide li {
+    margin-bottom: 20px;
+    line-height: 1.6;
+    font-size: 15px;
+  }
+  .practical-guide li strong {
+    color: var(--primary);
+    display: block;
+    margin-bottom: 8px;
+    font-size: 15px;
+  }
+  
+  .modal-actions {
+    margin-top: 32px;
+    text-align: center;
   }
 
   @keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: translateY(0); } }
-  @media (max-width: 600px) { body { padding: 16px; } .progress-line { left: 20px; right: 20px; } }
+  @media (max-width: 600px) { 
+    body { padding: 16px; } 
+    .progress-line { left: 20px; right: 20px; }
+    .modal-content { padding: 24px; }
+    .practical-guide { padding: 20px; }
+  }
 </style>
 </head>
 <body>
@@ -313,12 +386,25 @@
   <p class="subtitle">Выберите ситуацию для отработки. Пройдите по трем шагам алгоритма и получите разбор.</p>
   
   <div id="selectionScreen">
-    <div class="final-summary" id="finalSummary">
-      <div class="completed-cases" id="completedCases">
-        <h4>Пройденные кейсы:</h4>
-        <ul class="case-checklist" id="caseChecklist"></ul>
-      </div>
-      
+    <div class="case-grid" id="caseGrid"></div>
+  </div>
+
+  <div id="completedScreen" class="completed-screen">
+    <h3>✅ Все кейсы пройдены!</h3>
+    <div class="completed-cases">
+      <h4>Пройденные кейсы:</h4>
+      <ul class="case-checklist" id="caseChecklist"></ul>
+    </div>
+    <div class="controls">
+      <button class="btn btn-success" onclick="showFinalSummary()">Итоговый разбор</button>
+      <button class="btn btn-primary" onclick="restart()">Пройти заново</button>
+    </div>
+  </div>
+
+  <!-- Modal for Final Summary -->
+  <div class="modal-overlay" id="finalModal" onclick="closeModalOnOverlay(event)">
+    <div class="modal-content" onclick="event.stopPropagation()">
+      <button class="modal-close" onclick="closeModal()">×</button>
       <h3>Как применять алгоритм на практике:</h3>
       
       <div class="practical-guide">
@@ -333,9 +419,10 @@
         </ol>
       </div>
       
-      <button class="btn btn-primary" onclick="restart()" style="margin-top: 24px;">Пройти заново</button>
+      <div class="modal-actions">
+        <button class="btn btn-primary" onclick="closeModal(); restart()">Пройти заново</button>
+      </div>
     </div>
-    <div class="case-grid" id="caseGrid"></div>
   </div>
 
   <div id="trainerScreen" style="display:none;">
@@ -390,7 +477,10 @@
     <div class="result-icon">✅</div>
     <div class="result-title" id="resTitle"></div>
     <div class="result-summary" id="resSummary"></div>
-    <button class="btn btn-primary" onclick="restart()">Пройти другую ситуацию</button>
+    <div class="controls">
+      <button class="btn btn-primary" onclick="backToSelection()">Пройти другую ситуацию</button>
+      <button class="btn btn-success" id="finalSummaryBtn" onclick="showFinalSummary()" style="display:none;">Итоговый разбор</button>
+    </div>
   </div>
 </div>
 
@@ -533,9 +623,11 @@
 
   const els = {
     selectionScreen: document.getElementById('selectionScreen'),
+    completedScreen: document.getElementById('completedScreen'),
     trainerScreen: document.getElementById('trainerScreen'),
     resultScreen: document.getElementById('resultScreen'),
     caseGrid: document.getElementById('caseGrid'),
+    caseChecklist: document.getElementById('caseChecklist'),
     caseTitle: document.getElementById('caseTitle'),
     caseText: document.getElementById('caseText'),
     qText: document.getElementById('qText'),
@@ -551,9 +643,8 @@
     ind3: document.getElementById('ind3'),
     resTitle: document.getElementById('resTitle'),
     resSummary: document.getElementById('resSummary'),
-    finalSummary: document.getElementById('finalSummary'),
-    caseChecklist: document.getElementById('caseChecklist'),
-    completedCases: document.getElementById('completedCases')
+    finalModal: document.getElementById('finalModal'),
+    finalSummaryBtn: document.getElementById('finalSummaryBtn')
   };
 
   function init() {
@@ -568,30 +659,6 @@
       card.onclick = () => startCase(c.id);
       els.caseGrid.appendChild(card);
     });
-    
-    // Show final summary if all cases completed
-    const allCompleted = cases.every(c => c.completed);
-    if (allCompleted) {
-      showFinalSummary();
-    } else {
-      els.finalSummary.classList.remove('show');
-      els.caseGrid.style.display = 'flex';
-    }
-  }
-
-  function showFinalSummary() {
-    els.caseGrid.style.display = 'none';
-    els.finalSummary.classList.add('show');
-    
-    // Update checklist
-    els.caseChecklist.innerHTML = '';
-    cases.forEach(c => {
-      if (c.completed) {
-        const li = document.createElement('li');
-        li.textContent = c.title;
-        els.caseChecklist.appendChild(li);
-      }
-    });
   }
 
   function startCase(id) {
@@ -601,8 +668,10 @@
     state.currentQuestionType = 'q1';
     
     els.selectionScreen.style.display = 'none';
+    els.completedScreen.classList.remove('show');
     els.trainerScreen.style.display = 'block';
     els.resultScreen.style.display = 'none';
+    els.finalModal.classList.remove('show');
     
     updateProgress();
     renderStep();
@@ -739,18 +808,76 @@
       c.completed = true;
       state.completedCases.push(c.id);
     }
+    
+    // Show "Итоговый разбор" button if all cases completed
+    const allCompleted = cases.every(caseItem => caseItem.completed);
+    if (allCompleted) {
+      els.finalSummaryBtn.style.display = 'block';
+    } else {
+      els.finalSummaryBtn.style.display = 'none';
+    }
+  }
+
+  function backToSelection() {
+    els.resultScreen.style.display = 'none';
+    els.selectionScreen.style.display = 'block';
+    els.completedScreen.classList.remove('show');
+    init();
+  }
+
+  function showFinalSummary() {
+    // Hide other screens
+    els.resultScreen.style.display = 'none';
+    els.selectionScreen.style.display = 'none';
+    
+    // Show completed screen with checklist
+    els.completedScreen.classList.add('show');
+    
+    // Update checklist
+    els.caseChecklist.innerHTML = '';
+    cases.forEach(c => {
+      if (c.completed) {
+        const li = document.createElement('li');
+        li.textContent = c.title;
+        els.caseChecklist.appendChild(li);
+      }
+    });
+    
+    // Show modal with practical guide
+    setTimeout(() => {
+      els.finalModal.classList.add('show');
+    }, 300);
+  }
+
+  function closeModal() {
+    els.finalModal.classList.remove('show');
+  }
+
+  function closeModalOnOverlay(event) {
+    if (event.target === els.finalModal) {
+      closeModal();
+    }
   }
 
   function restart() {
+    closeModal();
     state.caseId = null;
     state.completedCases = [];
     cases.forEach(c => c.completed = false);
     els.selectionScreen.style.display = 'block';
+    els.completedScreen.classList.remove('show');
     els.trainerScreen.style.display = 'none';
     els.resultScreen.style.display = 'none';
-    els.finalSummary.classList.remove('show');
+    els.finalModal.classList.remove('show');
     init();
   }
+
+  // Close modal on Escape key
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeModal();
+    }
+  });
 
   init();
 </script>
