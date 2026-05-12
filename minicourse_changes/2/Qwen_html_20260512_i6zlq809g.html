@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Три шага при изменениях: разберите ситуацию по алгоритму</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #fff;
+    --text-main: #2d3748;
+    --text-light: #718096;
+    --green-light: #e8f5e9;
+    --green-border: #a5d6a7;
+    --green-solid: #66bb6a;
+    --green-dark: #2e7d32;
+    --radius: 16px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f7f9fb;
+    color: var(--text-main);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .container {
+    width: 100%;
+    max-width: 700px;
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 30px;
+    box-shadow: var(--shadow);
+  }
+  h2 { font-size: 22px; font-weight: 700; margin-bottom: 12px; color: var(--green-dark); }
+  .task-desc { font-size: 15px; color: var(--text-light); margin-bottom: 24px; line-height: 1.5; }
+  
+  /* Progress */
+  .progress { display: flex; gap: 8px; margin-bottom: 24px; align-items: center; }
+  .progress-dot { width: 10px; height: 10px; border-radius: 50%; background: #e2e8f0; transition: 0.3s; }
+  .progress-dot.active { background: var(--green-solid); transform: scale(1.2); }
+  .progress-dot.done { background: var(--green-dark); }
+  .progress-label { font-size: 13px; color: var(--text-light); margin-left: auto; }
+  
+  /* Scenario Card */
+  .scenario-card {
+    background: var(--green-light);
+    border-left: 4px solid var(--green-solid);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+  }
+  .scenario-label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--green-dark); margin-bottom: 8px; }
+  .scenario-text { font-size: 16px; font-weight: 500; line-height: 1.5; }
+  
+  /* Step Area */
+  .step-area { margin-bottom: 20px; min-height: 180px; }
+  .step-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .step-desc { font-size: 14.5px; color: var(--text-light); margin-bottom: 16px; }
+  
+  /* Options Grid */
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .option-btn {
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .option-btn:hover { border-color: var(--green-solid); background: var(--green-light); }
+  .option-btn.selected-correct { border-color: var(--green-dark); background: #c8e6c9; pointer-events: none; }
+  .option-btn.selected-wrong { border-color: #e53935; background: #ffebee; pointer-events: none; }
+  .opt-letter { font-weight: 700; color: var(--green-solid); flex-shrink: 0; }
+  .opt-text { font-size: 14px; line-height: 1.4; }
+  
+  /* Toggles for Step 2 */
+  .toggle-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; border: 2px solid #e2e8f0; border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .toggle-text { font-size: 14.5px; flex: 1; margin-right: 12px; }
+  .toggle-btns { display: flex; gap: 6px; }
+  .toggle-btn {
+    padding: 6px 14px; border: 1px solid #e2e8f0; background: #fff;
+    border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;
+    color: var(--text-light); transition: 0.2s;
+  }
+  .toggle-btn.active-yes { background: var(--green-dark); color: #fff; border-color: var(--green-dark); }
+  .toggle-btn.active-no { background: var(--text-light); color: #fff; border-color: var(--text-light); }
+  .toggle-row.locked { pointer-events: none; opacity: 0.7; }
+  
+  /* Controls */
+  .controls { text-align: center; }
+  .btn {
+    padding: 12px 32px; border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; display: inline-block;
+  }
+  .btn-next { background: var(--green-dark); color: #fff; opacity: 0.3; pointer-events: none; }
+  .btn-next.active { opacity: 1; pointer-events: auto; }
+  .btn-next:hover { background: #1b5e20; }
+  
+  /* Modal */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 16px; max-width: 520px; width: 100%;
+    padding: 28px; position: relative;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+    border: 2px solid var(--green-light);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 32px; height: 32px; border-radius: 50%; border: none;
+    background: #f0f2f5; cursor: pointer;
+    font-size: 20px; color: #666;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: #e4e6eb; }
+  .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+  .modal-title.success { color: var(--green-dark); }
+  .modal-title.hint { color: #f57c00; }
+  .modal-body { font-size: 15px; line-height: 1.6; color: #333; }
+  .modal-body ul { padding-left: 20px; margin-top: 12px; margin-bottom: 16px; }
+  .modal-body li { margin-bottom: 8px; }
+  .modal-footer { margin-top: 20px; text-align: center; }
+  .btn-modal { background: var(--green-solid); color: #fff; padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+  .btn-modal:hover { background: var(--green-dark); }
+
+  /* Final Screen */
+  .final-screen { display: none; text-align: center; }
+  .final-screen h2 { margin-bottom: 16px; }
+  .final-screen p { color: var(--text-light); margin-bottom: 24px; }
+  .advice-box {
+    background: var(--green-light); padding: 20px; border-radius: 12px;
+    text-align: left; margin-top: 16px;
+  }
+  .advice-box strong { display: block; margin-bottom: 8px; color: var(--green-dark); font-size: 16px; }
+  .advice-box ol { margin-left: 20px; }
+  .advice-box li { margin-bottom: 8px; font-size: 14.5px; }
+
+  @keyframes shake {
+    0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 
+    50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); }
+  }
+  @media (max-width: 600px) { .options-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Три шага при изменениях: разберите ситуацию по алгоритму</h2>
+  <p class="task-desc">В этом интерактиве вы отрабатываете универсальный алгоритм работы с изменениями. Для каждой ситуации вы проходите три шага. Сначала формулируете, что именно произошло. Потом проверяете, задевает ли это ваши объекты НВОС и деятельность. В конце определяете, какие документы нужно менять и какой уровень действий выбрать.</p>
+
+  <div class="progress">
+    <div class="progress-dot active" id="dot1"></div>
+    <div class="progress-dot" id="dot2"></div>
+    <div class="progress-dot" id="dot3"></div>
+    <div class="progress-label">Шаг <span id="stepLabel">1</span> из 3</div>
+  </div>
+
+  <div class="scenario-card">
+    <div class="scenario-label">Ситуация</div>
+    <div class="scenario-text">«В ЕГРЮЛ изменился юридический адрес вашей организации. Площадки и процессы прежние».</div>
+  </div>
+
+  <div class="step-area" id="stepArea"></div>
+
+  <div class="controls">
+    <button class="btn btn-next" id="nextBtn">Продолжить</button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn-modal" onclick="closeModal()">Понятно</button>
+    </div>
+  </div>
+</div>
+
+<!-- Final Screen -->
+<div class="container final-screen" id="finalScreen">
+  <h2>Итоговый разбор алгоритма</h2>
+  <p>Вы успешно применили трехшаговый алгоритм к ситуации. Давайте закрепим логику работы эколога на предприятии при изменениях:</p>
+  
+  <div class="advice-box">
+    <strong>Шаг 1. Классификация</strong>
+    <p>Всегда начинайте с вопроса «Что именно поменялось?». Это позволяет сразу отсечь ложные тревоги (например, смена директора не требует переоформления разрешений). Классифицируйте изменение: адрес/название, собственник, технология или нормативка.</p>
+    
+    <strong style="margin-top:12px; display:block;">Шаг 2. Влияние на НВОС</strong>
+    <p>Даже если производство не менялось, изменение данных в ЕГРЮЛ требует внимания. Объект привязан к реквизитам, и устаревшие данные в реестре — это риск штрафов. Честно ответьте: задевает ли это площадку, эксплуатанта или данные в ЕГРЮЛ?</p>
+    
+    <strong style="margin-top:12px; display:block;">Шаг 3. Документы и действия</strong>
+    <p>Определив затронутые документы, составьте чек-лист: что актуализировать (Реестр НВОС), что переоформить (КЭР, ДВОС), кого уведомить (ОМСУ, операторы). Только после этого принимайте решение об обновлении документов или уведомлении органов.</p>
+  </div>
+  
+  <button class="btn btn-next active" style="margin-top:24px;" onclick="restart()">Пройти заново</button>
+</div>
+
+<script>
+  const state = { step: 1, toggles: {}, selected: [], checked: false };
+  const nextBtn = document.getElementById('nextBtn');
+  const stepArea = document.getElementById('stepArea');
+  const modal = document.getElementById('modal');
+  
+  function updateProgress() {
+    for(let i=1; i<=3; i++) {
+      const dot = document.getElementById('dot'+i);
+      dot.className = 'progress-dot';
+      if(i < state.step) dot.classList.add('done');
+      if(i === state.step) dot.classList.add('active');
+    }
+    document.getElementById('stepLabel').textContent = state.step;
+  }
+
+  function showModal(title, text, isCorrect, callback) {
+    document.getElementById('modalTitle').textContent = title;
+    document.getElementById('modalTitle').className = 'modal-title ' + (isCorrect ? 'success' : 'hint');
+    document.getElementById('modalBody').innerHTML = text;
+    modal.classList.add('show');
+    
+    // Store callback for modal close
+    modal.dataset.callback = callback ? '1' : '0';
+    if(callback) modal.onclose = callback;
+  }
+
+  window.closeModal = function() {
+    modal.classList.remove('show');
+    if(modal.dataset.callback === '1' && modal.onclose) {
+      modal.onclose();
+      modal.onclose = null;
+      modal.dataset.callback = '0';
+    }
+  };
+
+  function renderStep1() {
+    state.checked = false;
+    nextBtn.className = 'btn btn-next';
+    stepArea.innerHTML = `
+      <div class="step-title">Шаг 1. Определите, что именно поменялось</div>
+      <div class="step-desc">К какой группе вы отнесете это изменение?</div>
+      <div class="options-grid" id="opts1">
+        <div class="option-btn" onclick="checkS1(0,this)"><span class="opt-letter">А.</span><span class="opt-text">Адрес или название организации</span></div>
+        <div class="option-btn" onclick="checkS1(1,this)"><span class="opt-letter">Б.</span><span class="opt-text">Собственник или эксплуатант объекта</span></div>
+        <div class="option-btn" onclick="checkS1(2,this)"><span class="opt-letter">В.</span><span class="opt-text">Площадка, оборудование, технология</span></div>
+        <div class="option-btn" onclick="checkS1(3,this)"><span class="opt-letter">Г.</span><span class="opt-text">Требования и нормативы</span></div>
+      </div>`;
+  }
+
+  function checkS1(idx, el) {
+    if(state.checked) return;
+    state.checked = true;
+    
+    document.querySelectorAll('#opts1 .option-btn').forEach(o => {
+      o.style.pointerEvents = 'none';
+      if(o === el) o.classList.add(idx === 0 ? 'selected-correct' : 'selected-wrong');
+    });
+    
+    const isCorrect = idx === 0;
+    showModal(
+      isCorrect ? 'Верно' : 'Обратите внимание',
+      isCorrect 
+        ? 'Вы верно определили группу изменения. Здесь меняются только реквизиты организации – это влияет на то, как объект НВОС и разрешения привязаны к юридическому лицу.'
+        : 'Посмотрите, в ситуации нет новых площадок, оборудования или требований. Меняются только реквизиты организации, поэтому это группа «адрес или название организации».',
+      isCorrect,
+      () => {
+        if(isCorrect) {
+          nextBtn.className = 'btn btn-next active';
+          nextBtn.onclick = () => { state.step = 2; updateProgress(); renderStep2(); };
+        } else {
+          // Allow retry
+          state.checked = false;
+          document.querySelectorAll('#opts1 .option-btn').forEach(o => {
+            o.style.pointerEvents = 'auto';
+            o.classList.remove('selected-wrong');
+          });
+        }
+      }
+    );
+  }
+
+  function renderStep2() {
+    state.toggles = { q1: null, q2: null, q3: null };
+    state.checked = false;
+    nextBtn.className = 'btn btn-next';
+    
+    stepArea.innerHTML = `
+      <div class="step-title">Шаг 2. Проверьте влияние на объекты НВОС</div>
+      <div class="step-desc">Отметьте, что из этого затрагивает изменение.</div>
+      <div class="toggle-group">
+        <div class="toggle-row">
+          <span class="toggle-text">Меняется площадка или состав установок по объекту НВОС?</span>
+          <div class="toggle-btns">
+            <button class="toggle-btn" onclick="setTog('q1','yes',this)">Да</button>
+            <button class="toggle-btn" onclick="setTog('q1','no',this)">Нет</button>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-text">Меняется организация или лицо, которое эксплуатирует объект?</span>
+          <div class="toggle-btns">
+            <button class="toggle-btn" onclick="setTog('q2','yes',this)">Да</button>
+            <button class="toggle-btn" onclick="setTog('q2','no',this)">Нет</button>
+          </div>
+        </div>
+        <div class="toggle-row">
+          <span class="toggle-text">Меняются данные организации в ЕГРЮЛ, к которым привязан объект НВОС и разрешения?</span>
+          <div class="toggle-btns">
+            <button class="toggle-btn" onclick="setTog('q3','yes',this)">Да</button>
+            <button class="toggle-btn" onclick="setTog('q3','no',this)">Нет</button>
+          </div>
+        </div>
+      </div>`;
+  }
+
+  window.setTog = function(key, val, btn) {
+    if(state.checked) return;
+    state.toggles[key] = val;
+    
+    const parent = btn.parentElement;
+    parent.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-yes','active-no'));
+    btn.classList.add(val === 'yes' ? 'active-yes' : 'active-no');
+    
+    // Enable check button only after all answered
+    const allSet = state.toggles.q1 && state.toggles.q2 && state.toggles.q3;
+    if(allSet) {
+      nextBtn.className = 'btn btn-next active';
+      nextBtn.onclick = checkS2;
+    }
+  };
+
+  function checkS2() {
+    if(state.checked) return;
+    state.checked = true;
+    
+    document.querySelectorAll('.toggle-row').forEach(r => r.classList.add('locked'));
+    nextBtn.className = 'btn btn-next';
+    
+    const isCorrect = state.toggles.q1 === 'no' && state.toggles.q2 === 'no' && state.toggles.q3 === 'yes';
+    
+    showModal(
+      isCorrect ? 'Верно' : 'Уточнение',
+      isCorrect
+        ? 'Вы правильно отметили, что меняются данные в ЕГРЮЛ. Объект НВОС физически прежний, но в реестре и разрешениях он привязан к старым реквизитам. Это повод переходить к третьему шагу и смотреть, какие документы нужно менять.'
+        : 'При смене юридического адреса площадка и оборудование не меняются. Но меняются данные организации в ЕГРЮЛ, к которым привязан объект НВОС и разрешения. Это ключевой момент для эколога.',
+      isCorrect,
+      () => {
+        if(isCorrect) {
+          nextBtn.className = 'btn btn-next active';
+          nextBtn.onclick = () => { state.step = 3; updateProgress(); renderStep3(); };
+        } else {
+          // Allow retry
+          state.checked = false;
+          document.querySelectorAll('.toggle-row').forEach(r => {
+            r.classList.remove('locked');
+            r.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-yes','active-no'));
+          });
+          state.toggles = { q1: null, q2: null, q3: null };
+          nextBtn.className = 'btn btn-next';
+          nextBtn.onclick = checkS2;
+        }
+      }
+    );
+  }
+
+  function renderStep3() {
+    state.selected = [];
+    state.checked = false;
+    nextBtn.className = 'btn btn-next';
+    
+    stepArea.innerHTML = `
+      <div class="step-title">Шаг 3. Документы и действия</div>
+      <div class="step-desc">На какие документы влияет это изменение? (можно выбрать несколько)</div>
+      <div class="options-grid" id="opts3">
+        <div class="option-btn" onclick="tog3(0,this)"><span class="opt-letter">1.</span><span class="opt-text">Учетные сведения об объекте НВОС</span></div>
+        <div class="option-btn" onclick="tog3(1,this)"><span class="opt-letter">2.</span><span class="opt-text">Экологическая документация: инвентаризации, проекты, программы, паспорта</span></div>
+        <div class="option-btn" onclick="tog3(2,this)"><span class="opt-letter">3.</span><span class="opt-text">Разрешительные документы и уведомления: КЭР, ДВОС, документы по водопользованию</span></div>
+        <div class="option-btn" onclick="tog3(3,this)"><span class="opt-letter">4.</span><span class="opt-text">Только внутренние документы (приказы, регламенты, инструкции)</span></div>
+      </div>`;
+  }
+
+  window.tog3 = function(idx, el) {
+    if(state.checked) return;
+    
+    if(state.selected.includes(idx)) {
+      state.selected = state.selected.filter(i => i !== idx);
+      el.classList.remove('selected-correct');
+    } else {
+      state.selected.push(idx);
+      el.classList.add('selected-correct');
+    }
+    
+    // Enable button when at least one selected
+    if(state.selected.length > 0) {
+      nextBtn.className = 'btn btn-next active';
+      nextBtn.onclick = checkS3;
+    } else {
+      nextBtn.className = 'btn btn-next';
+    }
+  };
+
+  function checkS3() {
+    if(state.checked) return;
+    state.checked = true;
+    
+    document.querySelectorAll('#opts3 .option-btn').forEach(o => o.style.pointerEvents = 'none');
+    state.selected.forEach(i => {
+      const el = document.querySelectorAll('#opts3 .option-btn')[i];
+      if([0,2].includes(i)) el.classList.add('selected-correct');
+      else el.classList.add('selected-wrong');
+    });
+    
+    const isCorrect = state.selected.includes(0) && state.selected.includes(2) && state.selected.length === 2;
+    
+    showModal(
+      isCorrect ? 'Отлично' : 'Рекомендация',
+      isCorrect
+        ? 'Смена юридического адреса влияет на учетные сведения об объекте НВОС и на разрешения с реквизитами. Их нужно актуализировать. Для смены реквизитов установлен срок 30 дней с даты регистрации изменений.'
+        : 'Одних внутренних документов здесь недостаточно. Объект НВОС и разрешения связаны с реквизитами организации, поэтому изменение адреса задевает и объект в реестре, и разрешительные документы.',
+      isCorrect,
+      () => {
+        if(isCorrect) showFinal();
+        else {
+          // Allow retry
+          state.checked = false;
+          document.querySelectorAll('#opts3 .option-btn').forEach(o => {
+            o.style.pointerEvents = 'auto';
+            o.classList.remove('selected-correct', 'selected-wrong');
+          });
+          state.selected = [];
+          nextBtn.className = 'btn btn-next';
+          nextBtn.onclick = checkS3;
+        }
+      }
+    );
+  }
+
+  function showFinal() {
+    document.querySelector('.container').style.display = 'none';
+    document.getElementById('finalScreen').style.display = 'block';
+    if(typeof iFrameResize !== 'undefined') iFrameResize();
+  }
+
+  window.restart = function() {
+    state = { step: 1, toggles: {}, selected: [], checked: false };
+    document.querySelector('.container').style.display = 'block';
+    document.getElementById('finalScreen').style.display = 'none';
+    updateProgress();
+    renderStep1();
+    if(typeof iFrameResize !== 'undefined') iFrameResize();
+  };
+
+  // Init
+  updateProgress();
+  renderStep1();
+</script>
+
+</body>
+</html>
