@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Разберите изменения по алгоритму</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #fff;
+    --text-main: #2d3748;
+    --text-light: #718096;
+    --green-light: #e8f5e9;
+    --green-border: #a5d6a7;
+    --green-solid: #66bb6a;
+    --green-dark: #2e7d32;
+    --radius: 16px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f7f9fb;
+    color: var(--text-main);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .container {
+    width: 100%;
+    max-width: 700px;
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 30px;
+    box-shadow: var(--shadow);
+  }
+  h2 { font-size: 22px; font-weight: 700; margin-bottom: 8px; color: var(--green-dark); }
+  .task-desc { font-size: 15px; color: var(--text-light); margin-bottom: 24px; line-height: 1.5; }
+  
+  /* Progress */
+  .progress { display: flex; gap: 8px; margin-bottom: 24px; align-items: center; }
+  .progress-dot { width: 10px; height: 10px; border-radius: 50%; background: #e2e8f0; transition: 0.3s; }
+  .progress-dot.active { background: var(--green-solid); transform: scale(1.2); }
+  .progress-dot.done { background: var(--green-dark); }
+  .progress-label { font-size: 13px; color: var(--text-light); margin-left: auto; }
+  
+  /* Scenario Selection */
+  .scenario-grid { display: grid; grid-template-columns: 1fr; gap: 12px; margin-bottom: 24px; }
+  .scenario-card {
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+  }
+  .scenario-card:hover { border-color: var(--green-solid); background: var(--green-light); }
+  .scenario-card.selected { border-color: var(--green-dark); background: #c8e6c9; }
+  .scenario-card.completed { border-color: var(--green-dark); background: #e8f5e9; opacity: 0.8; }
+  .scenario-card.completed::after { content: '✓'; font-weight: 700; color: var(--green-dark); margin-left: auto; }
+  .sc-num { font-weight: 700; color: var(--green-solid); flex-shrink: 0; }
+  .sc-text { font-size: 14.5px; line-height: 1.4; }
+  
+  /* Scenario Card Display */
+  .scenario-box {
+    background: var(--green-light);
+    border-left: 4px solid var(--green-solid);
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 24px;
+  }
+  .scenario-label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--green-dark); margin-bottom: 8px; }
+  .scenario-text { font-size: 16px; font-weight: 500; line-height: 1.5; }
+  
+  /* Step Area */
+  .step-area { margin-bottom: 20px; min-height: 180px; }
+  .step-title { font-size: 17px; font-weight: 700; margin-bottom: 6px; }
+  .step-desc { font-size: 14.5px; color: var(--text-light); margin-bottom: 16px; }
+  
+  /* Options Grid */
+  .options-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 24px; }
+  .option-btn {
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: left;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .option-btn:hover { border-color: var(--green-solid); background: var(--green-light); }
+  .option-btn.selected-correct { border-color: var(--green-dark); background: #c8e6c9; pointer-events: none; }
+  .option-btn.selected-wrong { border-color: #e53935; background: #ffebee; pointer-events: none; }
+  .opt-letter { font-weight: 700; color: var(--green-solid); flex-shrink: 0; }
+  .opt-text { font-size: 14px; line-height: 1.4; }
+  
+  /* Toggles for Step 2 */
+  .toggle-group { display: flex; flex-direction: column; gap: 12px; margin-bottom: 16px; }
+  .toggle-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: #fff; border: 2px solid #e2e8f0; border-radius: 12px;
+    padding: 14px 16px;
+  }
+  .toggle-text { font-size: 14.5px; flex: 1; margin-right: 12px; }
+  .toggle-btns { display: flex; gap: 6px; }
+  .toggle-btn {
+    padding: 6px 14px; border: 1px solid #e2e8f0; background: #fff;
+    border-radius: 6px; cursor: pointer; font-size: 13px; font-weight: 600;
+    color: var(--text-light); transition: 0.2s;
+  }
+  .toggle-btn.active-yes { background: var(--green-dark); color: #fff; border-color: var(--green-dark); }
+  .toggle-btn.active-no { background: var(--text-light); color: #fff; border-color: var(--text-light); }
+  .toggle-row.locked { pointer-events: none; opacity: 0.7; }
+  
+  /* Controls */
+  .controls { text-align: center; }
+  .btn {
+    padding: 12px 32px; border: none; border-radius: 8px;
+    font-size: 15px; font-weight: 600; cursor: pointer;
+    transition: all 0.2s; display: inline-block;
+  }
+  .btn-next { background: var(--green-dark); color: #fff; opacity: 0.3; pointer-events: none; }
+  .btn-next.active { opacity: 1; pointer-events: auto; }
+  .btn-next:hover { background: #1b5e20; }
+  .btn-back { background: #e2e8f0; color: var(--text-main); margin-right: 8px; }
+  .btn-back:hover { background: #cbd5e0; }
+  
+  /* Modal */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 16px; max-width: 560px; width: 100%;
+    padding: 28px; position: relative;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+    border: 2px solid var(--green-light);
+    max-height: 90vh; overflow-y: auto;
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 32px; height: 32px; border-radius: 50%; border: none;
+    background: #f0f2f5; cursor: pointer;
+    font-size: 20px; color: #666;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: #e4e6eb; }
+  .modal-title { font-size: 20px; font-weight: 700; margin-bottom: 16px; }
+  .modal-title.success { color: var(--green-dark); }
+  .modal-title.hint { color: #f57c00; }
+  .modal-title.complete { color: var(--green-dark); }
+  .modal-body { font-size: 15px; line-height: 1.6; color: #333; }
+  .modal-body ul { padding-left: 20px; margin-top: 12px; margin-bottom: 16px; }
+  .modal-body li { margin-bottom: 8px; }
+  .modal-footer { margin-top: 20px; text-align: center; }
+  .btn-modal { background: var(--green-solid); color: #fff; padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer; font-weight: 600; }
+  .btn-modal:hover { background: var(--green-dark); }
+
+  /* Final Screen */
+  .final-screen { display: none; text-align: center; }
+  .final-screen h2 { margin-bottom: 16px; }
+  .final-screen p { color: var(--text-light); margin-bottom: 24px; }
+  .advice-box {
+    background: var(--green-light); padding: 20px; border-radius: 12px;
+    text-align: left; margin-top: 16px;
+  }
+  .advice-box strong { display: block; margin-bottom: 8px; color: var(--green-dark); font-size: 16px; }
+  .advice-box ol { margin-left: 20px; }
+  .advice-box li { margin-bottom: 8px; font-size: 14.5px; }
+
+  @keyframes shake {
+    0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 
+    50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); }
+  }
+  @media (max-width: 600px) { .options-grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Разберите изменения по алгоритму</h2>
+  <p class="task-desc">Выберите ситуацию для разбора. Пройдите шаги алгоритма. После каждого кейса — индивидуальный разбор.</p>
+
+  <div id="selectionScreen">
+    <div class="scenario-grid" id="scenarioGrid"></div>
+  </div>
+
+  <div id="gameScreen" style="display:none;">
+    <div class="progress">
+      <div class="progress-dot active" id="dot1"></div>
+      <div class="progress-dot" id="dot2"></div>
+      <div class="progress-dot" id="dot3"></div>
+      <div class="progress-dot" id="dot4"></div>
+      <div class="progress-label">Шаг <span id="stepLabel">1</span> из 4</div>
+    </div>
+
+    <div class="scenario-box">
+      <div class="scenario-label" id="scenLabel">Ситуация 1</div>
+      <div class="scenario-text" id="scenarioText">Загрузка...</div>
+    </div>
+
+    <div class="step-area" id="stepArea"></div>
+
+    <div class="controls">
+      <button class="btn btn-back" id="backBtn" onclick="backToSelection()">Выбрать другую</button>
+      <button class="btn btn-next" id="nextBtn">Продолжить</button>
+    </div>
+  </div>
+
+  <div class="final-screen" id="finalScreen">
+    <h2>Итоговый разбор алгоритма</h2>
+    <p>Вы разобрали четыре ситуации. Закрепите логику работы эколога при изменениях:</p>
+    
+    <div class="advice-box">
+      <ol>
+        <li><strong>Сначала сформулируйте, что поменялось.</strong> Классифицируйте изменение: адрес/название, пользователь, технология или нормативка. Это отсекает ложные тревоги.</li>
+        <li><strong>Проверьте влияние на объекты НВОС.</strong> Даже если производство не менялось, изменение данных в ЕГРЮЛ или смена пользователя объекта требует внимания. Объект привязан к реквизитам.</li>
+        <li><strong>Определите затронутые документы.</strong> Составьте чек-лист: что актуализировать (Реестр НВОС), что переоформить (КЭР, ДВОС), кого уведомить (ОМСУ, операторы).</li>
+        <li><strong>Выберите уровень действий.</strong> От «ничего не делать» до переоформления разрешений. Не трогайте то, что обновляется автоматически по межведомственному взаимодействию.</li>
+      </ol>
+    </div>
+    
+    <button class="btn btn-next active" style="margin-top:24px;" onclick="restart()">Пройти заново</button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-body" id="modalBody"></div>
+    <div class="modal-footer">
+      <button class="btn-modal" id="modalBtn">Понятно</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const scenarios = [
+    {
+      id: 1,
+      title: "Смена названия организации",
+      text: "ООО «Ромашка» сменило название на ООО «Лютик». Производство, адрес и оборудование остались прежними.",
+      completed: false,
+      step1: { 
+        correct: 0, 
+        options: ["Адрес или название организации","Пользователь или собственник объекта","Площадка, оборудование, технология","Требования и нормативы"],
+        feedback: {
+          0: { ok: "Верно. Здесь меняются только реквизиты организации – название в ЕГРЮЛ. Это отправная точка: дальше проверяем, как это влияет на документы.", hint: "Посмотрите: в описании нет нового оборудования, площадки или нормативов. Меняется только название организации. Это влияет на то, как объект НВОС привязан к юридическому лицу." },
+          1: { ok: "Не совсем. Пользователь объекта – это организация, которая эксплуатирует объект. В ситуации пользователь не менялся, поменялось только название.", hint: "Пользователь объекта НВОС – это организация-эксплуатант. Если бы сменился собственник площадки или договор аренды, это была бы эта группа. Здесь же только название." },
+          2: { ok: "Нет. Площадка, оборудование и технология остались прежними, об этом прямо сказано в условии.", hint: "Если бы запустили новый станок или изменили техпроцесс – да, это была бы эта группа. Но в условии: «производство и оборудование прежние»." },
+          3: { ok: "Нет. Новые требования или нормативы в условии не упоминаются.", hint: "Если бы вышел новый приказ Минприроды или изменились ПДК – тогда да. Здесь меняется только название организации." }
+        }
+      },
+      step2: { 
+        correct: { q1: 'no', q2: 'no', q3: 'yes' }, 
+        questions: ["Меняется площадка или состав установок по объекту НВОС?","Меняется организация или лицо, которое является пользователем объекта?","Меняются данные организации в ЕГРЮЛ, к которым привязан объект НВОС и разрешения?"],
+        feedback: {
+          ok: "Вы верно отметили: площадка и пользователь прежние, но меняются данные в ЕГРЮЛ. Объект НВОС физически на месте, но в реестре и разрешениях он привязан к старым реквизитам.",
+          hint: "Сопоставьте: площадка не двигалась (пункт 1 – нет), пользователь тот же (пункт 2 – нет), но название в ЕГРЮЛ новое (пункт 3 – да). Это ключевой момент."
+        }
+      },
+      step3: { 
+        correct: [2,3], 
+        options: ["Внутренние документы (приказы, регламенты, инструкции)","Экологическая документация (инвентаризации, проекты, программы, паспорта)","Учетные сведения об объекте НВОС","Разрешительные документы и уведомления (КЭР, ДВОС, документы по водопользованию и другим видам воздействия, договоры)"],
+        feedback: {
+          ok: "Верно. Смена названия влияет на учетные сведения об объекте НВОС (реестр) и на разрешения, где указано название организации. Экологическая документация (проекты, инвентаризации) остается прежней, если процесс не менялся.",
+          hint: "Подумайте: где в документах фигурирует название организации? В реестре НВОС, КЭР, ДВОС, разрешениях. А вот инвентаризации и проекты описывают технологию, которая не менялась."
+        }
+      },
+      step4: { 
+        correct: 3, 
+        options: ["А. Ничего не делать","Б. Внести изменения в документы","В. Уведомить","Г. Переоформить разрешительные документы и актуализировать объект НВОС"],
+        feedback: {
+          ok: "Вы выбрали вариант Г. Для смены названия это верно: нужно актуализировать сведения в реестре НВОС (срок 30 дней) и переоформить КЭР, ДВОС, разрешения, где указано название организации.",
+          hint: "Чтобы выбрать уровень, вернитесь к шагам: название влияет на реквизиты в разрешениях. Если в документе указано старое название – его нужно переоформить. Это уровень Г."
+        }
+      },
+      summary: {
+        title: "Разбор ситуации: смена названия",
+        text: "<strong>Что поменялось:</strong> название организации в ЕГРЮЛ.<br><br><strong>Влияние на НВОС:</strong> объект физически не менялся, но в реестре и разрешениях он привязан к реквизитам организации.<br><br><strong>Документы:</strong> актуализировать реестр НВОС (30 дней), переоформить КЭР, ДВОС, разрешения на выбросы/сбросы, где указано название.<br><br><strong>Что не менять:</strong> инвентаризации, проекты НДВ/НДС, ПЭК – если технология не менялась, достаточно заменить общие сведения и утвердить руководителем."
+      }
+    },
+    {
+      id: 2,
+      title: "Новый участок окраски",
+      text: "На площадке запущен новый участок окраски металлоконструкций с вытяжкой.",
+      completed: false,
+      step1: { 
+        correct: 2, 
+        options: ["Адрес или название организации","Пользователь или собственник объекта","Площадка, оборудование, технология","Требования и нормативы"],
+        feedback: {
+          0: { ok: "Нет. Адрес и название организации в условии не менялись.", hint: "Если бы в ЕГРЮЛ поменяли адрес или название – да. Здесь меняется только оборудование на площадке." },
+          1: { ok: "Нет. Пользователь объекта (организация-эксплуатант) остался прежним.", hint: "Пользователь меняется, если объект продали, передали в аренду или сменился собственник. Здесь организация та же." },
+          2: { ok: "Верно. Запустили новый участок с новым оборудованием и источником выбросов. Это изменение технологии и состава установок.", hint: "" },
+          3: { ok: "Нет. Новые нормативы или требования в условии не упоминаются.", hint: "Если бы вышел новый приказ по контролю выбросов – тогда да. Здесь меняется только оборудование." }
+        }
+      },
+      step2: { 
+        correct: { q1: 'yes', q2: 'no', q3: 'no' }, 
+        questions: ["Меняется площадка или состав установок по объекту НВОС?","Меняется организация или лицо, которое является пользователем объекта?","Меняются данные организации в ЕГРЮЛ, к которым привязан объект НВОС и разрешения?"],
+        feedback: {
+          ok: "Вы верно отметили: состав установок меняется (новый участок окраски), но площадка и пользователь объекта прежние. Это важное различие: объект НВОС тот же, но внутри него появились новые источники выбросов.",
+          hint: "Важно: новый участок окраски – это не новый объект НВОС, а новая установка в рамках существующего объекта. Поэтому пункт 1 – да, а пункты 2 и 3 – нет."
+        }
+      },
+      step3: { 
+        correct: [1], 
+        options: ["Внутренние документы (приказы, регламенты, инструкции)","Экологическая документация (инвентаризации, проекты, программы, паспорта)","Учетные сведения об объекте НВОС","Разрешительные документы и уведомления (КЭР, ДВОС, документы по водопользованию и другим видам воздействия, договоры)"],
+        feedback: {
+          ok: "Верно. Новый источник выбросов требует обновления инвентаризации, проектов НДВ, программ ПЭК, паспортов ГОУ. Это уровень Б. Если выбросы существенно изменятся, может потребоваться переоформление КЭР (уровень Г), но базовый шаг – изменение экологической документации.",
+          hint: "Подумайте: где отражаются источники выбросов? В инвентаризации, проектах НДВ, ПЭК. Учетные сведения об объекте НВОС (реестр) не меняются, если объект тот же. Разрешения переоформляют, только если изменились нормативы."
+        }
+      },
+      step4: { 
+        correct: 1, 
+        options: ["А. Ничего не делать","Б. Внести изменения в документы","В. Уведомить","Г. Переоформить разрешительные документы и актуализировать объект НВОС"],
+        feedback: {
+          ok: "Вы выбрали вариант Б. Для нового участка это верно: базовый уровень – внести изменения в экологическую документацию (инвентаризацию, проекты, ПЭК). Если нормативы выбросов изменятся существенно, может потребоваться уровень Г, но начинать нужно с Б.",
+          hint: "Чтобы выбрать уровень: новый участок меняет состав выбросов → нужно обновить инвентаризацию и проекты (уровень Б). Если после пересчета нормативы превысят установленные в КЭР – тогда уровень Г."
+        }
+      },
+      summary: {
+        title: "Разбор ситуации: новый участок окраски",
+        text: "<strong>Что поменялось:</strong> состав установок – запустили новый участок окраски с вытяжкой.<br><br><strong>Влияние на НВОС:</strong> объект НВОС тот же, но внутри него появились новые источники выбросов. Это не новый объект, а новая установка в рамках существующего.<br><br><strong>Документы:</strong> внести изменения в инвентаризацию выбросов, проекты НДВ, программы ПЭК, паспорта ГОУ. Утвердить руководителем.<br><br><strong>Что дальше:</strong> если после пересчета нормативы выбросов изменятся существенно – подать заявку на переоформление КЭР. Если нет – достаточно обновленной документации."
+      }
+    },
+    {
+      id: 3,
+      title: "Новый порядок контроля",
+      text: "Вышел новый порядок контроля выбросов, ваши объекты подпадают под него.",
+      completed: false,
+      step1: { 
+        correct: 3, 
+        options: ["Адрес или название организации","Пользователь или собственник объекта","Площадка, оборудование, технология","Требования и нормативы"],
+        feedback: {
+          0: { ok: "Нет. Адрес и название организации в условии не менялись.", hint: "Если бы в ЕГРЮЛ поменяли реквизиты – да. Здесь меняется только нормативный документ." },
+          1: { ok: "Нет. Пользователь объекта остался прежним.", hint: "Пользователь меняется при смене собственника или арендатора. Здесь организация та же." },
+          2: { ok: "Нет. Площадка и оборудование не менялись.", hint: "Если бы запустили новое оборудование – тогда да. Здесь меняется только требование к контролю." },
+          3: { ok: "Верно. Вышел новый нормативный документ – порядок контроля выбросов. Это изменение требований, а не производства.", hint: "" }
+        }
+      },
+      step2: { 
+        correct: { q1: 'no', q2: 'no', q3: 'no' }, 
+        questions: ["Меняется площадка или состав установок по объекту НВОС?","Меняется организация или лицо, которое является пользователем объекта?","Меняются данные организации в ЕГРЮЛ, к которым привязан объект НВОС и разрешения?"],
+        feedback: {
+          ok: "Вы верно отметили: ни площадка, ни пользователь, ни реквизиты не менялись. Меняются только требования к контролю. Объект НВОС и деятельность прежние.",
+          hint: "Новый порядок контроля – это внешнее требование, а не изменение самого объекта. Поэтому все три пункта – нет."
+        }
+      },
+      step3: { 
+        correct: [1], 
+        options: ["Внутренние документы (приказы, регламенты, инструкции)","Экологическая документация (инвентаризации, проекты, программы, паспорта)","Учетные сведения об объекте НВОС","Разрешительные документы и уведомления (КЭР, ДВОС, документы по водопользованию и другим видам воздействия, договоры)"],
+        feedback: {
+          ok: "Верно. Новый порядок контроля требует обновления программ ПЭК, планов мероприятий, отчетов. Это уровень Б. Внутренние регламенты (уровень 1) тоже могут потребовать правки, но база – экологическая документация.",
+          hint: "Подумайте: где прописаны процедуры контроля? В программах ПЭК, планах, отчетах. Учетные сведения об объекте и разрешения не меняются, если не менялись параметры воздействия."
+        }
+      },
+      step4: { 
+        correct: 1, 
+        options: ["А. Ничего не делать","Б. Внести изменения в документы","В. Уведомить","Г. Переоформить разрешительные документы и актуализировать объект НВОС"],
+        feedback: {
+          ok: "Вы выбрали вариант Б. Для нового порядка контроля это верно: нужно привести программы ПЭК, планы и отчеты в соответствие с новыми требованиями. Если порядок требует уведомления госоргана – добавляется уровень В, но база – обновление документов.",
+          hint: "Чтобы выбрать уровень: новый порядок меняет требования к отчетности → нужно обновить программы и планы (уровень Б). Если есть требование уведомить орган – добавить уровень В."
+        }
+      },
+      summary: {
+        title: "Разбор ситуации: новый порядок контроля",
+        text: "<strong>Что поменялось:</strong> нормативный документ – порядок контроля выбросов.<br><br><strong>Влияние на НВОС:</strong> объект и деятельность прежние, меняются только требования к контролю.<br><br><strong>Документы:</strong> актуализировать программы ПЭК, планы мероприятий, формы отчетности в соответствии с новым порядком. Утвердить руководителем.<br><br><strong>Что дальше:</strong> если порядок требует согласования программы с госорганом – направить уведомление (уровень В). Если нет – достаточно внутренних правок."
+      }
+    },
+    {
+      id: 4,
+      title: "Смена директора",
+      text: "В организации сменился директор. Объекты, площадки, процессы и реквизиты организации прежние.",
+      completed: false,
+      step1: { 
+        correct: 4, 
+        options: ["Адрес или название организации","Пользователь или собственник объекта","Площадка, оборудование, технология","Требования и нормативы","Не относится к этим группам для эколога"],
+        feedback: {
+          0: { ok: "Нет. Адрес и название организации в условии не менялись.", hint: "Если бы в ЕГРЮЛ поменяли реквизиты – да. Здесь меняется только должностное лицо." },
+          1: { ok: "Нет. Пользователь объекта (организация) остался прежним.", hint: "Пользователь – это организация-эксплуатант, а не конкретный человек. Директор – представитель организации, но не пользователь объекта." },
+          2: { ok: "Нет. Площадка и оборудование не менялись.", hint: "Если бы запустили новое оборудование – тогда да. Здесь меняется только руководитель." },
+          3: { ok: "Нет. Новые нормативы в условии не упоминаются.", hint: "Если бы вышел новый приказ – тогда да. Здесь меняется только должностное лицо." },
+          4: { ok: "Верно. Смена директора – это изменение в управлении организацией, но для эколога это не влияет на объекты НВОС, разрешения или экологическую документацию. Действий по алгоритму не требуется.", hint: "" }
+        }
+      },
+      // Для ситуации 4 шаги 2-4 не показываются, если выбран правильный ответ на шаге 1
+      summary: {
+        title: "Разбор ситуации: смена директора",
+        text: "<strong>Что поменялось:</strong> должностное лицо (директор), но не организация, не объект НВОС, не реквизиты.<br><br><strong>Влияние на НВОС:</strong> отсутствует. Объект, площадка, пользователь, реквизиты – всё прежние.<br><br><strong>Документы:</strong> не требуют изменений. Разрешения, реестр НВОС, проекты, программы выдаются на организацию, а не на конкретное должностное лицо.<br><br><strong>Что делать:</strong> ничего не делать в части экологической документации. Внутренние приказы о назначении директора – это кадровая документация, не экологическая."
+      }
+    }
+  ];
+
+  let state = { selectedScen: null, step: 1, answers: {}, checked: false };
+  const nextBtn = document.getElementById('nextBtn');
+  const backBtn = document.getElementById('backBtn');
+  const stepArea = document.getElementById('stepArea');
+  const modal = document.getElementById('modal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalBody = document.getElementById('modalBody');
+  const modalBtn = document.getElementById('modalBtn');
+  const scenText = document.getElementById('scenarioText');
+  const scenLabel = document.getElementById('scenLabel');
+  const dots = [document.getElementById('dot1'), document.getElementById('dot2'), document.getElementById('dot3'), document.getElementById('dot4')];
+  const selectionScreen = document.getElementById('selectionScreen');
+  const gameScreen = document.getElementById('gameScreen');
+  const finalScreen = document.getElementById('finalScreen');
+  const scenarioGrid = document.getElementById('scenarioGrid');
+
+  function renderSelection() {
+    scenarioGrid.innerHTML = '';
+    scenarios.forEach((s, i) => {
+      const card = document.createElement('div');
+      card.className = 'scenario-card' + (s.completed ? ' completed' : '');
+      card.innerHTML = `<span class="sc-num">${i+1}.</span><span class="sc-text">${s.title}: ${s.text}</span>`;
+      card.onclick = () => startScenario(i);
+      scenarioGrid.appendChild(card);
+    });
+  }
+
+  function startScenario(idx) {
+    state.selectedScen = idx;
+    state.step = 1;
+    state.answers = {};
+    state.checked = false;
+    
+    selectionScreen.style.display = 'none';
+    gameScreen.style.display = 'block';
+    finalScreen.style.display = 'none';
+    
+    const s = scenarios[idx];
+    scenLabel.textContent = s.title;
+    scenText.textContent = `«${s.text}»`;
+    
+    updateProgress();
+    renderStep1();
+  }
+
+  function backToSelection() {
+    gameScreen.style.display = 'none';
+    selectionScreen.style.display = 'block';
+    renderSelection();
+  }
+
+  function updateProgress() {
+    dots.forEach((d, i) => {
+      d.className = 'progress-dot';
+      if (i < state.step) d.classList.add('done');
+      if (i === state.step) d.classList.add('active');
+    });
+    document.getElementById('stepLabel').textContent = state.step;
+  }
+
+  function showModal(title, text, type, callback, isComplete) {
+    modalTitle.textContent = title;
+    modalTitle.className = 'modal-title ' + (isComplete ? 'complete' : (type === 'success' ? 'success' : 'hint'));
+    modalBody.innerHTML = text;
+    modalBtn.textContent = isComplete ? 'К списку ситуаций' : 'Понятно';
+    modal.classList.add('show');
+    
+    modalBtn.onclick = () => {
+      modal.classList.remove('show');
+      if (callback) callback();
+    };
+  }
+
+  window.closeModal = function() {
+    modal.classList.remove('show');
+  };
+
+  function renderStep1() {
+    state.answers.step1 = null;
+    state.checked = false;
+    nextBtn.className = 'btn btn-next';
+    const s = scenarios[state.selectedScen].step1;
+    
+    stepArea.innerHTML = `
+      <div class="step-title">Шаг 1. Определите, что именно поменялось</div>
+      <div class="step-desc">Выберите группу, к которой относится изменение.</div>
+      <div class="options-grid" id="opts1">
+        ${s.options.map((t,i) => `<div class="option-btn" onclick="checkStep1(${i},this)"><span class="opt-letter">${String.fromCharCode(1040+i)}.</span><span class="opt-text">${t}</span></div>`).join('')}
+      </div>`;
+  }
+
+  function checkStep1(idx, el) {
+    if (state.checked) return;
+    state.checked = true;
+    state.answers.step1 = idx;
+    
+    document.querySelectorAll('#opts1 .option-btn').forEach(o => o.style.pointerEvents = 'none');
+    const isCorrect = idx === scenarios[state.selectedScen].step1.correct;
+    el.classList.add(isCorrect ? 'selected-correct' : 'selected-wrong');
+    
+    const s = scenarios[state.selectedScen];
+    const fb = s.step1.feedback[idx];
+    
+    showModal(
+      isCorrect ? 'Верно' : 'Обратите внимание',
+      isCorrect ? fb.ok : fb.hint,
+      isCorrect ? 'success' : 'hint',
+      () => {
+        if (isCorrect) {
+          // Special case: scenario 4, correct answer ends immediately
+          if (state.selectedScen === 3 && idx === 4) {
+            // Show completion modal for this scenario
+            showModal('Кейс завершен', s.summary.text, 'success', () => {
+              scenarios[state.selectedScen].completed = true;
+              const allDone = scenarios.every(sc => sc.completed);
+              if (allDone) {
+                gameScreen.style.display = 'none';
+                finalScreen.style.display = 'block';
+                if (typeof iFrameResize !== 'undefined') iFrameResize();
+              } else {
+                backToSelection();
+              }
+            }, true);
+            return;
+          }
+          
+          nextBtn.className = 'btn btn-next active';
+          nextBtn.onclick = () => { state.step = 2; updateProgress(); renderStep2(); };
+        } else {
+          state.checked = false;
+          document.querySelectorAll('#opts1 .option-btn').forEach(o => { o.style.pointerEvents = 'auto'; o.classList.remove('selected-wrong'); });
+        }
+      }
+    );
+  }
+
+  function renderStep2() {
+    state.answers.step2 = { q1: null, q2: null, q3: null };
+    state.checked = false;
+    nextBtn.className = 'btn btn-next';
+    const s = scenarios[state.selectedScen].step2;
+    
+    stepArea.innerHTML = `
+      <div class="step-title">Шаг 2. Проверьте влияние на объекты НВОС</div>
+      <div class="step-desc">Отметьте, какие утверждения верны.</div>
+      <div class="toggle-group">
+        ${s.questions.map((q,i) => `
+          <div class="toggle-row">
+            <span class="toggle-text">${q}</span>
+            <div class="toggle-btns">
+              <button class="toggle-btn" onclick="setTog('q${i+1}','yes',this)">Да</button>
+              <button class="toggle-btn" onclick="setTog('q${i+1}','no',this)">Нет</button>
+            </div>
+          </div>`).join('')}
+      </div>`;
+  }
+
+  window.setTog = function(key, val, btn) {
+    if (state.checked) return;
+    state.answers.step2[key] = val;
+    const parent = btn.parentElement;
+    parent.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-yes','active-no'));
+    btn.classList.add(val === 'yes' ? 'active-yes' : 'active-no');
+    
+    const allSet = state.answers.step2.q1 && state.answers.step2.q2 && state.answers.step2.q3;
+    if (allSet) {
+      nextBtn.className = 'btn btn-next active';
+      nextBtn.onclick = checkStep2;
+    }
+  };
+
+  function checkStep2() {
+    if (state.checked) return;
+    state.checked = true;
+    document.querySelectorAll('.toggle-row').forEach(r => r.classList.add('locked'));
+    nextBtn.className = 'btn btn-next';
+    
+    const correct = scenarios[state.selectedScen].step2.correct;
+    const isCorrect = state.answers.step2.q1 === correct.q1 && state.answers.step2.q2 === correct.q2 && state.answers.step2.q3 === correct.q3;
+    const fb = scenarios[state.selectedScen].step2.feedback;
+    
+    showModal(
+      isCorrect ? 'Верно' : 'Уточнение',
+      isCorrect ? fb.ok : fb.hint,
+      isCorrect ? 'success' : 'hint',
+      () => {
+        if (isCorrect) {
+          nextBtn.className = 'btn btn-next active';
+          nextBtn.onclick = () => { state.step = 3; updateProgress(); renderStep3(); };
+        } else {
+          state.checked = false;
+          document.querySelectorAll('.toggle-row').forEach(r => {
+            r.classList.remove('locked');
+            r.querySelectorAll('.toggle-btn').forEach(b => b.classList.remove('active-yes','active-no'));
+          });
+          state.answers.step2 = { q1: null, q2: null, q3: null };
+          nextBtn.className = 'btn btn-next';
+          nextBtn.onclick = checkStep2;
+        }
+      }
+    );
+  }
+
+  function renderStep3() {
+    state.answers.step3 = [];
+    state.checked = false;
+    nextBtn.className = 'btn btn-next';
+    const s = scenarios[state.selectedScen].step3;
+    
+    stepArea.innerHTML = `
+      <div class="step-title">Шаг 3. Определите затронутые документы</div>
+      <div class="step-desc">Выберите один или несколько вариантов.</div>
+      <div class="options-grid" id="opts3">
+        ${s.options.map((t,i) => `<div class="option-btn" onclick="tog3(${i},this)"><span class="opt-letter">${i+1}.</span><span class="opt-text">${t}</span></div>`).join('')}
+      </div>`;
+  }
+
+  window.tog3 = function(idx, el) {
+    if (state.checked) return;
+    if (state.answers.step3.includes(idx)) {
+      state.answers.step3 = state.answers.step3.filter(i => i !== idx);
+      el.classList.remove('selected-correct');
+    } else {
+      state.answers.step3.push(idx);
+      el.classList.add('selected-correct');
+    }
+    if (state.answers.step3.length > 0) {
+      nextBtn.className = 'btn btn-next active';
+      nextBtn.onclick = checkStep3;
+    } else {
+      nextBtn.className = 'btn btn-next';
+    }
+  };
+
+  function checkStep3() {
+    if (state.checked) return;
+    state.checked = true;
+    document.querySelectorAll('#opts3 .option-btn').forEach(o => o.style.pointerEvents = 'none');
+    
+    const correct = scenarios[state.selectedScen].step3.correct;
+    const isCorrect = correct.length === 0 ? state.answers.step3.length === 0 : 
+                      state.answers.step3.includes(correct[0]) && (!correct[1] || state.answers.step3.includes(correct[1])) && state.answers.step3.length === correct.length;
+    const fb = scenarios[state.selectedScen].step3.feedback;
+    
+    state.answers.step3.forEach(i => {
+      const el = document.querySelectorAll('#opts3 .option-btn')[i];
+      if (correct.includes(i)) el.classList.add('selected-correct');
+      else el.classList.add('selected-wrong');
+    });
+    
+    showModal(
+      isCorrect ? 'Верно' : 'Рекомендация',
+      isCorrect ? fb.ok : fb.hint,
+      isCorrect ? 'success' : 'hint',
+      () => {
+        if (isCorrect) {
+          nextBtn.className = 'btn btn-next active';
+          nextBtn.onclick = () => { state.step = 4; updateProgress(); renderStep4(); };
+        } else {
+          state.checked = false;
+          document.querySelectorAll('#opts3 .option-btn').forEach(o => {
+            o.style.pointerEvents = 'auto';
+            o.classList.remove('selected-correct', 'selected-wrong');
+          });
+          state.answers.step3 = [];
+          nextBtn.className = 'btn btn-next';
+          nextBtn.onclick = checkStep3;
+        }
+      }
+    );
+  }
+
+  function renderStep4() {
+    state.answers.step4 = null;
+    state.checked = false;
+    nextBtn.className = 'btn btn-next';
+    const s = scenarios[state.selectedScen].step4;
+    
+    stepArea.innerHTML = `
+      <div class="step-title">Шаг 4. Выберите вариант действий</div>
+      <div class="step-desc">Какой набор действий вы выберете?</div>
+      <div class="options-grid" id="opts4">
+        ${s.options.map((t,i) => `<div class="option-btn" onclick="checkStep4(${i},this)"><span class="opt-letter">${String.fromCharCode(1040+i)}.</span><span class="opt-text">${t}</span></div>`).join('')}
+      </div>`;
+  }
+
+  function checkStep4(idx, el) {
+    if (state.checked) return;
+    state.checked = true;
+    state.answers.step4 = idx;
+    
+    document.querySelectorAll('#opts4 .option-btn').forEach(o => o.style.pointerEvents = 'none');
+    const isCorrect = idx === scenarios[state.selectedScen].step4.correct;
+    el.classList.add(isCorrect ? 'selected-correct' : 'selected-wrong');
+    
+    const fb = scenarios[state.selectedScen].step4.feedback;
+    
+    showModal(
+      isCorrect ? 'Отлично' : 'Рекомендация',
+      isCorrect ? fb.ok : fb.hint,
+      isCorrect ? 'success' : 'hint',
+      () => {
+        if (isCorrect) {
+          // Show scenario summary
+          const s = scenarios[state.selectedScen];
+          showModal('Разбор ситуации', s.summary.text, 'success', () => {
+            scenarios[state.selectedScen].completed = true;
+            const allDone = scenarios.every(sc => sc.completed);
+            if (allDone) {
+              gameScreen.style.display = 'none';
+              finalScreen.style.display = 'block';
+              if (typeof iFrameResize !== 'undefined') iFrameResize();
+            } else {
+              backToSelection();
+            }
+          }, true);
+        } else {
+          state.checked = false;
+          document.querySelectorAll('#opts4 .option-btn').forEach(o => { o.style.pointerEvents = 'auto'; o.classList.remove('selected-wrong'); });
+        }
+      }
+    );
+  }
+
+  function restart() {
+    scenarios.forEach(s => s.completed = false);
+    state = { selectedScen: null, step: 1, answers: {}, checked: false };
+    selectionScreen.style.display = 'block';
+    gameScreen.style.display = 'none';
+    finalScreen.style.display = 'none';
+    renderSelection();
+  }
+
+  // Init
+  renderSelection();
+</script>
+
+</body>
+</html>
