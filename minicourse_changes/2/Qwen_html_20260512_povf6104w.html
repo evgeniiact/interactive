@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Расставьте шаги алгоритма</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #fff;
+    --text-main: #2d3748;
+    --text-light: #718096;
+    --green-light: #e8f5e9;
+    --green-border: #a5d6a7;
+    --green-solid: #66bb6a;
+    --green-dark: #2e7d32;
+    --radius: 16px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: #f7f9fb;
+    color: var(--text-main);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .container {
+    width: 100%;
+    max-width: 600px;
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 28px;
+    box-shadow: var(--shadow);
+  }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--green-dark); }
+  .task-desc { font-size: 14.5px; color: var(--text-light); margin-bottom: 24px; line-height: 1.5; }
+  
+  /* Sortable List */
+  .sortable-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-bottom: 24px;
+    min-height: 220px;
+  }
+  .sort-card {
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px 20px;
+    cursor: grab;
+    transition: all 0.2s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    user-select: none;
+  }
+  .sort-card:active { cursor: grabbing; }
+  .sort-card.dragging { opacity: 0.6; transform: scale(0.98); border-color: var(--green-solid); }
+  .sort-card.correct { border-color: var(--green-dark); background: #c8e6c9; cursor: default; }
+  .sort-card-number {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--green-light);
+    color: var(--green-dark);
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .sort-card.correct .sort-card-number { background: var(--green-dark); color: #fff; }
+  .sort-card-text { font-size: 14.5px; line-height: 1.4; }
+  
+  /* Controls */
+  .controls { text-align: center; }
+  .btn {
+    padding: 12px 32px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    display: inline-block;
+  }
+  .btn-check { 
+    background: var(--green-dark); 
+    color: #fff; 
+    opacity: 0.3; 
+    pointer-events: none; 
+    cursor: not-allowed;
+  }
+  .btn-check.active { 
+    opacity: 1; 
+    pointer-events: auto; 
+    cursor: pointer; 
+  }
+  .btn-check:hover { background: #1b5e20; }
+  
+  .btn-retry { background: #e2e8f0; color: var(--text-main); margin-right: 8px; display: none; }
+  .btn-retry.show { display: inline-block; }
+  .btn-retry:hover { background: #cbd5e0; }
+  
+  /* Modal */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 16px; max-width: 480px; width: 100%;
+    padding: 24px; position: relative;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+    border: 2px solid var(--green-light);
+  }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 32px; height: 32px; border-radius: 50%; border: none;
+    background: #f0f2f5; cursor: pointer;
+    font-size: 20px; color: #666;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: #e4e6eb; }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--green-dark); }
+  .modal-title.success { color: var(--green-dark); }
+  .modal-title.hint { color: #f57c00; }
+  .modal-text { font-size: 14.5px; line-height: 1.6; color: var(--text-main); }
+  .modal-btn {
+    width: 100%; padding: 10px; margin-top: 16px;
+    background: var(--green-solid); color: #fff; border: none;
+    border-radius: 8px; font-weight: 600; cursor: pointer;
+  }
+  .modal-btn:hover { background: var(--green-dark); }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 500px) { .container { padding: 20px; } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Расставьте шаги алгоритма</h2>
+  <p class="task-desc">Перетащите карточки, чтобы выстроить правильный порядок действий при изменениях.</p>
+
+  <div class="sortable-list" id="sortableList"></div>
+
+  <div class="controls">
+    <button class="btn btn-retry" id="retryBtn">Начать заново</button>
+    <button class="btn btn-check" id="checkBtn">Проверить</button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <div class="modal-title" id="modalTitle"></div>
+    <div class="modal-text" id="modalText"></div>
+    <button class="modal-btn" id="modalBtn">Понятно</button>
+  </div>
+</div>
+
+<script>
+  const correctOrder = [
+    { num: 1, text: "Что именно поменялось." },
+    { num: 2, text: "Затрагивает ли это ваши объекты НВОС и пользователя объекта." },
+    { num: 3, text: "На какие документы влияет изменение и какой уровень действий вы выбираете." }
+  ];
+
+  let currentOrder = [...correctOrder].sort(() => Math.random() - 0.5);
+  let draggedItem = null;
+  let isChecked = false;
+
+  const listEl = document.getElementById('sortableList');
+  const checkBtn = document.getElementById('checkBtn');
+  const retryBtn = document.getElementById('retryBtn');
+  const modal = document.getElementById('modal');
+  const modalTitle = document.getElementById('modalTitle');
+  const modalText = document.getElementById('modalText');
+  const modalBtn = document.getElementById('modalBtn');
+
+  function renderList() {
+    listEl.innerHTML = '';
+    currentOrder.forEach((item, index) => {
+      const card = document.createElement('div');
+      card.className = 'sort-card';
+      card.draggable = true;
+      card.dataset.index = index;
+      
+      const displayNum = isChecked ? item.num : '?';
+      
+      card.innerHTML = `
+        <div class="sort-card-number">${displayNum}</div>
+        <div class="sort-card-text">${item.text}</div>
+      `;
+      
+      card.addEventListener('dragstart', handleDragStart);
+      card.addEventListener('dragover', handleDragOver);
+      card.addEventListener('dragenter', handleDragEnter);
+      card.addEventListener('dragleave', handleDragLeave);
+      card.addEventListener('drop', handleDrop);
+      card.addEventListener('dragend', handleDragEnd);
+      
+      listEl.appendChild(card);
+    });
+    
+    if (!isChecked) {
+      checkBtn.classList.remove('active');
+    }
+  }
+
+  function handleDragStart(e) {
+    if (isChecked) { e.preventDefault(); return; }
+    draggedItem = this;
+    this.classList.add('dragging');
+    e.dataTransfer.effectAllowed = 'move';
+    e.dataTransfer.setData('text/html', this.innerHTML);
+  }
+
+  function handleDragOver(e) {
+    e.preventDefault();
+    e.dataTransfer.dropEffect = 'move';
+    return false;
+  }
+
+  function handleDragEnter(e) {
+    this.classList.add('drag-over');
+  }
+
+  function handleDragLeave(e) {
+    this.classList.remove('drag-over');
+  }
+
+  function handleDrop(e) {
+    e.stopPropagation();
+    e.preventDefault();
+    if (draggedItem !== this && !isChecked) {
+      const fromIndex = parseInt(draggedItem.dataset.index);
+      const toIndex = parseInt(this.dataset.index);
+      
+      const [movedItem] = currentOrder.splice(fromIndex, 1);
+      currentOrder.splice(toIndex, 0, movedItem);
+      
+      renderList();
+      checkBtn.classList.add('active');
+    }
+    return false;
+  }
+
+  function handleDragEnd() {
+    this.classList.remove('dragging');
+    document.querySelectorAll('.sort-card').forEach(card => card.classList.remove('drag-over'));
+  }
+
+  function showModal(title, text, type, callback) {
+    modalTitle.textContent = title;
+    modalTitle.className = 'modal-title ' + (type === 'success' ? 'success' : 'hint');
+    modalText.innerHTML = text;
+    modalBtn.textContent = 'Понятно';
+    modalBtn.onclick = () => {
+      modal.classList.remove('show');
+      if (callback) callback();
+    };
+    modal.classList.add('show');
+  }
+
+  window.closeModal = function() {
+    modal.classList.remove('show');
+  };
+
+  function checkOrder() {
+    isChecked = true;
+    const isCorrect = currentOrder.every((item, i) => item.num === i + 1);
+    
+    const cards = listEl.querySelectorAll('.sort-card');
+    cards.forEach((card, i) => {
+      card.querySelector('.sort-card-number').textContent = currentOrder[i].num;
+      if (currentOrder[i].num === i + 1) {
+        card.classList.add('correct');
+      }
+      card.draggable = false;
+    });
+    
+    if (isCorrect) {
+      showModal(
+        'Верно',
+        'Именно в таком порядке применяют алгоритм: сначала фиксируют изменение, потом проверяют влияние на объекты, затем определяют документы и уровень действий. Запомните этот порядок — он поможет не пропустить важный шаг при работе с изменениями.',
+        'success'
+      );
+      checkBtn.style.display = 'none';
+      retryBtn.style.display = 'none';
+    } else {
+      showModal(
+        'Порядок неверный',
+        'Попробуйте ещё раз: сначала определите, что поменялось, затем проверьте влияние на объекты НВОС, и только после этого выбирайте документы и действия.',
+        'hint',
+        () => {
+          isChecked = false;
+          checkBtn.classList.add('active');
+        }
+      );
+      retryBtn.classList.add('show');
+    }
+  }
+
+  function resetExercise() {
+    isChecked = false;
+    currentOrder = [...correctOrder].sort(() => Math.random() - 0.5);
+    retryBtn.classList.remove('show');
+    checkBtn.style.display = 'inline-block';
+    checkBtn.classList.remove('active');
+    renderList();
+  }
+
+  // Init
+  checkBtn.addEventListener('click', checkOrder);
+  retryBtn.addEventListener('click', resetExercise);
+  modal.addEventListener('click', (e) => { if (e.target === modal) closeModal(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeModal(); });
+  
+  renderList();
+</script>
+
+</body>
+</html>
