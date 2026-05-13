@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Гайд: смена адреса и документы</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g200: #bbf7d0;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 10px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 720px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 22px;
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 6px; color: var(--g800); }
+  .sub { font-size: 14px; color: var(--muted); margin-bottom: 18px; line-height: 1.4; }
+  
+  .prog { display: flex; align-items: center; gap: 8px; margin-bottom: 18px; }
+  .prog-bar { flex: 1; height: 5px; background: var(--g100); border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--g600); width: 0%; transition: width 0.3s; border-radius: 3px; }
+  .prog-txt { font-size: 12px; color: var(--muted); min-width: 60px; text-align: right; }
+
+  .scr { display: none; animation: fade 0.25s ease; }
+  .scr.on { display: block; }
+  @keyframes fade { from { opacity: 0; transform: translateY(3px); } to { opacity: 1; transform: translateY(0); } }
+
+  .case-card {
+    background: #fff; border: 2px solid var(--border); border-radius: 10px;
+    padding: 16px; margin-bottom: 12px; cursor: pointer; transition: 0.2s;
+    display: flex; align-items: flex-start; gap: 12px;
+  }
+  .case-card:hover { border-color: var(--g600); background: var(--g50); }
+  .case-card .case-icon { font-size: 24px; flex-shrink: 0; }
+  .case-card b { display: block; margin-bottom: 3px; color: var(--g800); font-size: 13px; }
+  .case-card p { font-size: 13px; color: var(--muted); margin: 0; line-height: 1.4; }
+
+  .opts { display: grid; gap: 8px; margin-bottom: 14px; }
+  .opt {
+    background: var(--card); border: 2px solid var(--border); border-radius: 8px;
+    padding: 11px 13px; cursor: pointer; transition: 0.2s; font-size: 14px;
+  }
+  .opt:hover { border-color: var(--g600); background: var(--g50); }
+  .opt.ok { border-color: var(--g600); background: #dcfce7; pointer-events: none; }
+  .opt.no { border-color: #f97316; background: #ffedd5; pointer-events: none; }
+
+  .ctrls { display: flex; justify-content: space-between; margin-top: 14px; }
+  .btn {
+    padding: 9px 16px; border: none; border-radius: 7px;
+    font-size: 13px; font-weight: 600; cursor: pointer; transition: 0.2s;
+  }
+  .btn-p { background: var(--g600); color: #fff; opacity: 0.3; pointer-events: none; }
+  .btn-p.act { opacity: 1; pointer-events: auto; }
+  .btn-p:hover { background: var(--g700); }
+  .btn-s { background: var(--g100); color: var(--g800); }
+  .btn-s:hover { background: var(--g200); }
+
+  .hint-bar {
+    background: var(--g50); border: 1px solid var(--g200); border-radius: 8px;
+    padding: 10px 12px; margin-bottom: 12px; display: flex; align-items: center; justify-content: space-between;
+  }
+  .hint-bar span { font-size: 13px; color: var(--g800); }
+  .hint-btn {
+    background: none; border: 1px solid var(--g600); color: var(--g600);
+    font-size: 12px; padding: 5px 10px; border-radius: 6px; cursor: pointer; font-weight: 600;
+  }
+  .hint-btn:hover { background: var(--g100); }
+
+  .doc-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin-bottom: 14px; }
+  @media (max-width: 500px) { .doc-grid { grid-template-columns: 1fr; } }
+  .doc-card {
+    background: #fff; border: 2px solid var(--border); border-radius: 8px;
+    padding: 10px; cursor: pointer; transition: 0.2s; font-size: 13px;
+    display: flex; align-items: flex-start; gap: 8px;
+  }
+  .doc-card:hover { border-color: var(--g600); background: var(--g50); }
+  .doc-card.sel { border-color: var(--g600); background: var(--g100); }
+  .chk {
+    width: 18px; height: 18px; border: 2px solid var(--border); border-radius: 4px;
+    flex-shrink: 0; margin-top: 1px; display: flex; align-items: center; justify-content: center;
+    transition: 0.2s; font-size: 12px;
+  }
+  .doc-card.sel .chk { background: var(--g600); border-color: var(--g600); color: #fff; }
+  .chk::after { content: '✓'; display: none; font-weight: 700; }
+  .doc-card.sel .chk::after { display: block; }
+
+  .hint-panel {
+    display: none; background: #fff; border: 1px solid var(--g200);
+    border-radius: 8px; padding: 12px; margin-bottom: 12px; font-size: 12.5px; line-height: 1.5;
+  }
+  .hint-panel.show { display: block; animation: fade 0.2s ease; }
+  .hint-panel h4 { font-size: 13px; color: var(--g800); margin-bottom: 6px; }
+  .hint-panel ul { padding-left: 18px; margin-bottom: 4px; }
+  .hint-panel li { margin-bottom: 3px; color: var(--muted); }
+  .hint-panel strong { color: var(--text); }
+
+  .cat-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+  .cat-btn {
+    background: #fff; border: 2px solid var(--border); border-radius: 10px;
+    padding: 10px 6px; cursor: pointer; transition: 0.2s; text-align: center; font-size: 12px;
+  }
+  .cat-btn:hover { border-color: var(--g600); background: var(--g50); }
+  .cat-btn.sel { border-color: var(--g600); background: var(--g100); font-weight: 600; }
+  .cat-btn .cat-num { font-size: 18px; font-weight: 700; color: var(--g700); display: block; margin-bottom: 2px; }
+
+  .guide-section { margin-bottom: 14px; }
+  .guide-title { font-size: 14px; font-weight: 700; color: var(--g800); margin-bottom: 8px; padding-bottom: 4px; border-bottom: 2px solid var(--g200); }
+  .guide-intro { font-size: 13px; color: var(--g800); line-height: 1.4; margin-bottom: 10px; background: var(--g50); border-radius: 6px; padding: 8px 10px; }
+  
+  .guide-table { width: 100%; border-collapse: collapse; font-size: 11.5px; }
+  .guide-table th {
+    background: var(--g50); color: var(--g800); font-weight: 600;
+    padding: 6px 5px; text-align: left; border-bottom: 2px solid var(--g200);
+    position: sticky; top: 0;
+  }
+  .guide-table td {
+    padding: 5px; border-bottom: 1px solid var(--border); vertical-align: top;
+  }
+  .guide-table tr:hover { background: var(--g50); }
+  .guide-table .n { text-align: center; font-weight: 700; color: var(--g800); width: 20px; }
+  .guide-table .name { font-weight: 500; }
+  .guide-table .act { color: var(--g700); font-weight: 600; white-space: nowrap; }
+  .guide-table .dead { color: #d97706; white-space: nowrap; }
+  .guide-table .norm { color: var(--muted); font-size: 10.5px; line-height: 1.3; }
+  
+  .tip-box { background: var(--g50); border-radius: 8px; padding: 10px; font-size: 13px; color: var(--g800); line-height: 1.4; margin-top: 10px; }
+  .tip-box strong { display: block; margin-bottom: 3px; }
+
+  /* New button styles */
+  .info-btn {
+    background: var(--g100);
+    color: var(--g800);
+    border: 1px solid var(--g200);
+    padding: 8px 14px;
+    border-radius: 7px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    margin-top: 10px;
+  }
+  .info-btn:hover { background: var(--g200); }
+
+  .modal-bg {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.35); display: none; align-items: center; justify-content: center;
+    z-index: 100; padding: 16px;
+  }
+  .modal-bg.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 10px; width: 100%; max-width: 500px;
+    padding: 20px; box-shadow: 0 8px 20px rgba(0,0,0,0.1); animation: slide 0.2s ease;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  @keyframes slide { from { transform: translateY(8px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+  .modal h3 { font-size: 16px; font-weight: 700; margin-bottom: 12px; color: var(--g800); }
+  .modal h4 { font-size: 14px; font-weight: 600; margin: 12px 0 6px; color: var(--g700); }
+  .modal p { font-size: 13.5px; line-height: 1.6; color: var(--text); margin-bottom: 10px; }
+  .modal ul { padding-left: 20px; margin-bottom: 10px; }
+  .modal li { font-size: 13.5px; line-height: 1.5; margin-bottom: 4px; color: var(--text); }
+  .modal .btn { width: 100%; margin-top: 12px; }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h2>Смена адреса: полный гайд по документам</h2>
+  <p class="sub">Пройдите алгоритм, выберите категорию и получите пошаговую инструкцию.</p>
+
+  <div class="prog">
+    <div class="prog-bar"><div class="prog-fill" id="pFill"></div></div>
+    <div class="prog-txt" id="pTxt">Выбор</div>
+  </div>
+
+  <!-- Screen 0: Case Select (clickable cards) -->
+  <div class="scr on" id="s0">
+    <div class="case-card" onclick="start('legal')">
+      <div class="case-icon">🏢</div>
+      <div><b>Кейс А: Смена юридического адреса</b><p>В ЕГРЮЛ изменился юридический адрес. Площадка, оборудование и границы объекта НВОС остались прежними.</p></div>
+    </div>
+    <div class="case-card" onclick="start('factual')">
+      <div class="case-icon">🏭</div>
+      <div><b>Кейс Б: Переезд площадки</b><p>Производство перенесли на новую площадку. По новому адресу теперь источники выбросов. Юридический адрес не менялся.</p></div>
+    </div>
+  </div>
+
+  <!-- Screen 1: Step 1 -->
+  <div class="scr" id="s1"><div class="case-card" id="c1"></div><div class="opts" id="o1"></div><div class="ctrls"><button class="btn btn-s" onclick="go(0)">Назад</button><button class="btn btn-p" id="b1" onclick="next(2)">Далее</button></div></div>
+  <!-- Screen 2: Step 2 -->
+  <div class="scr" id="s2"><div class="case-card" id="c2"></div><div class="opts" id="o2"></div><div class="ctrls"><button class="btn btn-s" onclick="go(1)">Назад</button><button class="btn btn-p" id="b2" onclick="next(3)">Далее</button></div></div>
+
+  <!-- Screen 3: Document Selection -->
+  <div class="scr" id="s3">
+    <div class="case-card" id="c3"></div>
+    <div class="hint-bar">
+      <span>Отметьте документы, которые затрагивает это изменение:</span>
+      <button class="hint-btn" onclick="toggleHint()">💡 Подсказка</button>
+    </div>
+    <div class="hint-panel" id="hintPanel">
+      <h4>Как ориентироваться:</h4>
+      <ul>
+        <li><strong>📋 Реестр и разрешения</strong> — КЭР, ДВОС, реестр НВОС, ВРВ/ВРС</li>
+        <li><strong>📊 Проекты и программы</strong> — НДВ, НДС, НООЛР, ПЭК, ППЭЭ, инвентаризации</li>
+        <li><strong>📜 СЭЗ и паспорта</strong> — санитарные заключения, паспорта отходов и ГОУ</li>
+        <li><strong>💧 Водопользование</strong> — решение о предоставлении, договор</li>
+        <li><strong>🏭 Лицензии и СЗЗ</strong> — лицензии на отходы, решение об СЗЗ</li>
+        <li><strong>🔔 Уведомления</strong> — ОМСУ, РО, ФЭО по ТКО</li>
+      </ul>
+      <p style="margin-top:6px;color:var(--g700);font-weight:600;">При смене юрадреса лицензии обновляются автоматически, СЗЗ не требует правок.</p>
+    </div>
+    <div class="doc-grid" id="dGrid"></div>
+    <div class="ctrls"><button class="btn btn-s" onclick="go(2)">Назад</button><button class="btn btn-p" id="b3" onclick="checkDocs()">Проверить выбор</button></div>
+  </div>
+
+  <!-- Screen 4: Category Selection -->
+  <div class="scr" id="s4">
+    <div class="case-card" id="c4"></div>
+    <div style="font-size:14px;font-weight:600;margin-bottom:8px;color:var(--g800);">Выберите категорию объекта НВОС:</div>
+    <div class="cat-grid">
+      <div class="cat-btn" onclick="selectCat('I',this)"><span class="cat-num">I</span>Кат. I</div>
+      <div class="cat-btn" onclick="selectCat('II',this)"><span class="cat-num">II</span>Кат. II</div>
+      <div class="cat-btn" onclick="selectCat('III',this)"><span class="cat-num">III</span>Кат. III</div>
+      <div class="cat-btn" onclick="selectCat('IV',this)"><span class="cat-num">IV</span>Кат. IV</div>
+    </div>
+    <div class="ctrls"><button class="btn btn-s" onclick="go(3)">Назад</button><button class="btn btn-p" id="b4" onclick="showGuide()">Показать гайд</button></div>
+  </div>
+
+  <!-- Screen 5: Final Guide (compact) -->
+  <div class="scr" id="s5">
+    <div id="guideContent"></div>
+    <button class="info-btn" onclick="showSequenceInfo()">ℹ️ Почему такой порядок действий</button>
+    <div class="ctrls" style="justify-content:center;margin-top:14px;"><button class="btn btn-s" onclick="go(0)">Пройти заново</button></div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-bg" id="mBg">
+  <div class="modal">
+    <h3 id="mT"></h3>
+    <p id="mP"></p>
+    <button class="btn btn-p act" onclick="closeM()">Понятно</button>
+  </div>
+</div>
+
+<!-- Info Modal -->
+<div class="modal-bg" id="infoModal">
+  <div class="modal">
+    <h3>Последовательность действий при смене реквизитов</h3>
+    
+    <h4>Почему именно такой порядок?</h4>
+    <p>При изменении реквизитов организации важно соблюдать последовательность, чтобы не нарушить сроки и не получить отказ в переоформлении:</p>
+    <ul>
+      <li><strong>Сначала уведомления</strong> (5 дней) — РО, ОМСУ, ФЭО. Это самые короткие сроки, их нельзя пропустить.</li>
+      <li><strong>Затем СЭЗ</strong> (7 дней) — без санитарно-эпидемиологических заключений нельзя переоформить КЭР.</li>
+      <li><strong>Потом проекты</strong> — НДВ, НДС, НООЛР. Их нужно утвердить до подачи на КЭР.</li>
+      <li><strong>Затем КЭР</strong> (10 дней) — к заявке прикладываются все переоформленные проекты и СЭЗ.</li>
+      <li><strong>Реестр НВОС</strong> (30 дней) — актуализируется ПОСЛЕ КЭР, так как в заявке нужно указать номер КЭР.</li>
+      <li><strong>ДВОС</strong> (30 дней) — подается после актуализации реестра или одновременно.</li>
+    </ul>
+
+    <h4>Как работать эффективно:</h4>
+    <ul>
+      <li>Начните с уведомлений — у вас есть всего 5 рабочих дней</li>
+      <li>Параллельно готовьте проекты (НДВ, НДС, НООЛР) — это занимает время</li>
+      <li>Получите СЭЗ на проекты before подавая на КЭР</li>
+      <li>Не затягивайте с КЭР — это основа для актуализации реестра</li>
+      <li>Крайний срок — 30 дней на актуализацию реестра НВОС</li>
+    </ul>
+
+    <h4>Что не нужно делать:</h4>
+    <ul>
+      <li>Лицензии (на отходы, недропользование) — обновляются автоматически по межведомственному взаимодействию</li>
+      <li>Решение об СЗЗ — продолжает действовать при смене реквизитов</li>
+      <li>Вносить изменения в паспорта отходов — нужно утверждать новые</li>
+    </ul>
+
+    <button class="btn btn-p act" onclick="closeInfoModal()">Понятно</button>
+  </div>
+</div>
+
+<script>
+  const guides = {
+    legal: {
+      I: {
+        intro: 'Объект кат. I работает по КЭР. При смене юридического адреса объект не переносится, но все документы должны содержать актуальные реквизиты.',
+        steps: [
+          {n:1,name:'Уведомления ОМСУ, РО, ФЭО',act:'Направить письмо',time:'5 раб. дней',norm:'Пост. № 1039, № 1363',note:'Первый шаг. Сообщаем о смене реквизитов.'},
+          {n:2,name:'СЭЗ на проекты',act:'Переоформить',time:'7 раб. дней',norm:'Приказ Роспотребнадзора № 747',note:'Заявление + старые бланки.'},
+          {n:3,name:'Разрешения ВРВ/ВРС',act:'Внести изменения в реестр',time:'5-10 раб. дней',norm:'Пост. № 2055, № 886',note:'Через ЕПГУ или РПН.'},
+          {n:4,name:'Проекты НДВ, НДС, НООЛР',act:'Заменить общие сведения',time:'Не установлен',norm:'Приказ МПР № 581, № 1118',note:'Утвердить руководителем. Приложить к КЭР.'},
+          {n:5,name:'Инвентаризации, ПЭК, ППЭЭ',act:'Внести изменения',time:'Не установлен',norm:'Приказ МПР № 871, № 109',note:'Утвердить руководителем.'},
+          {n:6,name:'КЭР',act:'Переоформить',time:'10 раб. дней',norm:'п. 17 ст. 31.1 № 7-ФЗ',note:'Приложить проекты, СЭЗ, ППЭЭ. Только после шагов 2-5.'},
+          {n:7,name:'Реестр объектов НВОС',act:'Актуализировать',time:'30 дней',norm:'п. 7 ст. 69.2 № 7-ФЗ',note:'После КЭР и проектов. Крайний срок.'},
+          {n:8,name:'Паспорта отходов и ГОУ',act:'Утвердить новые',time:'Не установлен',norm:'Приказ МПР № 1026, № 124',note:'Вносить изменения в старые паспорта недопустимо.'},
+          {n:9,name:'Лицензия на отходы',act:'Не менять',time:'Авто',norm:'ст. 18 № 99-ФЗ, п. 8.3 Пост. № 2343',note:'РПН вносит изменения сам.'},
+          {n:10,name:'Решение об СЗЗ',act:'Не менять',time:'-',norm:'п. 26 Пост. № 222',note:'Действует при смене реквизитов.'}
+        ],
+        tip: 'Актуализировать реестр НВОС нужно в течение 30 дней после ЕГРЮЛ. Заявку подавайте строго после переоформления КЭР и проектов. При КЭР также приложите СЭЗ и ППЭЭ с новыми реквизитами.'
+      },
+      II: {
+        intro: 'Объект кат. II работает по ДВОС. При смене юрадреса объект прежний, но реквизиты в ДВОС и реестре должны быть актуальны.',
+        steps: [
+          {n:1,name:'Уведомления ОМСУ, РО, ФЭО',act:'Направить письмо',time:'5 раб. дней',norm:'Пост. № 1039, № 1363',note:'Первый шаг.'},
+          {n:2,name:'Проекты НДВ, НДС, НООЛР',act:'Заменить общие сведения',time:'Не установлен',norm:'Приказ МПР № 581, № 1118',note:'Утвердить руководителем.'},
+          {n:3,name:'Инвентаризации, ПЭК',act:'Внести изменения',time:'Не установлен',norm:'Приказ МПР № 871, № 109',note:'Указать новую дату в ДВОС.'},
+          {n:4,name:'Реестр объектов НВОС',act:'Актуализировать',time:'30 дней',norm:'п. 7 ст. 69.2 № 7-ФЗ',note:'После проектов и ПЭК.'},
+          {n:5,name:'ДВОС',act:'Подать с изменениями',time:'30 дней',norm:'абз. 2 п. 6 ст. 31.2 № 7-ФЗ',note:'Приложить сканы проектов. Указать дату ПЭК.'},
+          {n:6,name:'Паспорта отходов и ГОУ',act:'Утвердить новые',time:'Не установлен',norm:'Приказ МПР № 1026, № 124',note:'Утвердить руководителем.'},
+          {n:7,name:'Лицензия на отходы',act:'Не менять',time:'Авто',norm:'ст. 18 № 99-ФЗ',note:'Обновляется автоматически.'},
+          {n:8,name:'Решение об СЗЗ',act:'Не менять',time:'-',norm:'п. 26 Пост. № 222',note:'Действует при смене реквизитов.'}
+        ],
+        tip: 'ДВОС подается одновременно или после актуализации реестра. В ДВОС приложите сканы исправленных проектов и укажите новую дату утверждения ПЭК.'
+      },
+      III: {
+        intro: 'Объект кат. III имеет учетный характер. При смене юрадреса достаточно актуализировать реестр и уведомить операторов.',
+        steps: [
+          {n:1,name:'Уведомления ОМСУ, РО, ФЭО',act:'Направить письмо',time:'5 раб. дней',norm:'Пост. № 1039, № 1363',note:'Первый шаг.'},
+          {n:2,name:'Реестр объектов НВОС',act:'Актуализировать',time:'30 дней',norm:'п. 7 ст. 69.2 № 7-ФЗ',note:'Основной документ для кат. III.'},
+          {n:3,name:'ПЭК (отчетность)',act:'Внести изменения',time:'Не установлен',norm:'Приказ МПР № 871',note:'В отчете по ПЭК указываются актуальные реквизиты.'},
+          {n:4,name:'Лицензия на отходы',act:'Не менять',time:'Авто',norm:'ст. 18 № 99-ФЗ',note:'Обновляется автоматически.'},
+          {n:5,name:'Решение об СЗЗ',act:'Не менять',time:'-',norm:'п. 26 Пост. № 222',note:'Не требует правок.'}
+        ],
+        tip: 'Для кат. III основной документ — реестр НВОС. Уведомления направляйте в первые 5 дней после ЕГРЮЛ.'
+      },
+      IV: {
+        intro: 'Объект кат. IV освобожден от большинства разрешений. При смене юрадреса достаточно актуализировать реестр.',
+        steps: [
+          {n:1,name:'Реестр объектов НВОС',act:'Актуализировать',time:'30 дней',norm:'п. 7 ст. 69.2 № 7-ФЗ',note:'Единственное обязательное действие.'},
+          {n:2,name:'Уведомления РО/ФЭО',act:'Проверить договор',time:'По договору',norm:'Типовой договор',note:'Если есть договор с РО — уведомить.'},
+          {n:3,name:'Лицензии, СЗЗ',act:'Не менять',time:'-',norm:'-',note:'Не затрагиваются.'}
+        ],
+        tip: 'Кат. IV — минимальная нагрузка. Актуализируйте реестр в течение 30 дней. Остальные документы не требуют изменений.'
+      }
+    },
+    factual: {
+      I: {
+        intro: 'Объект кат. I перенесен на новую площадку. Требуется полный пакет новых документов под новые координаты и условия.',
+        steps: [
+          {n:1,name:'Реестр объектов НВОС',act:'Поставить новый на учет',time:'15 дней',norm:'ст. 69.2 № 7-ФЗ',note:'Со дня начала эксплуатации на новой площадке.'},
+          {n:2,name:'Проекты НДВ, НДС, НООЛР',act:'Разработать новые',time:'До начала работы',norm:'Приказы МПР № 581, № 1118',note:'Под новые источники и координаты.'},
+          {n:3,name:'СЭЗ, Инвентаризации, ПЭК',act:'Разработать/получить новые',time:'До начала работы',norm:'Приказ МПР № 871, № 747',note:'Основа для КЭР.'},
+          {n:4,name:'КЭР',act:'Оформить новый',time:'10 раб. дней',norm:'ст. 31.1 № 7-ФЗ',note:'Прежнее относится к старой площадке.'},
+          {n:5,name:'Водопользование',act:'Получить новое',time:'До сбросов',norm:'Пост. № 18, Приказ Росводресурсов № 221',note:'Изменились условия.'},
+          {n:6,name:'Паспорта отходов и ГОУ',act:'Утвердить новые',time:'До начала работы',norm:'Приказ МПР № 1026, № 124',note:'Новые объекты образования.'},
+          {n:7,name:'Лицензия на отходы',act:'Проверить место',time:'Индивидуально',norm:'Пост. № 2290',note:'Если регион сменился — новая лицензия.'},
+          {n:8,name:'Решение об СЗЗ',act:'Получить новое',time:'До стройки',norm:'Пост. № 222',note:'Привязано к координатам.'}
+        ],
+        tip: 'Переезд площадки — это изменение места деятельности. Старые разрешения сдаются, выдаются новые. Лицензии проверяются отдельно.'
+      },
+      II: {
+        intro: 'Объект кат. II перенесен. Нужна новая ДВОС и актуализация реестра.',
+        steps: [
+          {n:1,name:'Реестр объектов НВОС',act:'Поставить новый',time:'15 дней',norm:'ст. 69.2 № 7-ФЗ',note:'Со дня начала эксплуатации.'},
+          {n:2,name:'Проекты, ПЭК',act:'Разработать новые',time:'До начала работы',norm:'Приказ МПР № 871',note:'Под новую площадку.'},
+          {n:3,name:'ДВОС',act:'Подать новую',time:'В сроки отчетности',norm:'ст. 31.2 № 7-ФЗ',note:'Данные под новую площадку.'},
+          {n:4,name:'Водопользование',act:'Получить новое',time:'До сбросов',norm:'Пост. № 18',note:'Новые условия.'},
+          {n:5,name:'Паспорта отходов и ГОУ',act:'Утвердить новые',time:'До начала работы',norm:'Приказ МПР № 1026, № 124',note:'Новые объекты.'},
+          {n:6,name:'Лицензия на отходы',act:'Проверить',time:'Индивидуально',norm:'Пост. № 2290',note:'Зависит от региона.'}
+        ],
+        tip: 'ДВОС подается после постановки на учет. Укажите новую дату утверждения ПЭК и приложите сканы новых проектов.'
+      },
+      III: {
+        intro: 'Объект кат. III перенесен. Достаточно постановки на учет и уведомления.',
+        steps: [
+          {n:1,name:'Реестр объектов НВОС',act:'Поставить новый',time:'15 дней',norm:'ст. 69.2 № 7-ФЗ',note:'Со дня начала эксплуатации.'},
+          {n:2,name:'ПЭК (отчетность)',act:'Вести по новому объекту',time:'По графику',norm:'Приказ МПР № 871',note:'Отчетность по новой площадке.'},
+          {n:3,name:'Уведомления',act:'Проверить договоры',time:'По договорам',norm:'-',note:'Если есть — уведомить.'}
+        ],
+        tip: 'Кат. III: основной шаг — постановка на учет нового объекта. Остальные действия минимальны.'
+      },
+      IV: {
+        intro: 'Объект кат. IV перенесен. Достаточно постановки на учет.',
+        steps: [
+          {n:1,name:'Реестр объектов НВОС',act:'Поставить новый',time:'15 дней',norm:'ст. 69.2 № 7-ФЗ',note:'Единственное обязательное действие.'},
+          {n:2,name:'Остальные документы',act:'Не требуются',time:'-',norm:'-',note:'Кат. IV освобождена.'}
+        ],
+        tip: 'Кат. IV: постановка на учет нового объекта — единственное обязательное действие.'
+      }
+    }
+  };
+
+  // Document names mapping
+  const docNames = {
+    'nvos': 'Реестр объектов НВОС',
+    'cer': 'КЭР (кат. I)',
+    'dvos': 'ДВОС (кат. II)',
+    'vrs': 'Разрешение на ВРВ/ВРС',
+    'proj': 'Проекты НДВ/НДС/НООЛР',
+    'inv': 'Инвентаризации выбросов/сбросов',
+    'pek': 'Программа ПЭК',
+    'ppe': 'Программа ППЭЭ',
+    'sez': 'СЭЗ на проекты',
+    'pwaste': 'Паспорт отхода',
+    'pgo': 'Паспорт ГОУ',
+    'water': 'Водопользование',
+    'lic': 'Лицензия на отходы',
+    'szz': 'Решение об СЗЗ',
+    'notify': 'Уведомления ОМСУ/РО/ФЭО'
+  };
+
+  let st = {key:'',step:0,ans:{},sel:[],cat:'',checked:false};
+
+  function go(n){document.querySelectorAll('.scr').forEach(s=>s.classList.remove('on'));document.getElementById('s'+n).classList.add('on');st.step=n;updProg();if(typeof iFrameResize!=='undefined')iFrameResize();}
+  function updProg(){const p=st.step===0?0:(st.step/5)*100;document.getElementById('pFill').style.width=p+'%';const t=['Выбор','Шаг 1','Шаг 2','Выбор документов','Категория','Гайд'];document.getElementById('pTxt').textContent=t[st.step];}
+
+  function start(k){
+    st.key=k;st.ans={};st.sel=[];st.cat='';st.checked=false;
+    const d=guides[k];
+    const desc=k==='legal'?'В ЕГРЮЛ изменился юридический адрес. Площадка и оборудование остались прежними.':'Производство перенесли на новую площадку. По новому адресу теперь источники выбросов. Юридический адрес не менялся.';
+    ['c1','c2','c3','c4'].forEach(id=>document.getElementById(id).innerHTML=`<b>${d.I.intro.split('.')[0]}</b>${desc}`);
+    renderQ(1,logic[k].q1,'o1');renderQ(2,logic[k].q2,'o2');
+    renderDocGrid();
+    const btn = document.getElementById('b3');
+    btn.style.display = 'inline-block';
+    btn.classList.remove('act');
+    go(1);
+  }
+
+  const logic = {
+    legal:{
+      q1:{t:'Что именно поменялось?',opts:['Сменился юридический адрес или название','Сменился фактический адрес площадки','Сменился собственник объекта'],cor:0,fb:{ok:'Верно. Меняются только реквизиты в ЕГРЮЛ. Место деятельности не затронуто.',no:'Обратите внимание: площадка прежняя. В условии указан именно юридический адрес.'}},
+      q2:{t:'Как влияет на объект НВОС?',opts:['Изменились только реквизиты','Место деятельности стало другим','Появился правопреемник'],cor:0,fb:{ok:'Верно. Объект прежний, но в реестре и разрешениях привязан к устаревшим реквизитам.',no:'Проверьте условие: площадка не двигалась. Меняются только общие сведения.'}}
+    },
+    factual:{
+      q1:{t:'Что именно поменялось?',opts:['Сменился юрадрес','Сменился фактический адрес площадки','Изменилось только название'],cor:1,fb:{ok:'Верно. Поменялось место деятельности. Это влечёт смену координат.',no:'Ориентируйтесь на место работы объекта. В условии указан перенос производства.'}},
+      q2:{t:'Как влияет на объект НВОС?',opts:['Место деятельности стало другим','Изменились только реквизиты','Пользователь объекта прежний'],cor:[0,2],fb:{ok:'Верно. Площадка новая, объект НВОС меняется. Организация та же, но режим работы другой.',no:'Смена фактического адреса — не правка реквизитов. Это изменение места деятельности.'}}
+    }
+  };
+
+  function renderQ(n,q,oid){
+    const c=document.getElementById(oid);c.innerHTML='';
+    q.opts.forEach((txt,i)=>{const el=document.createElement('div');el.className='opt';el.textContent=txt;el.onclick=()=>pick(n,i,q.cor,el);c.appendChild(el);});
+    document.getElementById('b'+n).classList.remove('act');
+  }
+
+  function pick(n,i,cor,el){
+    if(st.ans['s'+n]!==undefined)return;
+    st.ans['s'+n]=i;
+    const ok=Array.isArray(cor)?cor.includes(i):i===cor;
+    document.querySelectorAll('#'+oid(n)+' .opt').forEach(o=>{o.classList.remove('sel');o.style.pointerEvents='none';});
+    el.classList.add(ok?'ok':'no');
+    showModal(ok?'Верно':'Обратите внимание',ok?logic[st.key]['q'+n].fb.ok:logic[st.key]['q'+n].fb.no,ok?'ok':'warn');
+    if(ok)document.getElementById('b'+n).classList.add('act');
+    else setTimeout(()=>{el.classList.remove('no');el.style.pointerEvents='auto';st.ans['s'+n]=undefined;},1500);
+  }
+  function oid(n){return 'o'+n;}
+  function next(n){go(n);}
+  function toggleHint(){document.getElementById('hintPanel').classList.toggle('show');}
+
+  function renderDocGrid(){
+    const baseDocs=[
+      {id:'nvos',name:'Реестр объектов НВОС'},
+      {id:'cer',name:'КЭР (кат. I)'},
+      {id:'dvos',name:'ДВОС (кат. II)'},
+      {id:'vrs',name:'Разрешение на ВРВ/ВРС'},
+      {id:'proj',name:'Проекты НДВ/НДС/НООЛР'},
+      {id:'inv',name:'Инвентаризации выбросов/сбросов'},
+      {id:'pek',name:'Программа ПЭК'},
+      {id:'ppe',name:'Программа ППЭЭ'},
+      {id:'sez',name:'СЭЗ на проекты'},
+      {id:'pwaste',name:'Паспорт отхода'},
+      {id:'pgo',name:'Паспорт ГОУ'},
+      {id:'water',name:'Водопользование'},
+      {id:'lic',name:'Лицензия на отходы'},
+      {id:'szz',name:'Решение об СЗЗ'},
+      {id:'notify',name:'Уведомления ОМСУ/РО/ФЭО'}
+    ];
+    const g=document.getElementById('dGrid');g.innerHTML='';st.sel=[];
+    baseDocs.forEach(d=>{
+      const el=document.createElement('div');el.className='doc-card';el.dataset.id=d.id;
+      el.innerHTML=`<div class="chk"></div><div>${d.name}</div>`;
+      el.onclick=()=>togDoc(el,d.id);g.appendChild(el);
+    });
+    updateCheckBtn();
+  }
+
+  function togDoc(el,id){
+    if(st.checked) return;
+    if(st.sel.includes(id)){st.sel=st.sel.filter(x=>x!==id);el.classList.remove('sel');}
+    else{st.sel.push(id);el.classList.add('sel');}
+    updateCheckBtn();
+  }
+
+  function updateCheckBtn(){
+    const btn=document.getElementById('b3');
+    if(st.sel.length>0){btn.classList.add('act');}else{btn.classList.remove('act');}
+  }
+
+  function checkDocs(){
+    if(st.checked) return;
+    st.checked=true;
+    
+    const d=logic[st.key];
+    const sel=st.sel;
+    const corDocs=st.key==='legal'?['nvos','cer','dvos','vrs','proj','inv','pek','ppe','sez','pwaste','pgo','water','notify']:['nvos','cer','dvos','vrs','proj','inv','pek','ppe','sez','pwaste','pgo','water'];
+    const missing=corDocs.filter(id=>!sel.includes(id));
+    const extra=sel.filter(id=>!corDocs.includes(id));
+    
+    document.querySelectorAll('.doc-card').forEach(el=>{
+      const id=el.dataset.id;
+      if(sel.includes(id)){el.classList.add(corDocs.includes(id)?'ok':'no');}
+      el.style.pointerEvents='none';
+      el.querySelector('.chk').style.pointerEvents='none';
+    });
+
+    if(missing.length===0 && extra.length===0){
+      showModal('Отлично!','Вы верно определили все документы. Теперь выберите категорию объекта НВОС для пошагового гайда.','ok');
+      document.getElementById('b3').style.display='none';
+      setTimeout(()=>{go(4);},2000);
+    } else {
+      let msg='';
+      if(missing.length>0){
+        const missingNames = missing.map(id => docNames[id] || id);
+        msg+=`Пропущено: ${missingNames.join(', ')}. `;
+      }
+      if(extra.length>0){
+        const extraNames = extra.map(id => docNames[id] || id);
+        msg+=`Лишнее: ${extraNames.join(', ')}. `;
+      }
+      msg+='Посмотрите еще раз или перейдите к выбору категории.';
+      showModal('Проверьте выбор',msg,'warn');
+      
+      document.querySelectorAll('.doc-card').forEach(el=>{
+        const id=el.dataset.id;
+        el.classList.remove('ok','no','sel');
+        el.style.pointerEvents='auto';
+        el.querySelector('.chk').style.pointerEvents='auto';
+      });
+      
+      st.sel=[];
+      st.checked=false;
+      updateCheckBtn();
+    }
+  }
+
+  function selectCat(cat,el){
+    st.cat=cat;
+    document.querySelectorAll('.cat-btn').forEach(b=>b.classList.remove('sel'));
+    el.classList.add('sel');
+    document.getElementById('b4').classList.add('act');
+  }
+
+  function showGuide(){
+    if(!st.cat)return;
+    const g=guides[st.key][st.cat];
+    const cont=document.getElementById('guideContent');
+    
+    let html=`<div class="guide-section">`;
+    html+=`<div class="guide-title">Категория ${st.cat}: пошаговый гайд</div>`;
+    html+=`<div class="guide-intro">${g.intro}</div>`;
+    
+    html+=`<div style="overflow-x:auto;"><table class="guide-table"><thead><tr><th class="n">№</th><th>Документ</th><th>Действие</th><th>Срок</th><th>НПА</th></tr></thead><tbody>`;
+    g.steps.forEach(s=>{
+      html+=`<tr><td class="n">${s.n}</td><td class="name">${s.name}</td><td class="act">${s.act}</td><td class="dead">${s.time}</td><td class="norm">${s.norm}<br>${s.note}</td></tr>`;
+    });
+    html+=`</tbody></table></div>`;
+    html+=`<div class="tip-box"><strong>Что запомнить:</strong>${g.tip}</div>`;
+    html+=`</div>`;
+    
+    cont.innerHTML=html;
+    go(5);
+  }
+
+  function showSequenceInfo(){
+    document.getElementById('infoModal').classList.add('show');
+  }
+
+  window.closeInfoModal = function(){
+    document.getElementById('infoModal').classList.remove('show');
+  }
+
+  function showModal(t,p,cls){
+    document.getElementById('mT').textContent=t;
+    document.getElementById('mT').className=cls==='ok'?'ok':'warn';
+    document.getElementById('mP').textContent=p;
+    document.getElementById('mBg').classList.add('show');
+  }
+  window.closeM=function(){document.getElementById('mBg').classList.remove('show');};
+
+  updProg();
+</script>
+</body>
+</html>
