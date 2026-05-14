@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>За счет чего можно сократить СЗЗ?</title>
+<!-- 1. СКРИПТ IFRAME-RESIZER (contentWindow для iframe) -->
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
 <style>
   :root {
@@ -14,8 +15,11 @@
     --red: #b4532a; --red-soft: #fff1ea;
   }
   * { box-sizing: border-box; }
+  
+  /* 2. CSS: УБИРАЕМ ОГРАНИЧЕНИЯ, МЕШАЮЩИЕ РЕСАЙЗУ */
   html, body {
-    margin: 0; padding: 0; overflow: hidden; height: 100%;
+    margin: 0; padding: 0;
+    /* Убрали overflow: hidden и height: 100% — теперь контент может расти */
     font-family: Inter, system-ui, -apple-system, sans-serif;
     background: var(--bg); color: var(--text);
   }
@@ -23,6 +27,8 @@
   .szz-wrap {
     width: 100%; max-width: 800px; 
     min-height: 400px;
+    /* Добавили height: auto для автоматического роста */
+    height: auto;
     background: var(--card); margin: 0 auto;
     display: flex; flex-direction: column;
     border: 1px solid var(--line); border-radius: var(--radius);
@@ -53,7 +59,7 @@
   }
   
   .game-area { 
-    padding: 10px 16px; flex: 1; display: flex; flex-direction: column; gap: 12px;
+    padding: 10px 16px; display: flex; flex-direction: column; gap: 12px;
   }
   
   /* Барабан карточек */
@@ -309,10 +315,12 @@
   const btnReset = document.getElementById('btn-reset');
   const summary = document.getElementById('summary');
 
-  // Trigger iframe resize
+  // 3. ФУНКЦИЯ ТРИГГЕРА РЕСАЙЗЕРА С ЗАЩИТОЙ ОТ ДУБЛИРОВАНИЯ
   function triggerResize() {
-    if (window.iFrameResize) {
+    if (window.iFrameResize && !window._iFrameResizerBusy) {
+      window._iFrameResizerBusy = true;
       window.iFrameResize({ log: false, checkOrigin: false }, '*');
+      setTimeout(() => { window._iFrameResizerBusy = false; }, 100);
     }
   }
 
@@ -549,7 +557,7 @@
     if (e.key === 'Escape') document.querySelectorAll('.modal.active').forEach(m => closeModal(m.id));
   });
 
-  // ResizeObserver to track content changes in zones
+  // 4. ResizeObserver ДЛЯ АВТОМАТИЧЕСКОГО ОТСЛЕЖИВАНИЯ ИЗМЕНЕНИЙ
   const resizeObserver = new ResizeObserver(() => {
     triggerResize();
   });
@@ -559,9 +567,11 @@
     initDrum();
     triggerResize();
     
-    // Observe zone containers for size changes
+    // Наблюдаем за ключевыми контейнерами для изменений размера
+    resizeObserver.observe(document.querySelector('.szz-wrap'));
     resizeObserver.observe(document.getElementById('zone-reduce-cards'));
     resizeObserver.observe(document.getElementById('zone-no-reduce-cards'));
+    resizeObserver.observe(document.querySelector('.game-area'));
   });
 </script>
 
