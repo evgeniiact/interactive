@@ -4,7 +4,10 @@
   <meta charset="UTF-8" />
   <title>Кейс Олега: стратегия СЗЗ (40 млн)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  
+  <!-- 1. ПОДКЛЮЧЕНИЕ СКРИПТА IFRAME-RESIZER -->
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+
   <style>
     :root {
       --bg: #f6f4f0;
@@ -36,6 +39,7 @@
       --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
     * { box-sizing: border-box; }
+    /* Убираем прокрутку у body, чтобы работала логика ресайзера */
     html, body {
       margin: 0; padding: 0; overflow: hidden; height: 100%;
       font-family: var(--font);
@@ -48,12 +52,17 @@
     button { font: inherit; cursor: pointer; border: none; }
     
     .app-wrapper {
-      width: 100%; max-width: 680px;
+      width: 100%;
+      max-width: 680px;
+      /* 2. ИЗМЕНЕНИЕ: Убираем фиксированную высоту и overflow */
+      height: auto;
       min-height: 400px;
       background: var(--surface);
       border-radius: var(--radius-xl);
       box-shadow: var(--shadow);
       border: 1px solid rgba(207,200,189,.9);
+      /* overflow: hidden; Убираем, чтобы контент мог растягивать wrapper */
+      overflow: visible;
       display: flex;
       flex-direction: column;
       position: relative;
@@ -62,23 +71,22 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      overflow: hidden;
+      overflow: hidden; /* Оставляем здесь, но body/szz-wrap растянутся */
     }
 
     .header {
       background: linear-gradient(180deg,#ecf6ef,#e6f0eb);
       padding: .9rem 1.1rem .8rem;
       border-bottom: 1px solid #d7e1db;
-      flex-shrink: 0;
     }
     .header-title {
-      font-size: 1.1rem;
+      font-size: 1.2rem;
       font-weight: 700;
       margin: 0 0 .15rem;
       color: #214939;
     }
     .header-sub {
-      font-size: .8rem;
+      font-size: .85rem;
       margin: 0;
       color: var(--muted);
     }
@@ -94,8 +102,8 @@
       border-radius: 999px;
     }
     .oleg-avatar {
-      width: 32px;
-      height: 32px;
+      width: 34px;
+      height: 34px;
       border-radius: 50%;
       overflow: hidden;
       border: 1px solid #c5d2c9;
@@ -109,9 +117,8 @@
       display: block;
     }
     .oleg-text {
-      font-size: .8rem;
+      font-size: .82rem;
       color: #38463f;
-      line-height: 1.3;
     }
     .oleg-name {
       font-weight: 600;
@@ -123,14 +130,13 @@
       border-bottom: 1px solid var(--border);
       background: #f6f4f0;
       display: none;
-      flex-shrink: 0;
     }
     .progress-line {
-      height: 5px;
+      height: 6px;
       border-radius: 999px;
       background: #e3ddd2;
       overflow: hidden;
-      margin-bottom: .4rem;
+      margin-bottom: .45rem;
     }
     .progress-line-inner {
       height: 100%;
@@ -141,29 +147,29 @@
     }
     .steps-tabs {
       display: flex;
-      gap: .35rem;
+      gap: .4rem;
       flex-wrap: wrap;
-      font-size: .75rem;
-      margin-bottom: .3rem;
+      font-size: .78rem;
+      margin-bottom: .35rem;
     }
     .step-tab {
       border-radius: 999px;
-      padding: .15rem .5rem;
+      padding: .18rem .55rem;
       border: 1px solid transparent;
       background: transparent;
       color: var(--muted);
       cursor: default;
       display: inline-flex;
       align-items: center;
-      gap: .2rem;
+      gap: .25rem;
     }
     .step-tab-badge {
-      width: 15px;
-      height: 15px;
+      width: 16px;
+      height: 16px;
       border-radius: 50%;
       background: #d0cbc2;
       color: #fff;
-      font-size: .68rem;
+      font-size: .7rem;
       display: inline-flex;
       align-items: center;
       justify-content: center;
@@ -179,17 +185,17 @@
     .axes-bar {
       display: flex;
       flex-wrap: wrap;
-      gap: .35rem;
-      font-size: .75rem;
+      gap: .4rem;
+      font-size: .78rem;
     }
     .axes-box {
-      padding: .2rem .45rem;
+      padding: .25rem .5rem;
       border-radius: 999px;
       background: #fbfaf7;
       border: 1px solid #d8d2c8;
       display: inline-flex;
       align-items: center;
-      gap: .15rem;
+      gap: .2rem;
     }
     .axes-label-btn {
       background: transparent;
@@ -198,7 +204,7 @@
       padding: 0;
       cursor: pointer;
       color: var(--muted);
-      font-size: .75rem;
+      font-size: .78rem;
       text-decoration: underline dotted;
       text-underline-offset: .15rem;
     }
@@ -208,19 +214,19 @@
     }
 
     .axes-scales {
-      margin-top: .4rem;
+      margin-top: .45rem;
       display: grid;
       grid-template-columns: repeat(3, minmax(0,1fr));
-      gap: .5rem;
-      font-size: .75rem;
+      gap: .6rem;
+      font-size: .78rem;
     }
     .axes-scale-label {
       display: block;
-      margin-bottom: .1rem;
+      margin-bottom: .15rem;
       color: var(--muted);
     }
     .axes-scale-bar {
-      height: 5px;
+      height: 6px;
       border-radius: 999px;
       background: #e3ddd2;
       overflow: hidden;
@@ -236,67 +242,68 @@
     #axesProcBar { background: linear-gradient(90deg,#1f4f99,#74a3ff); }
     #axesEcoBar { background: linear-gradient(90deg,#b27a1e,#ffd27a); }
 
+    /* 3. ИЗМЕНЕНИЕ: Убираем внутреннюю прокрутку */
     .content {
       flex: 1;
-      padding: .8rem 1.1rem 1rem;
-      overflow-y: auto;
+      padding: .9rem 1.1rem 1rem;
+      overflow-y: visible; /* Изменено с auto на visible */
       background: radial-gradient(circle at 0 0,#ffffff 0,#f7f4ef 40%,#efe7db 100%);
     }
-    h2 { margin: 0 0 .35rem; font-size: 1rem; }
-    p  { margin: 0 0 .4rem; line-height: 1.45; font-size: .85rem; }
+    h2 { margin: 0 0 .4rem; font-size: 1.05rem; }
+    p  { margin: 0 0 .45rem; line-height: 1.5; font-size: .88rem; }
     .muted { color: var(--muted); }
 
     .layout-map {
-      margin-top: .45rem;
-      border-radius: 14px;
+      margin-top: .5rem;
+      border-radius: 16px;
       background: #f5f5f3;
-      padding: .65rem;
+      padding: .75rem;
     }
     .layout-map img {
       width: 100%;
-      border-radius: 10px;
+      border-radius: 12px;
       border: 1px solid #d5d0c7;
       display: block;
     }
 
     .rules-toggle {
-      margin-top: .6rem;
+      margin-top: .7rem;
       display: flex;
       justify-content: flex-start;
-      gap: .45rem;
+      gap: .5rem;
       align-items: center;
       flex-wrap: wrap;
     }
     .rules-hint {
-      font-size: .78rem;
+      font-size: .8rem;
       color: var(--muted);
     }
     .rules-box {
-      margin-top: .45rem;
-      padding: .55rem .65rem;
+      margin-top: .5rem;
+      padding: .6rem .7rem;
       border-radius: var(--radius-md);
       background: rgba(255,255,255,.95);
       border: 1px solid var(--border);
-      font-size: .82rem;
+      font-size: .84rem;
       color: var(--muted);
       display: none;
     }
     .rules-box strong { color: #214939; }
 
     .actions {
-      margin-top: .8rem;
+      margin-top: .9rem;
       display: flex;
       justify-content: flex-start;
-      gap: .45rem;
+      gap: .5rem;
       flex-wrap: wrap;
     }
     .btn {
       border-radius: 999px;
-      padding: .4rem 1rem;
+      padding: .45rem 1.1rem;
       font-weight: 600;
       border: 1px solid transparent;
       background: #fff;
-      font-size: .82rem;
+      font-size: .85rem;
     }
     .btn-primary {
       background: #0d6b62;
@@ -307,8 +314,8 @@
       background: transparent;
       border-radius: 999px;
       border: 1px dashed var(--border);
-      padding: .3rem .65rem;
-      font-size: .76rem;
+      padding: .35rem .7rem;
+      font-size: .78rem;
       color: var(--muted);
     }
     .btn-primary-main {
@@ -317,9 +324,8 @@
       background: #0d6b62;
       color: #fff;
       border-radius: 999px;
-      padding: .45rem .9rem;
+      padding: .5rem 1rem;
       font-weight: 600;
-      font-size: .82rem;
     }
     .btn-primary-main:disabled {
       opacity: .5;
@@ -327,32 +333,31 @@
     }
     .btn-accent {
       border-radius: 999px;
-      padding: .4rem 1rem;
+      padding: .45rem 1.1rem;
       font-weight: 700;
       border: 1px solid #0d6b62;
       background: #0d6b62;
       color: #fff;
       box-shadow: 0 0 0 3px rgba(13,107,98,.18);
-      font-size: .82rem;
     }
 
-    .question-lead { margin-bottom: .25rem; }
+    .question-lead { margin-bottom: .3rem; }
 
     .cases-grid {
       display: grid;
       grid-template-columns: repeat(2,minmax(0,1fr));
-      gap: .45rem;
-      margin-top: .35rem;
+      gap: .5rem;
+      margin-top: .4rem;
     }
     .case-card {
       border-radius: var(--radius-lg);
       border: 1px solid var(--border);
       background: var(--surface-soft);
-      padding: .5rem .55rem .55rem;
-      font-size: .8rem;
+      padding: .55rem .6rem .6rem;
+      font-size: .82rem;
       display: flex;
       flex-direction: column;
-      gap: .15rem;
+      gap: .2rem;
       cursor: pointer;
       text-align: left;
     }
@@ -362,33 +367,31 @@
     }
     .case-header {
       font-weight: 600;
-      margin-bottom: .03rem;
+      margin-bottom: .05rem;
       display: flex;
       justify-content: space-between;
-      gap: .3rem;
-      font-size: .82rem;
+      gap: .35rem;
     }
     .case-title { flex: 1; }
     .case-cost {
-      font-size: .73rem;
+      font-size: .75rem;
       color: var(--muted);
       white-space: nowrap;
     }
     .case-desc {
       color: var(--muted);
-      font-size: .78rem;
-      line-height: 1.35;
+      font-size: .8rem;
     }
     .case-tags {
       display: flex;
       flex-wrap: wrap;
-      gap: .2rem;
-      margin-top: .15rem;
+      gap: .25rem;
+      margin-top: .2rem;
     }
     .tag {
       border-radius: 999px;
-      padding: .06rem .35rem;
-      font-size: .7rem;
+      padding: .08rem .4rem;
+      font-size: .72rem;
       white-space: nowrap;
       border: none;
     }
@@ -399,44 +402,47 @@
     .tag-clickable { cursor: pointer; }
 
     .goal-box {
-      margin-top: .6rem;
-      padding: .4rem .5rem;
+      margin-top: .7rem;
+      padding: .45rem .55rem;
       border-radius: var(--radius-md);
       background: rgba(255,255,255,.9);
       border: 1px solid var(--border);
-      font-size: .78rem;
+      font-size: .8rem;
       color: var(--muted);
     }
     .bottom-actions {
-      margin-top: .7rem;
+      margin-top: .8rem;
       display: flex;
       justify-content: space-between;
-      gap: .45rem;
+      gap: .5rem;
       align-items: center;
       flex-wrap: wrap;
     }
 
     .summary-list {
-      margin-top: .55rem;
-      font-size: .82rem;
+      margin-top: .6rem;
+      font-size: .84rem;
     }
     .summary-item {
-      padding: .3rem .4rem;
-      border-radius: 9px;
+      padding: .35rem .45rem;
+      border-radius: 10px;
       background: rgba(255,255,255,.9);
       border: 1px solid #e0dbd2;
-      margin-bottom: .25rem;
+      margin-bottom: .3rem;
       display: flex;
       justify-content: space-between;
-      gap: .3rem;
+      gap: .35rem;
       align-items: center;
     }
-    .summary-text { flex: 1; }
-    .summary-actions { flex-shrink: 0; }
+    .summary-text {
+      flex: 1;
+    }
+    .summary-actions {
+      flex-shrink: 0;
+    }
     .summary-step-label {
       font-weight: 600;
-      margin-bottom: .08rem;
-      font-size: .82rem;
+      margin-bottom: .1rem;
     }
 
     .modal {
@@ -456,66 +462,61 @@
     .modal-dialog {
       position: relative;
       z-index: 1;
-      max-width: 460px;
-      width: calc(100% - 1.5rem);
+      max-width: 480px;
+      width: calc(100% - 2rem);
       background: #ffffff;
-      border-radius: 16px;
+      border-radius: 18px;
       border: 1px solid var(--border);
-      box-shadow: 0 16px 36px rgba(0,0,0,.22);
-      padding: .9rem 1rem .8rem;
-      font-size: .86rem;
+      box-shadow: 0 18px 40px rgba(0,0,0,.25);
+      padding: 1rem 1.1rem .9rem;
+      font-size: .88rem;
     }
     .modal-title {
-      margin: 0 0 .35rem;
-      font-size: .95rem;
-      font-weight: 600;
+      margin: 0 0 .4rem;
+      font-size: .98rem;
     }
     .modal-text {
-      margin: 0 0 .6rem;
+      margin: 0 0 .7rem;
       color: var(--text);
-      line-height: 1.45;
     }
     .modal-note {
-      font-size: .78rem;
+      font-size: .8rem;
       color: var(--muted);
-      margin: 0 0 .45rem;
+      margin: 0 0 .5rem;
       white-space: pre-line;
-      line-height: 1.4;
     }
     .modal-footer {
       display: flex;
       justify-content: flex-end;
-      gap: .35rem;
+      gap: .4rem;
       flex-wrap: wrap;
     }
     .modal-close-btn {
       border-radius: 999px;
-      padding: .3rem .8rem;
+      padding: .35rem .9rem;
       border: 1px solid var(--border);
       background: #fbfaf7;
-      font-size: .82rem;
+      font-size: .84rem;
       cursor: pointer;
     }
     .modal-x {
       position: absolute;
-      top: .35rem;
-      right: .45rem;
+      top: .4rem;
+      right: .5rem;
       border-radius: 50%;
-      width: 20px;
-      height: 20px;
+      width: 22px;
+      height: 22px;
       display: inline-flex;
       align-items: center;
       justify-content: center;
       border: 1px solid var(--border);
       background: #fbfaf7;
-      font-size: .8rem;
+      font-size: .85rem;
       cursor: pointer;
     }
 
     @media (max-width: 720px) {
       .cases-grid { grid-template-columns: minmax(0,1fr); }
-      .axes-scales { grid-template-columns: 1fr; }
-      .app-wrapper { border-radius: 0; border: none; }
     }
   </style>
 </head>
@@ -548,7 +549,7 @@
             <span class="axes-value" id="axesSan">0</span>
           </div>
           <div class="axes-box">
-            <button class="axes-label-btn" type="button" data-axes-info="proc">Управляемость</button>
+            <button class="axes-label-btn" type="button" data-axes-info="proc">Управляемость процесса</button>
             <span class="axes-value" id="axesProc">0</span>
           </div>
           <div class="axes-box">
@@ -556,15 +557,19 @@
             <span class="axes-value" id="axesEco">0</span>
           </div>
           <div class="axes-box">
-            <button class="axes-label-btn" type="button" data-axes-info="tech">Бюджет мер</button>
+            <button class="axes-label-btn" type="button" data-axes-info="tech">Бюджет техмер</button>
             <span class="axes-value" id="axesTech">0 млн</span>
           </div>
           <div class="axes-box">
-            <button class="axes-label-btn" type="button" data-axes-info="total">Всего</button>
+            <button class="axes-label-btn" type="button" data-axes-info="other">Прочие решения</button>
+            <span class="axes-value" id="axesOther">0 млн</span>
+          </div>
+          <div class="axes-box">
+            <button class="axes-label-btn" type="button" data-axes-info="total">Общий бюджет</button>
             <span class="axes-value" id="axesTotal">0 млн</span>
           </div>
           <div class="axes-box">
-            <button class="axes-label-btn" type="button" data-axes-info="rest">Остаток</button>
+            <button class="axes-label-btn" type="button" data-axes-info="rest">Остаток бюджета</button>
             <span class="axes-value" id="axesRest">40 млн</span>
           </div>
         </div>
@@ -587,8 +592,8 @@
       <main class="content" id="contentArea">
         <section id="introScreen">
           <h2>История завода Олега</h2>
-          <p>Завод фенолформальдегидной смолы работает больше двадцати лет. Санитарно-защитная зона 1000 м утверждалась, когда вокруг почти не было жилой застройки. За последние годы город приблизился к границе зоны.</p>
-          <p>С одной стороны СЗЗ вырос новый жилой комплекс. Вдоль другой границы администрация планирует школу и детский сад. Застройщик предлагает софинансировать модернизацию, если предприятие сможет обосновать сокращение СЗЗ до 600 м.</p>
+          <p>Завод фенолформальдегидной смолы работает на площадке больше двадцати лет. Санитарно-защитная зона 1000 м утверждалась, когда вокруг почти не было жилой застройки. За последние годы город приблизился к границе зоны.</p>
+          <p>С одной стороны СЗЗ вырос новый жилой комплекс. Вдоль другой границы администрация планирует школу и детский сад. Застройщик предлагает софинансировать модернизацию, если предприятие сможет обосновать сокращение СЗЗ до 600 м без превышений по ключевым веществам.</p>
           <p class="muted">Руководство видит в этом возможность снять часть градостроительных ограничений. Олегу нужно выстроить цепочку решений так, чтобы уложиться в 40 млн и не потерять санитарную логику.</p>
 
           <div class="layout-map" aria-hidden="true">
@@ -913,7 +918,7 @@
       }
     };
 
-    // Trigger iframe resize
+    // 4. ИНИЦИАЛИЗАЦИЯ РЕСАЙЗЕРА
     function triggerResize() {
       if (window.iFrameResize) {
         window.iFrameResize({ log: false, checkOrigin: false }, '*');
@@ -939,7 +944,6 @@
           '</span><span>' + step.short + '</span>';
         stepsTabs.appendChild(tab);
       });
-      triggerResize();
     }
 
     function updateProgress() {
@@ -970,6 +974,7 @@
       if (axesProcBar) axesProcBar.style.width = procPct + '%';
       if (axesEcoBar) axesEcoBar.style.width = ecoPct + '%';
       
+      // Обновляем размер фрейма при изменении данных
       triggerResize();
     }
 
