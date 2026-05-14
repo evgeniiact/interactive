@@ -14,14 +14,16 @@
   }
   * { box-sizing: border-box; }
   html, body {
-    margin: 0; padding: 0; overflow: hidden; height: 100%;
+    margin: 0; padding: 0; overflow: hidden;
     font-family: Inter, system-ui, -apple-system, sans-serif;
     background: var(--bg); color: var(--text);
   }
   
   .szz-wrap {
-    width: 100%; max-width: 650px; height: 100%; background: var(--card);
-    margin: 0 auto; display: flex; flex-direction: column; overflow: hidden;
+    width: 100%; max-width: 650px; 
+    min-height: 400px; max-height: 600px;
+    background: var(--card); margin: 0 auto;
+    display: flex; flex-direction: column;
     border: 1px solid var(--line); border-radius: var(--radius);
     box-shadow: var(--shadow);
   }
@@ -60,9 +62,10 @@
     font-size: 0.75rem; color: var(--muted); flex-shrink: 0;
   }
   
-  /* Game Area - No Scroll */
+  /* Game Area - flexible height, resizer handles sizing */
   .game-area { 
-    padding: 10px 16px; flex: 1; display: flex; flex-direction: column; gap: 10px; overflow: hidden;
+    padding: 10px 16px; flex: 1; display: flex; flex-direction: column; gap: 10px;
+    min-height: 0; /* Allow shrinking */
   }
   
   /* Drum / Deck */
@@ -304,6 +307,13 @@
   const btnReset = document.getElementById('btn-reset');
   const summary = document.getElementById('summary');
 
+  // Trigger iframe resize after content changes
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false }, '*');
+    }
+  }
+
   function shuffle(arr) {
     const a = [...arr];
     for (let i = a.length - 1; i > 0; i--) {
@@ -324,6 +334,7 @@
     isChecked = false;
     updateCounter();
     showTopCards();
+    triggerResize();
   }
 
   function showTopCards() {
@@ -338,6 +349,7 @@
       else card.style.pointerEvents = 'none';
       deckStack.appendChild(card);
     });
+    triggerResize();
   }
 
   function updateCounter() {
@@ -403,6 +415,7 @@
         queue = queue.filter(q => q.id !== itemId);
         showTopCards();
         updateCounter();
+        triggerResize(); // Resize after card added
       }
     }
     draggedEl = null;
@@ -433,6 +446,7 @@
     summary.classList.remove('success', 'error', 'show');
     summary.textContent = errors === 0 ? '✓ Отлично! Нажмите на карточку для разбора.' : `⚠️ Ошибки: ${errors} из ${total}. Нажмите на красную карточку.`;
     summary.classList.add(errors === 0 ? 'success' : 'error', 'show');
+    triggerResize(); // Resize after summary shown
   });
 
   document.addEventListener('click', (e) => {
@@ -452,15 +466,23 @@
       ${!isCorrect ? `<p style="margin-top:8px;color:#b4532a"><strong>Почему не подошло:</strong> Запомните: фундамент и стационарность — ключевые признаки.</p>` : ''}
     `;
     document.getElementById('modal-comment').classList.add('active');
+    triggerResize(); // Resize when modal opens
   });
 
   btnReset.addEventListener('click', () => {
     renderDeck();
     document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('success', 'error'));
+    triggerResize(); // Resize after reset
   });
 
-  function openModal(id) { document.getElementById(id).classList.add('active'); }
-  function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+  function openModal(id) { 
+    document.getElementById(id).classList.add('active'); 
+    triggerResize(); // Resize when modal opens
+  }
+  function closeModal(id) { 
+    document.getElementById(id).classList.remove('active');
+    triggerResize(); // Resize when modal closes
+  }
   
   document.getElementById('btn-rules').onclick = () => openModal('modal-rules');
   document.getElementById('btn-important').onclick = () => openModal('modal-important');
@@ -468,7 +490,11 @@
   document.querySelectorAll('.modal').forEach(modal => modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal.id); }));
   document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal.active').forEach(m => closeModal(m.id)); });
 
-  renderDeck();
+  // Initial resize on load
+  window.addEventListener('load', () => {
+    renderDeck();
+    triggerResize();
+  });
 </script>
 </body>
 </html>
