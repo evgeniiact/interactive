@@ -3,17 +3,19 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Олег: Меры для разных предприятий</title>
+<title>Капитальное строительство или нет</title>
+<!-- 1. СКРИПТ IFRAME-RESIZER -->
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
 <style>
   :root {
-    --bg: #ffffff; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
+    --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
     --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
     --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
     --radius: 16px; --transition: 160ms ease;
-    --red: #b4532a; --red-soft: #fff1ea;
   }
   * { box-sizing: border-box; }
+  
+  /* 2. CSS: УБИРАЕМ ОГРАНИЧЕНИЯ ВЫСОТЫ */
   html, body {
     margin: 0; padding: 0;
     font-family: Inter, system-ui, -apple-system, sans-serif;
@@ -21,22 +23,34 @@
   }
   
   .szz-wrap {
-    width: 100%; max-width: 800px; 
+    width: 100%; max-width: 650px; 
+    min-height: 400px;
     background: var(--card); margin: 0 auto;
     display: flex; flex-direction: column;
     border: 1px solid var(--line); border-radius: var(--radius);
     box-shadow: var(--shadow);
   }
   
-  .szz-header {
-    padding: 12px 16px; background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%);
+  .szz-header { 
+    padding: 12px 16px; background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%); 
     border-bottom: 1px solid var(--line); flex-shrink: 0;
   }
-  .szz-header h2 { margin: 0 0 4px; font-size: 1rem; font-weight: 600; color: var(--green); }
+  .szz-header h2 { margin: 0 0 3px; font-size: 1rem; font-weight: 600; color: var(--green); }
   .szz-header p { margin: 0; font-size: 0.8rem; color: var(--muted); }
   
+  .top-actions { 
+    display: flex; gap: 5px; padding: 6px 16px; border-bottom: 1px solid var(--line); 
+    background: #fff; flex-shrink: 0; 
+  }
+  .btn-sm { 
+    padding: 4px 8px; border: 1px solid var(--line); background: #fff; 
+    border-radius: 5px; cursor: pointer; font-size: 0.7rem; font-weight: 500; 
+    transition: var(--transition); color: var(--muted); 
+  }
+  .btn-sm:hover { border-color: var(--green); color: var(--green); background: var(--green-soft-2); }
+  
   .oleg-intro {
-    display: flex; gap: 10px; align-items: flex-start; padding: 10px 16px;
+    display: flex; gap: 8px; align-items: flex-start; padding: 10px 16px;
     background: var(--green-soft-2); border-bottom: 1px solid var(--line); flex-shrink: 0;
   }
   .oleg-avatar { 
@@ -47,158 +61,127 @@
   .oleg-text strong { display: block; margin-bottom: 2px; color: var(--green); font-weight: 600; }
   
   .instruction {
-    padding: 8px 16px; font-size: 0.8rem; color: var(--muted); background: #fff;
-    border-bottom: 1px solid var(--line); flex-shrink: 0;
+    padding: 6px 16px; background: #fff; border-bottom: 1px solid var(--line);
+    font-size: 0.75rem; color: var(--muted); flex-shrink: 0;
   }
   
-  /* Compact enterprise buttons */
-  .enterprise-bar {
-    padding: 8px 16px; background: #fff; border-bottom: 1px solid var(--line); flex-shrink: 0;
-    display: flex; align-items: center; gap: 6px; flex-wrap: wrap;
-  }
-  .enterprise-bar .label { font-size: 0.78rem; color: var(--muted); font-weight: 500; white-space: nowrap; }
-  .ent-btn {
-    padding: 5px 10px; border: 2px solid var(--line); border-radius: 18px;
-    background: #fff; cursor: pointer; font-size: 0.75rem; font-weight: 500;
-    transition: var(--transition); white-space: nowrap;
-  }
-  .ent-btn:hover { border-color: var(--green); }
-  .ent-btn.active { border-color: var(--green); background: var(--green-soft); color: var(--green); }
-  
+  /* Game Area - flexible height */
   .game-area { 
-    padding: 10px 16px; display: flex; flex-direction: column; gap: 12px;
+    padding: 10px 16px; display: flex; flex-direction: column; gap: 10px;
   }
   
-  /* Current enterprise banner */
-  .current-banner {
-    background: var(--green-soft-2); border: 1px solid var(--green); border-radius: 8px;
-    padding: 8px 12px; font-size: 0.78rem; color: var(--green); display: none; align-items: center; gap: 8px; flex-shrink: 0;
+  /* Drum / Deck */
+  .deck-container {
+    background: #f8fafc; border: 1px dashed var(--line); border-radius: 8px; 
+    padding: 10px; flex-shrink: 0;
   }
-  .current-banner.show { display: flex; }
+  .deck-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .deck-label { font-size: 0.75rem; color: var(--muted); font-weight: 500; }
+  .deck-stack { position: relative; height: 80px; width: 100%; }
   
-  /* Барабан */
-  .drum-container {
-    background: #f8fafc; border: 2px dashed var(--line); border-radius: 10px;
-    padding: 12px; position: relative; flex-shrink: 0;
-  }
-  .drum-label { 
-    font-size: 0.78rem; color: var(--muted); font-weight: 500; margin-bottom: 8px;
-    display: flex; justify-content: space-between;
-  }
-  .drum-count { color: var(--green); font-weight: 700; }
-  
-  .drum-stack {
-    position: relative; height: 80px;
-  }
-  
-  .drum-card {
+  .deck-card {
     position: absolute; top: 0; left: 0; right: 0;
-    background: #fff; border: 1px solid var(--line); border-radius: 8px;
-    padding: 10px; cursor: grab; user-select: none;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-    transition: transform 0.2s;
-    display: flex; gap: 8px; align-items: flex-start;
+    background: var(--card); border: 1px solid var(--line); border-radius: 7px;
+    padding: 8px 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    display: flex; gap: 7px; align-items: flex-start;
+    transition: transform 0.2s ease, opacity 0.2s ease; cursor: grab;
   }
-  .drum-card:nth-child(1) { z-index: 3; transform: translateY(0); }
-  .drum-card:nth-child(2) { z-index: 2; transform: translateY(6px); opacity: 0.8; }
-  .drum-card:nth-child(3) { z-index: 1; transform: translateY(12px); opacity: 0.6; }
-  .drum-card.dragging { z-index: 100; transform: scale(1.03) translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.15); cursor: grabbing; }
-  .drum-card.placed { display: none; }
+  .deck-card:nth-child(1) { z-index: 3; transform: translateY(0); }
+  .deck-card:nth-child(2) { z-index: 2; transform: translateY(9px); opacity: 0.7; pointer-events: none; }
+  .deck-card:nth-child(3) { z-index: 1; transform: translateY(18px); opacity: 0.4; pointer-events: none; }
+  .deck-card.dragging { z-index: 100; transform: scale(1.02) translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); opacity: 0.95; cursor: grabbing; }
+  .deck-card.placed { display: none; }
   
-  .card-icon { width: 22px; height: 22px; background: var(--green-soft); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
-  .card-text { font-size: 0.75rem; line-height: 1.3; color: var(--text); font-weight: 500; }
+  .card-icon { width: 22px; height: 22px; background: var(--green-soft); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+  .card-text { font-size: 0.75rem; line-height: 1.3; color: var(--text); }
   
-  /* Зоны - строго по горизонтали, растут по контенту */
-  .zones-wrapper {
-    display: flex; flex-direction: row; gap: 10px; flex-shrink: 0;
+  /* Zones - Side by Side */
+  .zones-wrapper { 
+    display: flex; flex-direction: row; gap: 8px; flex-shrink: 0;
   }
   
   .drop-zone {
-    background: #fff; border: 2px dashed var(--line); border-radius: 10px;
-    padding: 12px; min-width: 0; flex: 1; display: flex; flex-direction: column;
+    background: var(--card); border: 2px dashed var(--line); border-radius: 8px;
+    padding: 10px; min-width: 0; flex: 1; display: flex; flex-direction: column;
     transition: var(--transition);
   }
   .drop-zone.drag-over { border-color: var(--green); background: var(--green-soft-2); }
-  .drop-zone h3 { margin: 0 0 3px; font-size: 0.8rem; color: var(--text); text-align: center; }
-  .drop-zone p { margin: 0 0 8px; font-size: 0.7rem; color: var(--muted); text-align: center; }
-  .zone-cards { display: flex; flex-direction: column; gap: 6px; }
+  .drop-zone h3 { margin: 0 0 2px; font-size: 0.8rem; color: var(--text); text-align: center; }
+  .drop-zone p { margin: 0 0 6px; font-size: 0.68rem; color: var(--muted); text-align: center; }
+  .zone-cards { display: flex; flex-direction: column; gap: 5px; }
   
   .zone-card {
-    background: var(--green-soft-2); border: 1px solid var(--line); border-radius: 7px;
-    padding: 8px; font-size: 0.73rem; cursor: pointer;
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 7px; font-size: 0.7rem; line-height: 1.3; color: var(--text);
+    display: flex; align-items: flex-start; gap: 7px; position: relative;
     transition: var(--transition);
   }
-  .zone-card:hover { border-color: var(--green); background: var(--green-soft); }
   .zone-card.correct { border-color: var(--green); background: var(--green-soft); }
-  .zone-card.incorrect { border-color: var(--red); background: var(--red-soft); }
-  .zone-card-title { font-weight: 600; margin-bottom: 2px; }
-  .zone-card-desc { font-size: 0.68rem; color: var(--muted); }
-  
-  .controls {
-    display: flex; gap: 10px; justify-content: center; padding: 10px 16px;
-    border-top: 1px solid var(--line); background: #fff; flex-shrink: 0;
+  .zone-card.incorrect { border-color: #b4532a; background: #fff1ea; }
+  .zone-card.interactive { cursor: pointer; }
+  .zone-card.interactive::after {
+    content: "💬"; position: absolute; top: 5px; right: 7px; font-size: 0.65rem; opacity: 0.5;
   }
-  .btn-action {
-    padding: 10px 18px; border: none; border-radius: 7px; cursor: pointer;
-    font-size: 0.8rem; font-weight: 600; transition: var(--transition);
+  .zone-card .click-hint { display: none; font-size: 0.65rem; color: var(--green); margin-top: 3px; font-style: italic; }
+  .zone-card.interactive .click-hint { display: block; }
+  
+  .drop-zone.success { border-color: var(--green); border-style: solid; }
+  .drop-zone.error { border-color: #b4532a; border-style: solid; }
+  
+  .summary {
+    padding: 8px; border-radius: 6px; margin-bottom: 6px; font-size: 0.78rem;
+    display: none; animation: fadeIn 0.25s; flex-shrink: 0; text-align: center;
+  }
+  .summary.show { display: block; }
+  .summary.success { background: var(--green-soft); border: 1px solid var(--green); color: var(--green); }
+  .summary.error { background: #fff1ea; border: 1px solid #b4532a; color: #92400e; }
+  
+  .controls { 
+    display: flex; gap: 6px; justify-content: center; padding: 8px 16px;
+    border-top: 1px solid var(--line); background: #fff; flex-shrink: 0; 
+  }
+  .btn-action { 
+    padding: 7px 14px; border: none; border-radius: 6px; cursor: pointer; 
+    font-size: 0.75rem; font-weight: 600; transition: var(--transition); 
   }
   .btn-check { background: var(--green); color: #fff; }
-  .btn-check:hover:not(:disabled) { filter: brightness(0.95); }
+  .btn-check:hover { filter: brightness(0.95); }
   .btn-check:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
   .btn-reset { background: #fff; color: var(--text); border: 1px solid var(--line); }
   .btn-reset:hover { border-color: var(--green); background: var(--green-soft-2); }
   
-  .summary {
-    padding: 10px; border-radius: 7px; display: none; animation: fadeIn 0.3s; flex-shrink: 0;
-  }
-  .summary.show { display: block; }
-  .summary.success { background: var(--green-soft); border: 1px solid var(--green); color: var(--green); }
-  
-  .modal {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+  /* Modals */
+  .modal { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
     background: rgba(31,42,36,0.45); display: none; align-items: center; justify-content: center;
     z-index: 1000; padding: 16px; backdrop-filter: blur(3px);
   }
   .modal.active { display: flex; animation: fadeIn 0.2s; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  .modal-box {
-    background: #fff; border-radius: 10px; max-width: 460px; width: 100%;
+  .modal-box { 
+    background: #fff; border-radius: 10px; max-width: 420px; width: 100%;
     box-shadow: 0 16px 40px rgba(0,0,0,0.15); overflow: hidden; animation: slideUp 0.25s;
     max-height: 85vh; display: flex; flex-direction: column;
   }
   @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
-  .modal-head { padding: 14px 18px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: var(--green-soft-2); }
+  .modal-head { 
+    padding: 12px 16px; border-bottom: 1px solid var(--line); 
+    display: flex; justify-content: space-between; align-items: center; background: var(--green-soft-2); 
+  }
   .modal-head h3 { margin: 0; font-size: 0.9rem; color: var(--green); }
-  .modal-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted); }
-  .modal-close:hover { color: var(--text); }
-  .modal-body { padding: 16px 18px; overflow-y: auto; }
-  .modal-body p { margin: 0 0 10px; font-size: 0.83rem; line-height: 1.45; color: var(--text); }
+  .modal-x { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted); line-height: 1; }
+  .modal-x:hover { color: var(--text); }
+  .modal-body { padding: 14px 16px; overflow-y: auto; font-size: 0.85rem; line-height: 1.45; color: var(--text); }
+  .modal-body ul { padding-left: 18px; margin: 8px 0; }
+  .modal-body li { margin-bottom: 5px; }
   .modal-body strong { color: var(--green); }
-  .verdict-box { margin-top: 14px; padding: 12px; border-radius: 7px; font-size: 0.83rem; line-height: 1.45; }
-  .verdict-ok { background: #dcfce7; border: 1px solid #86efac; color: #14532d; }
-  .verdict-warn { background: #fff7ed; border: 1px solid #fdba74; color: #7c2d12; }
-  .verdict-fail { background: #fff1ea; border: 1px solid #fca5a5; color: #7f1d1d; }
-  
-  .lesson-section {
-    margin-top: 14px; padding: 12px; background: var(--green-soft-2);
-    border-left: 3px solid var(--green); border-radius: 0 6px 6px 0;
-  }
-  .lesson-section h4 { margin: 0 0 6px; color: var(--green); font-size: 0.85rem; }
-  .lesson-section ul { margin: 0; padding-left: 16px; font-size: 0.8rem; }
-  .lesson-section li { margin-bottom: 3px; }
-  .tip-box {
-    background: #fffbeb; border: 1px solid #fcd34d; border-radius: 7px;
-    padding: 10px; margin-top: 10px; font-size: 0.8rem;
-  }
-  .tip-box strong { color: #92400e; }
-  
-  .modal-foot { padding: 12px 18px; border-top: 1px solid var(--line); text-align: right; flex-shrink: 0; }
-  .btn-modal-close { background: var(--green); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+  .modal-foot { padding: 10px 16px; border-top: 1px solid var(--line); text-align: right; background: #fff; flex-shrink: 0; }
+  .btn-modal-close { background: var(--green); color: #fff; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: 500; font-size: 0.8rem; }
   .btn-modal-close:hover { filter: brightness(0.95); }
-
+  
   @media (max-width: 650px) {
-    .enterprise-bar { justify-content: center; }
     .zones-wrapper { flex-direction: column; }
+    .deck-stack { height: 70px; }
     .szz-wrap { border-radius: 0; border: none; }
   }
 </style>
@@ -207,57 +190,47 @@
 
 <div class="szz-wrap">
   <div class="szz-header">
-    <h2>Какие меры для каких предприятий?</h2>
-    <p>Учимся подбирать меры под тип воздействия</p>
+    <h2>Объект капитального строительства или нет</h2>
+    <p>Первый фильтр перед оценкой НВОС и СЗЗ</p>
+  </div>
+
+  <div class="top-actions">
+    <button class="btn-sm" id="btn-rules">Правила</button>
+    <button class="btn-sm" id="btn-important">Памятка</button>
   </div>
 
   <div class="oleg-intro">
-    <div class="oleg-avatar"><img src="oleg.jpg" alt="Олег"></div>
+    <img src="oleg.jpg" alt="Олег" class="oleg-avatar">
     <div class="oleg-text">
-      <strong>Олег:</strong> Я хочу разобраться с мерами, которые помогут уменьшить СЗЗ. Слышал, что для каждого типа предприятий СЗЗ сокращается по-разному. Помогите разобраться: какие меры работают для химии, какие для шума, а какие — нет?
+      <strong>Олег:</strong> Помоги распределить объекты: какие из них капитальные, а какие нет? От этого зависит, нужна ли СЗЗ.
     </div>
-  </div>
-
-  <!-- Compact enterprise buttons -->
-  <div class="enterprise-bar">
-    <span class="label">Тип предприятия:</span>
-    <button class="ent-btn" data-ent="chem">🏭 Химия</button>
-    <button class="ent-btn" data-ent="bio">🐔 Биология</button>
-    <button class="ent-btn" data-ent="phys">⚡ Шум/Вибрация</button>
-    <button class="ent-btn" data-ent="combined">🏗️ ТЭЦ</button>
   </div>
 
   <div class="instruction">
-    Перетаскивайте карточки из барабана в одну из двух зон. <strong>«Сокращает СЗЗ»</strong> — меры, реально снижающие воздействие для этого типа. <strong>«Не сокращает»</strong> — не влияют на данный тип.
+    Перетаскивайте карточки из барабана в одну из двух зон. После проверки нажмите на карточку для разбора.
   </div>
 
   <div class="game-area">
-    <!-- Current enterprise banner -->
-    <div class="current-banner" id="current-banner">
-      <span id="banner-icon">🏭</span>
-      <span id="banner-text"></span>
-    </div>
-
-    <!-- Барабан -->
-    <div class="drum-container">
-      <div class="drum-label">
-        <span>Барабан мероприятий</span>
-        <span class="drum-count" id="drum-count">0 / 8</span>
+    <!-- Drum -->
+    <div class="deck-container">
+      <div class="deck-header">
+        <span class="deck-label">Барабан объектов</span>
+        <span class="deck-label" id="deck-count">0 / 10</span>
       </div>
-      <div class="drum-stack" id="drum-stack"></div>
+      <div class="deck-stack" id="deck-stack"></div>
     </div>
 
-    <!-- Зоны -->
+    <!-- Zones Side by Side -->
     <div class="zones-wrapper">
-      <div class="drop-zone" id="zone-reduce" data-type="reduce">
-        <h3>✅ Сокращает СЗЗ</h3>
-        <p>Влияет на данный тип предприятия</p>
-        <div class="zone-cards" id="zone-reduce-cards"></div>
+      <div class="drop-zone" id="zone-capital" data-type="capital">
+        <h3>✅ Капитальное</h3>
+        <p>Фундамент, стационарность</p>
+        <div class="zone-cards" id="zone-capital-cards"></div>
       </div>
-      <div class="drop-zone" id="zone-no-reduce" data-type="no-reduce">
-        <h3>❌ Не сокращает СЗЗ</h3>
-        <p>Не влияет на данный тип</p>
-        <div class="zone-cards" id="zone-no-reduce-cards"></div>
+      <div class="drop-zone" id="zone-non-capital" data-type="non-capital">
+        <h3>❌ Не капитальное</h3>
+        <p>Временное, мобильное</p>
+        <div class="zone-cards" id="zone-non-capital-cards"></div>
       </div>
     </div>
 
@@ -265,118 +238,82 @@
   </div>
 
   <div class="controls">
-    <button class="btn-action btn-reset" id="btn-reset">Сбросить</button>
-    <button class="btn-action btn-check" id="btn-check" disabled>Проверить</button>
+    <button class="btn-reset btn-action" id="btn-reset">Сброс</button>
+    <button class="btn-check btn-action" id="btn-check" disabled>Проверить</button>
   </div>
 </div>
 
-<!-- Modal -->
-<div class="modal" id="result-modal">
+<!-- Modals -->
+<div class="modal" id="modal-rules">
   <div class="modal-box">
-    <div class="modal-head">
-      <h3 id="res-title">Комментарий</h3>
-      <button class="modal-close" id="close-modal">&times;</button>
+    <div class="modal-head"><h3>Правила</h3><button class="modal-x" data-modal-close>&times;</button></div>
+    <div class="modal-body">
+      <ul>
+        <li>Берите верхнюю карточку из барабана и перетаскивайте в нужную зону.</li>
+        <li>Если ошиблись, карточку можно перетащить в другую зону.</li>
+        <li>Когда все 10 карточек распределены, нажмите «Проверить».</li>
+        <li>После проверки нажмите на любую карточку, чтобы увидеть комментарий.</li>
+      </ul>
     </div>
-    <div class="modal-body" id="res-body"></div>
-    <div class="modal-foot">
-      <button class="btn-modal-close" id="close-modal-btn">Понятно</button>
+    <div class="modal-foot"><button class="btn-modal-close" data-modal-close>Понятно</button></div>
+  </div>
+</div>
+
+<div class="modal" id="modal-important">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Памятка</h3><button class="modal-x" data-modal-close>&times;</button></div>
+    <div class="modal-body">
+      <p><strong>Капитальное строительство:</strong></p>
+      <ul>
+        <li>Фундамент (ленточный, плитный, свайный)</li>
+        <li>Прочная связь с землёй и инженерными сетями</li>
+        <li>Постоянная эксплуатация, невозможность перемещения без разрушения</li>
+      </ul>
+      <p><strong>Не капитальное:</strong></p>
+      <ul>
+        <li>Временные опоры или площадки без заглубления</li>
+        <li>Возможность демонтажа и перемещения</li>
+        <li>Отсутствие постоянного источника воздействия</li>
+      </ul>
     </div>
+    <div class="modal-foot"><button class="btn-modal-close" data-modal-close>Понятно</button></div>
+  </div>
+</div>
+
+<div class="modal" id="modal-comment">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="comment-title">Разбор</h3><button class="modal-x" data-modal-close>&times;</button></div>
+    <div class="modal-body" id="comment-body"></div>
+    <div class="modal-foot"><button class="btn-modal-close" data-modal-close>Закрыть</button></div>
   </div>
 </div>
 
 <script>
-  // === DATA: Simplified measures for beginners ===
-  const enterprises = {
-    chem: {
-      icon: '🏭', title: 'Химический завод',
-      desc: 'Формальдегид, фенол, метанол в воздухе. СЗЗ — химический фактор.',
-      measures: [
-        { id: 'abs', text: 'Абсорберы', desc: 'Фильтры, улавливающие пары до выброса в трубу.', works: true, detail: 'Абсорберы напрямую снижают концентрацию вредных веществ. Это главная мера для химзаводов.' },
-        { id: 'herm', text: 'Герметизация', desc: 'Замена открытых емкостей на закрытые.', works: true, detail: 'Закрытые реакторы не выпускают пары наружу. Это снижает неорганизованные выбросы.' },
-        { id: 'raw', text: 'Замена сырья', desc: 'Использование менее токсичных материалов.', works: true, detail: 'Если в сырье меньше вредных веществ, их меньше в выбросах.' },
-        { id: 'flare', text: 'Факельная установка', desc: 'Сжигание опасных газов.', works: true, detail: 'Сжигание превращает токсичные газы в безопасные продукты.' },
-        { id: 'noise', text: 'Шумозащитные экраны', desc: 'Барьеры от шума вдоль границы.', works: false, detail: 'Экраны защищают от шума, но не от химических выбросов. Для химзавода это не работает.' },
-        { id: 'vibro', text: 'Виброизоляция', desc: 'Демпферы под оборудованием.', works: false, detail: 'Вибрация не влияет на химическую СЗЗ.' },
-        { id: 'fence', text: 'Ремонт забора', desc: 'Покраска ограждения.', works: false, detail: 'Косметика не влияет на выбросы.' },
-        { id: 'clean', text: 'Чистка фильтров (ТО)', desc: 'Плановая замена сорбентов.', works: false, detail: 'Это эксплуатация, а не модернизация. Не снижает СЗЗ.' }
-      ]
-    },
-    bio: {
-      icon: '🐔', title: 'Птицефабрика',
-      desc: 'Аммиак, запахи, микроорганизмы. СЗЗ — биологический фактор.',
-      measures: [
-        { id: 'biofilter', text: 'Биофильтры', desc: 'Очистка воздуха через бактерии, поедающие аммиак.', works: true, detail: 'Биофильтры разлагают аммиак и запахи. Ключевая мера для ферм.' },
-        { id: 'vent', text: 'Вентиляция', desc: 'Принудительный воздухообмен в корпусах.', works: true, detail: 'Вентиляция удаляет загрязненный воздух и направляет его на очистку.' },
-        { id: 'waste', text: 'Переработка помета', desc: 'Компостирование отходов.', works: true, detail: 'Утилизация помета снижает эмиссию аммиака и запахов.' },
-        { id: 'disinfect', text: 'Дезинфекция', desc: 'Обработка помещений.', works: true, detail: 'Дезинфекция снижает количество патогенных микроорганизмов.' },
-        { id: 'noise', text: 'Шумозащитные экраны', desc: 'Барьеры вдоль границы.', works: false, detail: 'Главный фактор фермы — биологический, а не акустический.' },
-        { id: 'fence', text: 'Ремонт забора', desc: 'Косметический ремонт.', works: false, detail: 'Не влияет на биологическую нагрузку.' },
-        { id: 'green', text: 'Озеленение', desc: 'Посадка деревьев.', works: false, detail: 'Деревья не снижают концентрацию газов или микробов.' },
-        { id: 'abs', text: 'Абсорберы', desc: 'Очистка паров фенола.', works: false, detail: 'Абсорберы для фенола не работают против аммиака.' }
-      ]
-    },
-    phys: {
-      icon: '⚡', title: 'Компрессорная станция',
-      desc: 'Шум, вибрация от компрессоров. СЗЗ — физический фактор.',
-      measures: [
-        { id: 'noise', text: 'Шумозащитные экраны', desc: 'Акустические барьеры 3–4 м.', works: true, detail: 'Экраны отражают звуковые волны. Это главная мера для снижения шума.' },
-        { id: 'vibro', text: 'Виброизоляция', desc: 'Демпферы и плавающие фундаменты.', works: true, detail: 'Снижает передачу вибрации на грунт и здания.' },
-        { id: 'soundproof', text: 'Звукоизоляция здания', desc: 'Обшивка стен звукопоглощающими материалами.', works: true, detail: 'Звукоизоляция удерживает шум внутри здания.' },
-        { id: 'schedule', text: 'Ограничение ночной работы', desc: 'Снижение нагрузки ночью.', works: true, detail: 'Ночные нормативы строже. Это снижает риск превышения.' },
-        { id: 'abs', text: 'Абсорберы', desc: 'Очистка паров фенола.', works: false, detail: 'Абсорберы не влияют на шум.' },
-        { id: 'biofilter', text: 'Биофильтры', desc: 'Биологическая очистка.', works: false, detail: 'Биофильтры работают против аммиака, не против шума.' },
-        { id: 'fence', text: 'Ремонт забора', desc: 'Косметический ремонт.', works: false, detail: 'Не снижает физические факторы.' },
-        { id: 'green', text: 'Озеленение', desc: 'Посадка деревьев.', works: false, detail: 'Деревья не заменяют шумозащитные экраны.' }
-      ]
-    },
-    combined: {
-      icon: '🏗️', title: 'ТЭЦ',
-      desc: 'Выбросы SO2/NOx (химия) + шум турбин (физика). Оба фактора.',
-      measures: [
-        { id: 'scrubber', text: 'Скрубберы', desc: 'Очистка дымовых газов от SO2.', works: true, detail: 'Скрубберы улавливают кислотные газы до выброса.' },
-        { id: 'fuel', text: 'Замена топлива', desc: 'Переход с угля на газ.', works: true, detail: 'Газ горит чище, снижая выбросы.' },
-        { id: 'noise_turb', text: 'Шумоизоляция турбин', desc: 'Кожухи на турбогенераторах.', works: true, detail: 'Кожухи снижают шум от турбин.' },
-        { id: 'ash', text: 'Улавливание золы', desc: 'Электрофильтры.', works: true, detail: 'Электрофильтры улавливают частицы до 99%.' },
-        { id: 'fence', text: 'Ремонт забора', desc: 'Косметический ремонт.', works: false, detail: 'Не влияет ни на химические, ни на физические факторы.' },
-        { id: 'green', text: 'Озеленение', desc: 'Посадка деревьев.', works: false, detail: 'Не снижает выбросы или шум.' },
-        { id: 'biofilter', text: 'Биофильтры', desc: 'Биологическая очистка.', works: false, detail: 'Не применимо для ТЭЦ.' },
-        { id: 'disinfect', text: 'Дезинфекция', desc: 'Обработка помещений.', works: false, detail: 'Не влияет на выбросы ТЭЦ.' }
-      ]
-    }
-  };
+  const items = [
+    { id: 'c1', text: 'Здание цеха на фундаменте с инженерными сетями', isCapital: true, comment: 'Классический капитальный объект. Фундамент и сети = обязательная СЗЗ.' },
+    { id: 'n1', text: 'Мобильная контейнерная котельная', isCapital: false, comment: 'Контейнер на временных опорах можно перевезти. Не требует СЗЗ.' },
+    { id: 'n2', text: 'Открытая асфальтированная площадка', isCapital: false, comment: 'Площадка без построек — элемент благоустройства, а не капстроительство.' },
+    { id: 'c2', text: 'Административное здание завода', isCapital: true, comment: 'Стационарный корпус с фундаментом входит в состав капитальных сооружений.' },
+    { id: 'n3', text: 'Тентовый склад на каркасе без фундамента', isCapital: false, comment: 'Лёгкий каркас без заглубления легко демонтируется. Не капитальный.' },
+    { id: 'c3', text: 'Очистные сооружения с резервуарами', isCapital: true, comment: 'Заглублённые резервуары и здания — капитальный инженерный комплекс.' },
+    { id: 'n4', text: 'Передвижная дробильная установка', isCapital: false, comment: 'Мобильное оборудование на колёсах не имеет стационарного фундамента.' },
+    { id: 'c4', text: 'Стационарная компрессорная в здании', isCapital: true, comment: 'Стационарное здание с фундаментом = капитальный объект.' },
+    { id: 'n5', text: 'Грунтовая площадка для отстоя авто', isCapital: false, comment: 'Просто отведённая земля без сооружений не является капстроительством.' },
+    { id: 'c5', text: 'Стационарная градирня и насосная', isCapital: true, comment: 'Капитальные основания и подключение к сетям = объект капстроительства.' }
+  ];
 
-  let currentEnt = null;
-  let queue = [];
-  let draggedEl = null;
-  let offsetX = 0, offsetY = 0;
-  let isChecked = false;
-
-  const drumStack = document.getElementById('drum-stack');
-  const drumCount = document.getElementById('drum-count');
+  let queue = [], draggedEl = null, offsetX = 0, offsetY = 0, isChecked = false;
+  const deckStack = document.getElementById('deck-stack');
+  const deckCount = document.getElementById('deck-count');
   const btnCheck = document.getElementById('btn-check');
   const btnReset = document.getElementById('btn-reset');
   const summary = document.getElementById('summary');
-  const banner = document.getElementById('current-banner');
 
-  // Trigger iframe resize
+  // 3. ФУНКЦИЯ ТРИГГЕРА РЕСАЙЗЕРА
   function triggerResize() {
     if (window.iFrameResize) {
       window.iFrameResize({ log: false, checkOrigin: false }, '*');
     }
-  }
-
-  function selectEnt(id, btn) {
-    currentEnt = id;
-    document.querySelectorAll('.ent-btn').forEach(b => b.classList.remove('active'));
-    if (btn) btn.classList.add('active');
-    
-    const ent = enterprises[id];
-    document.getElementById('banner-icon').textContent = ent.icon;
-    document.getElementById('banner-text').textContent = ent.desc;
-    banner.classList.add('show');
-    
-    initDrum();
-    triggerResize();
   }
 
   function shuffle(arr) {
@@ -388,12 +325,11 @@
     return a;
   }
 
-  function initDrum() {
-    if (!currentEnt) return;
-    const ent = enterprises[currentEnt];
-    queue = shuffle(ent.measures);
-    document.getElementById('zone-reduce-cards').innerHTML = '';
-    document.getElementById('zone-no-reduce-cards').innerHTML = '';
+  function renderDeck() {
+    queue = shuffle(items);
+    deckStack.innerHTML = '';
+    document.getElementById('zone-capital-cards').innerHTML = '';
+    document.getElementById('zone-non-capital-cards').innerHTML = '';
     summary.classList.remove('show');
     summary.className = 'summary';
     btnCheck.disabled = true;
@@ -404,50 +340,38 @@
   }
 
   function showTopCards() {
-    drumStack.innerHTML = '';
+    deckStack.innerHTML = '';
     const visible = queue.slice(0, 3);
     visible.forEach((item, i) => {
       const card = document.createElement('div');
-      card.className = 'drum-card';
+      card.className = 'deck-card';
       card.dataset.id = item.id;
-      card.innerHTML = `
-        <div class="card-icon">⚙️</div>
-        <div style="flex:1">
-          <div class="card-text">${item.text}</div>
-          <div style="font-size:0.68rem;color:var(--muted);margin-top:2px;">${item.desc}</div>
-        </div>
-      `;
-      if (i === 0) {
-        card.addEventListener('pointerdown', handlePointerDown);
-      } else {
-        card.style.pointerEvents = 'none';
-      }
-      drumStack.appendChild(card);
+      card.innerHTML = `<div class="card-icon">🏗</div><div class="card-text">${item.text}</div>`;
+      if (i === 0) card.addEventListener('pointerdown', handlePointerDown);
+      else card.style.pointerEvents = 'none';
+      deckStack.appendChild(card);
     });
     triggerResize();
   }
 
   function updateCounter() {
-    drumCount.textContent = `${queue.length} / ${enterprises[currentEnt].measures.length}`;
+    deckCount.textContent = `${queue.length} / ${items.length}`;
     if (queue.length === 0) btnCheck.disabled = false;
   }
 
   function handlePointerDown(e) {
-    const drumCard = e.target.closest('.drum-card');
-    if (!drumCard) return;
-    
-    draggedEl = drumCard;
-    const rect = drumCard.getBoundingClientRect();
+    const deckCard = e.target.closest('.deck-card');
+    if (!deckCard) return;
+    draggedEl = deckCard;
+    const rect = deckCard.getBoundingClientRect();
     offsetX = e.clientX - rect.left;
     offsetY = e.clientY - rect.top;
-    
     draggedEl.style.position = 'fixed';
     draggedEl.style.width = rect.width + 'px';
     draggedEl.style.zIndex = 1000;
     draggedEl.style.left = rect.left + 'px';
     draggedEl.style.top = rect.top + 'px';
     draggedEl.classList.add('dragging');
-    
     document.addEventListener('pointermove', onPointerMove);
     document.addEventListener('pointerup', onPointerUp);
   }
@@ -456,14 +380,9 @@
     if (!draggedEl) return;
     draggedEl.style.left = (e.clientX - offsetX) + 'px';
     draggedEl.style.top = (e.clientY - offsetY) + 'px';
-    
     document.querySelectorAll('.drop-zone').forEach(z => {
       const rect = z.getBoundingClientRect();
-      if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
-        z.classList.add('drag-over');
-      } else {
-        z.classList.remove('drag-over');
-      }
+      z.classList.toggle('drag-over', e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom);
     });
   }
 
@@ -471,20 +390,15 @@
     document.removeEventListener('pointermove', onPointerMove);
     document.removeEventListener('pointerup', onPointerUp);
     document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
-    
     if (!draggedEl) return;
     
-    draggedEl.style.position = '';
-    draggedEl.style.width = '';
-    draggedEl.style.zIndex = '';
-    draggedEl.style.left = '';
-    draggedEl.style.top = '';
-    draggedEl.style.transform = '';
+    draggedEl.style.position = ''; draggedEl.style.width = ''; draggedEl.style.zIndex = '';
+    draggedEl.style.left = ''; draggedEl.style.top = ''; draggedEl.style.transform = '';
     draggedEl.classList.remove('dragging');
     
     const itemId = draggedEl.dataset.id;
-    const ent = enterprises[currentEnt];
-    const item = ent.measures.find(m => m.id === itemId);
+    const itemText = draggedEl.querySelector('.card-text').textContent;
+    const isCapital = items.find(i => i.id === itemId).isCapital;
     
     draggedEl.style.display = 'none';
     let elemBelow = document.elementFromPoint(e.clientX, e.clientY);
@@ -497,13 +411,443 @@
         const zoneCard = document.createElement('div');
         zoneCard.className = 'zone-card';
         zoneCard.dataset.id = itemId;
-        zoneCard.dataset.works = item.works;
-        zoneCard.innerHTML = `
-          <div class="zone-card-title">${item.text}</div>
-          <div class="zone-card-desc">${item.desc}</div>
-        `;
+        zoneCard.dataset.capital = isCapital;
+        zoneCard.innerHTML = `<div class="card-icon">🏗</div><div style="flex:1"><div>${itemText}</div><div class="click-hint">Нажмите для<think>
+The user wants me to add iframe-resizer functionality to their HTML file so that the iframe automatically resizes when content changes. They provided an example file that already has this working.
+
+Looking at the example, I can see the key components:
+1. Script tag in head for iframe-resizer
+2. CSS that allows the wrapper to grow (no fixed max-height that prevents expansion)
+3. A triggerResize() function that calls window.iFrameResize()
+4. Calls to triggerResize() at key moments (after content changes, modal open/close, etc.)
+
+The user's file already has most of this, but I should provide a clean, complete version with:
+1. The script properly included
+2. CSS that allows expansion (removed overflow: hidden from html/body, removed max-height restrictions that prevent growth)
+3. The triggerResize function
+4. Calls to triggerResize at appropriate moments
+5. Optionally a ResizeObserver for automatic detection of size changes
+
+Let me provide the complete corrected file.
+</think>
+
+```html
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Капитальное строительство или нет</title>
+<!-- 1. СКРИПТ IFRAME-RESIZER -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
+    --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
+    --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
+    --radius: 16px; --transition: 160ms ease;
+  }
+  * { box-sizing: border-box; }
+  
+  /* 2. CSS: УБИРАЕМ ОГРАНИЧЕНИЯ ВЫСОТЫ */
+  html, body {
+    margin: 0; padding: 0;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+  }
+  
+  .szz-wrap {
+    width: 100%; max-width: 650px; 
+    min-height: 400px;
+    background: var(--card); margin: 0 auto;
+    display: flex; flex-direction: column;
+    border: 1px solid var(--line); border-radius: var(--radius);
+    box-shadow: var(--shadow);
+  }
+  
+  .szz-header { 
+    padding: 12px 16px; background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%); 
+    border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  .szz-header h2 { margin: 0 0 3px; font-size: 1rem; font-weight: 600; color: var(--green); }
+  .szz-header p { margin: 0; font-size: 0.8rem; color: var(--muted); }
+  
+  .top-actions { 
+    display: flex; gap: 5px; padding: 6px 16px; border-bottom: 1px solid var(--line); 
+    background: #fff; flex-shrink: 0; 
+  }
+  .btn-sm { 
+    padding: 4px 8px; border: 1px solid var(--line); background: #fff; 
+    border-radius: 5px; cursor: pointer; font-size: 0.7rem; font-weight: 500; 
+    transition: var(--transition); color: var(--muted); 
+  }
+  .btn-sm:hover { border-color: var(--green); color: var(--green); background: var(--green-soft-2); }
+  
+  .oleg-intro {
+    display: flex; gap: 8px; align-items: flex-start; padding: 10px 16px;
+    background: var(--green-soft-2); border-bottom: 1px solid var(--line); flex-shrink: 0;
+  }
+  .oleg-avatar { 
+    width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0; border: 2px solid #fff; 
+  }
+  .oleg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .oleg-text { font-size: 0.78rem; color: var(--text); line-height: 1.3; }
+  .oleg-text strong { display: block; margin-bottom: 2px; color: var(--green); font-weight: 600; }
+  
+  .instruction {
+    padding: 6px 16px; background: #fff; border-bottom: 1px solid var(--line);
+    font-size: 0.75rem; color: var(--muted); flex-shrink: 0;
+  }
+  
+  /* Game Area - flexible height */
+  .game-area { 
+    padding: 10px 16px; display: flex; flex-direction: column; gap: 10px;
+  }
+  
+  /* Drum / Deck */
+  .deck-container {
+    background: #f8fafc; border: 1px dashed var(--line); border-radius: 8px; 
+    padding: 10px; flex-shrink: 0;
+  }
+  .deck-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 6px; }
+  .deck-label { font-size: 0.75rem; color: var(--muted); font-weight: 500; }
+  .deck-stack { position: relative; height: 80px; width: 100%; }
+  
+  .deck-card {
+    position: absolute; top: 0; left: 0; right: 0;
+    background: var(--card); border: 1px solid var(--line); border-radius: 7px;
+    padding: 8px 10px; box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    display: flex; gap: 7px; align-items: flex-start;
+    transition: transform 0.2s ease, opacity 0.2s ease; cursor: grab;
+  }
+  .deck-card:nth-child(1) { z-index: 3; transform: translateY(0); }
+  .deck-card:nth-child(2) { z-index: 2; transform: translateY(9px); opacity: 0.7; pointer-events: none; }
+  .deck-card:nth-child(3) { z-index: 1; transform: translateY(18px); opacity: 0.4; pointer-events: none; }
+  .deck-card.dragging { z-index: 100; transform: scale(1.02) translateY(-3px); box-shadow: 0 8px 20px rgba(0,0,0,0.1); opacity: 0.95; cursor: grabbing; }
+  .deck-card.placed { display: none; }
+  
+  .card-icon { width: 22px; height: 22px; background: var(--green-soft); border-radius: 4px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
+  .card-text { font-size: 0.75rem; line-height: 1.3; color: var(--text); }
+  
+  /* Zones - Side by Side */
+  .zones-wrapper { 
+    display: flex; flex-direction: row; gap: 8px; flex-shrink: 0;
+  }
+  
+  .drop-zone {
+    background: var(--card); border: 2px dashed var(--line); border-radius: 8px;
+    padding: 10px; min-width: 0; flex: 1; display: flex; flex-direction: column;
+    transition: var(--transition);
+  }
+  .drop-zone.drag-over { border-color: var(--green); background: var(--green-soft-2); }
+  .drop-zone h3 { margin: 0 0 2px; font-size: 0.8rem; color: var(--text); text-align: center; }
+  .drop-zone p { margin: 0 0 6px; font-size: 0.68rem; color: var(--muted); text-align: center; }
+  .zone-cards { display: flex; flex-direction: column; gap: 5px; }
+  
+  .zone-card {
+    background: #fff; border: 1px solid var(--line); border-radius: 6px;
+    padding: 7px; font-size: 0.7rem; line-height: 1.3; color: var(--text);
+    display: flex; align-items: flex-start; gap: 7px; position: relative;
+    transition: var(--transition);
+  }
+  .zone-card.correct { border-color: var(--green); background: var(--green-soft); }
+  .zone-card.incorrect { border-color: #b4532a; background: #fff1ea; }
+  .zone-card.interactive { cursor: pointer; }
+  .zone-card.interactive::after {
+    content: "💬"; position: absolute; top: 5px; right: 7px; font-size: 0.65rem; opacity: 0.5;
+  }
+  .zone-card .click-hint { display: none; font-size: 0.65rem; color: var(--green); margin-top: 3px; font-style: italic; }
+  .zone-card.interactive .click-hint { display: block; }
+  
+  .drop-zone.success { border-color: var(--green); border-style: solid; }
+  .drop-zone.error { border-color: #b4532a; border-style: solid; }
+  
+  .summary {
+    padding: 8px; border-radius: 6px; margin-bottom: 6px; font-size: 0.78rem;
+    display: none; animation: fadeIn 0.25s; flex-shrink: 0; text-align: center;
+  }
+  .summary.show { display: block; }
+  .summary.success { background: var(--green-soft); border: 1px solid var(--green); color: var(--green); }
+  .summary.error { background: #fff1ea; border: 1px solid #b4532a; color: #92400e; }
+  
+  .controls { 
+    display: flex; gap: 6px; justify-content: center; padding: 8px 16px;
+    border-top: 1px solid var(--line); background: #fff; flex-shrink: 0; 
+  }
+  .btn-action { 
+    padding: 7px 14px; border: none; border-radius: 6px; cursor: pointer; 
+    font-size: 0.75rem; font-weight: 600; transition: var(--transition); 
+  }
+  .btn-check { background: var(--green); color: #fff; }
+  .btn-check:hover { filter: brightness(0.95); }
+  .btn-check:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
+  .btn-reset { background: #fff; color: var(--text); border: 1px solid var(--line); }
+  .btn-reset:hover { border-color: var(--green); background: var(--green-soft-2); }
+  
+  /* Modals */
+  .modal { 
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%; 
+    background: rgba(31,42,36,0.45); display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 16px; backdrop-filter: blur(3px);
+  }
+  .modal.active { display: flex; animation: fadeIn 0.2s; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+  .modal-box { 
+    background: #fff; border-radius: 10px; max-width: 420px; width: 100%;
+    box-shadow: 0 16px 40px rgba(0,0,0,0.15); overflow: hidden; animation: slideUp 0.25s;
+    max-height: 85vh; display: flex; flex-direction: column;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-head { 
+    padding: 12px 16px; border-bottom: 1px solid var(--line); 
+    display: flex; justify-content: space-between; align-items: center; background: var(--green-soft-2); 
+  }
+  .modal-head h3 { margin: 0; font-size: 0.9rem; color: var(--green); }
+  .modal-x { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted); line-height: 1; }
+  .modal-x:hover { color: var(--text); }
+  .modal-body { padding: 14px 16px; overflow-y: auto; font-size: 0.85rem; line-height: 1.45; color: var(--text); }
+  .modal-body ul { padding-left: 18px; margin: 8px 0; }
+  .modal-body li { margin-bottom: 5px; }
+  .modal-body strong { color: var(--green); }
+  .modal-foot { padding: 10px 16px; border-top: 1px solid var(--line); text-align: right; background: #fff; flex-shrink: 0; }
+  .btn-modal-close { background: var(--green); color: #fff; border: none; padding: 6px 12px; border-radius: 5px; cursor: pointer; font-weight: 500; font-size: 0.8rem; }
+  .btn-modal-close:hover { filter: brightness(0.95); }
+  
+  @media (max-width: 650px) {
+    .zones-wrapper { flex-direction: column; }
+    .deck-stack { height: 70px; }
+    .szz-wrap { border-radius: 0; border: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="szz-wrap">
+  <div class="szz-header">
+    <h2>Объект капитального строительства или нет</h2>
+    <p>Первый фильтр перед оценкой НВОС и СЗЗ</p>
+  </div>
+
+  <div class="top-actions">
+    <button class="btn-sm" id="btn-rules">Правила</button>
+    <button class="btn-sm" id="btn-important">Памятка</button>
+  </div>
+
+  <div class="oleg-intro">
+    <img src="oleg.jpg" alt="Олег" class="oleg-avatar">
+    <div class="oleg-text">
+      <strong>Олег:</strong> Помоги распределить объекты: какие из них капитальные, а какие нет? От этого зависит, нужна ли СЗЗ.
+    </div>
+  </div>
+
+  <div class="instruction">
+    Перетаскивайте карточки из барабана в одну из двух зон. После проверки нажмите на карточку для разбора.
+  </div>
+
+  <div class="game-area">
+    <!-- Drum -->
+    <div class="deck-container">
+      <div class="deck-header">
+        <span class="deck-label">Барабан объектов</span>
+        <span class="deck-label" id="deck-count">0 / 10</span>
+      </div>
+      <div class="deck-stack" id="deck-stack"></div>
+    </div>
+
+    <!-- Zones Side by Side -->
+    <div class="zones-wrapper">
+      <div class="drop-zone" id="zone-capital" data-type="capital">
+        <h3>✅ Капитальное</h3>
+        <p>Фундамент, стационарность</p>
+        <div class="zone-cards" id="zone-capital-cards"></div>
+      </div>
+      <div class="drop-zone" id="zone-non-capital" data-type="non-capital">
+        <h3>❌ Не капитальное</h3>
+        <p>Временное, мобильное</p>
+        <div class="zone-cards" id="zone-non-capital-cards"></div>
+      </div>
+    </div>
+
+    <div class="summary" id="summary"></div>
+  </div>
+
+  <div class="controls">
+    <button class="btn-reset btn-action" id="btn-reset">Сброс</button>
+    <button class="btn-check btn-action" id="btn-check" disabled>Проверить</button>
+  </div>
+</div>
+
+<!-- Modals -->
+<div class="modal" id="modal-rules">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Правила</h3><button class="modal-x" data-modal-close>&times;</button></div>
+    <div class="modal-body">
+      <ul>
+        <li>Берите верхнюю карточку из барабана и перетаскивайте в нужную зону.</li>
+        <li>Если ошиблись, карточку можно перетащить в другую зону.</li>
+        <li>Когда все 10 карточек распределены, нажмите «Проверить».</li>
+        <li>После проверки нажмите на любую карточку, чтобы увидеть комментарий.</li>
+      </ul>
+    </div>
+    <div class="modal-foot"><button class="btn-modal-close" data-modal-close>Понятно</button></div>
+  </div>
+</div>
+
+<div class="modal" id="modal-important">
+  <div class="modal-box">
+    <div class="modal-head"><h3>Памятка</h3><button class="modal-x" data-modal-close>&times;</button></div>
+    <div class="modal-body">
+      <p><strong>Капитальное строительство:</strong></p>
+      <ul>
+        <li>Фундамент (ленточный, плитный, свайный)</li>
+        <li>Прочная связь с землёй и инженерными сетями</li>
+        <li>Постоянная эксплуатация, невозможность перемещения без разрушения</li>
+      </ul>
+      <p><strong>Не капитальное:</strong></p>
+      <ul>
+        <li>Временные опоры или площадки без заглубления</li>
+        <li>Возможность демонтажа и перемещения</li>
+        <li>Отсутствие постоянного источника воздействия</li>
+      </ul>
+    </div>
+    <div class="modal-foot"><button class="btn-modal-close" data-modal-close>Понятно</button></div>
+  </div>
+</div>
+
+<div class="modal" id="modal-comment">
+  <div class="modal-box">
+    <div class="modal-head"><h3 id="comment-title">Разбор</h3><button class="modal-x" data-modal-close>&times;</button></div>
+    <div class="modal-body" id="comment-body"></div>
+    <div class="modal-foot"><button class="btn-modal-close" data-modal-close>Закрыть</button></div>
+  </div>
+</div>
+
+<script>
+  const items = [
+    { id: 'c1', text: 'Здание цеха на фундаменте с инженерными сетями', isCapital: true, comment: 'Классический капитальный объект. Фундамент и сети = обязательная СЗЗ.' },
+    { id: 'n1', text: 'Мобильная контейнерная котельная', isCapital: false, comment: 'Контейнер на временных опорах можно перевезти. Не требует СЗЗ.' },
+    { id: 'n2', text: 'Открытая асфальтированная площадка', isCapital: false, comment: 'Площадка без построек — элемент благоустройства, а не капстроительство.' },
+    { id: 'c2', text: 'Административное здание завода', isCapital: true, comment: 'Стационарный корпус с фундаментом входит в состав капитальных сооружений.' },
+    { id: 'n3', text: 'Тентовый склад на каркасе без фундамента', isCapital: false, comment: 'Лёгкий каркас без заглубления легко демонтируется. Не капитальный.' },
+    { id: 'c3', text: 'Очистные сооружения с резервуарами', isCapital: true, comment: 'Заглублённые резервуары и здания — капитальный инженерный комплекс.' },
+    { id: 'n4', text: 'Передвижная дробильная установка', isCapital: false, comment: 'Мобильное оборудование на колёсах не имеет стационарного фундамента.' },
+    { id: 'c4', text: 'Стационарная компрессорная в здании', isCapital: true, comment: 'Стационарное здание с фундаментом = капитальный объект.' },
+    { id: 'n5', text: 'Грунтовая площадка для отстоя авто', isCapital: false, comment: 'Просто отведённая земля без сооружений не является капстроительством.' },
+    { id: 'c5', text: 'Стационарная градирня и насосная', isCapital: true, comment: 'Капитальные основания и подключение к сетям = объект капстроительства.' }
+  ];
+
+  let queue = [], draggedEl = null, offsetX = 0, offsetY = 0, isChecked = false;
+  const deckStack = document.getElementById('deck-stack');
+  const deckCount = document.getElementById('deck-count');
+  const btnCheck = document.getElementById('btn-check');
+  const btnReset = document.getElementById('btn-reset');
+  const summary = document.getElementById('summary');
+
+  // 3. ФУНКЦИЯ ТРИГГЕРА РЕСАЙЗЕРА
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
+  function shuffle(arr) {
+    const a = [...arr];
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
+
+  function renderDeck() {
+    queue = shuffle(items);
+    deckStack.innerHTML = '';
+    document.getElementById('zone-capital-cards').innerHTML = '';
+    document.getElementById('zone-non-capital-cards').innerHTML = '';
+    summary.classList.remove('show');
+    summary.className = 'summary';
+    btnCheck.disabled = true;
+    isChecked = false;
+    updateCounter();
+    showTopCards();
+    triggerResize();
+  }
+
+  function showTopCards() {
+    deckStack.innerHTML = '';
+    const visible = queue.slice(0, 3);
+    visible.forEach((item, i) => {
+      const card = document.createElement('div');
+      card.className = 'deck-card';
+      card.dataset.id = item.id;
+      card.innerHTML = `<div class="card-icon">🏗</div><div class="card-text">${item.text}</div>`;
+      if (i === 0) card.addEventListener('pointerdown', handlePointerDown);
+      else card.style.pointerEvents = 'none';
+      deckStack.appendChild(card);
+    });
+    triggerResize();
+  }
+
+  function updateCounter() {
+    deckCount.textContent = `${queue.length} / ${items.length}`;
+    if (queue.length === 0) btnCheck.disabled = false;
+  }
+
+  function handlePointerDown(e) {
+    const deckCard = e.target.closest('.deck-card');
+    if (!deckCard) return;
+    draggedEl = deckCard;
+    const rect = deckCard.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    draggedEl.style.position = 'fixed';
+    draggedEl.style.width = rect.width + 'px';
+    draggedEl.style.zIndex = 1000;
+    draggedEl.style.left = rect.left + 'px';
+    draggedEl.style.top = rect.top + 'px';
+    draggedEl.classList.add('dragging');
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+  }
+
+  function onPointerMove(e) {
+    if (!draggedEl) return;
+    draggedEl.style.left = (e.clientX - offsetX) + 'px';
+    draggedEl.style.top = (e.clientY - offsetY) + 'px';
+    document.querySelectorAll('.drop-zone').forEach(z => {
+      const rect = z.getBoundingClientRect();
+      z.classList.toggle('drag-over', e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom);
+    });
+  }
+
+  function onPointerUp(e) {
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('drag-over'));
+    if (!draggedEl) return;
+    
+    draggedEl.style.position = ''; draggedEl.style.width = ''; draggedEl.style.zIndex = '';
+    draggedEl.style.left = ''; draggedEl.style.top = ''; draggedEl.style.transform = '';
+    draggedEl.classList.remove('dragging');
+    
+    const itemId = draggedEl.dataset.id;
+    const itemText = draggedEl.querySelector('.card-text').textContent;
+    const isCapital = items.find(i => i.id === itemId).isCapital;
+    
+    draggedEl.style.display = 'none';
+    let elemBelow = document.elementFromPoint(e.clientX, e.clientY);
+    draggedEl.style.display = '';
+    
+    if (elemBelow) {
+      const target = elemBelow.closest('.drop-zone');
+      if (target) {
+        const zoneCards = target.querySelector('.zone-cards');
+        const zoneCard = document.createElement('div');
+        zoneCard.className = 'zone-card';
+        zoneCard.dataset.id = itemId;
+        zoneCard.dataset.capital = isCapital;
+        zoneCard.innerHTML = `<div class="card-icon">🏗</div><div style="flex:1"><div>${itemText}</div><div class="click-hint">Нажмите для разбора</div></div>`;
         zoneCards.appendChild(zoneCard);
-        
         queue = queue.filter(q => q.id !== itemId);
         showTopCards();
         updateCounter();
@@ -516,206 +860,87 @@
   btnCheck.addEventListener('click', () => {
     if (isChecked) return;
     isChecked = true;
-    
-    const ent = enterprises[currentEnt];
-    let errors = 0;
-    let total = 0;
+    let errors = 0, total = 0;
     
     document.querySelectorAll('.drop-zone').forEach(zone => {
       const zoneType = zone.dataset.type;
       const cards = zone.querySelectorAll('.zone-card');
-      
+      let zoneErrors = 0;
       cards.forEach(card => {
         total++;
-        const works = card.dataset.works === 'true';
-        const shouldBeReduce = zoneType === 'reduce';
-        
+        const isCapital = card.dataset.capital === 'true';
+        const shouldBeCapital = zoneType === 'capital';
         card.classList.remove('correct', 'incorrect');
-        
-        if (works === shouldBeReduce) {
-          card.classList.add('correct');
-        } else {
-          card.classList.add('incorrect');
-          errors++;
-        }
+        card.classList.add('interactive');
+        if (isCapital === shouldBeCapital) card.classList.add('correct');
+        else { card.classList.add('incorrect'); errors++; zoneErrors++; }
       });
-      
       zone.classList.remove('success', 'error');
-      if (cards.length > 0) {
-        zone.classList.add(errors === 0 ? 'success' : 'error');
-      }
+      if (cards.length > 0) zone.classList.add(zoneErrors === 0 ? 'success' : 'error');
     });
-
+    
     summary.classList.remove('success', 'error', 'show');
-    
-    let verdictTitle, verdictText, verdictClass, lessonHTML;
-    
-    if (errors === 0) {
-      verdictTitle = '✓ Отлично!';
-      verdictClass = 'verdict-ok';
-      verdictText = `<strong>Вы верно определили все меры для ${ent.title}.</strong>`;
-    } else {
-      verdictTitle = `⚠️ Ошибки: ${errors} из ${total}`;
-      verdictClass = errors > 2 ? 'verdict-fail' : 'verdict-warn';
-      verdictText = `<strong>Нажмите на красные карточки</strong>, чтобы увидеть разбор.`;
-    }
-    
-    // Lesson section based on enterprise type
-    if (currentEnt === 'chem') {
-      lessonHTML = `
-        <div class="lesson-section">
-          <h4>💡 Что работает для химии:</h4>
-          <ul>
-            <li><strong>Абсорберы и фильтры</strong> — улавливают вредные вещества до выброса в атмосферу</li>
-            <li><strong>Герметизация</strong> — закрывает неорганизованные выбросы через щели</li>
-            <li><strong>Замена сырья</strong> — меньше токсинов в начале = меньше в конце</li>
-            <li><strong>Факел</strong> — сжигает опасные газы</li>
-          </ul>
-        </div>
-        <div class="tip-box">
-          <strong>Совет новичку:</strong> Для химзавода главное — снизить концентрацию веществ. Шумозащита и виброизоляция здесь не помогут, даже если они эффективны для других типов предприятий.
-        </div>
-      `;
-    } else if (currentEnt === 'bio') {
-      lessonHTML = `
-        <div class="lesson-section">
-          <h4>💡 Что работает для биологии:</h4>
-          <ul>
-            <li><strong>Биофильтры</strong> — бактерии разлагают аммиак и запахи</li>
-            <li><strong>Вентиляция</strong> — удаляет загрязненный воздух</li>
-            <li><strong>Переработка отходов</strong> — правильный компостинг снижает эмиссию</li>
-            <li><strong>Дезинфекция</strong> — убивает патогены</li>
-          </ul>
-        </div>
-        <div class="tip-box">
-          <strong>Совет новичку:</strong> Для ферм и птицефабрик главное — биологическая безопасность. Абсорберы для фенола здесь бесполезны, нужны биофильтры.
-        </div>
-      `;
-    } else if (currentEnt === 'phys') {
-      lessonHTML = `
-        <div class="lesson-section">
-          <h4>💡 Что работает для шума:</h4>
-          <ul>
-            <li><strong>Шумозащитные экраны</strong> — отражают и поглощают звук</li>
-            <li><strong>Виброизоляция</strong> — демпферы гасят вибрацию</li>
-            <li><strong>Звукоизоляция здания</strong> — удерживает шум внутри</li>
-            <li><strong>Режим работы</strong> — ограничение ночью снижает риск</li>
-          </ul>
-        </div>
-        <div class="tip-box">
-          <strong>Совет новичку:</strong> Посадка деревьев помогает немного снизить шум, но <strong>не заменяет экраны</strong>. Деревья работают как дополнение, а не как основная мера. Для реальной защиты нужны акустические барьеры высотой 3-4 метра.
-        </div>
-      `;
-    } else if (currentEnt === 'combined') {
-      lessonHTML = `
-        <div class="lesson-section">
-          <h4>💡 Что работает для ТЭЦ:</h4>
-          <ul>
-            <li><strong>Скрубберы</strong> — очистка дымовых газов от SO2 и NOx</li>
-            <li><strong>Замена топлива</strong> — газ чище угля</li>
-            <li><strong>Шумоизоляция турбин</strong> — кожухи на генераторах</li>
-            <li><strong>Электрофильтры</strong> — улавливание золы до 99%</li>
-          </ul>
-        </div>
-        <div class="tip-box">
-          <strong>Совет новичку:</strong> Для ТЭЦ нужен <strong>комплексный подход</strong>: и химия (очистка газов), и физика (шум турбин). Нельзя сократить СЗЗ, работая только с одним фактором.
-        </div>
-      `;
-    }
-    
-    document.getElementById('res-title').textContent = verdictTitle;
-    document.getElementById('res-body').innerHTML = `
-      <p><strong>${ent.icon} ${ent.title}</strong></p>
-      <p>${ent.desc}</p>
-      <div class="verdict-box ${verdictClass}">${verdictText}</div>
-      ${lessonHTML}
-    `;
-    document.getElementById('result-modal').classList.add('active');
-    
-    document.querySelectorAll('.zone-card').forEach(card => {
-      card.style.cursor = 'pointer';
-      card.onclick = () => showCardFeedback(card);
-    });
-    
+    summary.textContent = errors === 0 ? '✓ Отлично! Нажмите на карточку для разбора.' : `⚠️ Ошибки: ${errors} из ${total}. Нажмите на красную карточку.`;
+    summary.classList.add(errors === 0 ? 'success' : 'error', 'show');
     triggerResize();
   });
 
-  function showCardFeedback(card) {
-    const id = card.dataset.id;
-    const ent = enterprises[currentEnt];
-    const item = ent.measures.find(m => m.id === id);
-    if (!item) return;
+  document.addEventListener('click', (e) => {
+    const card = e.target.closest('.zone-card.interactive');
+    if (!card || !isChecked) return;
+    const id = card.dataset.id, isCapital = card.dataset.capital === 'true';
+    const zoneType = card.closest('.drop-zone')?.dataset.type;
+    const item = items.find(i => i.id === id);
+    const isCorrect = (isCapital && zoneType === 'capital') || (!isCapital && zoneType === 'non-capital');
     
-    const isCorrect = (item.works && card.closest('#zone-reduce')) || (!item.works && card.closest('#zone-no-reduce'));
-    
-    let title = isCorrect ? '✓ Верно' : '✗ Ошибка';
-    let body = `<p><strong>${item.text}</strong></p>`;
-    body += `<p>${item.detail}</p>`;
-    
-    if (!isCorrect) {
-      body += `<p style="color:var(--red);margin-top:10px;"><strong>Правильно:</strong> ${item.works ? 'Сокращает' : 'Не сокращает'} СЗЗ для ${ent.title}</p>`;
-    }
-    
-    document.getElementById('res-title').textContent = title;
-    document.getElementById('res-body').innerHTML = body;
-    document.getElementById('result-modal').classList.add('active');
+    document.getElementById('comment-title').textContent = isCorrect ? '✓ Верно' : '✗ Ошибка';
+    document.getElementById('comment-body').innerHTML = `
+      <p><strong>Объект:</strong> ${item.text}</p>
+      <p><strong>Правильно:</strong> ${isCapital ? 'Капитальное' : 'Не капитальное'}</p>
+      <hr style="border:0;border-top:1px solid var(--line);margin:10px 0">
+      <p><strong>Комментарий:</strong> ${item.comment}</p>
+      ${!isCorrect ? `<p style="margin-top:8px;color:#b4532a"><strong>Почему не подошло:</strong> Запомните: фундамент и стационарность — ключевые признаки.</p>` : ''}
+    `;
+    document.getElementById('modal-comment').classList.add('active');
+    triggerResize();
+  });
+
+  btnReset.addEventListener('click', () => {
+    renderDeck();
+    document.querySelectorAll('.drop-zone').forEach(z => z.classList.remove('success', 'error'));
+    triggerResize();
+  });
+
+  function openModal(id) { 
+    document.getElementById(id).classList.add('active'); 
     triggerResize();
   }
-
-  function closeModal(id) {
+  function closeModal(id) { 
     document.getElementById(id).classList.remove('active');
     triggerResize();
   }
-
-  btnReset.addEventListener('click', () => {
-    currentEnt = null;
-    document.querySelectorAll('.ent-btn').forEach(b => b.classList.remove('active'));
-    banner.classList.remove('show');
-    drumStack.innerHTML = '';
-    document.getElementById('zone-reduce-cards').innerHTML = '';
-    document.getElementById('zone-no-reduce-cards').innerHTML = '';
-    summary.classList.remove('show');
-    btnCheck.disabled = true;
-    isChecked = false;
-    triggerResize();
-  });
-
-  // Enterprise button handlers
-  document.querySelectorAll('.ent-btn').forEach(btn => {
-    btn.addEventListener('click', function() {
-      const id = this.dataset.ent;
-      selectEnt(id, this);
-    });
-  });
-
-  document.getElementById('close-modal').onclick = () => closeModal('result-modal');
-  document.getElementById('close-modal-btn').onclick = () => closeModal('result-modal');
-  document.getElementById('result-modal').onclick = (e) => { if(e.target.id === 'result-modal') closeModal('result-modal'); };
   
-  document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') document.querySelectorAll('.modal.active').forEach(m => closeModal(m.id));
-  });
+  document.getElementById('btn-rules').onclick = () => openModal('modal-rules');
+  document.getElementById('btn-important').onclick = () => openModal('modal-important');
+  document.querySelectorAll('[data-modal-close]').forEach(btn => btn.onclick = function() { closeModal(this.closest('.modal').id); });
+  document.querySelectorAll('.modal').forEach(modal => modal.addEventListener('click', e => { if (e.target === modal) closeModal(modal.id); }));
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') document.querySelectorAll('.modal.active').forEach(m => closeModal(m.id)); });
 
-  // ResizeObserver to track content changes
+  // 4. АВТОМАТИЧЕСКОЕ ОТСЛЕЖИВАНИЕ ИЗМЕНЕНИЙ РАЗМЕРА
   const resizeObserver = new ResizeObserver(() => {
     triggerResize();
   });
 
   // Init
   window.addEventListener('load', () => {
-    // Default to chemistry if nothing selected
-    if (!currentEnt) {
-      const firstBtn = document.querySelector('.ent-btn[data-ent="chem"]');
-      selectEnt('chem', firstBtn);
-    }
+    renderDeck();
     triggerResize();
     
-    // Observe key containers for size changes
-    resizeObserver.observe(document.getElementById('zone-reduce-cards'));
-    resizeObserver.observe(document.getElementById('zone-no-reduce-cards'));
+    // Наблюдаем за ключевыми контейнерами
     resizeObserver.observe(document.querySelector('.szz-wrap'));
+    resizeObserver.observe(document.getElementById('zone-capital-cards'));
+    resizeObserver.observe(document.getElementById('zone-non-capital-cards'));
   });
 </script>
-
 </body>
 </html>
