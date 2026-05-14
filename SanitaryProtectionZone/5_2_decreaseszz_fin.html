@@ -15,14 +15,13 @@
   }
   * { box-sizing: border-box; }
   html, body {
-    margin: 0; padding: 0; overflow: hidden; height: 100%;
+    margin: 0; padding: 0;
     font-family: Inter, system-ui, -apple-system, sans-serif;
     background: var(--bg); color: var(--text);
   }
   
   .szz-wrap {
     width: 100%; max-width: 800px; 
-    min-height: 400px;
     background: var(--card); margin: 0 auto;
     display: flex; flex-direction: column;
     border: 1px solid var(--line); border-radius: var(--radius);
@@ -67,7 +66,7 @@
   .ent-btn.active { border-color: var(--green); background: var(--green-soft); color: var(--green); }
   
   .game-area { 
-    padding: 10px 16px; flex: 1; display: flex; flex-direction: column; gap: 12px;
+    padding: 10px 16px; display: flex; flex-direction: column; gap: 12px;
   }
   
   /* Current enterprise banner */
@@ -109,7 +108,7 @@
   .card-icon { width: 22px; height: 22px; background: var(--green-soft); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
   .card-text { font-size: 0.75rem; line-height: 1.3; color: var(--text); font-weight: 500; }
   
-  /* Зоны - строго по горизонтали */
+  /* Зоны - строго по горизонтали, растут по контенту */
   .zones-wrapper {
     display: flex; flex-direction: row; gap: 10px; flex-shrink: 0;
   }
@@ -222,10 +221,10 @@
   <!-- Compact enterprise buttons -->
   <div class="enterprise-bar">
     <span class="label">Тип предприятия:</span>
-    <button class="ent-btn" onclick="selectEnt('chem')">🏭 Химия</button>
-    <button class="ent-btn" onclick="selectEnt('bio')">🐔 Биология</button>
-    <button class="ent-btn" onclick="selectEnt('phys')">⚡ Шум/Вибрация</button>
-    <button class="ent-btn" onclick="selectEnt('combined')">🏗️ ТЭЦ</button>
+    <button class="ent-btn" data-ent="chem">🏭 Химия</button>
+    <button class="ent-btn" data-ent="bio">🐔 Биология</button>
+    <button class="ent-btn" data-ent="phys">⚡ Шум/Вибрация</button>
+    <button class="ent-btn" data-ent="combined">🏗️ ТЭЦ</button>
   </div>
 
   <div class="instruction">
@@ -366,10 +365,10 @@
     }
   }
 
-  function selectEnt(id) {
+  function selectEnt(id, btn) {
     currentEnt = id;
     document.querySelectorAll('.ent-btn').forEach(b => b.classList.remove('active'));
-    event.currentTarget.classList.add('active');
+    if (btn) btn.classList.add('active');
     
     const ent = enterprises[id];
     document.getElementById('banner-icon').textContent = ent.icon;
@@ -681,6 +680,14 @@
     triggerResize();
   });
 
+  // Enterprise button handlers
+  document.querySelectorAll('.ent-btn').forEach(btn => {
+    btn.addEventListener('click', function() {
+      const id = this.dataset.ent;
+      selectEnt(id, this);
+    });
+  });
+
   document.getElementById('close-modal').onclick = () => closeModal('result-modal');
   document.getElementById('close-modal-btn').onclick = () => closeModal('result-modal');
   document.getElementById('result-modal').onclick = (e) => { if(e.target.id === 'result-modal') closeModal('result-modal'); };
@@ -697,12 +704,16 @@
   // Init
   window.addEventListener('load', () => {
     // Default to chemistry if nothing selected
-    if (!currentEnt) selectEnt('chem');
+    if (!currentEnt) {
+      const firstBtn = document.querySelector('.ent-btn[data-ent="chem"]');
+      selectEnt('chem', firstBtn);
+    }
     triggerResize();
     
     // Observe key containers for size changes
     resizeObserver.observe(document.getElementById('zone-reduce-cards'));
     resizeObserver.observe(document.getElementById('zone-no-reduce-cards'));
+    resizeObserver.observe(document.querySelector('.szz-wrap'));
   });
 </script>
 
