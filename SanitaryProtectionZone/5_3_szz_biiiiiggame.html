@@ -4,10 +4,6 @@
   <meta charset="UTF-8" />
   <title>Кейс Олега: стратегия СЗЗ (40 млн)</title>
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  
-  <!-- 1. ПОДКЛЮЧЕНИЕ СКРИПТА IFRAME-RESIZER -->
-  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
-
   <style>
     :root {
       --bg: #f6f4f0;
@@ -39,30 +35,30 @@
       --font: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
     }
     * { box-sizing: border-box; }
-    /* Убираем прокрутку у body, чтобы работала логика ресайзера */
-    html, body {
-      margin: 0; padding: 0; overflow: hidden; height: 100%;
+    body {
+      margin: 0;
+      min-height: 100vh;
       font-family: var(--font);
       background: #f2f2f0;
       display: flex;
       justify-content: center;
       align-items: flex-start;
+      padding: 1rem 0;
       color: var(--text);
     }
-    button { font: inherit; cursor: pointer; border: none; }
-    
+    button {
+      font: inherit;
+      cursor: pointer;
+      border: none;
+    }
     .app-wrapper {
-      width: 100%;
-      max-width: 680px;
-      /* 2. ИЗМЕНЕНИЕ: Убираем фиксированную высоту и overflow */
-      height: auto;
-      min-height: 400px;
+      width: 680px;
+      height: 700px;
       background: var(--surface);
       border-radius: var(--radius-xl);
       box-shadow: var(--shadow);
       border: 1px solid rgba(207,200,189,.9);
-      /* overflow: hidden; Убираем, чтобы контент мог растягивать wrapper */
-      overflow: visible;
+      overflow: hidden;
       display: flex;
       flex-direction: column;
       position: relative;
@@ -71,7 +67,7 @@
       flex: 1;
       display: flex;
       flex-direction: column;
-      overflow: hidden; /* Оставляем здесь, но body/szz-wrap растянутся */
+      overflow: hidden;
     }
 
     .header {
@@ -242,11 +238,10 @@
     #axesProcBar { background: linear-gradient(90deg,#1f4f99,#74a3ff); }
     #axesEcoBar { background: linear-gradient(90deg,#b27a1e,#ffd27a); }
 
-    /* 3. ИЗМЕНЕНИЕ: Убираем внутреннюю прокрутку */
     .content {
       flex: 1;
       padding: .9rem 1.1rem 1rem;
-      overflow-y: visible; /* Изменено с auto на visible */
+      overflow-y: auto;
       background: radial-gradient(circle at 0 0,#ffffff 0,#f7f4ef 40%,#efe7db 100%);
     }
     h2 { margin: 0 0 .4rem; font-size: 1.05rem; }
@@ -918,19 +913,11 @@
       }
     };
 
-    // 4. ИНИЦИАЛИЗАЦИЯ РЕСАЙЗЕРА
-    function triggerResize() {
-      if (window.iFrameResize) {
-        window.iFrameResize({ log: false, checkOrigin: false }, '*');
-      }
-    }
-
     function startScenario() {
       introScreen.style.display = 'none';
       statusBar.style.display = 'block';
       currentStepIndex = 0;
       renderStep();
-      triggerResize();
     }
 
     function renderTabs() {
@@ -973,9 +960,6 @@
       if (axesSanBar) axesSanBar.style.width = sanPct + '%';
       if (axesProcBar) axesProcBar.style.width = procPct + '%';
       if (axesEcoBar) axesEcoBar.style.width = ecoPct + '%';
-      
-      // Обновляем размер фрейма при изменении данных
-      triggerResize();
     }
 
     function renderStep() {
@@ -1003,7 +987,6 @@
       } else {
         renderOptionsStep(step);
       }
-      triggerResize();
     }
 
     function renderOptionsStep(step) {
@@ -1086,7 +1069,6 @@
       bottom.appendChild(restartBtn);
 
       contentArea.appendChild(bottom);
-      triggerResize();
     }
 
     function renderMeasuresStep(step) {
@@ -1217,7 +1199,6 @@
             card.classList.add('selected');
           }
           updateBudgetView();
-          triggerResize();
         });
 
         grid.appendChild(card);
@@ -1254,7 +1235,6 @@
         if (totalProject > TOTAL_BUDGET) {
           box.textContent += ' Бюджет превышен: чтобы уложиться, придется чем-то пожертвовать.';
         }
-        triggerResize();
       }
 
       const bottom = document.createElement('div');
@@ -1316,7 +1296,6 @@
 
         queuedNext = currentStepIndex + 1;
         openModal(title, text, note);
-        triggerResize();
       });
       bottom.appendChild(mainBtn);
 
@@ -1327,7 +1306,6 @@
       bottom.appendChild(restartBtn);
 
       contentArea.appendChild(bottom);
-      triggerResize();
     }
 
     function estimateSanReduction(sanScore) {
@@ -1406,7 +1384,6 @@
       contentArea.innerHTML = '';
       contentArea.appendChild(introScreen);
       updateProgress();
-      triggerResize();
     }
 
     function openModal(title, text, note) {
@@ -1415,7 +1392,6 @@
       modalNote.textContent = note || '';
       modal.classList.add('active');
       modal.setAttribute('aria-hidden','false');
-      triggerResize();
     }
 
     function closeModal() {
@@ -1434,7 +1410,6 @@
         }
         queuedNext = null;
       }
-      triggerResize();
     }
 
     function analyzeMeasuresAtSummary() {
@@ -1640,7 +1615,6 @@
       bottom.appendChild(restartBtn);
 
       contentArea.appendChild(bottom);
-      triggerResize();
     }
 
     function getStepDetail(stepId) {
@@ -1712,7 +1686,6 @@
         const isHidden = rulesBox.style.display === 'none' || rulesBox.style.display === '';
         rulesBox.style.display = isHidden ? 'block' : 'none';
         rulesToggleBtn.textContent = isHidden ? 'Скрыть правила кейса' : 'Показать правила кейса';
-        triggerResize();
       });
 
       document.getElementById('startBtn').addEventListener('click', startScenario);
@@ -1738,13 +1711,6 @@
       });
 
       updateProgress();
-      triggerResize();
-      
-      // ResizeObserver to track content changes
-      const resizeObserver = new ResizeObserver(() => {
-        triggerResize();
-      });
-      resizeObserver.observe(document.getElementById('contentArea'));
     });
   </script>
 </body>
