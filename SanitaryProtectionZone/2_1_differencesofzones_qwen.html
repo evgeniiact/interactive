@@ -4,32 +4,32 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Где это допустимо</title>
-<!-- Скрипт для автоматического изменения размера iframe -->
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+<!-- 🔧 ДОБАВЛЕН СКРИПТ IFRAME-RESIZER -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <style>
   :root {
     --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
     --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
     --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
     --radius: 16px; --transition: 160ms ease;
-    --red: #ef4444; --red-soft: #fee2e2; --red-border: #fecaca;
-    --warning-bg: #fff1ea; --warning-border: #b4532a;
+    --warning-bg: #fff1ea; --warning-border: #b4532a; --warning-text: #92400e;
   }
   * { box-sizing: border-box; }
   
+  /* 🔧 ИСПРАВЛЕНО: УБРАНЫ ОГРАНИЧЕНИЯ ВЫСОТЫ */
   html, body {
     margin: 0; padding: 0;
+    /* Убрано: overflow: hidden; height: 100% */
     font-family: Inter, system-ui, -apple-system, sans-serif;
     background: var(--bg); color: var(--text);
-    /* Важно для ресайзера: не фиксировать высоту body */
-    min-height: 100%; 
+    min-height: 100%;
   }
   
   .szz-wrap {
     width: 100%; max-width: 700px; 
-    /* Высота автоматически подстраивается под контент */
-    height: auto; 
+    /* 🔧 ИСПРАВЛЕНО: height: auto вместо фиксированной высоты */
     min-height: 500px;
+    height: auto;
     background: var(--card); margin: 0 auto;
     display: flex; flex-direction: column;
     border: 1px solid var(--line); border-radius: var(--radius);
@@ -87,25 +87,15 @@
     border-radius: 6px; cursor: grab; font-size: 0.78rem; font-weight: 500; 
     user-select: none; transition: border-color 0.2s, background-color 0.2s; 
     white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    touch-action: none; /* Важно для мобильных устройств */
+    touch-action: none;
   }
   .drag-card:hover { border-color: var(--green); }
-  
-  /* Состояние при перетаскивании */
   .drag-card.dragging { 
-    opacity: 0.9; 
-    border-style: dashed; 
-    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
-    z-index: 1000;
-    transform: scale(1.02) rotate(1deg);
-    background: #fff;
+    opacity: 0.9; border-style: dashed; box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    z-index: 1000; transform: scale(1.02) rotate(1deg); background: #fff;
   }
-  
-  /* Правильно размещенные (после проверки) */
   .drag-card.correct { background: var(--green-soft); border-color: var(--green); cursor: pointer; }
   .drag-card.correct::after { content: " 💬"; font-size: 0.7rem; }
-  
-  /* Ошибки (после проверки) */
   .drag-card.wrong { background: var(--red-soft); border-color: var(--red); color: var(--red); animation: shake 0.4s; }
   @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
   
@@ -117,7 +107,7 @@
     background: #fff; border: 2px dashed var(--line); border-radius: 10px; 
     padding: 10px; min-width: 0; flex: 1; display: flex; flex-direction: column; 
     transition: background 0.2s, border-color 0.2s;
-    min-height: 100px; /* Минимальная высота пустой зоны */
+    min-height: 100px;
   }
   .zone-col.drag-over { border-color: var(--green); background: var(--green-soft-2); border-style: solid; }
   .zone-col h5 { margin: 0 0 8px; font-size: 0.75rem; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: 0.3px; }
@@ -283,7 +273,7 @@ let placedCount = 0;
 let draggedEl = null;
 let offsetX = 0, offsetY = 0;
 const totalCards = cardsData.length;
-let isVerified = false; // Флаг: была ли проверка
+let isVerified = false;
 
 const pool = document.getElementById('pool');
 const progress = document.getElementById('progress');
@@ -292,7 +282,7 @@ const btnCheck = document.getElementById('btn-check');
 const btnReset = document.getElementById('btn-reset');
 const wrap = document.getElementById('szz-wrap');
 
-// Функция для ресайзера (сообщает родительскому фрейму об изменении высоты)
+// 🔧 ФУНКЦИЯ ТРИГГЕРА РЕСАЙЗЕРА
 function triggerResize() {
   if (window.iFrameResize) {
     window.iFrameResize({ log: false, checkOrigin: false }, '*');
@@ -317,7 +307,6 @@ function initPool() {
   btnCheck.disabled = true;
   btnReset.textContent = 'Начать заново';
   
-  // Убираем стили ошибки, если они были
   document.querySelectorAll('.drag-card').forEach(c => c.classList.remove('wrong', 'correct'));
   
   shuffle(cardsData).forEach(card => {
@@ -329,7 +318,7 @@ function initPool() {
     pool.appendChild(el);
   });
   
-  // Наблюдаем за размером, чтобы ресайзер срабатывал при добавлении элементов
+  // 🔧 ResizeObserver для авто-отслеживания изменений размера
   new ResizeObserver(() => { triggerResize(); }).observe(wrap);
   
   triggerResize();
@@ -339,7 +328,6 @@ function handlePointerDown(e) {
   const card = e.target.closest('.drag-card');
   if (!card) return;
   
-  // Если уже была проверка и карточка правильная - разрешаем просмотр комментариев
   if (isVerified && card.classList.contains('correct')) {
     const id = card.dataset.id;
     const data = cardsData.find(c => c.id === id);
@@ -402,7 +390,6 @@ function onPointerUp(e) {
     }
   }
   
-  // Если не попали в зону - вернуть в пул
   if (!placed && draggedEl) {
     pool.appendChild(draggedEl);
     draggedEl.style.position = '';
@@ -418,10 +405,8 @@ function onPointerUp(e) {
 }
 
 function handlePlacement(zoneCol) {
-  // Добавляем карточку в зону
   zoneCol.querySelector('.zone-cards').appendChild(draggedEl);
   
-  // Сбрасываем стили перетаскивания
   draggedEl.style.position = '';
   draggedEl.style.width = '';
   draggedEl.style.zIndex = '';
@@ -429,7 +414,6 @@ function handlePlacement(zoneCol) {
   draggedEl.style.top = '';
   draggedEl.classList.remove('dragging');
   
-  // Если была проверка, сбрасываем её, т.к. пользователь переместил карту
   if (isVerified) {
     isVerified = false;
     summary.classList.remove('show');
@@ -437,13 +421,11 @@ function handlePlacement(zoneCol) {
     document.querySelectorAll('.drag-card').forEach(c => {
       c.classList.remove('wrong', 'correct');
     });
-    // Убираем обработчики комментариев
-    document.querySelectorAll('.drag-card').forEach(el => {
-      el.onclick = null;
-    });
+    document.querySelectorAll('.drag-card').forEach(el => { el.onclick = null; });
   }
   
   updateProgress();
+  triggerResize();
 }
 
 function updateProgress() {
@@ -469,12 +451,11 @@ function checkAnswers() {
       const id = card.dataset.id;
       const data = cardsData.find(c => c.id === id);
       
-      // Проверка правильности (учитывая массив допустимых зон)
       const isCorrect = Array.isArray(data.zone) 
         ? data.zone.includes(zoneType) 
         : data.zone === zoneType;
       
-      card.classList.remove('correct'); // Сброс перед проверкой
+      card.classList.remove('correct');
       
       if (!isCorrect) {
         errors++;
@@ -488,9 +469,8 @@ function checkAnswers() {
   if (errors === 0) {
     isVerified = true;
     summary.classList.add('show');
-    btnCheck.style.display = 'none'; // Скрываем кнопку проверки после успеха
+    btnCheck.style.display = 'none';
     
-    // Включаем клик по карточкам для просмотра комментариев
     document.querySelectorAll('.drag-card.correct').forEach(el => {
       el.style.cursor = 'pointer';
     });
@@ -498,7 +478,7 @@ function checkAnswers() {
     openModal('success');
   } else {
     isVerified = true;
-    btnCheck.disabled = true; // Блокируем проверку до сброса
+    btnCheck.disabled = true;
     document.getElementById('fb-title').textContent = `⚠️ Ошибки: ${errors}`;
     document.getElementById('fb-body').innerHTML = `<p>Некоторые карточки размещены неверно. Они подсвечены красным.</p><p>Нажмите <strong>«Начать заново»</strong>, чтобы сбросить все карточки и попробовать снова.</p>`;
     openModal('feedback-modal');
@@ -506,14 +486,18 @@ function checkAnswers() {
   triggerResize();
 }
 
-function openModal(id) { document.getElementById(id).classList.add('active'); triggerResize(); }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); triggerResize(); }
+function openModal(id) { 
+  document.getElementById(id).classList.add('active'); 
+  triggerResize(); 
+}
+function closeModal(id) { 
+  document.getElementById(id).classList.remove('active'); 
+  triggerResize(); 
+}
 
 btnCheck.addEventListener('click', checkAnswers);
 
 btnReset.addEventListener('click', () => {
-  // Если была ошибка, сброс возвращает всё в пул.
-  // Если успех, сброс перезапускает игру заново.
   btnCheck.style.display = 'inline-block';
   initPool();
 });
@@ -529,7 +513,9 @@ document.addEventListener('keydown', e => { if(e.key === 'Escape') document.quer
 // Init
 window.addEventListener('load', () => {
   initPool();
+  triggerResize();
 });
 </script>
+
 </body>
 </html>
