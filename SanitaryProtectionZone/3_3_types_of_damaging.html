@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -195,20 +196,6 @@
   }
   .btn-modal-close:hover { filter: brightness(0.95); }
 
-  .inline-feedback {
-    display: none;
-    margin: 0 20px 16px;
-    padding: 14px 16px;
-    border: 1px solid #f0c9b8;
-    background: var(--error-soft);
-    border-radius: 10px;
-    color: var(--text);
-    font-size: 0.86rem;
-    line-height: 1.45;
-  }
-  .inline-feedback.active { display: block; }
-  .inline-feedback strong { color: var(--error); display: block; margin-bottom: 4px; }
-
   @media (max-width: 680px) {
     .pairs-container { gap: 16px 20px; }
     .object-card, .impact-card { height: 120px; }
@@ -238,11 +225,6 @@
 
   <div class="instruction">
     Нажмите на карточку объекта, затем на соответствующий тип воздействия. Соедините все пары.
-  </div>
-
-  <div class="inline-feedback" id="inline-feedback">
-    <strong>Есть ошибки</strong>
-    Проверьте пары еще раз. Неверные связи подсвечены внутри интерактива.
   </div>
 
   <div class="game-area" id="game-area">
@@ -310,8 +292,7 @@
   </div>
 
   <div class="controls">
-    <button class="btn-action btn-reset show" id="restart-btn" onclick="resetGame()">Пройти заново</button>
-    <button class="btn-action btn-reset" onclick="resetGame()">Пройти заново</button>
+    <button class="btn-action btn-reset show" onclick="resetGame()">Пройти заново</button>
     <button class="btn-action btn-check" id="btn-check" onclick="checkGame()">Проверить результат</button>
   </div>
 </div>
@@ -563,8 +544,24 @@
   }
 
   function resetGame() {
-  hideInlineFeedback();
-    location.reload();
+    // мягкий сброс без перезагрузки
+    isChecked = false;
+    matchedPairs = 0;
+    for (const key in pairs) { delete pairs[key]; }
+
+    document.querySelectorAll('.object-card, .impact-card').forEach(card => {
+      card.classList.remove('matched','correct','incorrect','selected','clickable');
+      delete card.dataset.matchedWith;
+    });
+
+    const svg = document.getElementById('lines-svg');
+    if (svg) svg.innerHTML = '';
+
+    const btnCheck = document.getElementById('btn-check');
+    if (btnCheck) btnCheck.classList.remove('show');
+
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(m => m.classList.remove('active'));
   }
   
   // Redraw lines on resize to keep them aligned
