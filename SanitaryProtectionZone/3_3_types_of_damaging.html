@@ -4,163 +4,215 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Типы воздействия: найдите пару</title>
-<!-- Скрипт для автоматического изменения размера iframe -->
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <style>
   :root {
-    --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
+    --bg: #ffffff; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
     --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
     --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
     --radius: 16px; --transition: 160ms ease;
-    --red: #b4532a; --red-soft: #fff1ea;
+    --error: #b4532a; --error-soft: #fff1ea;
   }
   * { box-sizing: border-box; }
-  html, body {
-    margin: 0; padding: 0; overflow: hidden; height: 100%;
+  body {
+    margin: 0; padding: 16px; background: var(--bg);
     font-family: Inter, system-ui, -apple-system, sans-serif;
-    background: var(--bg); color: var(--text);
+    color: var(--text); line-height: 1.4;
   }
   
   .szz-wrap {
-    width: 100%; max-width: 800px; 
-    min-height: 400px; max-height: 90vh;
-    background: var(--card); margin: 0 auto;
-    display: flex; flex-direction: column;
+    width: 100%; max-width: 680px; margin: 0 auto; background: var(--card);
     border: 1px solid var(--line); border-radius: var(--radius);
-    box-shadow: var(--shadow); position: relative;
+    overflow: hidden; box-shadow: var(--shadow);
+    display: flex; flex-direction: column;
   }
   
-  .szz-header {
-    padding: 14px 18px; background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%);
+  .szz-header { 
+    padding: 16px 20px; background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%); 
     border-bottom: 1px solid var(--line); flex-shrink: 0;
   }
-  .szz-header h2 { margin: 0 0 4px; font-size: 1.1rem; font-weight: 600; color: var(--green); }
+  .szz-header h2 { margin: 0 0 4px; font-size: 1.2rem; font-weight: 600; color: var(--green); }
   .szz-header p { margin: 0; font-size: 0.85rem; color: var(--muted); }
   
-  .top-actions {
-    display: flex; gap: 8px; padding: 8px 18px; border-bottom: 1px solid var(--line);
-    background: #fff; flex-shrink: 0;
-  }
-  .btn-sm {
-    padding: 6px 12px; border: 1px solid var(--line); background: #fff;
-    border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 500;
-    transition: var(--transition); color: var(--muted);
-  }
+  .top-actions { display: flex; gap: 6px; padding: 8px 20px; border-bottom: 1px solid var(--line); background: #fff; flex-shrink: 0; }
+  .btn-sm { padding: 5px 10px; border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer; font-size: 0.75rem; font-weight: 500; transition: var(--transition); color: var(--muted); }
   .btn-sm:hover { border-color: var(--green); color: var(--green); background: var(--green-soft-2); }
   
   .oleg-intro {
-    display: flex; gap: 10px; align-items: flex-start; padding: 12px 18px;
+    display: flex; gap: 10px; align-items: flex-start; padding: 12px 20px;
     background: var(--green-soft-2); border-bottom: 1px solid var(--line); flex-shrink: 0;
   }
-  .oleg-avatar {
-    width: 36px; height: 36px; border-radius: 50%; object-fit: cover;
-    border: 2px solid #fff; flex-shrink: 0;
+  .oleg-avatar { 
+    width: 32px; height: 32px; border-radius: 50%; overflow: hidden; flex-shrink: 0;
+    border: 2px solid #fff;
   }
+  .oleg-avatar img { width: 100%; height: 100%; object-fit: cover; }
   .oleg-text { font-size: 0.82rem; color: var(--text); line-height: 1.35; }
-  .oleg-text strong { display: block; margin-bottom: 2px; color: var(--green); font-weight: 600; }
+  .oleg-text strong { display: block; margin-bottom: 2px; color: var(--green); font-weight: 600; font-size: 0.85rem; }
   
   .instruction {
-    padding: 10px 18px; font-size: 0.82rem; color: var(--muted); background: #fff;
-    border-bottom: 1px solid var(--line); flex-shrink: 0;
+    padding: 10px 20px; background: #fff; border-bottom: 1px solid var(--line);
+    font-size: 0.82rem; color: var(--muted); flex-shrink: 0;
   }
   
   /* Game Area */
-  .game-area {
-    padding: 15px 18px; flex: 1; display: flex; flex-direction: column;
-    gap: 15px; overflow-y: auto; position: relative;
+  .game-area { 
+    padding: 20px; position: relative; background: #fff; flex: 1;
   }
   
-  /* SVG Layer for Lines */
-  #lines-layer {
+  /* SVG Container for Lines */
+  #lines-svg {
     position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-    pointer-events: none; z-index: 10;
+    pointer-events: none; z-index: 5;
   }
   .connection-line {
-    stroke: var(--green); stroke-width: 3px; stroke-linecap: round;
-    animation: drawLine 0.3s ease-out forwards;
+    stroke: var(--green); stroke-width: 3; stroke-linecap: round;
+    filter: drop-shadow(0 2px 4px rgba(45,106,79,0.25));
   }
-  @keyframes drawLine { from { stroke-dasharray: 1000; stroke-dashoffset: 1000; } to { stroke-dashoffset: 0; } }
-  
-  /* Columns */
-  .columns-wrapper {
-    display: flex; gap: 20px; justify-content: center;
-  }
-  .column {
-    flex: 1; display: flex; flex-direction: column; gap: 10px;
-    max-width: 300px;
-  }
-  .column-title {
-    text-align: center; font-size: 0.85rem; font-weight: 600; color: var(--muted);
-    margin-bottom: 5px; text-transform: uppercase; letter-spacing: 0.5px;
+  .connection-dot {
+    fill: var(--green); stroke: #fff; stroke-width: 2;
   }
   
-  /* Cards */
-  .card {
-    background: #fff; border: 2px solid var(--line); border-radius: 10px;
-    padding: 10px; cursor: pointer; transition: var(--transition);
-    display: flex; align-items: center; gap: 10px;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
-    position: relative; z-index: 20;
+  .pairs-container {
+    display: grid; 
+    grid-template-columns: 1fr 1fr; 
+    gap: 24px 40px;
+    position: relative; z-index: 10;
   }
-  .card:hover { border-color: var(--green); transform: translateY(-1px); }
-  .card.selected { border-color: var(--green); background: var(--green-soft); box-shadow: 0 0 0 2px rgba(45,106,79,0.2); }
-  .card.matched { border-color: var(--green); background: var(--green-soft); opacity: 0.9; cursor: default; }
-  .card.wrong { border-color: var(--red); background: var(--red-soft); animation: shake 0.3s; }
   
-  .card img {
-    width: 40px; height: 40px; border-radius: 6px; object-fit: cover; flex-shrink: 0;
+  .column-label { 
+    font-size: 0.75rem; font-weight: 600; color: var(--muted); 
+    text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 8px; text-align: center; 
   }
-  .card-text { font-size: 0.85rem; font-weight: 500; line-height: 1.2; }
-  .card-text span { font-size: 0.7em; color: #666; display: block; margin-top: 2px; }
   
-  @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-5px)} 75%{transform:translateX(5px)} }
+  /* Cards - Fixed Height */
+  .object-card, .impact-card {
+    background: var(--card); border: 2px solid var(--line); border-radius: 12px;
+    overflow: hidden; cursor: pointer; transition: var(--transition);
+    display: flex; flex-direction: column;
+    height: 140px;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.04);
+  }
+  
+  .object-card:hover, .impact-card:hover { border-color: var(--green); transform: translateY(-2px); }
+  
+  /* Selection State */
+  .object-card.selected, .impact-card.selected { 
+    border-color: var(--green); background: var(--green-soft); 
+    box-shadow: 0 0 0 3px rgba(45,106,79,0.15); transform: translateY(-2px);
+  }
+  
+  /* Matched State */
+  .object-card.matched, .impact-card.matched { 
+    border-color: var(--green); background: var(--green-soft-2); opacity: 0.85;
+  }
+  .object-card.matched.clickable, .impact-card.matched.clickable { 
+    cursor: pointer; opacity: 1; 
+  }
+  .object-card.matched.clickable:hover, .impact-card.matched.clickable:hover { 
+    transform: scale(1.02); box-shadow: 0 4px 12px rgba(0,0,0,0.1); 
+  }
+  
+  .object-card.incorrect, .impact-card.incorrect { border-color: var(--error); background: var(--error-soft); }
+  
+  /* Compact Text Blocks */
+  .object-image {
+    width: 100%; height: 85px; background: #f0f4f2; display: flex;
+    align-items: center; justify-content: center; overflow: hidden; flex-shrink: 0;
+  }
+  .object-image img { width: 100%; height: 100%; object-fit: cover; }
+  .object-info { 
+    flex: 1; display: flex; align-items: center; justify-content: center; 
+    padding: 6px 8px; text-align: center; background: rgba(255,255,255,0.85);
+  }
+  .object-title { font-weight: 600; font-size: 0.82rem; color: var(--text); line-height: 1.2; }
+  
+  /* Impact Cards - Light & Compact */
+  .impact-card { 
+    padding: 10px 12px; align-items: center; justify-content: center; text-align: center;
+    background: rgba(255,255,255,0.6); backdrop-filter: blur(4px);
+  }
+  .impact-text strong { color: var(--green); display: block; margin-bottom: 3px; font-size: 0.85rem; }
+  .impact-desc { font-size: 0.75rem; color: var(--muted); line-height: 1.3; }
   
   /* Controls */
   .controls {
-    display: flex; gap: 10px; justify-content: center; padding: 12px 18px;
+    display: flex; gap: 10px; justify-content: center; padding: 16px 20px;
     border-top: 1px solid var(--line); background: #fff; flex-shrink: 0;
   }
   .btn-action {
-    padding: 10px 20px; border: none; border-radius: 8px; cursor: pointer;
+    padding: 10px 24px; border: none; border-radius: 8px; cursor: pointer;
     font-size: 0.85rem; font-weight: 600; transition: var(--transition);
+    opacity: 0; transform: translateY(10px); pointer-events: none;
   }
-  .btn-restart { background: #fff; color: var(--text); border: 1px solid var(--line); }
-  .btn-restart:hover { border-color: var(--green); background: var(--green-soft-2); }
+  .btn-action.show { opacity: 1; transform: translateY(0); pointer-events: auto; }
+  
   .btn-check { background: var(--green); color: #fff; }
   .btn-check:hover { filter: brightness(0.95); }
+  .btn-reset { background: #fff; color: var(--text); border: 1px solid var(--line); }
+  .btn-reset:hover { border-color: var(--green); background: var(--green-soft-2); }
   
   /* Modals */
   .modal {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(31,42,36,0.5); display: none; align-items: center; justify-content: center;
-    z-index: 1000; padding: 20px; backdrop-filter: blur(3px);
+    z-index: 1000; padding: 20px; backdrop-filter: blur(4px);
   }
   .modal.active { display: flex; animation: fadeIn 0.2s; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   
   .modal-box {
-    background: #fff; border-radius: 12px; max-width: 480px; width: 100%;
+    background: #fff; border-radius: 12px; max-width: 440px; width: 100%;
     box-shadow: 0 16px 40px rgba(0,0,0,0.15); overflow: hidden; animation: slideUp 0.25s;
-    max-height: 85vh; display: flex; flex-direction: column;
   }
   @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
   
-  .modal-head { padding: 14px 18px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; background: var(--green-soft-2); }
-  .modal-head h3 { margin: 0; font-size: 1rem; color: var(--green); }
-  .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); line-height: 1; }
+  .modal-header {
+    padding: 14px 18px; border-bottom: 1px solid var(--line);
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--green-soft-2);
+  }
+  .modal-header h3 { margin: 0; font-size: 1rem; color: var(--green); }
+  .modal-close {
+    background: none; border: none; font-size: 1.4rem; cursor: pointer;
+    color: var(--muted); line-height: 1;
+  }
   .modal-close:hover { color: var(--text); }
   
-  .modal-body { padding: 18px; overflow-y: auto; font-size: 0.9rem; line-height: 1.5; color: var(--text); }
-  .modal-body ul { padding-left: 18px; margin: 8px 0; }
-  .modal-body li { margin-bottom: 6px; }
+  .modal-body { padding: 18px; }
+  .modal-body p { margin: 0 0 10px; font-size: 0.9rem; line-height: 1.5; color: var(--text); }
+  .modal-body strong { color: var(--green); }
+  .hint {
+    background: var(--green-soft); padding: 10px; border-radius: 6px;
+    border-left: 3px solid var(--green); font-size: 0.85rem; margin-top: 10px;
+  }
   
-  .modal-foot { padding: 12px 18px; border-top: 1px solid var(--line); text-align: right; flex-shrink: 0; }
-  .btn-modal-close { background: var(--green); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-weight: 500; }
+  .modal-footer {
+    padding: 12px 18px; border-top: 1px solid var(--line); text-align: right;
+  }
+  .btn-modal-close {
+    background: var(--green); color: #fff; border: none; padding: 8px 16px;
+    border-radius: 6px; cursor: pointer; font-weight: 500; font-size: 0.85rem;
+  }
   .btn-modal-close:hover { filter: brightness(0.95); }
 
-  @media (max-width: 600px) {
-    .columns-wrapper { flex-direction: column; }
-    .szz-wrap { max-height: 100vh; border-radius: 0; border: none; }
+  .inline-feedback {
+    display: none;
+    margin: 0 20px 16px;
+    padding: 14px 16px;
+    border: 1px solid #f0c9b8;
+    background: var(--error-soft);
+    border-radius: 10px;
+    color: var(--text);
+    font-size: 0.86rem;
+    line-height: 1.45;
+  }
+  .inline-feedback.active { display: block; }
+  .inline-feedback strong { color: var(--error); display: block; margin-bottom: 4px; }
+
+  @media (max-width: 680px) {
+    .pairs-container { gap: 16px 20px; }
+    .object-card, .impact-card { height: 120px; }
+    .object-image { height: 65px; }
   }
 </style>
 </head>
@@ -174,11 +226,11 @@
 
   <div class="top-actions">
     <button class="btn-sm" onclick="openModal('modal-rules')">Правила</button>
-    <button class="btn-sm" onclick="openModal('modal-importance')">Что важно понять</button>
+    <button class="btn-sm" onclick="openModal('modal-info')">Что важно понять</button>
   </div>
 
   <div class="oleg-intro">
-    <img src="oleg.jpg" alt="Олег" class="oleg-avatar">
+    <div class="oleg-avatar"><img src="oleg.jpg" alt="Олег"></div>
     <div class="oleg-text">
       <strong>Олег:</strong> Мне нужно понять, какие виды воздействия характерны для разных объектов. Помогите соединить объекты с правильными типами воздействий.
     </div>
@@ -188,293 +240,346 @@
     Нажмите на карточку объекта, затем на соответствующий тип воздействия. Соедините все пары.
   </div>
 
-  <div class="game-area">
-    <!-- SVG Layer for drawing lines -->
-    <svg id="lines-layer"></svg>
+  <div class="inline-feedback" id="inline-feedback">
+    <strong>Есть ошибки</strong>
+    Проверьте пары еще раз. Неверные связи подсвечены внутри интерактива.
+  </div>
 
-    <div class="columns-wrapper">
-      <!-- Objects Column -->
-      <div class="column" id="col-objects">
-        <div class="column-title">Объекты</div>
-        <div class="card" data-type="object" data-id="airport" onclick="selectCard(this)">
-          <img src="img/airport.jpg" alt="Аэропорт">
-          <div class="card-text">Аэропорт</div>
+  <div class="game-area" id="game-area">
+    <svg id="lines-svg"></svg>
+    <div class="pairs-container" id="pairs-container">
+      
+      <!-- Left Column: Objects -->
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="column-label">Объекты</div>
+        
+        <div class="object-card" data-id="airport" onclick="selectObject(this)">
+          <div class="object-image"><img src="airport.jpg" alt="Аэропорт" onerror="this.style.display='none';this.parentElement.innerHTML='✈️'"></div>
+          <div class="object-info"><div class="object-title">Аэропорт</div></div>
         </div>
-        <div class="card" data-type="object" data-id="factory" onclick="selectCard(this)">
-          <img src="img/factory.jpg" alt="Химический завод">
-          <div class="card-text">Химический завод</div>
+        
+        <div class="object-card" data-id="factory" onclick="selectObject(this)">
+          <div class="object-image"><img src="factory.jpg" alt="Химический завод" onerror="this.style.display='none';this.parentElement.innerHTML='🏭'"></div>
+          <div class="object-info"><div class="object-title">Химический завод</div></div>
         </div>
-        <div class="card" data-type="object" data-id="farm" onclick="selectCard(this)">
-          <img src="img/farm.jpg" alt="Ферма">
-          <div class="card-text">Ферма</div>
+        
+        <div class="object-card" data-id="farm" onclick="selectObject(this)">
+          <div class="object-image"><img src="farm.jpg" alt="Ферма" onerror="this.style.display='none';this.parentElement.innerHTML='🐔'"></div>
+          <div class="object-info"><div class="object-title">Ферма</div></div>
         </div>
-        <div class="card" data-type="object" data-id="tpp" onclick="selectCard(this)">
-          <img src="img/tpp.jpg" alt="ТЭЦ">
-          <div class="card-text">ТЭЦ</div>
+        
+        <div class="object-card" data-id="chp" onclick="selectObject(this)">
+          <div class="object-image"><img src="chp.jpg" alt="ТЭЦ" onerror="this.style.display='none';this.parentElement.innerHTML='🔋'"></div>
+          <div class="object-info"><div class="object-title">ТЭЦ</div></div>
         </div>
       </div>
 
-      <!-- Impacts Column -->
-      <div class="column" id="col-impacts">
-        <div class="column-title">Воздействие</div>
-        <div class="card" data-type="impact" data-id="chemical" onclick="selectCard(this)">
-          <img src="img/chemical.jpg" alt="Химическое">
-          <div class="card-text">Химическое воздействие<span>Выбросы веществ в воздух</span></div>
+      <!-- Right Column: Impacts -->
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <div class="column-label">Воздействие</div>
+        
+        <div class="impact-card" data-match="chemical" onclick="selectImpact(this)">
+          <div class="impact-text">
+            <strong>Химическое воздействие</strong>
+            <span class="impact-desc">Выбросы веществ в воздух</span>
+          </div>
         </div>
-        <div class="card" data-type="impact" data-id="physical" onclick="selectCard(this)">
-          <img src="img/physical.jpg" alt="Физическое">
-          <div class="card-text">Физическое воздействие<span>Шум, вибрация, излучение</span></div>
+        
+        <div class="impact-card" data-match="physical" onclick="selectImpact(this)">
+          <div class="impact-text">
+            <strong>Физическое воздействие</strong>
+            <span class="impact-desc">Шум, вибрация, излучение</span>
+          </div>
         </div>
-        <div class="card" data-type="impact" data-id="biological" onclick="selectCard(this)">
-          <img src="img/biological.jpg" alt="Биологическое">
-          <div class="card-text">Биологическое воздействие<span>Микроорганизмы, бактерии</span></div>
+        
+        <div class="impact-card" data-match="biological" onclick="selectImpact(this)">
+          <div class="impact-text">
+            <strong>Биологическое воздействие</strong>
+            <span class="impact-desc">Микроорганизмы, бактерии</span>
+          </div>
         </div>
-        <div class="card" data-type="impact" data-id="complex" onclick="selectCard(this)">
-          <img src="img/complex.jpg" alt="Комплексное">
-          <div class="card-text">Комплексное воздействие<span>Несколько типов одновременно</span></div>
+        
+        <div class="impact-card" data-match="complex" onclick="selectImpact(this)">
+          <div class="impact-text">
+            <strong>Комплексное воздействие</strong>
+            <span class="impact-desc">Несколько типов одновременно</span>
+          </div>
         </div>
       </div>
     </div>
   </div>
 
   <div class="controls">
-    <button class="btn-action btn-restart" onclick="restartGame()">🔄 Пройти заново</button>
-    <button class="btn-action btn-check" onclick="checkResult()">Проверить результат</button>
+    <button class="btn-action btn-reset show" id="restart-btn" onclick="resetGame()">Пройти заново</button>
+    <button class="btn-action btn-reset" onclick="resetGame()">Пройти заново</button>
+    <button class="btn-action btn-check" id="btn-check" onclick="checkGame()">Проверить результат</button>
   </div>
 </div>
 
-<!-- Modal: Rules -->
+<!-- Detail Modal (Shows after correct check) -->
+<div class="modal" id="feedback-modal">
+  <div class="modal-box">
+    <div class="modal-header">
+      <h3 id="feedback-title">Разбор решения</h3>
+      <button class="modal-close" onclick="closeModal('feedback-modal')">&times;</button>
+    </div>
+    <div class="modal-body" id="feedback-body"></div>
+    <div class="modal-footer">
+      <button class="btn-modal-close" onclick="closeModal('feedback-modal')">Понятно</button>
+    </div>
+  </div>
+</div>
+
+<!-- Rules Modal -->
 <div class="modal" id="modal-rules">
   <div class="modal-box">
-    <div class="modal-head"><h3>Правила</h3><button class="modal-close" onclick="closeModal('modal-rules')">&times;</button></div>
+    <div class="modal-header"><h3>Правила</h3><button class="modal-close" onclick="closeModal('modal-rules')">&times;</button></div>
     <div class="modal-body">
-      <ul>
+      <ul style="padding-left:20px;margin:8px 0;font-size:0.9rem;">
         <li>Нажмите на карточку объекта (слева), затем на тип воздействия (справа).</li>
         <li>Между парами появится соединительная зеленая линия.</li>
         <li>Соберите все 4 пары и нажмите «Проверить результат».</li>
         <li>При верном ответе на карточки можно нажимать для подробного разбора.</li>
       </ul>
     </div>
-    <div class="modal-foot"><button class="btn-modal-close" onclick="closeModal('modal-rules')">Понятно</button></div>
+    <div class="modal-footer"><button class="btn-modal-close" onclick="closeModal('modal-rules')">Понятно</button></div>
   </div>
 </div>
 
-<!-- Modal: Importance -->
-<div class="modal" id="modal-importance">
+<!-- Info Modal -->
+<div class="modal" id="modal-info">
   <div class="modal-box">
-    <div class="modal-head"><h3>Что важно понять</h3><button class="modal-close" onclick="closeModal('modal-importance')">&times;</button></div>
+    <div class="modal-header"><h3>Что важно понять</h3><button class="modal-close" onclick="closeModal('modal-info')">&times;</button></div>
     <div class="modal-body">
-      <ul>
-        <li>Тип воздействия определяет методику расчета СЗЗ.</li>
-        <li>Для химического фактора считают рассеивание веществ, для физического — уровень шума.</li>
-        <li>Если объектов несколько, СЗЗ могут накладываться.</li>
-      </ul>
+      <p style="font-size:0.9rem;">
+        Тип воздействия определяет методику расчета СЗЗ.
+        Для химического фактора считают рассеивание веществ, для физического — уровень шума.
+        Если объектов несколько, СЗЗ могут накладываться.
+      </p>
     </div>
-    <div class="modal-foot"><button class="btn-modal-close" onclick="closeModal('modal-importance')">Понятно</button></div>
+    <div class="modal-footer"><button class="btn-modal-close" onclick="closeModal('modal-info')">Понятно</button></div>
   </div>
 </div>
 
-<!-- Modal: Result / Error -->
-<div class="modal" id="modal-result">
+<!-- Success Modal -->
+<div class="modal" id="success-modal">
   <div class="modal-box">
-    <div class="modal-head"><h3 id="result-title">Результат</h3><button class="modal-close" onclick="closeModal('modal-result')">&times;</button></div>
-    <div class="modal-body" id="result-body">
-      <!-- Content injected by JS -->
+    <div class="modal-header"><h3>Итоговый комментарий</h3><button class="modal-close" onclick="closeModal('success-modal')">&times;</button></div>
+    <div class="modal-body">
+      <p>✓ <strong>Отлично!</strong> Вы правильно сопоставили все объекты и типы воздействия.</p>
+      <p>Теперь вы можете нажать на любую карточку, чтобы увидеть подробный разбор.</p>
+      <p style="background:var(--green-soft);padding:10px;border-radius:6px;margin-top:10px;">
+        <strong>Запомните:</strong> Сначала определите тип воздействия, затем выберите правильный метод расчета СЗЗ.
+      </p>
     </div>
-    <div class="modal-foot"><button class="btn-modal-close" onclick="closeModal('modal-result')">Понятно</button></div>
+    <div class="modal-footer"><button class="btn-modal-close" onclick="closeModal('success-modal')">Понятно</button></div>
   </div>
 </div>
 
 <script>
-  // Correct pairs mapping
-  const correctPairs = {
-    'airport': 'physical',
-    'factory': 'chemical',
-    'farm': 'biological',
-    'tpp': 'complex'
+  const impactData = {
+    airport: {
+      title: 'Аэропорт',
+      correctType: 'physical',
+      explanation: 'Аэропорт создает мощный шум от двигателей самолетов и вибрацию при взлете/посадке. Это классический пример физического воздействия.',
+      hint: 'В проекте СЗЗ аэропорта основной расчет — это акустическая карта и расчет уровней шума.'
+    },
+    factory: {
+      title: 'Химический завод',
+      correctType: 'chemical',
+      explanation: 'Химическое производство выбрасывает в атмосферу вредные вещества (например, формальдегид, фенол). Это химическое воздействие.',
+      hint: 'Для СЗЗ завода рассчитывают концентрацию веществ на границе жилой застройки.'
+    },
+    farm: {
+      title: 'Ферма',
+      correctType: 'biological',
+      explanation: 'Животноводческие комплексы могут быть источником биологического загрязнения — распространения патогенных микроорганизмов и запахов.',
+      hint: 'СЗЗ для ферм часто определяется санитарными нормами по расстоянию до жилых зон.'
+    },
+    chp: {
+      title: 'ТЭЦ (Теплоэлектроцентраль)',
+      correctType: 'complex',
+      explanation: 'ТЭЦ оказывает комплексное воздействие: химическое (выбросы от сжигания топлива) и физическое (шум от турбин).',
+      hint: 'Для СЗЗ ТЭЦ нужно учитывать самый строгий фактор — обычно это химическое загрязнение.'
+    }
   };
 
-  let selectedObject = null;
-  let matches = {}; // Stores matched pairs: { 'airport': 'physical' ... }
-  let isChecking = false;
+  let selectedLeft = null;
+  let matchedPairs = 0;
+  const totalPairs = 4;
+  let isChecked = false;
+  const pairs = {}; // leftId -> rightMatch
 
-  function selectCard(card) {
-    if (isChecking || card.classList.contains('matched')) return;
-
-    const type = card.dataset.type;
-    const id = card.dataset.id;
-
-    // If clicking an object
-    if (type === 'object') {
-      // Remove previous selection highlight
-      document.querySelectorAll('.card[data-type="object"]').forEach(c => c.classList.remove('selected'));
-      card.classList.add('selected');
-      selectedObject = id;
-    } 
-    // If clicking an impact
-    else if (type === 'impact') {
-      if (!selectedObject) return;
-      
-      // Check match immediately for visual feedback
-      const correctImpact = correctPairs[selectedObject];
-      
-      if (correctImpact === id) {
-        // Correct Match
-        handleMatch(selectedObject, id, card);
-      } else {
-        // Wrong Match
-        card.classList.add('wrong');
-        setTimeout(() => card.classList.remove('wrong'), 300);
-        // Clear selection
-        document.querySelectorAll('.card[data-type="object"]').forEach(c => c.classList.remove('selected'));
-        selectedObject = null;
-      }
+  function selectObject(card) {
+    if (isChecked) {
+      showDetails(card.dataset.id);
+      return;
     }
-    
-    triggerResize();
+    if (card.classList.contains('matched')) return;
+
+    document.querySelectorAll('.object-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    selectedLeft = card.dataset.id;
   }
 
-  function handleMatch(objId, impactId, impactCard) {
-    // Find the object card element
-    const objCard = document.querySelector(`.card[data-type="object"][data-id="${objId}"]`);
-    
-    // Mark as matched
-    objCard.classList.remove('selected');
-    objCard.classList.add('matched');
-    impactCard.classList.add('matched');
-    
-    // Save match
-    matches[objId] = impactId;
-    
-    // Draw Line
-    drawLine(objCard, impactCard);
-    
-    // Reset selection
-    selectedObject = null;
+  function selectImpact(card) {
+    if (isChecked) {
+      const leftId = card.dataset.matchedWith;
+      if (leftId) showDetails(leftId);
+      return;
+    }
+    if (card.classList.contains('matched')) return;
+    if (!selectedLeft) return;
+
+    createConnection(selectedLeft, card.dataset.match);
+    document.querySelectorAll('.object-card').forEach(c => c.classList.remove('selected'));
+    selectedLeft = null;
   }
 
-  function drawLine(el1, el2) {
-    const svg = document.getElementById('lines-layer');
-    const rect1 = el1.getBoundingClientRect();
-    const rect2 = el2.getBoundingClientRect();
-    const gameRect = document.querySelector('.game-area').getBoundingClientRect();
+  function createConnection(leftId, rightMatch) {
+    const leftCard = document.querySelector(`.object-card[data-id="${leftId}"]`);
+    const rightCard = document.querySelector(`.impact-card[data-match="${rightMatch}"]`);
 
-    // Calculate centers relative to SVG container
-    const x1 = rect1.right - gameRect.left;
-    const y1 = rect1.top + rect1.height / 2 - gameRect.top;
-    const x2 = rect2.left - gameRect.left;
-    const y2 = rect2.top + rect2.height / 2 - gameRect.top;
+    if (leftCard.classList.contains('matched') || rightCard.classList.contains('matched')) return;
 
+    leftCard.classList.add('matched');
+    rightCard.classList.add('matched');
+    leftCard.dataset.matchedWith = rightMatch;
+    rightCard.dataset.matchedWith = leftId;
+
+    pairs[leftId] = rightMatch;
+    drawLine(leftCard, rightCard);
+
+    matchedPairs++;
+    if (matchedPairs === totalPairs) {
+      document.getElementById('btn-check').classList.add('show');
+    }
+  }
+
+  function drawLine(leftCard, rightCard) {
+    const svg = document.getElementById('lines-svg');
+    const container = document.getElementById('pairs-container');
+    const containerRect = container.getBoundingClientRect();
+
+    const leftRect = leftCard.getBoundingClientRect();
+    const rightRect = rightCard.getBoundingClientRect();
+
+    // Calculate coordinates relative to container
+    const x1 = leftRect.right - containerRect.left;
+    const y1 = leftRect.top + leftRect.height / 2 - containerRect.top;
+    const x2 = rightRect.left - containerRect.left;
+    const y2 = rightRect.top + rightRect.height / 2 - containerRect.top;
+
+    const length = Math.sqrt(Math.pow(x2 - x1, 2) + Math.pow(y2 - y1, 2));
+
+    // Create line
     const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
-    line.setAttribute('x1', x1);
-    line.setAttribute('y1', y1);
-    line.setAttribute('x2', x2);
-    line.setAttribute('y2', y2);
+    line.setAttribute('x1', x1); line.setAttribute('y1', y1);
+    line.setAttribute('x2', x2); line.setAttribute('y2', y2);
     line.setAttribute('class', 'connection-line');
     
+    // Smooth animation setup
+    line.style.strokeDasharray = length;
+    line.style.strokeDashoffset = length;
+    line.style.transition = 'stroke-dashoffset 0.6s cubic-bezier(0.4, 0, 0.2, 1)';
+    
     svg.appendChild(line);
-  }
 
-  function checkResult() {
-    isChecking = true;
-    const totalPairs = Object.keys(correctPairs).length;
-    const matchedCount = Object.keys(matches).length;
-    
-    let allCorrect = true;
-    
-    // Verify all matches are correct
-    for (let obj in matches) {
-      if (matches[obj] !== correctPairs[obj]) {
-        allCorrect = false;
-        break;
-      }
-    }
-
-    const title = document.getElementById('result-title');
-    const body = document.getElementById('result-body');
-
-    if (matchedCount < totalPairs) {
-      // Not all pairs connected
-      title.textContent = "⚠️ Внимание";
-      body.innerHTML = `<p>Вы соединили не все пары. Пожалуйста, сопоставьте оставшиеся объекты и типы воздействия.</p>`;
-      openModal('modal-result');
-      isChecking = false; // Allow continuing
-    } else if (allCorrect) {
-      // Success
-      title.textContent = "✓ Отлично!";
-      body.innerHTML = `
-        <p>Вы правильно сопоставили все объекты и типы воздействия.</p>
-        <p>Теперь вы можете нажать на любую карточку, чтобы увидеть подробный разбор.</p>
-        <p><strong>Запомните:</strong> Сначала определите тип воздействия, затем выберите правильный метод расчета СЗЗ.</p>
-      `;
-      openModal('modal-result');
-      enableCardDetails();
-    } else {
-      // Errors found -> Внутреннее всплывающее окно вместо alert
-      title.textContent = "✗ Есть ошибки";
-      body.innerHTML = `<p>Некоторые пары сопоставлены неверно. Нажмите <strong>«Пройти заново»</strong>, чтобы сбросить результат и попробовать снова.</p>`;
-      openModal('modal-result');
-      isChecking = false; // Allow retrying
-    }
-    
-    triggerResize();
-  }
-
-  function restartGame() {
-    // Reset variables
-    selectedObject = null;
-    matches = {};
-    isChecking = false;
-    
-    // Reset UI
-    document.querySelectorAll('.card').forEach(card => {
-      card.classList.remove('selected', 'matched', 'wrong');
+    // Trigger animation
+    requestAnimationFrame(() => {
+      line.style.strokeDashoffset = '0';
     });
-    
-    // Clear lines
-    document.getElementById('lines-layer').innerHTML = '';
-    
-    // Hide modal if open
-    closeModal('modal-result');
-    
-    triggerResize();
+
+    // Add polished endpoint dots (appear after line draws)
+    setTimeout(() => {
+      const c1 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c1.setAttribute('cx', x1); c1.setAttribute('cy', y1); c1.setAttribute('r', 5);
+      c1.setAttribute('class', 'connection-dot');
+      c1.style.opacity = 0;
+      c1.style.transition = 'opacity 0.3s ease';
+      svg.appendChild(c1);
+      requestAnimationFrame(() => c1.style.opacity = 1);
+
+      const c2 = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+      c2.setAttribute('cx', x2); c2.setAttribute('cy', y2); c2.setAttribute('r', 5);
+      c2.setAttribute('class', 'connection-dot');
+      c2.style.opacity = 0;
+      c2.style.transition = 'opacity 0.3s ease';
+      svg.appendChild(c2);
+      requestAnimationFrame(() => c2.style.opacity = 1);
+    }, 500);
   }
 
-  function enableCardDetails() {
-    // Placeholder for future detailed card click logic
+  function checkGame() {
+    isChecked = true;
+    let allCorrect = true;
+
+    Object.entries(pairs).forEach(([leftId, rightMatch]) => {
+      const correctType = impactData[leftId].correctType;
+      const leftCard = document.querySelector(`.object-card[data-id="${leftId}"]`);
+      const rightCard = document.querySelector(`.impact-card[data-match="${rightMatch}"]`);
+
+      if (rightMatch === correctType) {
+        leftCard.classList.add('correct');
+        if (rightCard) rightCard.classList.add('correct');
+      } else {
+        leftCard.classList.add('incorrect');
+        if (rightCard) rightCard.classList.add('incorrect');
+        allCorrect = false;
+      }
+    });
+
+    if (allCorrect) {
+      setTimeout(() => {
+        openModal('success-modal');
+        document.querySelectorAll('.object-card, .impact-card').forEach(card => {
+          card.classList.add('clickable');
+        });
+      }, 300);
+    } else {
+      alert('Есть ошибки в сопоставлении. Нажмите "Пройти заново" и попробуйте снова.');
+    }
   }
 
-  // Modal Functions
+  function showDetails(id) {
+    const data = impactData[id];
+    if (!data) return;
+
+    document.getElementById('feedback-title').textContent = data.title;
+    document.getElementById('feedback-body').innerHTML = `
+      <p><strong>Объяснение:</strong><br>${data.explanation}</p>
+      <div class="hint">
+        <strong>Практика:</strong> ${data.hint}
+      </div>
+    `;
+    openModal('feedback-modal');
+  }
+
   function openModal(id) {
     document.getElementById(id).classList.add('active');
-    triggerResize();
   }
   function closeModal(id) {
     document.getElementById(id).classList.remove('active');
-    triggerResize();
   }
 
-  // Close modals on outside click
-  document.querySelectorAll('.modal').forEach(modal => {
-    modal.addEventListener('click', e => {
-      if (e.target === modal) closeModal(modal.id);
-    });
-  });
-
-  // Resize Observer for iframe-resizer
-  function triggerResize() {
-    if (window.iFrameResize) {
-      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  function resetGame() {
+  hideInlineFeedback();
+    location.reload();
+  }
+  
+  // Redraw lines on resize to keep them aligned
+  window.addEventListener('resize', () => {
+    if (matchedPairs > 0) {
+      const svg = document.getElementById('lines-svg');
+      svg.innerHTML = ''; 
+      Object.entries(pairs).forEach(([leftId, rightMatch]) => {
+        const leftCard = document.querySelector(`.object-card[data-id="${leftId}"]`);
+        const rightCard = document.querySelector(`.impact-card[data-match="${rightMatch}"]`);
+        if (leftCard && rightCard) {
+          drawLine(leftCard, rightCard);
+        }
+      });
     }
-  }
-  
-  const resizeObserver = new ResizeObserver(() => {
-    triggerResize();
-  });
-  
-  window.addEventListener('load', () => {
-    triggerResize();
-    resizeObserver.observe(document.querySelector('.szz-wrap'));
   });
 </script>
 
