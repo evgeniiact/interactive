@@ -4,130 +4,173 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Где это допустимо</title>
+<!-- Скрипт для автоматического изменения размера iframe -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
 <style>
   :root {
     --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
     --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
     --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
     --radius: 16px; --transition: 160ms ease;
-    --warning-bg: #fff1ea; --warning-border: #b4532a; --warning-text: #92400e;
+    --red: #ef4444; --red-soft: #fee2e2; --red-border: #fecaca;
+    --warning-bg: #fff1ea; --warning-border: #b4532a;
   }
   * { box-sizing: border-box; }
-  body { margin: 0; padding: 16px; background: #ffffff; font-family: Inter, system-ui, -apple-system, sans-serif; color: var(--text); line-height: 1.4; }
+  
+  html, body {
+    margin: 0; padding: 0;
+    font-family: Inter, system-ui, -apple-system, sans-serif;
+    background: var(--bg); color: var(--text);
+    /* Важно для ресайзера: не фиксировать высоту body */
+    min-height: 100%; 
+  }
   
   .szz-wrap {
-    width: 100%; max-width: 650px; height: 700px; margin: 0 auto; background: var(--card);
+    width: 100%; max-width: 700px; 
+    /* Высота автоматически подстраивается под контент */
+    height: auto; 
+    min-height: 500px;
+    background: var(--card); margin: 0 auto;
+    display: flex; flex-direction: column;
     border: 1px solid var(--line); border-radius: var(--radius);
-    overflow: hidden; display: flex; flex-direction: column;
-    box-shadow: var(--shadow); position: relative;
+    box-shadow: var(--shadow);
   }
   
-  /* Resizer handle */
-  .resizer {
-    position: absolute; bottom: 0; right: 0; width: 20px; height: 20px;
-    cursor: nwse-resize; background: linear-gradient(135deg, transparent 50%, var(--line) 50%);
-    z-index: 10; border-radius: 0 0 var(--radius) 0;
+  .szz-header { 
+    background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%); 
+    padding: 14px 18px; border-bottom: 1px solid var(--line); 
   }
+  .szz-header h2 { margin: 0 0 4px; font-size: 1.1rem; font-weight: 600; color: var(--green); }
+  .szz-header p { margin: 0; font-size: 0.85rem; color: var(--muted); }
   
-  .szz-header { background: linear-gradient(135deg, var(--green-soft) 0%, var(--green-soft-2) 100%); padding: 14px 18px; border-bottom: 1px solid var(--line); flex-shrink: 0; }
-  .szz-header h2 { margin: 0 0 4px; font-size: 1.15rem; font-weight: 600; color: var(--green); }
-  .szz-header p { margin: 0; font-size: 0.82rem; color: var(--muted); }
-  
-  .top-actions { display: flex; gap: 6px; padding: 8px 18px; border-bottom: 1px solid var(--line); background: #fff; flex-shrink: 0; flex-wrap: wrap; }
-  .btn-sm { padding: 5px 9px; border: 1px solid var(--line); background: #fff; border-radius: 6px; cursor: pointer; font-size: 0.72rem; font-weight: 500; transition: var(--transition); color: var(--muted); }
+  .top-actions { 
+    display: flex; gap: 6px; padding: 8px 18px; border-bottom: 1px solid var(--line); 
+    background: #fff; 
+  }
+  .btn-sm { 
+    padding: 5px 9px; border: 1px solid var(--line); background: #fff; 
+    border-radius: 6px; cursor: pointer; font-size: 0.72rem; font-weight: 500; 
+    transition: var(--transition); color: var(--muted); 
+  }
   .btn-sm:hover { border-color: var(--green); color: var(--green); background: var(--green-soft-2); }
   
-  .szz-content { padding: 10px 18px; flex: 1; display: flex; flex-direction: column; gap: 8px; overflow: hidden; }
-  
-  .oleg-preview { display: flex; gap: 8px; align-items: flex-start; background: var(--green-soft-2); border-radius: 8px; padding: 8px; }
-  .oleg-preview img { width: 32px; height: 32px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; flex-shrink: 0; }
-  .oleg-preview .text { font-size: 0.8rem; color: var(--text); line-height: 1.3; }
-  .oleg-preview .text strong { display: block; margin-bottom: 2px; color: var(--green); font-weight: 600; font-size: 0.85rem; }
-  
-  .progress-bar { height: 3px; background: var(--line); border-radius: 2px; overflow: hidden; flex-shrink: 0; }
-  .progress-fill { height: 100%; background: var(--green); width: 0%; transition: width 0.25s ease; border-radius: 2px; }
-  
-  .instruction { font-size: 0.8rem; color: var(--muted); flex-shrink: 0; }
-  
-  /* Pool - compact */
-  .pool { 
-    display: flex; flex-wrap: wrap; gap: 4px; padding: 8px; 
-    background: #f8fafc; border: 1px dashed var(--line); border-radius: 8px; 
-    min-height: 36px; flex-shrink: 0;
+  .szz-content { 
+    padding: 14px 18px; display: flex; flex-direction: column; gap: 10px; 
+    flex: 1;
   }
+  
+  .oleg-preview { 
+    display: flex; gap: 10px; align-items: flex-start; 
+    background: var(--green-soft-2); border-radius: 10px; padding: 10px; 
+  }
+  .oleg-preview img { width: 36px; height: 36px; border-radius: 50%; object-fit: cover; border: 2px solid #fff; flex-shrink: 0; }
+  .oleg-preview .text { font-size: 0.82rem; color: var(--text); line-height: 1.4; }
+  .oleg-preview .text strong { display: block; margin-bottom: 3px; color: var(--green); font-weight: 600; font-size: 0.9rem; }
+  
+  .progress-bar { height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); width: 0%; transition: width 0.3s ease; border-radius: 2px; }
+  
+  .instruction { 
+    font-size: 0.8rem; color: var(--muted); padding-bottom: 6px; border-bottom: 1px dashed var(--line);
+  }
+  
+  /* Pool */
+  .pool { 
+    display: flex; flex-wrap: wrap; gap: 6px; padding: 10px; 
+    background: #f8fafc; border: 1px dashed var(--line); border-radius: 10px; 
+    min-height: 45px;
+  }
+  
+  /* Карточки */
   .drag-card { 
-    background: #fff; border: 1px solid var(--line); padding: 6px 8px; 
-    border-radius: 5px; cursor: grab; font-size: 0.76rem; font-weight: 500; 
-    user-select: none; transition: var(--transition); white-space: nowrap;
+    background: #fff; border: 1px solid var(--line); padding: 7px 10px; 
+    border-radius: 6px; cursor: grab; font-size: 0.78rem; font-weight: 500; 
+    user-select: none; transition: border-color 0.2s, background-color 0.2s; 
+    white-space: nowrap; box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    touch-action: none; /* Важно для мобильных устройств */
   }
   .drag-card:hover { border-color: var(--green); }
-  .drag-card.dragging { opacity: 0.5; border-style: dashed; }
-  .drag-card.selected { border-color: var(--green); background: var(--green-soft-2); }
-  .drag-card.correct { background: var(--green-soft); border-color: var(--green); cursor: default; }
-  .drag-card.wrong { animation: shake 0.3s; border-color: var(--warning-border); background: var(--warning-bg); }
+  
+  /* Состояние при перетаскивании */
+  .drag-card.dragging { 
+    opacity: 0.9; 
+    border-style: dashed; 
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+    transform: scale(1.02) rotate(1deg);
+    background: #fff;
+  }
+  
+  /* Правильно размещенные (после проверки) */
+  .drag-card.correct { background: var(--green-soft); border-color: var(--green); cursor: pointer; }
+  .drag-card.correct::after { content: " 💬"; font-size: 0.7rem; }
+  
+  /* Ошибки (после проверки) */
+  .drag-card.wrong { background: var(--red-soft); border-color: var(--red); color: var(--red); animation: shake 0.4s; }
   @keyframes shake { 0%,100%{transform:translateX(0)} 25%{transform:translateX(-4px)} 75%{transform:translateX(4px)} }
   
-  /* Zones - strict horizontal, no scroll */
+  /* Зоны */
   .zones-grid { 
-    display: flex; flex-direction: row; gap: 6px; flex: 1; min-height: 0; 
+    display: flex; flex-direction: row; gap: 10px; 
   }
   .zone-col { 
-    background: #fff; border: 2px dashed var(--line); border-radius: 8px; 
-    padding: 8px; min-width: 0; flex: 1; display: flex; flex-direction: column; 
-    transition: var(--transition);
+    background: #fff; border: 2px dashed var(--line); border-radius: 10px; 
+    padding: 10px; min-width: 0; flex: 1; display: flex; flex-direction: column; 
+    transition: background 0.2s, border-color 0.2s;
+    min-height: 100px; /* Минимальная высота пустой зоны */
   }
-  .zone-col.drag-over { border-color: var(--green); background: var(--green-soft-2); }
-  .zone-col h5 { margin: 0 0 4px; font-size: 0.7rem; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: 0.3px; flex-shrink: 0; }
-  .zone-cards { 
-    display: flex; flex-direction: column; gap: 4px; flex: 1; min-height: 0; 
-    overflow-y: auto; padding-right: 2px;
+  .zone-col.drag-over { border-color: var(--green); background: var(--green-soft-2); border-style: solid; }
+  .zone-col h5 { margin: 0 0 8px; font-size: 0.75rem; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: 0.3px; }
+  .zone-cards { display: flex; flex-direction: column; gap: 5px; }
+  
+  .bottom-actions { 
+    display: flex; gap: 8px; padding: 12px 18px; border-top: 1px solid var(--line); 
+    background: #fff; margin-top: 10px;
   }
-  /* Hide scrollbar but keep functionality */
-  .zone-cards::-webkit-scrollbar { width: 3px; }
-  .zone-cards::-webkit-scrollbar-track { background: transparent; }
-  .zone-cards::-webkit-scrollbar-thumb { background: var(--line); border-radius: 2px; }
-  
-  .placed-item { 
-    font-size: 0.74rem; padding: 4px 6px; background: var(--green-soft); 
-    border-radius: 4px; border-left: 2px solid var(--green); word-break: break-word; flex-shrink: 0;
+  .btn-check { 
+    flex: 1; padding: 10px; border: none; border-radius: 8px; cursor: pointer; 
+    font-size: 0.85rem; font-weight: 600; transition: var(--transition); 
+    background: var(--green); color: #fff;
   }
+  .btn-check:hover:not(:disabled) { filter: brightness(0.95); }
+  .btn-check:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
   
-  .summary { display: none; flex: 1; flex-direction: column; animation: fade 0.3s; }
-  .summary.show { display: flex; }
-  .summary h4 { margin: 0 0 8px; font-size: 0.95rem; color: var(--green); flex-shrink: 0; }
-  .summary p, .summary li { font-size: 0.8rem; color: #334155; margin-bottom: 4px; line-height: 1.35; }
-  .summary ul { padding-left: 16px; margin: 6px 0; }
-  .summary .value-block { background: var(--green-soft-2); border-left: 3px solid var(--green); padding: 8px; border-radius: 0 6px 6px 0; margin-top: 8px; font-size: 0.8rem; flex-shrink: 0; }
-  
-  .bottom-actions { display: flex; gap: 6px; padding: 10px 18px; border-top: 1px solid var(--line); background: #fff; flex-shrink: 0; }
-  .btn-reset { width: 100%; padding: 8px; border: 1px solid var(--line); background: #fff; border-radius: 7px; cursor: pointer; font-size: 0.8rem; transition: var(--transition); color: var(--muted); display: none; }
-  .btn-reset:hover { border-color: var(--green); color: var(--green); background: var(--green-soft-2); }
-  
-  /* Modals */
-  .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(31,42,36,0.4); display: none; align-items: center; justify-content: center; z-index: 1000; padding: 16px; backdrop-filter: blur(2px); }
-  .modal.active { display: flex; animation: fadeIn 0.15s; }
+  .btn-reset { 
+    padding: 10px 18px; border: 1px solid var(--line); background: #fff; 
+    border-radius: 8px; cursor: pointer; font-size: 0.85rem; transition: var(--transition); color: var(--muted);
+  }
+  .btn-reset:hover { border-color: var(--red); color: var(--red); background: var(--red-soft); }
+
+  /* Модальные окна */
+  .modal { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(31,42,36,0.45); display: none; align-items: center; justify-content: center; z-index: 2000; padding: 16px; backdrop-filter: blur(2px); }
+  .modal.active { display: flex; animation: fadeIn 0.2s; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
-  @keyframes fade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
-  .modal-box { background: var(--card); border-radius: var(--radius); max-width: 460px; width: 100%; box-shadow: var(--shadow); overflow: hidden; animation: slideUp 0.2s; max-height: 85vh; display: flex; flex-direction: column; border: 1px solid var(--line); }
-  @keyframes slideUp { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-  .modal-header { padding: 10px 14px; background: var(--green-soft-2); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; flex-shrink: 0; }
-  .modal-header h3 { margin: 0; font-size: 0.9rem; font-weight: 600; color: var(--green); }
-  .modal-close { background: none; border: none; font-size: 1.3rem; cursor: pointer; color: var(--muted); padding: 0; line-height: 1; }
+  .modal-box { background: var(--card); border-radius: var(--radius); max-width: 480px; width: 100%; box-shadow: var(--shadow); overflow: hidden; animation: slideUp 0.25s; max-height: 90vh; display: flex; flex-direction: column; border: 1px solid var(--line); }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-header { padding: 12px 16px; background: var(--green-soft-2); border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: center; }
+  .modal-header h3 { margin: 0; font-size: 1rem; font-weight: 600; color: var(--green); }
+  .modal-close { background: none; border: none; font-size: 1.4rem; cursor: pointer; color: var(--muted); line-height: 1; }
   .modal-close:hover { color: var(--text); }
-  .modal-body { padding: 12px 14px; font-size: 0.82rem; line-height: 1.45; color: #334155; overflow-y: auto; flex: 1; }
-  .modal-body p { margin: 0 0 6px; }
-  .modal-body ul { padding-left: 14px; margin: 4px 0; }
+  .modal-body { padding: 14px 16px; font-size: 0.88rem; line-height: 1.5; color: #334155; overflow-y: auto; flex: 1; }
+  .modal-body p { margin: 0 0 8px; }
+  .modal-body ul { padding-left: 18px; margin: 6px 0; }
   .modal-body strong { color: var(--green); }
-  .modal-body .tip { background: var(--warning-bg); border: 1px solid var(--warning-border); color: var(--warning-text); padding: 8px; border-radius: 5px; margin-top: 8px; font-size: 0.8rem; }
-  .modal-body .tip strong { color: var(--warning-text); }
-  .modal-footer { padding: 8px 14px; border-top: 1px solid var(--line); background: var(--card); text-align: right; flex-shrink: 0; }
-  .btn-ok { background: var(--green); color: #fff; border: none; padding: 6px 14px; border-radius: 5px; cursor: pointer; font-size: 0.78rem; font-weight: 500; transition: var(--transition); }
+  .modal-body .tip { background: var(--warning-bg); border: 1px solid var(--warning-border); color: var(--warning-border); padding: 10px; border-radius: 6px; margin-top: 10px; font-size: 0.85rem; }
+  .modal-body .tip strong { color: var(--warning-border); }
+  .modal-footer { padding: 10px 16px; border-top: 1px solid var(--line); text-align: right; }
+  .btn-ok { background: var(--green); color: #fff; border: none; padding: 8px 16px; border-radius: 6px; cursor: pointer; font-size: 0.85rem; font-weight: 500; }
   .btn-ok:hover { filter: brightness(0.95); }
+
+  /* Сводка */
+  .summary-block { 
+    background: var(--green-soft); border: 1px solid var(--green); border-radius: 8px; 
+    padding: 12px; margin-top: 10px; display: none; 
+  }
+  .summary-block.show { display: block; }
   
-  @media (max-width: 500px) { 
+  @media (max-width: 600px) { 
     .zones-grid { flex-direction: column; } 
-    .szz-wrap { height: auto; max-height: 95vh; border-radius: 0; border: none; }
-    .resizer { display: none; }
+    .szz-wrap { border-radius: 0; border: none; height: auto; }
   }
 </style>
 </head>
@@ -136,7 +179,7 @@
 <div class="szz-wrap" id="szz-wrap">
   <div class="szz-header">
     <h2>Где это допустимо</h2>
-    <p>Распределите объекты по трем зонам</p>
+    <p>Распределите объекты по зонам</p>
   </div>
 
   <div class="top-actions">
@@ -148,12 +191,12 @@
     <div class="oleg-preview">
       <img src="oleg.jpg" alt="Олег">
       <div class="text">
-        <strong>Олег:</strong> Мне дали план участка. Нужно быстро понять, какие элементы относятся к заводу, какие к СЗЗ, а какие строго запрещены в санитарном буфере.
+        <strong>Олег:</strong> Мне дали план участка. Нужно понять, какие элементы относятся к заводу, какие к СЗЗ, а какие допустимы только в жилой зоне. Перетаскивайте карточки в нужные столбцы.
       </div>
     </div>
 
     <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
-    <p class="instruction">Перетащите карточки в нужный столбец. На телефоне нажмите на карточку, затем на столбец.</p>
+    <p class="instruction">Перетащите карточки в столбцы. Можно менять их местами. Когда все 12 карточек будут распределены, нажмите «Проверить».</p>
     
     <div class="pool" id="pool"></div>
     
@@ -172,23 +215,16 @@
       </div>
     </div>
 
-    <div class="summary" id="summary">
-      <h4>Что вы разобрали</h4>
-      <p>Вы разложили элементы по трем зонам. Это помогает не смешивать ограничения, которые действуют внутри предприятия, в СЗЗ и в жилой зоне.</p>
-      <p>Когда видите в документе условие или запрет, сначала определите зону действия, а потом оценивайте допустимость.</p>
-      <div class="value-block">
-        <strong>Как применять</strong><br>
-        При работе с проектом СЗЗ обращайте внимание: где граница предприятия, как обозначена СЗЗ и какие ограничения в жилой зоне. Это поможет правильно читать документы.
-      </div>
+    <div class="summary-block" id="summary">
+      <p style="margin:0; font-weight:600; color:var(--green);">Отлично! Зоны распределены верно.</p>
+      <p style="margin:4px 0 0; font-size:0.8rem;">Теперь вы можете нажать на любую карточку, чтобы прочитать комментарий к решению.</p>
     </div>
   </div>
 
   <div class="bottom-actions">
+    <button class="btn-check" id="btn-check" disabled>Проверить</button>
     <button class="btn-reset" id="btn-reset">Начать заново</button>
   </div>
-  
-  <!-- Resizer Handle -->
-  <div class="resizer" id="resizer" title="Потяните для изменения размера"></div>
 </div>
 
 <!-- Modals -->
@@ -197,10 +233,11 @@
     <div class="modal-header"><h3>Правила</h3><button class="modal-close" onclick="closeModal('rules')">&times;</button></div>
     <div class="modal-body">
       <ul>
-        <li>Перетащите карточку в нужный столбец. На телефоне нажмите на карточку, затем на столбец.</li>
-        <li>Сразу после размещения откроется окно с разбором.</li>
-        <li>При ошибке карточка вернется в пул. Попробуйте снова.</li>
-        <li>После верного размещения всех 12 карточек появится итоговый комментарий.</li>
+        <li><strong>Нажмите и тяните</strong> карточку из общего списка в один из трех столбцов.</li>
+        <li>Вы можете перекладывать карточки из одного столбца в другой до нажатия кнопки «Проверить».</li>
+        <li>Когда все 12 карточек распределены, активируется кнопка «Проверить».</li>
+        <li>Если есть ошибки, они подсветятся красным. Нажмите «Начать заново», чтобы сбросить ошибки и попробовать снова.</li>
+        <li>При верном решении можно кликнуть на карточку для пояснения.</li>
       </ul>
     </div>
     <div class="modal-footer"><button class="btn-ok" onclick="closeModal('rules')">Понятно</button></div>
@@ -211,9 +248,8 @@
   <div class="modal-box">
     <div class="modal-header"><h3>Что важно понять</h3><button class="modal-close" onclick="closeModal('importance')">&times;</button></div>
     <div class="modal-body">
-      <p>СЗЗ существует не как абстрактная линия, а как четкий правовой режим. Ошибка в классификации зон ведет к замечаниям экспертизы.</p>
-      <p>Когда видите запрет или условие, сначала определяйте зону действия. Только после этого оценивайте допустимость.</p>
-      <div class="tip"><strong>Правило:</strong> Документ → Зона действия → Режим территории → Разрешение или запрет.</div>
+      <p>СЗЗ — это не просто линия на карте, а правовой режим территории. Ошибка в классификации зон ведет к замечаниям экспертизы.</p>
+      <div class="tip"><strong>Правило:</strong> Сначала определите зону действия (Предприятие / Буфер / Город), а потом оценивайте допустимость объекта.</div>
     </div>
     <div class="modal-footer"><button class="btn-ok" onclick="closeModal('importance')">Понятно</button></div>
   </div>
@@ -229,31 +265,39 @@
 
 <script>
 const cardsData = [
-  { id: 'c1', text: 'Производственные цеха', zone: 'enterprise', ok: 'Верно. Цеха – источники воздействия, их размещают строго внутри промплощадки.', err: 'Неверно. Производственные объекты остаются на территории предприятия. В СЗЗ и жилой зоне их размещать запрещено.', tip: 'При проверке проекта убедитесь, что все источники выбросов находятся внутри границ предприятия. Это базовое требование для расчета СЗЗ.' },
-  { id: 'c2', text: 'Лаборатория ПЭК', zone: 'enterprise', ok: 'Верно. Лаборатория ПЭК обслуживает внутренние процессы и работает внутри площадки.', err: 'Неверно. Лаборатория относится к внутренней инфраструктуре завода, а не к буферной или жилой зоне.', tip: 'Лаборатория ПЭК проводит производственный экологический контроль. Ей место на территории предприятия для оперативного отбора проб.' },
-  { id: 'c3', text: 'Котельная', zone: 'enterprise', ok: 'Верно. Котельные относятся к энергетической инфраструктуре и размещаются внутри промплощадки.', err: 'Неверно. Котельные – источники теплового воздействия. Их размещают на территории предприятия.', tip: 'Котельные учитываются при расчете выбросов. Проверьте, что они включены в инвентаризацию источников воздействия.' },
-  { id: 'c4', text: 'Склады сырья', zone: 'enterprise', ok: 'Верно. Склады входят в логистическую цепочку и находятся внутри площадки.', err: 'Неверно. Склады сырья обслуживают производство. Их размещают на территории предприятия.', tip: 'Склады с опасными веществами требуют особого учета. Убедитесь, что они учтены в проекте СЗЗ.' },
-  { id: 'c5', text: 'Пост мониторинга воздуха', zone: 'szz', ok: 'Верно. Посты устанавливают в СЗЗ или на ее границе для контроля рассеивания выбросов.', err: 'Неверно. Посты мониторинга размещают в буфере, чтобы фиксировать воздействие до жилых кварталов.', tip: 'Посты в СЗЗ – ваш инструмент контроля. Проверяйте их расположение на границе зоны и в селитебной территории.' },
-  { id: 'c6', text: 'Подъездная дорога', zone: 'szz', ok: 'Верно. Инфраструктурные дороги разрешены в СЗЗ. Они не требуют постоянного пребывания людей.', err: 'Неверно. Подъездные пути размещают в буфере. Жилая зона для них не подходит.', tip: 'Дороги в СЗЗ допустимы, но проверьте, что они не создают дополнительных источников пыли и шума.' },
-  { id: 'c7', text: 'Защитное озеленение', zone: 'szz', ok: 'Верно. Деревья и кустарники высаживают в СЗЗ как природный фильтр для шума и пыли.', err: 'Неверно. Озеленение – обязательный элемент СЗЗ. Его размещают именно в санитарном буфере.', tip: 'Озеленение снижает негативное воздействие. В проекте СЗЗ проверьте наличие защитных полос.' },
-  { id: 'c8', text: 'Трансформаторная подстанция', zone: 'szz', ok: 'Верно. Подстанции разрешены в СЗЗ, так как не требуют постоянного нахождения персонала.', err: 'Неверно. Подстанции размещают в буфере. На территории предприятия они возможны, но для рассеивания их выносят в СЗЗ.', tip: 'Подстанции создают электромагнитное поле. Убедитесь, что их размещение в СЗЗ согласовано.' },
-  { id: 'c9', text: 'Многоэтажные жилые дома', zone: 'residential', ok: 'Верно. Жилье размещают строго в жилой зоне. СанПин запрещает строить дома внутри СЗЗ.', err: 'Неверно. Жилая застройка строго запрещена в санитарном буфере. Дома размещают только за пределами СЗЗ.', tip: 'Это красный флаг. Если видите жилье в СЗЗ – это нарушение. Требуйте корректировки границ или выноса объектов.' },
-  { id: 'c10', text: 'Детская площадка', zone: 'residential', ok: 'Верно. Детские объекты требуют максимального удаления от промышленных факторов.', err: 'Неверно. Площадки размещают только в жилой зоне. Нахождение в СЗЗ создает недопустимый риск.', tip: 'Детские объекты – приоритет защиты. Их наличие в СЗЗ – основание для отказа в согласовании проекта.' },
-  { id: 'c11', text: 'Городской парк отдыха', zone: 'residential', ok: 'Верно. Рекреационные зоны относятся к жилой территории и размещаются за пределами СЗЗ.', err: 'Неверно. Парки предназначены для массового пребывания людей. Их размещают в жилой зоне.', tip: 'Парки и скверы приравниваются к селитебной зоне. Проверьте, что они не попадают в границы СЗЗ.' },
-  { id: 'c12', text: 'Поликлиника', zone: 'residential', ok: 'Верно. Медицинские учреждения размещают в жилой зоне. Их нахождение в СЗЗ нарушает нормы.', err: 'Неверно. Поликлиники относятся к социальной инфраструктуре жилой застройки. В СЗЗ их размещение запрещено.', tip: 'Медицинские объекты – социальная инфраструктура. Их размещение в СЗЗ недопустимо по санитарным нормам.' }
+  { id: 'c1', text: 'Производственные цеха', zone: 'enterprise', ok: 'Верно. Цеха – источники воздействия, их размещают строго внутри промплощадки.', err: 'Неверно. Производственные объекты остаются на территории предприятия.', tip: 'При проверке проекта убедитесь, что все источники выбросов находятся внутри границ предприятия.' },
+  { id: 'c2', text: 'Лаборатория ПЭК', zone: 'enterprise', ok: 'Верно. Лаборатория ПЭК обслуживает внутренние процессы.', err: 'Неверно. Лаборатория относится к внутренней инфраструктуре завода.', tip: 'Лаборатория ПЭК проводит производственный экологический контроль.' },
+  { id: 'c3', text: 'Котельная', zone: 'enterprise', ok: 'Верно. Котельные относятся к энергетической инфраструктуре.', err: 'Неверно. Котельные – источники теплового воздействия.', tip: 'Котельные учитываются при расчете выбросов.' },
+  { id: 'c4', text: 'Склады сырья', zone: 'enterprise', ok: 'Верно. Склады входят в логистическую цепочку.', err: 'Неверно. Склады сырья обслуживают производство.', tip: 'Склады с опасными веществами требуют особого учета.' },
+  { id: 'c5', text: 'Пост мониторинга воздуха', zone: 'szz', ok: 'Верно. Посты устанавливают в СЗЗ или на ее границе.', err: 'Неверно. Посты мониторинга размещают в буфере.', tip: 'Посты в СЗЗ – ваш инструмент контроля.' },
+  { id: 'c6', text: 'Подъездная дорога', zone: 'szz', ok: 'Верно. Инфраструктурные дороги разрешены в СЗЗ.', err: 'Неверно. Подъездные пути размещают в буфере.', tip: 'Дороги в СЗЗ допустимы.' },
+  { id: 'c7', text: 'Защитное озеленение', zone: 'szz', ok: 'Верно. Деревья и кустарники высаживают в СЗЗ.', err: 'Неверно. Озеленение – обязательный элемент СЗЗ.', tip: 'Озеленение снижает негативное воздействие.' },
+  { id: 'c8', text: 'Трансформаторная подстанция', zone: ['szz', 'enterprise'], ok: 'Верно. Подстанции разрешены и в СЗЗ, и на территории.', err: 'Неверно. Подстанции можно размещать в любой из этих зон.', tip: 'Подстанции создают электромагнитное поле.' },
+  { id: 'c9', text: 'Многоэтажные жилые дома', zone: 'residential', ok: 'Верно. Жилье размещают строго в жилой зоне.', err: 'Неверно. Жилая застройка запрещена в санитарном буфере.', tip: 'Это красный флаг. Если видите жилье в СЗЗ – это нарушение.' },
+  { id: 'c10', text: 'Детская площадка', zone: 'residential', ok: 'Верно. Детские объекты требуют максимального удаления.', err: 'Неверно. Площадки размещают только в жилой зоне.', tip: 'Детские объекты – приоритет защиты.' },
+  { id: 'c11', text: 'Городской парк отдыха', zone: 'residential', ok: 'Верно. Рекреационные зоны размещаются за пределами СЗЗ.', err: 'Неверно. Парки размещают в жилой зоне.', tip: 'Парки и скверы приравниваются к селитебной зоне.' },
+  { id: 'c12', text: 'Поликлиника', zone: 'residential', ok: 'Верно. Медицинские учреждения размещают в жилой зоне.', err: 'Неверно. Поликлиники относятся к социальной инфраструктуре.', tip: 'Медицинские объекты в СЗЗ недопустимы.' }
 ];
 
 let placedCount = 0;
-let selectedCard = null;
 let draggedEl = null;
 let offsetX = 0, offsetY = 0;
 const totalCards = cardsData.length;
+let isVerified = false; // Флаг: была ли проверка
 
 const pool = document.getElementById('pool');
 const progress = document.getElementById('progress');
 const summary = document.getElementById('summary');
+const btnCheck = document.getElementById('btn-check');
+const btnReset = document.getElementById('btn-reset');
 const wrap = document.getElementById('szz-wrap');
-const resizer = document.getElementById('resizer');
+
+// Функция для ресайзера (сообщает родительскому фрейму об изменении высоты)
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
 
 function shuffle(arr) {
   for (let i = arr.length - 1; i > 0; i--) {
@@ -269,40 +313,49 @@ function initPool() {
   progress.style.width = '0%';
   summary.classList.remove('show');
   document.querySelectorAll('.zone-cards').forEach(col => col.innerHTML = '');
-  document.querySelectorAll('.drag-card').forEach(c => {
-    c.classList.remove('correct', 'selected', 'dragging');
-    c.draggable = true;
-  });
-  document.getElementById('btn-reset').style.display = 'none';
+  isVerified = false;
+  btnCheck.disabled = true;
+  btnReset.textContent = 'Начать заново';
+  
+  // Убираем стили ошибки, если они были
+  document.querySelectorAll('.drag-card').forEach(c => c.classList.remove('wrong', 'correct'));
   
   shuffle(cardsData).forEach(card => {
     const el = document.createElement('div');
     el.className = 'drag-card';
     el.textContent = card.text;
-    el.draggable = true;
     el.dataset.id = card.id;
-    
     el.addEventListener('pointerdown', handlePointerDown);
-    el.addEventListener('click', (e) => {
-      if(e.target.classList.contains('correct')) return;
-      document.querySelectorAll('.drag-card').forEach(c => c.classList.remove('selected'));
-      el.classList.add('selected');
-      selectedCard = card;
-    });
     pool.appendChild(el);
   });
+  
+  // Наблюдаем за размером, чтобы ресайзер срабатывал при добавлении элементов
+  new ResizeObserver(() => { triggerResize(); }).observe(wrap);
+  
+  triggerResize();
 }
 
 function handlePointerDown(e) {
   const card = e.target.closest('.drag-card');
-  if (!card || card.classList.contains('correct')) return;
+  if (!card) return;
+  
+  // Если уже была проверка и карточка правильная - разрешаем просмотр комментариев
+  if (isVerified && card.classList.contains('correct')) {
+    const id = card.dataset.id;
+    const data = cardsData.find(c => c.id === id);
+    if (data) {
+      document.getElementById('fb-title').textContent = card.textContent;
+      document.getElementById('fb-body').innerHTML = `<p>${data.ok}</p>${data.tip ? '<div class="tip"><strong>Для эколога:</strong> ' + data.tip + '</div>' : ''}`;
+      openModal('feedback-modal');
+    }
+    return;
+  }
   
   draggedEl = card;
   const rect = card.getBoundingClientRect();
   offsetX = e.clientX - rect.left;
   offsetY = e.clientY - rect.top;
   
-  // Fixed positioning for drag
   draggedEl.style.position = 'fixed';
   draggedEl.style.width = rect.width + 'px';
   draggedEl.style.zIndex = 1000;
@@ -319,7 +372,6 @@ function onPointerMove(e) {
   draggedEl.style.left = (e.clientX - offsetX) + 'px';
   draggedEl.style.top = (e.clientY - offsetY) + 'px';
   
-  // Highlight drop zones
   document.querySelectorAll('.zone-col').forEach(z => {
     const rect = z.getBoundingClientRect();
     if (e.clientX >= rect.left && e.clientX <= rect.right && e.clientY >= rect.top && e.clientY <= rect.bottom) {
@@ -337,18 +389,6 @@ function onPointerUp(e) {
   
   if (!draggedEl) return;
   
-  // Reset styles
-  draggedEl.style.position = '';
-  draggedEl.style.width = '';
-  draggedEl.style.zIndex = '';
-  draggedEl.style.left = '';
-  draggedEl.style.top = '';
-  draggedEl.classList.remove('dragging');
-  
-  const cardId = draggedEl.dataset.id;
-  const card = cardsData.find(c => c.id === cardId);
-  
-  // Check drop target
   draggedEl.style.display = 'none';
   let elemBelow = document.elementFromPoint(e.clientX, e.clientY);
   draggedEl.style.display = '';
@@ -357,77 +397,126 @@ function onPointerUp(e) {
   if (elemBelow) {
     const target = elemBelow.closest('.zone-col');
     if (target) {
-      handlePlacement(cardId, target);
+      handlePlacement(target);
       placed = true;
     }
   }
   
-  if (!placed) {
-    // Return to pool if not placed
-    draggedEl.classList.remove('selected');
+  // Если не попали в зону - вернуть в пул
+  if (!placed && draggedEl) {
+    pool.appendChild(draggedEl);
+    draggedEl.style.position = '';
+    draggedEl.style.width = '';
+    draggedEl.style.zIndex = '';
+    draggedEl.style.left = '';
+    draggedEl.style.top = '';
+    draggedEl.classList.remove('dragging');
   }
   
   draggedEl = null;
+  triggerResize();
 }
 
-function handlePlacement(cardId, zoneCol) {
-  const card = cardsData.find(c => c.id === cardId);
-  const el = document.querySelector(`.drag-card[data-id="${cardId}"]`);
-  if(!card || !el || el.classList.contains('correct')) return;
+function handlePlacement(zoneCol) {
+  // Добавляем карточку в зону
+  zoneCol.querySelector('.zone-cards').appendChild(draggedEl);
+  
+  // Сбрасываем стили перетаскивания
+  draggedEl.style.position = '';
+  draggedEl.style.width = '';
+  draggedEl.style.zIndex = '';
+  draggedEl.style.left = '';
+  draggedEl.style.top = '';
+  draggedEl.classList.remove('dragging');
+  
+  // Если была проверка, сбрасываем её, т.к. пользователь переместил карту
+  if (isVerified) {
+    isVerified = false;
+    summary.classList.remove('show');
+    btnReset.textContent = 'Начать заново';
+    document.querySelectorAll('.drag-card').forEach(c => {
+      c.classList.remove('wrong', 'correct');
+    });
+    // Убираем обработчики комментариев
+    document.querySelectorAll('.drag-card').forEach(el => {
+      el.onclick = null;
+    });
+  }
+  
+  updateProgress();
+}
 
-  const isCorrect = card.zone === zoneCol.dataset.zone;
-  const zoneName = zoneCol.querySelector('h5').textContent;
+function updateProgress() {
+  const poolCards = pool.querySelectorAll('.drag-card').length;
+  placedCount = totalCards - poolCards;
+  progress.style.width = `${(placedCount / totalCards) * 100}%`;
   
-  const title = isCorrect ? 'Размещение верно' : 'Обратите внимание';
-  const msg = isCorrect 
-    ? `<strong>${card.text}</strong> → ${zoneName}<br>${card.ok}` 
-    : `<strong>${card.text}</strong> не относится к «${zoneName}». ${card.err}<br><br>Правильное место: ${getZoneName(card.zone)}.`;
-  
-  const tipBlock = card.tip ? `<div class="tip"><strong>Для эколога:</strong> ${card.tip}</div>` : '';
-  
-  document.getElementById('fb-title').textContent = title;
-  document.getElementById('fb-body').innerHTML = `<p>${msg}</p>${tipBlock}`;
-  openModal('feedback-modal');
-
-  if(isCorrect) {
-    el.classList.remove('selected');
-    el.classList.add('correct');
-    el.draggable = false;
-    const clone = document.createElement('div');
-    clone.className = 'placed-item';
-    clone.textContent = card.text;
-    zoneCol.querySelector('.zone-cards').appendChild(clone);
-    placedCount++;
-    progress.style.width = `${(placedCount / totalCards) * 100}%`;
-    if(placedCount === totalCards) showSummary();
+  if (placedCount === totalCards) {
+    btnCheck.disabled = false;
+  } else {
+    btnCheck.disabled = true;
   }
 }
 
-function getZoneName(key) {
-  return key === 'enterprise' ? 'Территория предприятия' : key === 'szz' ? 'Санитарно-защитная зона' : 'Жилая зона';
-}
-
-function showSummary() {
-  setTimeout(() => {
-    pool.style.display = 'none';
-    document.querySelectorAll('.zone-col').forEach(z => z.style.display = 'none');
-    document.querySelector('.progress-bar').style.display = 'none';
-    document.querySelector('.instruction').style.display = 'none';
+function checkAnswers() {
+  let errors = 0;
+  
+  document.querySelectorAll('.zone-cards').forEach(col => {
+    const zoneType = col.closest('.zone-col').dataset.zone;
+    const cards = col.querySelectorAll('.drag-card');
+    
+    cards.forEach(card => {
+      const id = card.dataset.id;
+      const data = cardsData.find(c => c.id === id);
+      
+      // Проверка правильности (учитывая массив допустимых зон)
+      const isCorrect = Array.isArray(data.zone) 
+        ? data.zone.includes(zoneType) 
+        : data.zone === zoneType;
+      
+      card.classList.remove('correct'); // Сброс перед проверкой
+      
+      if (!isCorrect) {
+        errors++;
+        card.classList.add('wrong');
+      } else {
+        card.classList.add('correct');
+      }
+    });
+  });
+  
+  if (errors === 0) {
+    isVerified = true;
     summary.classList.add('show');
-    document.getElementById('btn-reset').style.display = 'inline-block';
-  }, 300);
+    btnCheck.style.display = 'none'; // Скрываем кнопку проверки после успеха
+    
+    // Включаем клик по карточкам для просмотра комментариев
+    document.querySelectorAll('.drag-card.correct').forEach(el => {
+      el.style.cursor = 'pointer';
+    });
+    
+    openModal('success');
+  } else {
+    isVerified = true;
+    btnCheck.disabled = true; // Блокируем проверку до сброса
+    document.getElementById('fb-title').textContent = `⚠️ Ошибки: ${errors}`;
+    document.getElementById('fb-body').innerHTML = `<p>Некоторые карточки размещены неверно. Они подсвечены красным.</p><p>Нажмите <strong>«Начать заново»</strong>, чтобы сбросить все карточки и попробовать снова.</p>`;
+    openModal('feedback-modal');
+  }
+  triggerResize();
 }
 
-function openModal(id) { document.getElementById(id).classList.add('active'); }
-function closeModal(id) { document.getElementById(id).classList.remove('active'); }
+function openModal(id) { document.getElementById(id).classList.add('active'); triggerResize(); }
+function closeModal(id) { document.getElementById(id).classList.remove('active'); triggerResize(); }
 
-document.getElementById('btn-reset').onclick = () => {
-  pool.style.display = 'flex';
-  document.querySelectorAll('.zone-col').forEach(z => z.style.display = 'flex');
-  document.querySelector('.progress-bar').style.display = 'block';
-  document.querySelector('.instruction').style.display = 'block';
+btnCheck.addEventListener('click', checkAnswers);
+
+btnReset.addEventListener('click', () => {
+  // Если была ошибка, сброс возвращает всё в пул.
+  // Если успех, сброс перезапускает игру заново.
+  btnCheck.style.display = 'inline-block';
   initPool();
-};
+});
 
 // Modal close handlers
 document.querySelectorAll('.modal').forEach(m => m.addEventListener('click', e => { if(e.target === m) closeModal(m.id); }));
@@ -437,33 +526,10 @@ document.querySelectorAll('.modal-close, .btn-ok').forEach(btn => btn.addEventLi
 }));
 document.addEventListener('keydown', e => { if(e.key === 'Escape') document.querySelectorAll('.modal.active').forEach(m => closeModal(m.id)); });
 
-// Resizer Logic
-let isResizing = false;
-let startY, startHeight;
-
-resizer.addEventListener('mousedown', (e) => {
-  e.preventDefault();
-  isResizing = true;
-  startY = e.clientY;
-  startHeight = wrap.offsetHeight;
-  document.addEventListener('mousemove', onResize);
-  document.addEventListener('mouseup', stopResize);
-});
-
-function onResize(e) {
-  if (!isResizing) return;
-  const newHeight = Math.max(500, Math.min(900, startHeight + (e.clientY - startY)));
-  wrap.style.height = newHeight + 'px';
-}
-
-function stopResize() {
-  isResizing = false;
-  document.removeEventListener('mousemove', onResize);
-  document.removeEventListener('mouseup', stopResize);
-}
-
 // Init
-initPool();
+window.addEventListener('load', () => {
+  initPool();
+});
 </script>
 </body>
 </html>
