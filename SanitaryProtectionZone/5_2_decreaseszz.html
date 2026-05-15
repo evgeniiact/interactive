@@ -1,29 +1,35 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Олег: Меры для разных предприятий</title>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+<!-- 🔧 1. СКРИПТ IFRAME-RESIZER (contentWindow для работы ВНУТРИ iframe) -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <style>
   :root {
     --bg: #ffffff; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
     --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
     --green-soft-2: #f4faf7; --shadow: 0 12px 32px rgba(26,36,31,0.1);
     --radius: 16px; --transition: 160ms ease;
-    --red: #b4532a; --red-soft: #fff1ea; --blue: #0ea5e9;
+    --red: #b4532a; --red-soft: #fff1ea;
   }
   * { box-sizing: border-box; }
+  
+  /* 🔧 2. CSS: РАЗРЕШАЕМ РОСТ СТРАНИЦЫ */
   html, body {
-    margin: 0; padding: 0; overflow: hidden; height: 100%;
+    margin: 0; padding: 0;
+    /* УБРАЛИ overflow: hidden и height: 100% — теперь контент может расти */
     font-family: Inter, system-ui, -apple-system, sans-serif;
     background: var(--bg); color: var(--text);
+    min-height: 100%;
   }
   
   .szz-wrap {
     width: 100%; max-width: 800px; 
+    /* 🔧 ИСПРАВЛЕНО: height: auto вместо фиксированной высоты */
     min-height: 400px;
+    height: auto;
     background: var(--card); margin: 0 auto;
     display: flex; flex-direction: column;
     border: 1px solid var(--line); border-radius: var(--radius);
@@ -68,7 +74,7 @@
   .ent-btn.active { border-color: var(--green); background: var(--green-soft); color: var(--green); }
   
   .game-area { 
-    padding: 10px 16px; flex: 1; display: flex; flex-direction: column; gap: 12px;
+    padding: 10px 16px; display: flex; flex-direction: column; gap: 12px;
   }
   
   /* Current enterprise banner */
@@ -110,7 +116,7 @@
   .card-icon { width: 22px; height: 22px; background: var(--green-soft); border-radius: 5px; flex-shrink: 0; display: flex; align-items: center; justify-content: center; font-size: 0.85rem; }
   .card-text { font-size: 0.75rem; line-height: 1.3; color: var(--text); font-weight: 500; }
   
-  /* Зоны - строго по горизонтали, растут по контенту */
+  /* Зоны */
   .zones-wrapper {
     display: flex; flex-direction: row; gap: 10px; flex-shrink: 0;
   }
@@ -149,9 +155,7 @@
   .btn-check:disabled { background: var(--line); color: var(--muted); cursor: not-allowed; }
   .btn-reset { background: #fff; color: var(--text); border: 1px solid var(--line); }
   .btn-reset:hover { border-color: var(--green); background: var(--green-soft-2); }
-  .btn-retry { 
-    background: var(--blue); color: #fff; display: none;
-  }
+  .btn-retry { background: var(--blue); color: #fff; display: none; }
   .btn-retry:hover { filter: brightness(0.95); }
   
   .summary {
@@ -168,7 +172,7 @@
   .modal.active { display: flex; animation: fadeIn 0.2s; }
   @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
   .modal-box {
-    background: #fff; border-radius: 10px; max-width: 480px; width: 100%;
+    background: #fff; border-radius: 10px; max-width: 460px; width: 100%;
     box-shadow: 0 16px 40px rgba(0,0,0,0.15); overflow: hidden; animation: slideUp 0.25s;
     max-height: 85vh; display: flex; flex-direction: column;
   }
@@ -366,7 +370,7 @@
   const summary = document.getElementById('summary');
   const banner = document.getElementById('current-banner');
 
-  // Trigger iframe resize
+  // 🔧 3. ФУНКЦИЯ ТРИГГЕРА РЕСАЙЗЕРА
   function triggerResize() {
     if (window.iFrameResize) {
       window.iFrameResize({ log: false, checkOrigin: false }, '*');
@@ -405,6 +409,7 @@
     summary.classList.remove('show');
     summary.className = 'summary';
     btnCheck.disabled = true;
+    btnCheck.style.display = 'inline-block';
     btnRetry.style.display = 'none';
     isChecked = false;
     updateCounter();
@@ -582,7 +587,7 @@
           </ul>
         </div>
         <div class="tip-box">
-          <strong>Совет новичку:</strong> Для химзавода главное — снизить концентрацию веществ. Шумозащита и виброизоляция здесь не помогут, даже если они эффективны для других типов предприятий.
+          <strong>Совет новичку:</strong> Для химзавода главное — снизить концентрацию веществ. Шумозащита и виброизоляция здесь не помогут.
         </div>
       `;
     } else if (currentEnt === 'bio') {
@@ -597,7 +602,7 @@
           </ul>
         </div>
         <div class="tip-box">
-          <strong>Совет новичку:</strong> Для ферм и птицефабрик главное — биологическая безопасность. Абсорберы для фенола здесь бесполезны, нужны биофильтры.
+          <strong>Совет новичку:</strong> Для ферм главное — биологическая безопасность. Абсорберы для фенола здесь бесполезны.
         </div>
       `;
     } else if (currentEnt === 'phys') {
@@ -612,7 +617,7 @@
           </ul>
         </div>
         <div class="tip-box">
-          <strong>Совет новичку:</strong> Посадка деревьев помогает немного снизить шум, но <strong>не заменяет экраны</strong>. Деревья работают как дополнение, а не как основная мера. Для реальной защиты нужны акустические барьеры высотой 3-4 метра.
+          <strong>Совет новичку:</strong> Посадка деревьев помогает, но <strong>не заменяет экраны</strong>. Для защиты нужны барьеры 3-4 метра.
         </div>
       `;
     } else if (currentEnt === 'combined') {
@@ -627,7 +632,7 @@
           </ul>
         </div>
         <div class="tip-box">
-          <strong>Совет новичку:</strong> Для ТЭЦ нужен <strong>комплексный подход</strong>: и химия (очистка газов), и физика (шум турбин). Нельзя сократить СЗЗ, работая только с одним фактором.
+          <strong>Совет новичку:</strong> Для ТЭЦ нужен комплексный подход: и химия, и физика. Нельзя работать только с одним фактором.
         </div>
       `;
     }
@@ -716,21 +721,20 @@
     if (e.key === 'Escape') document.querySelectorAll('.modal.active').forEach(m => closeModal(m.id));
   });
 
-  // ResizeObserver to track content changes
+  // 🔧 4. ResizeObserver ДЛЯ АВТОМАТИЧЕСКОГО ОТСЛЕЖИВАНИЯ ИЗМЕНЕНИЙ РАЗМЕРА
   const resizeObserver = new ResizeObserver(() => {
     triggerResize();
   });
 
   // Init
   window.addEventListener('load', () => {
-    // Default to chemistry if nothing selected
-    if (!currentEnt) {
-      const firstBtn = document.querySelector('.ent-btn[data-ent="chem"]');
-      selectEnt('chem', firstBtn);
-    }
+    // Default to chemistry
+    const firstBtn = document.querySelector('.ent-btn[data-ent="chem"]');
+    selectEnt('chem', firstBtn);
     triggerResize();
     
-    // Observe key containers for size changes
+    // Наблюдаем за обёрткой и зонами для изменений размера
+    resizeObserver.observe(document.querySelector('.szz-wrap'));
     resizeObserver.observe(document.getElementById('zone-reduce-cards'));
     resizeObserver.observe(document.getElementById('zone-no-reduce-cards'));
   });
