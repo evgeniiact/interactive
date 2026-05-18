@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Смена собственника: пошаговый алгоритм</title>
+<!-- Скрипт iframe-resizer для корректного масштабирования -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff; --text: #1f2a24; --muted: #68756e;
+    --green: #2d6a4f; --green-soft: #e7f3ed; --green-dark: #1a4a3a;
+    --orange: #d97706; --orange-soft: #fef3c7;
+    --blue: #0ea5e9; --blue-soft: #e0f2fe;
+    --line: #dce5df; --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg); color: var(--text);
+    padding: 16px; display: flex; justify-content: center;
+    min-height: 100vh;
+  }
+  .wrap {
+    width: 100%; max-width: 670px;
+    background: var(--bg); border-radius: var(--radius);
+    padding: 20px; position: relative;
+  }
+  h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--green-dark); }
+  .intro { font-size: 14px; color: var(--muted); line-height: 1.4; margin-bottom: 16px; }
+  
+  /* Steps */
+  .step { display: none; animation: fadeIn 0.25s; }
+  .step.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .scenario {
+    background: var(--blue-soft); border-left: 4px solid var(--blue);
+    border-radius: 8px; padding: 12px; margin-bottom: 16px; font-size: 14px;
+  }
+  .scenario strong { color: var(--text); }
+  
+  .question { font-weight: 600; font-size: 15px; margin-bottom: 12px; }
+  
+  .options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .opt {
+    padding: 12px; border: 2px solid var(--line); border-radius: 10px;
+    cursor: pointer; font-size: 14px; transition: 0.2s; background: #fff;
+    display: flex; align-items: center; gap: 10px;
+  }
+  .opt:hover { border-color: var(--green); background: var(--green-soft); }
+  .opt.selected { border-color: var(--green); background: var(--green-soft); font-weight: 600; }
+  .opt.disabled { pointer-events: none; opacity: 0.6; }
+  
+  .chk {
+    width: 20px; height: 20px; border: 2px solid var(--line); border-radius: 50%;
+    flex-shrink: 0; display: flex; align-items: center; justify-content: center;
+  }
+  .opt.selected .chk { background: var(--green); border-color: var(--green); color: #fff; }
+  .chk::after { content: '✓'; font-size: 12px; font-weight: 700; display: none; }
+  .opt.selected .chk::after { display: block; }
+  
+  /* Controls */
+  .controls {
+    display: flex; justify-content: space-between; align-items: center;
+    padding-top: 12px; border-top: 1px solid var(--line); margin-top: 8px;
+  }
+  .btn {
+    padding: 9px 18px; border: none; border-radius: 8px; font-size: 14px;
+    font-weight: 600; cursor: pointer; transition: 0.2s;
+  }
+  .btn-next { background: var(--green); color: #fff; opacity: 0.4; pointer-events: none; }
+  .btn-next.active { opacity: 1; pointer-events: auto; }
+  .btn-next:hover { background: var(--green-dark); }
+  .btn-restart { background: #fff; color: var(--text); border: 1px solid var(--line); }
+  .btn-restart:hover { border-color: var(--green); background: var(--green-soft); }
+  
+  /* Progress */
+  .progress {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 12px;
+    font-size: 13px; color: var(--muted);
+  }
+  .progress-bar { flex: 1; height: 4px; background: var(--line); border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green); width: 0%; transition: width 0.3s ease; }
+  
+  /* Final Algorithm */
+  .algorithm {
+    background: var(--green-soft); border: 1px solid var(--green);
+    border-radius: 10px; padding: 16px; display: none; animation: fadeIn 0.3s;
+  }
+  .algorithm.show { display: block; }
+  .algorithm h3 { margin: 0 0 12px; font-size: 16px; color: var(--green-dark); }
+  .algo-step {
+    background: #fff; border-radius: 8px; padding: 10px; margin-bottom: 8px;
+    border-left: 4px solid var(--green);
+  }
+  .algo-step strong { display: block; margin-bottom: 4px; font-size: 14px; }
+  .algo-step p { font-size: 13px; color: var(--muted); margin: 0; }
+  .algo-note {
+    background: var(--orange-soft); border-left: 3px solid var(--orange);
+    padding: 10px; border-radius: 6px; margin-top: 12px; font-size: 13px;
+  }
+  
+  /* Modal */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; backdrop-filter: blur(2px);
+  }
+  .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
+  .modal {
+    background: #fff; border-radius: 12px; max-width: 500px; width: 100%;
+    padding: 20px; box-shadow: 0 12px 32px rgba(0,0,0,0.15); position: relative;
+    animation: slideUp 0.25s;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-close {
+    position: absolute; top: 12px; right: 12px; width: 28px; height: 28px;
+    border: none; background: var(--line); border-radius: 50%; cursor: pointer;
+    font-size: 18px; color: var(--muted); display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: var(--green-soft); color: var(--green); }
+  .modal h4 { margin: 0 0 10px; font-size: 16px; color: var(--green-dark); }
+  .modal p { font-size: 14px; line-height: 1.5; color: var(--text); margin: 0 0 8px; }
+  .modal .law { color: var(--green); font-weight: 500; font-size: 13px; margin-top: 8px; display: block; }
+  .modal .btn-continue {
+    margin-top: 16px; width: 100%; padding: 10px; background: var(--green); color: #fff;
+    border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+  }
+  .modal .btn-continue:hover { background: var(--green-dark); }
+
+  @media (max-width: 500px) {
+    .wrap { padding: 16px; }
+    .controls { flex-direction: column; gap: 10px; }
+    .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h2>Смена собственника: пошаговый алгоритм</h2>
+  <p class="intro">Разберите кейс предприятия. Отвечайте на вопросы шаг за шагом. После каждого выбора вы увидите комментарий.</p>
+  
+  <div class="progress">
+    <span>Шаг <span id="step-num">1</span> из <span id="step-total">5</span></span>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+  
+  <!-- Step 1 -->
+  <div class="step active" data-step="1">
+    <div class="scenario">
+      <strong>Ситуация:</strong> У предприятия сменился собственник. Производственная площадка, технология, сырьё и источники выбросов не изменились. Объект НВОС остаётся тем же.
+    </div>
+    <div class="question">Какой главный фактор влияет на экологическую документацию?</div>
+    <div class="options">
+      <div class="opt" data-correct="true" data-comment="Верно! Смена собственника означает смену юридического лица-эксплуатанта. Все разрешения, выданные на конкретное юрлицо, требуют переоформления на правопреемника." data-law="п. 17 ст. 31.1 Закона № 7-ФЗ">
+        <div class="chk"></div> Изменилось юрлицо-эксплуатант
+      </div>
+      <div class="opt" data-correct="false" data-comment="В условии сказано, что технология не менялась. Это важно: если бы менялась технология, пришлось бы пересчитывать нормативы и делать новую инвентаризацию. Здесь меняются только реквизиты." data-law="">
+        <div class="chk"></div> Изменился технологический процесс
+      </div>
+      <div class="opt" data-correct="false" data-comment="Адрес площадки остался прежним. Меняется только собственник/юрлицо. Это упрощает задачу: не нужно менять координаты в КЭР и пересчитывать рассеивание." data-law="">
+        <div class="chk"></div> Изменился фактический адрес площадки
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step" data-step="2">
+    <div class="scenario">
+      <strong>Правильно!</strong> Юрлицо-эксплуатант сменилось. Теперь определим первые действия.
+    </div>
+    <div class="question">Кого нужно уведомить в первые дни после смены собственника?</div>
+    <div class="options">
+      <div class="opt" data-correct="true" data-comment="Верно! При передаче прав на имущество нужно уведомить регионального оператора по ТКО в течение 3 дней. Это обязательное требование." data-law="п. 8.2 постановления Правительства № 1156">
+        <div class="chk"></div> РО по ТКО (в течение 3 дней)
+      </div>
+      <div class="opt" data-correct="false" data-comment="Отдельно уведомлять Росприроднадзор письмом не нужно. Изменения вносятся через электронные заявки на переоформление разрешений и актуализацию реестра." data-law="">
+        <div class="chk"></div> Росприроднадзор отдельным письмом
+      </div>
+      <div class="opt" data-correct="false" data-comment="Автоматически обновляются только лицензии. Операторов по ТКО, ОМСУ и ФЭО нужно уведомить письменно в установленные сроки, иначе возможны штрафы." data-law="">
+        <div class="chk"></div> Никого, всё обновится автоматически
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step" data-step="3">
+    <div class="scenario">
+      <strong>Отлично!</strong> Уведомления отправлены. Переходим к разрешениям.
+    </div>
+    <div class="question">Какие внешние разрешения нужно переоформить на нового собственника?</div>
+    <div class="options">
+      <div class="opt" data-correct="true" data-comment="Верно! КЭР и СЭЗ привязаны к юридическому лицу. Их нужно переоформить на правопреемника. Срок рассмотрения ускоренный." data-law="п. 17 ст. 31.1 7-ФЗ; приказ Роспотребнадзора № 747">
+        <div class="chk"></div> КЭР и СЭЗ на проекты НДВ/НДС
+      </div>
+      <div class="opt" data-correct="false" data-comment="Паспорт отхода зависит от состава отхода и технологии. Если технология не менялась, паспорт не переоформляется. Вносить в него изменения недопустимо." data-law="п. 11 приказа Минприроды № 1026">
+        <div class="chk"></div> Паспорт отхода I–IV класса
+      </div>
+      <div class="opt" data-correct="false" data-comment="Лицензии на обращение с отходами обновляются автоматически по межведомственному взаимодействию. Уведомлять или подавать заявления не нужно." data-law="п. 8.3 постановления Правительства № 2343">
+        <div class="chk"></div> Лицензия на обращение с отходами
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 4 -->
+  <div class="step" data-step="4">
+    <div class="scenario">
+      <strong>Верно!</strong> Внешние разрешения переоформляются. Что с внутренними?
+    </div>
+    <div class="question">Что делать с программой ПЭК и отчетом об инвентаризации?</div>
+    <div class="options">
+      <div class="opt" data-correct="true" data-comment="Верно! Это внутренние документы. Достаточно обновить титульные листы и раздел «Общие сведения», затем утвердить новым приказом руководителя. Пересчитывать ничего не нужно." data-law="приказ Минприроды № 109; приказ Минприроды № 871">
+        <div class="chk"></div> Внести изменения в реквизиты, утвердить руководителем
+      </div>
+      <div class="opt" data-correct="false" data-comment="Не нужно переделывать с нуля. Технологии и источники не менялись, значит, методы контроля и нормативы остаются прежними. Только реквизиты." data-law="">
+        <div class="chk"></div> Разрабатывать программу и инвентаризацию заново
+      </div>
+      <div class="opt" data-correct="false" data-comment="Реквизиты должны быть актуальными всегда. Использование устаревших данных в ПЭК и инвентаризации — прямое нарушение при проверке." data-law="">
+        <div class="chk"></div> Оставить без изменений до следующей проверки
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 5 -->
+  <div class="step" data-step="5">
+    <div class="scenario">
+      <strong>Правильно!</strong> Последний шаг: регистрация изменений в государственных системах.
+    </div>
+    <div class="question">В какой срок и куда подать итоговые сведения?</div>
+    <div class="options">
+      <div class="opt" data-correct="true" data-comment="Верно! Сведения об объекте НВОС актуализируются в течение 30 дней после изменений в ЕГРЮЛ. Это финальный шаг, закрывающий цикл." data-law="п. 7 ст. 69.2 Закона № 7-ФЗ">
+        <div class="chk"></div> Актуализировать сведения в реестре НВОС (30 дней)
+      </div>
+      <div class="opt" data-correct="false" data-comment="Объект уже стоит на учете. Меняется только эксплуатирующее лицо. Нужно именно актуализировать запись, а не подавать заявку на новую постановку." data-law="">
+        <div class="chk"></div> Подать новую заявку на постановку на учет
+      </div>
+      <div class="opt" data-correct="false" data-comment="Срок жестко установлен законом — 30 дней с даты регистрации изменений в ЕГРЮЛ. Пропуск срока влечет риски предписаний при проверках." data-law="">
+        <div class="chk"></div> Срок не регламентирован, можно сделать позже
+      </div>
+    </div>
+  </div>
+
+  <!-- Final Algorithm -->
+  <div class="algorithm" id="final-algo">
+    <h3>📋 Алгоритм действий эколога при смене собственника</h3>
+    <div class="algo-step">
+      <strong>1. Определить правопреемника</strong>
+      <p>Установить, какое юрлицо теперь эксплуатирует объект НВОС. Это основание для всех дальнейших действий.</p>
+    </div>
+    <div class="algo-step">
+      <strong>2. Уведомить операторов (1–5 дней)</strong>
+      <p>РО по ТКО (3 дня), ОМСУ (5 дней), ФЭО (5 дней). Направить официальные письма об изменении реквизитов.</p>
+    </div>
+    <div class="algo-step">
+      <strong>3. Переоформить внешние разрешения</strong>
+      <p>КЭР, СЭЗ, решение/договор водопользования. Подать заявления через ЕПГУ/ЛК. Приложить выписку из ЕГРЮЛ.</p>
+    </div>
+    <div class="algo-step">
+      <strong>4. Актуализировать внутренние документы</strong>
+      <p>ПЭК, инвентаризации, проекты НДВ/НДС. Заменить реквизиты на титулах, утвердить приказами руководителя.</p>
+    </div>
+    <div class="algo-step">
+      <strong>5. Обновить реестр НВОС (до 30 дней)</strong>
+      <p>Подать заявку на актуализацию сведений после переоформления КЭР и СЭЗ. Указать нового эксплуатанта.</p>
+    </div>
+    <div class="algo-step">
+      <strong>6. Подать ДВОС</strong>
+      <p>При следующей отчётности указать новые реквизиты и приложить сканы обновлённых проектов.</p>
+    </div>
+    <div class="algo-note">
+      <strong>💡 Важно:</strong> Лицензии, решение об СЗЗ и паспорта отходов (при неизменной технологии) <strong>не требуют</strong> переоформления. Экономьте время и бюджет на том, что не нужно менять.
+    </div>
+    <div style="margin-top:16px; text-align:center;">
+      <button class="btn btn-restart" onclick="restart()">🔄 Пройти кейс ещё раз</button>
+    </div>
+  </div>
+
+  <div class="controls" id="controls">
+    <button class="btn btn-restart" onclick="restart()">🔄 Заново</button>
+    <button class="btn btn-next" id="btn-next" disabled>Далее →</button>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <h4 id="modal-title">Комментарий</h4>
+    <p id="modal-text"></p>
+    <span class="law" id="modal-law"></span>
+    <button class="btn-continue" onclick="closeModal()">Понятно, продолжить</button>
+  </div>
+</div>
+
+<script>
+  let currentStep = 1;
+  const totalSteps = 5;
+  let modalCallback = null;
+
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
+  function updateProgress() {
+    document.getElementById('step-num').textContent = currentStep;
+    document.getElementById('progress-fill').style.width = `${((currentStep - 1) / totalSteps) * 100}%`;
+  }
+
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    const stepEl = document.querySelector(`.step[data-step="${n}"]`);
+    if (stepEl) stepEl.classList.add('active');
+    updateProgress();
+    triggerResize();
+  }
+
+  function openModal(title, text, law, callback) {
+    document.getElementById('modal-title').textContent = title;
+    document.getElementById('modal-text').textContent = text;
+    document.getElementById('modal-law').textContent = law;
+    document.getElementById('modal').classList.add('show');
+    modalCallback = callback;
+    triggerResize();
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('show');
+    if (modalCallback) {
+      modalCallback();
+      modalCallback = null;
+    }
+    triggerResize();
+  }
+
+  function handleOption(el) {
+    const stepEl = el.closest('.step');
+    const opts = stepEl.querySelectorAll('.opt');
+    
+    // Disable all options in this step
+    opts.forEach(opt => {
+      opt.classList.add('disabled');
+      if (opt === el) opt.classList.add('selected');
+    });
+
+    const isCorrect = el.dataset.correct === 'true';
+    const title = isCorrect ? '✓ Верно' : '⚠️ Не совсем так';
+    const text = el.dataset.comment;
+    const law = el.dataset.law;
+
+    openModal(title, text, law, () => {
+      document.getElementById('btn-next').classList.add('active');
+      document.getElementById('btn-next').disabled = false;
+    });
+  }
+
+  document.getElementById('btn-next').addEventListener('click', () => {
+    if (currentStep < totalSteps) {
+      currentStep++;
+      showStep(currentStep);
+      document.getElementById('btn-next').classList.remove('active');
+      document.getElementById('btn-next').disabled = true;
+    } else {
+      // Show final algorithm
+      document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+      document.getElementById('final-algo').classList.add('show');
+      document.getElementById('controls').style.display = 'none';
+      document.getElementById('step-num').textContent = totalSteps;
+      document.getElementById('progress-fill').style.width = '100%';
+      triggerResize();
+    }
+  });
+
+  function restart() {
+    currentStep = 1;
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.querySelector('.step[data-step="1"]').classList.add('active');
+    document.getElementById('final-algo').classList.remove('show');
+    document.getElementById('controls').style.display = 'flex';
+    document.getElementById('btn-next').classList.remove('active');
+    document.getElementById('btn-next').disabled = true;
+    
+    document.querySelectorAll('.opt').forEach(opt => {
+      opt.classList.remove('selected', 'disabled');
+    });
+    
+    updateProgress();
+    triggerResize();
+  }
+
+  // Attach listeners
+  document.querySelectorAll('.opt').forEach(opt => {
+    opt.addEventListener('click', () => handleOption(opt));
+  });
+
+  document.getElementById('modal').addEventListener('click', e => {
+    if (e.target.id === 'modal') closeModal();
+  });
+
+  window.addEventListener('load', () => {
+    updateProgress();
+    triggerResize();
+    const observer = new ResizeObserver(() => triggerResize());
+    observer.observe(document.querySelector('.wrap'));
+  });
+</script>
+
+</body>
+</html>
