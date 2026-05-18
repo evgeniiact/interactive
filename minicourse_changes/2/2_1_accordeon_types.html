@@ -1,260 +1,155 @@
 <!DOCTYPE html>
 <html lang="ru">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Виды юридических изменений</title>
-<style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
-  body {
-    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
-    background: #fff;
-    display: flex;
-    justify-content: center;
-    align-items: flex-start;
-    min-height: 100vh;
-    padding: 20px;
-    color: #1a2b49;
-  }
-  .container {
-    width: 100%;
-    max-width: 650px;
-    background: #fff;
-  }
-  .accordion {
-    display: flex;
-    flex-direction: column;
-    gap: 12px;
-  }
-  .accordion-item {
-    border: 1px solid #eef1f6;
-    border-radius: 10px;
-    overflow: hidden;
-    background: #fff;
-  }
-  .accordion-header {
-    width: 100%;
-    padding: 16px 20px;
-    background: #fff;
-    border: none;
-    text-align: left;
-    font-size: 15px;
-    font-weight: 600;
-    color: #1a2b49;
-    cursor: pointer;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    transition: background 0.2s;
-  }
-  .accordion-header:hover { background: #f8f9fb; }
-  .accordion-header.active { background: #f0f4ff; border-bottom: 1px solid #eef1f6; }
-  .accordion-header .icon {
-    width: 20px;
-    height: 20px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 18px;
-    color: #667eea;
-    transition: transform 0.2s;
-  }
-  .accordion-header.active .icon { transform: rotate(180deg); }
-  
-  .accordion-content {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease;
-    background: #fff;
-  }
-  .accordion-content.show { max-height: 500px; }
-  
-  .accordion-body {
-    padding: 16px 20px 20px;
-    font-size: 14px;
-    line-height: 1.6;
-    color: #333;
-  }
-  .accordion-body p { margin-bottom: 12px; }
-  .accordion-body p:last-child { margin-bottom: 0; }
-  
-  .highlight {
-    background: #f8f9fb;
-    padding: 12px 14px;
-    border-radius: 8px;
-    border-left: 3px solid #667eea;
-    margin: 12px 0;
-    font-size: 13.5px;
-  }
-  
-  .tag {
-    display: inline-block;
-    background: #e8f5e9;
-    color: #2e7d32;
-    padding: 4px 10px;
-    border-radius: 6px;
-    font-size: 12px;
-    font-weight: 600;
-    margin-right: 6px;
-    margin-bottom: 6px;
-  }
-  .tag.warning { background: #fff4e0; color: #f57c00; }
-  .tag.error { background: #ffe8e6; color: #c42017; }
-</style>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Виды юридических изменений</title>
+  <!-- 🔧 1. ПОДКЛЮЧЕНИЕ IFRAME-RESIZER -->
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+  <style>
+    :root {
+      --bg: #f5f7f6; --card: #ffffff; --text: #1f2a24; --muted: #68756e;
+      --line: #dce5df; --green: #2d6a4f; --green-soft: #e7f3ed;
+      --radius: 12px; --shadow: 0 4px 12px rgba(0,0,0,0.05);
+    }
+    * { box-sizing: border-box; }
+    html, body {
+      margin: 0; padding: 0;
+      font-family: system-ui, -apple-system, sans-serif;
+      background: var(--bg); color: var(--text); line-height: 1.5;
+      /* Убираем фиксацию высоты, чтобы ресайзер работал корректно */
+      min-height: 100%;
+    }
+    .wrapper {
+      max-width: 700px; margin: 0 auto; background: var(--card);
+      border-radius: var(--radius); box-shadow: var(--shadow); padding: 20px;
+    }
+    h2 { margin: 0 0 16px; font-size: 1.3rem; color: var(--text); }
+    
+    .accordion-item {
+      border: 1px solid var(--line); border-radius: 8px; margin-bottom: 10px;
+      overflow: hidden;
+    }
+    .accordion-header {
+      background: #fff; padding: 12px 16px; cursor: pointer; font-weight: 600;
+      display: flex; justify-content: space-between; align-items: center;
+      transition: background 0.2s; user-select: none;
+    }
+    .accordion-header:hover { background: var(--green-soft); }
+    .accordion-header::after { content: '▼'; font-size: 0.8rem; transition: transform 0.3s; }
+    .accordion-item.open .accordion-header::after { transform: rotate(180deg); }
+    
+    .accordion-content {
+      max-height: 0; overflow: hidden; transition: max-height 0.3s ease;
+      padding: 0 16px; background: #fafafa;
+    }
+    .accordion-item.open .accordion-content { max-height: 1200px; padding: 16px; }
+    
+    .tip {
+      background: var(--green-soft); border-left: 3px solid var(--green);
+      padding: 8px 12px; margin: 10px 0; border-radius: 4px; font-size: 0.9rem;
+    }
+    .steps, .checklist { margin: 8px 0 8px 16px; }
+    .steps li, .checklist li { margin-bottom: 4px; }
+    .deadline { font-weight: 600; color: var(--green); }
+    .note { font-size: 0.85rem; color: var(--muted); font-style: italic; }
+  </style>
 </head>
 <body>
 
-<div class="container">
-  <div class="accordion">
-    
-    <div class="accordion-item">
-      <button class="accordion-header" onclick="toggleAccordion(this)">
-        <span>Изменение адреса</span>
-        <span class="icon">▼</span>
-      </button>
-      <div class="accordion-content">
-        <div class="accordion-body">
-          <p>Важно разделять юридический адрес организации и фактический адрес площадки НВОС.</p>
-          
-          <div class="highlight">
-            <strong>Юридический адрес</strong> – место нахождения исполнительного органа в ЕГРЮЛ. Меняется в учредительных документах.
-          </div>
-          
-          <div class="highlight">
-            <strong>Фактический адрес</strong> – место расположения объекта НВОС, координаты площадки.
-          </div>
-          
-          <p><strong>Если меняется только юридический адрес:</strong></p>
-          <p>Объект НВОС остается тем же. Нужно актуализировать сведения в реестре НВОС и переоформить документы, где адрес указан как реквизит.</p>
-          
-          <p><strong>Если меняется фактический адрес площадки:</strong></p>
-          <p>Последствия серьезнее. Объект может потребовать новой постановки на учет, новых координат в КЭР и ДВОС, переоформления разрешений.</p>
-          
-          <div style="margin-top: 12px;">
-            <span class="tag">Актуализировать реестр НВОС</span>
-            <span class="tag warning">30 дней</span>
-            <span class="tag">Проверить КЭР и ДВОС</span>
-          </div>
-        </div>
-      </div>
+<div class="wrapper">
+  <h2>Виды юридических изменений</h2>
+
+  <!-- 1. Изменение адреса -->
+  <div class="accordion-item">
+    <div class="accordion-header">Изменение адреса</div>
+    <div class="accordion-content">
+      <p>Важно разделять юридический адрес организации и фактический адрес площадки НВОС.</p>
+      <ul class="steps">
+        <li><strong>Юридический адрес</strong> – место нахождения исполнительного органа в ЕГРЮЛ. Меняется в учредительных документах.</li>
+        <li><strong>Фактический адрес</strong> – место расположения объекта НВОС, координаты площадки.</li>
+      </ul>
+      <p><strong>Если меняется только юридический адрес:</strong><br>
+      Объект НВОС остается тем же. Нужно актуализировать сведения в реестре НВОС и переоформить документы, где адрес указан как реквизит.</p>
+      <p><strong>Если меняется фактический адрес площадки:</strong><br>
+      Последствия серьезнее. Объект может потребовать новой постановки на учет, новых координат в КЭР и ДВОС, переоформления разрешений.</p>
+      <div class="tip">✅ Актуализировать реестр НВОС <span class="deadline">30 дней</span> | Проверить КЭР и ДВОС</div>
     </div>
-    
-    <div class="accordion-item">
-      <button class="accordion-header" onclick="toggleAccordion(this)">
-        <span>Изменение названия или организационно-правовой формы</span>
-        <span class="icon">▼</span>
-      </button>
-      <div class="accordion-content">
-        <div class="accordion-body">
-          <p>Производство может не измениться, но реквизиты в документах и разрешениях должны быть актуальными.</p>
-          
-          <p>Наименование организации указано в:</p>
-          <p>• проектах НДВ, НДС, НООЛР;<br>• программах ПЭК и ППЭЭ;<br>• инвентаризациях выбросов и сбросов;<br>• КЭР и ДВОС;<br>• санитарно-эпидемиологических заключениях;<br>• паспортах отходов и ГОУ.</p>
-          
-          <div class="highlight">
-            <strong>Что делать:</strong> внести изменения в реквизиты документов, утвердить их руководителем, переоформить разрешения, где наименование – часть идентификатора.
-          </div>
-          
-          <p><strong>Срок:</strong> для реестра НВОС и КЭР – 30 дней с даты регистрации изменений [п. 6, п. 7 ст. 69.2, п. 17 ст. 31.1 Закона № 7-ФЗ]. Для остальных документов срок не установлен, но лучше сделать до следующей проверки.</p>
-          
-          <div style="margin-top: 12px;">
-            <span class="tag">Внести изменения в реквизиты</span>
-            <span class="tag warning">Переформить КЭР и ДВОС</span>
-          </div>
-        </div>
-      </div>
+  </div>
+
+  <!-- 2. Изменение названия или формы -->
+  <div class="accordion-item">
+    <div class="accordion-header">Изменение названия или организационно-правовой формы</div>
+    <div class="accordion-content">
+      <p>Производство может не измениться, но реквизиты в документах и разрешениях должны быть актуальными.</p>
+      <p>Наименование организации указано в:</p>
+      <ul>
+        <li>проектах НДВ, НДС, НООЛР;</li>
+        <li>программах ПЭК и ППЭЭ;</li>
+        <li>инвентаризациях выбросов и сбросов;</li>
+        <li>КЭР и ДВОС;</li>
+        <li>санитарно-эпидемиологических заключениях;</li>
+        <li>паспортах отходов и ГОУ.</li>
+      </ul>
+      <p><strong>Что делать:</strong> внести изменения в реквизиты документов, утвердить их руководителем, переоформить разрешения, где наименование – часть идентификатора.</p>
+      <div class="tip">⏱ Срок: для реестра НВОС и КЭР – <span class="deadline">30 дней</span> с даты регистрации изменений [п. 6, п. 7 ст. 69.2, п. 17 ст. 31.1 Закона № 7-ФЗ]. Для остальных документов срок не установлен, но лучше сделать до следующей проверки.</div>
+      <div class="tip">✅ Внести изменения в реквизиты | Переоформить КЭР и ДВОС</div>
     </div>
-    
-    <div class="accordion-item">
-      <button class="accordion-header" onclick="toggleAccordion(this)">
-        <span>Смена собственника объекта</span>
-        <span class="icon">▼</span>
-      </button>
-      <div class="accordion-content">
-        <div class="accordion-body">
-          <p>Смена собственника может происходить через продажу имущества, передачу объекта дочернему обществу, аренду, концессию или другие сделки.</p>
-          
-          <p><strong>Для эколога это означает:</strong></p>
-          <p>1. Определить, кто теперь эксплуатирует объект НВОС.<br>2. Установить, на кого должны быть оформлены разрешительные документы.<br>3. Актуализировать учет объекта в реестре НВОС.</p>
-          
-          <div class="highlight">
-            <strong>Важно:</strong> если меняется юридическое лицо-эксплуатант, разрешения (КЭР, ДВОС, лицензии) нужно переоформить на нового правопреемника. Если меняется только собственник имущества, а эксплуатант остается тем же – достаточно внести изменения в реквизиты.
-          </div>
-          
-          <p><strong>Документы для проверки:</strong> реестр НВОС, КЭР, ДВОС, разрешения на выбросы/сбросы, договоры водопользования, лицензии.</p>
-          
-          <div style="margin-top: 12px;">
-            <span class="tag">Определить правопреемника</span>
-            <span class="tag warning">Переформить разрешения</span>
-            <span class="tag">Актуализировать реестр</span>
-          </div>
-        </div>
-      </div>
+  </div>
+
+  <!-- 3. Смена собственника -->
+  <div class="accordion-item">
+    <div class="accordion-header">Смена собственника объекта</div>
+    <div class="accordion-content">
+      <p>Смена собственника может происходить через продажу имущества, передачу объекта дочернему обществу, аренду, концессию или другие сделки.</p>
+      <p><strong>Для эколога это означает:</strong></p>
+      <ol class="steps">
+        <li>Определить, кто теперь эксплуатирует объект НВОС.</li>
+        <li>Установить, на кого должны быть оформлены разрешительные документы.</li>
+        <li>Актуализировать учет объекта в реестре НВОС.</li>
+      </ol>
+      <p><strong>Важно:</strong> если меняется юридическое лицо-эксплуатант, разрешения (КЭР, ДВОС, лицензии) нужно переоформить на нового правопреемника. Если меняется только собственник имущества, а эксплуатант остается тем же – достаточно внести изменения в реквизиты.</p>
+      <p class="note">Документы для проверки: реестр НВОС, КЭР, ДВОС, разрешения на выбросы/сбросы, договоры водопользования, лицензии.</p>
+      <div class="tip">✅ Определить правопреемника | Переоформить разрешения | Актуализировать реестр</div>
     </div>
-    
-    <div class="accordion-item">
-      <button class="accordion-header" onclick="toggleAccordion(this)">
-        <span>Реорганизация</span>
-        <span class="icon">▼</span>
-      </button>
-      <div class="accordion-content">
-        <div class="accordion-body">
-          <p>Реорганизация – это слияние, присоединение, разделение, выделение или преобразование юридического лица.</p>
-          
-          <p><strong>Главная задача эколога:</strong> определить, кто становится правопреемником по объекту НВОС и разрешительным документам.</p>
-          
-          <div class="highlight">
-            <strong>Присоединение или слияние:</strong> все права и обязанности переходят к новому или сохраняющемуся юридическому лицу. Нужно переоформить все разрешения на правопреемника.
-          </div>
-          
-          <div class="highlight">
-            <strong>Разделение или выделение:</strong> права и обязанности распределяются между новыми юридическими лицами. Нужно определить, за каким обществом закреплен каждый объект НВОС, и переоформить документы соответственно.
-          </div>
-          
-          <div class="highlight">
-            <strong>Преобразование:</strong> меняется организационно-правовая форма, но юридическое лицо сохраняется. Достаточно внести изменения в реквизиты и переоформить разрешения, где указана форма.
-          </div>
-          
-          <p><strong>Срок:</strong> актуализировать сведения в реестре НВОС – 30 дней с даты регистрации реорганизации [п. 7 ст. 69.2 Закона № 7-ФЗ]. Переоформление КЭР и других разрешений – также в течение 30 дней.</p>
-          
-          <div style="margin-top: 12px;">
-            <span class="tag">Определить правопреемника</span>
-            <span class="tag warning">30 дней на актуализацию</span>
-            <span class="tag error">Не пропустить срок</span>
-          </div>
-        </div>
-      </div>
+  </div>
+
+  <!-- 4. Реорганизация -->
+  <div class="accordion-item">
+    <div class="accordion-header">Реорганизация</div>
+    <div class="accordion-content">
+      <p>Реорганизация – это слияние, присоединение, разделение, выделение или преобразование юридического лица.</p>
+      <p><strong>Главная задача эколога:</strong> определить, кто становится правопреемником по объекту НВОС и разрешительным документам.</p>
+      <ul class="steps">
+        <li><strong>Присоединение или слияние:</strong> все права и обязанности переходят к новому или сохраняющемуся юридическому лицу. Нужно переоформить все разрешения на правопреемника.</li>
+        <li><strong>Разделение или выделение:</strong> права и обязанности распределяются между новыми юридическими лицами. Нужно определить, за каким обществом закреплен каждый объект НВОС, и переоформить документы соответственно.</li>
+        <li><strong>Преобразование:</strong> меняется организационно-правовая форма, но юридическое лицо сохраняется. Достаточно внести изменения в реквизиты и переоформить разрешения, где указана форма.</li>
+      </ul>
+      <div class="tip">⏱ Срок: актуализировать сведения в реестре НВОС – <span class="deadline">30 дней</span> с даты регистрации реорганизации [п. 7 ст. 69.2 Закона № 7-ФЗ]. Переоформление КЭР и других разрешений – также в течение 30 дней.</div>
+      <div class="tip">✅ Определить правопреемника | <span class="deadline">30 дней</span> на актуализацию | Не пропустить срок</div>
     </div>
-    
   </div>
 </div>
 
 <script>
-  function toggleAccordion(header) {
-    const content = header.nextElementSibling;
-    const isActive = header.classList.contains('active');
-    
-    // Close all
-    document.querySelectorAll('.accordion-header').forEach(h => {
-      h.classList.remove('active');
-      h.nextElementSibling.classList.remove('show');
+  // Аккордеон с уведомлением ресайзера об изменении высоты
+  document.querySelectorAll('.accordion-header').forEach(header => {
+    header.addEventListener('click', () => {
+      const item = header.parentElement;
+      const isOpen = item.classList.contains('open');
+      
+      // Закрываем остальные (опционально, можно убрать для мультивыбора)
+      document.querySelectorAll('.accordion-item').forEach(i => i.classList.remove('open'));
+      
+      if (!isOpen) item.classList.add('open');
+      
+      // 🔧 2. ПРИНУДИТЕЛЬНОЕ ОБНОВЛЕНИЕ РАЗМЕРА ПОСЛЕ АНИМАЦИИ
+      setTimeout(() => {
+        if (window.iFrameResize) {
+          window.iFrameResize({ log: false, checkOrigin: false }, '*');
+        }
+      }, 350);
     });
-    
-    // Open clicked if it was closed
-    if (!isActive) {
-      header.classList.add('active');
-      content.classList.add('show');
-    }
-  }
-  
-  // Close on outside click
-  document.addEventListener('click', function(e) {
-    if (!e.target.closest('.accordion-item')) {
-      document.querySelectorAll('.accordion-header').forEach(h => {
-        h.classList.remove('active');
-        h.nextElementSibling.classList.remove('show');
-      });
-    }
   });
 </script>
 
