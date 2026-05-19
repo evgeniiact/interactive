@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вывод источника из эксплуатации</title>
+<!-- Скрипт iframe-resizer для корректного масштабирования -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #fff;
+    --text-main: #2d3748;
+    --text-light: #718096;
+    --green-light: #e8f5e9;
+    --green-border: #a5d6a7;
+    --green-solid: #66bb6a;
+    --green-dark: #2e7d32;
+    --orange: #f59e0b;
+    --orange-soft: #fff7ed;
+    --radius: 16px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .container {
+    width: 100%;
+    max-width: 670px;
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative;
+  }
+  h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--green-dark); }
+  .intro { font-size: 14px; color: var(--text-light); margin-bottom: 16px; line-height: 1.4; }
+  
+  /* Progress */
+  .progress {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    font-size: 13px; color: var(--text-light);
+  }
+  .progress-bar { flex: 1; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green-dark); width: 0%; transition: width 0.3s ease; }
+  
+  /* Steps */
+  .step { display: none; animation: fadeIn 0.25s; }
+  .step.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .scenario {
+    background: #f8fafc;
+    border-left: 4px solid var(--green-dark);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .question { font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-main); }
+  
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .opt {
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+    background: #fff;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .opt:hover { border-color: var(--green-solid); background: var(--green-light); }
+  .opt.selected { border-color: var(--green-dark); background: var(--green-light); font-weight: 600; }
+  .opt.disabled { pointer-events: none; opacity: 0.8; }
+  
+  .chk {
+    width: 20px; height: 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .opt.selected .chk { background: var(--green-dark); border-color: var(--green-dark); color: #fff; }
+  .chk::after { content: '✓'; font-size: 12px; font-weight: 700; display: none; }
+  .opt.selected .chk::after { display: block; }
+  
+  /* Checkbox specific */
+  .chk-box {
+    width: 20px; height: 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .opt.selected .chk-box { background: var(--green-dark); border-color: var(--green-dark); color: #fff; }
+  .chk-box::after { content: '✓'; font-size: 14px; font-weight: 700; display: none; }
+  .opt.selected .chk-box::after { display: block; }
+  
+  /* Controls */
+  .controls {
+    display: flex; gap: 10px; justify-content: center; padding-top: 12px;
+    border-top: 1px solid #e2e8f0; margin-top: 8px;
+  }
+  .btn {
+    padding: 9px 18px; border: none; border-radius: 8px; font-size: 14px;
+    font-weight: 600; cursor: pointer; transition: 0.2s;
+  }
+  .btn-next { background: var(--green-dark); color: #fff; opacity: 0.4; pointer-events: none; }
+  .btn-next.active { opacity: 1; pointer-events: auto; }
+  .btn-next:hover { background: #1b5e20; }
+  .btn-check { background: var(--green-dark); color: #fff; opacity: 0.4; pointer-events: none; }
+  .btn-check.active { opacity: 1; pointer-events: auto; }
+  .btn-check:hover { background: #1b5e20; }
+  .btn-restart { background: #fff; color: var(--text-main); border: 1px solid #e2e8f0; }
+  .btn-restart:hover { border-color: var(--green-solid); background: var(--green-light); }
+  
+  /* Modal */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; backdrop-filter: blur(2px);
+  }
+  .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
+  .modal {
+    background: #fff; border-radius: 12px; max-width: 500px; width: 100%;
+    padding: 20px; position: relative;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+    animation: slideUp 0.25s;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-close {
+    position: absolute; top: 12px; right: 12px; width: 28px; height: 28px;
+    border: none; background: #f0f2f5; border-radius: 50%; cursor: pointer;
+    font-size: 18px; color: #666; display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: #e4e6eb; }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; color: var(--green-dark); }
+  .modal-title.success { color: var(--green-dark); }
+  .modal-title.hint { color: var(--orange); }
+  .modal-text { font-size: 14px; line-height: 1.5; color: var(--text-main); margin-bottom: 12px; }
+  .modal-law { font-size: 13px; color: var(--green-dark); font-weight: 500; display: block; margin-bottom: 12px; padding: 8px; background: var(--green-light); border-radius: 6px; }
+  .modal-btn {
+    width: 100%; padding: 10px; margin-top: 4px;
+    background: var(--green-solid); color: #fff; border: none;
+    border-radius: 8px; font-weight: 600; cursor: pointer;
+  }
+  .modal-btn:hover { background: var(--green-dark); }
+
+  /* Final Summary */
+  .final-card {
+    background: var(--green-light);
+    border: 1px solid var(--green-border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 8px;
+  }
+  .final-card h4 { margin: 0 0 10px; font-size: 16px; color: var(--green-dark); }
+  .final-card p { font-size: 14px; line-height: 1.5; margin-bottom: 8px; }
+  .final-card ul { padding-left: 18px; font-size: 14px; margin: 8px 0; }
+  .final-card li { margin-bottom: 6px; }
+
+  @media (max-width: 500px) {
+    .container { padding: 16px; }
+    .controls { flex-direction: column; }
+    .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Вывод источника из эксплуатации</h2>
+  <p class="intro">Разберите ситуацию и ответьте на вопросы по шагам. После каждого выбора вы получите комментарий с нормативной ссылкой.</p>
+  
+  <div class="progress">
+    <span>Шаг <span id="step-num">1</span> из <span id="step-total">3</span></span>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+  
+  <!-- Step 1 -->
+  <div class="step active" data-step="1">
+    <div class="scenario">
+      <strong>Ситуация:</strong> На объекте НВОС вывели из эксплуатации один стационарный источник выбросов. Оборудование демонтировали, выбросы с этой точки больше не идут. Объект в целом продолжает работать.
+    </div>
+    <div class="question">Вопрос 1. Что эколог должен сделать в первую очередь?</div>
+    <div class="options">
+      <div class="opt" data-correct="false" data-step="1">
+        <div class="chk"></div> Ничего не делать, один источник роли не играет
+      </div>
+      <div class="opt" data-correct="true" data-step="1">
+        <div class="chk"></div> Зафиксировать изменение источников и определить тип процедуры: актуализация, корректировка или снятие с учета
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step" data-step="2">
+    <div class="scenario">
+      <strong>Верно.</strong> Изменение зафиксировано. Теперь определим статус объекта.
+    </div>
+    <div class="question">Вопрос 2. Какое действие по объекту НВОС выбрать?</div>
+    <div class="options">
+      <div class="opt" data-correct="false" data-step="2">
+        <div class="chk"></div> Снять объект с учета, так как один источник ликвидирован
+      </div>
+      <div class="opt" data-correct="true" data-step="2">
+        <div class="chk"></div> Провести актуализацию сведений об объекте НВОС
+      </div>
+      <div class="opt" data-correct="false" data-step="2">
+        <div class="chk"></div> Подать заявку на корректировку данных из-за технической ошибки
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step" data-step="3">
+    <div class="scenario">
+      <strong>Правильно.</strong> Осталось определить пакет документов.
+    </div>
+    <div class="question">Вопрос 3. Какие документы эколог проверит и при необходимости обновит?</div>
+    <div class="options" id="multi-options">
+      <div class="opt" data-id="inv" data-correct="true">
+        <div class="chk-box"></div> Отчет об инвентаризации выбросов
+      </div>
+      <div class="opt" data-id="proj" data-correct="true">
+        <div class="chk-box"></div> Проекты и расчеты по выбросам (НДВ)
+      </div>
+      <div class="opt" data-id="perm" data-correct="true">
+        <div class="chk-box"></div> Разрешение на выбросы / сведения в реестре разрешений
+      </div>
+      <div class="opt" data-id="reg" data-correct="true">
+        <div class="chk-box"></div> Сведения об объекте НВОС в госреестре
+      </div>
+      <div class="opt" data-id="charter" data-correct="false">
+        <div class="chk-box"></div> Устав организации
+      </div>
+    </div>
+  </div>
+
+  <!-- Final -->
+  <div class="step" data-step="final">
+    <div class="final-card">
+      <h4>✓ Разбор пройден</h4>
+      <p>При выводе источника из эксплуатации эколог действует по цепочке: фиксирует изменение → определяет процедуру (актуализация) → обновляет инвентаризацию и расчеты → актуализирует сведения в реестре НВОС.</p>
+      <ul>
+        <li><strong>Актуализация</strong> применяется при реальных изменениях техпроцессов или источников.</li>
+        <li><strong>Корректировка</strong> — при исправлении опечаток или изменении нормативных критериев категории.</li>
+        <li><strong>Снятие с учета</strong> — только при полной ликвидации объекта.</li>
+      </ul>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn btn-restart" onclick="reset()">🔄 Заново</button>
+    <button class="btn btn-next" id="btn-next" disabled>Далее →</button>
+    <button class="btn btn-check" id="btn-check" disabled>Проверить ответ</button>
+  </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal-overlay" id="modal-feedback">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-feedback')">&times;</button>
+    <div class="modal-title" id="fb-title"></div>
+    <div class="modal-text" id="fb-text"></div>
+    <span class="modal-law" id="fb-law"></span>
+    <button class="modal-btn" onclick="closeModal('modal-feedback')">Продолжить</button>
+  </div>
+</div>
+
+<script>
+  let currentStep = 1;
+  const totalSteps = 3;
+  let selectedMulti = new Set();
+  
+  const feedbacks = {
+    1: {
+      correct: 'Верно. Даже один отключенный источник меняет картину воздействия. Эколог должен определить тип процедуры. По документу: если изменились источники НВОС или техпроцессы, а объект продолжает работать — применяется актуализация сведений.',
+      wrong: 'Неверно. Изменение состава источников требует фиксации. Игнорирование приведет к несоответствию данных в реестре НВОС фактическому воздействию.',
+      law: '📖 п. 6 ст. 69.2 Закона № 7-ФЗ'
+    },
+    2: {
+      correct: 'Верно. Источник вывели, но объект продолжает работать. Это основание для актуализации сведений, а не для снятия с учета. Корректировка применяется при исправлении ошибок или изменении нормативных критериев, а не при реальных изменениях на предприятии.',
+      wrong: 'Неверно. Снятие с учета применяется только при полной ликвидации объекта. Корректировка — при исправлении опечаток. Здесь изменился реальный источник, значит, требуется актуализация.',
+      law: '📖 п. 7 ст. 69.2 Закона № 7-ФЗ; п. 42 постановления № 830'
+    },
+    3: {
+      correct: 'Верно. При отключении источника эколог обновляет инвентаризацию и расчеты, при необходимости корректирует разрешение и актуализирует сведения об объекте НВОС. Устав организации такие изменения не затрагивает.',
+      wrong: 'Не совсем так. При отключении источника эколог обновляет инвентаризацию и расчеты, при необходимости корректирует разрешение и актуализирует сведения об объекте НВОС. Устав организации такие изменения не затрагивает. Отметьте все нужные документы.',
+      law: '📖 п. 7 ст. 69.2 Закона № 7-ФЗ'
+    }
+  };
+
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
+  function updateProgress() {
+    document.getElementById('step-num').textContent = currentStep;
+    document.getElementById('progress-fill').style.width = `${((currentStep - 1) / totalSteps) * 100}%`;
+  }
+
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
+    updateProgress();
+    triggerResize();
+  }
+
+  function handleSingleOption(el) {
+    if (el.classList.contains('disabled')) return;
+    const stepEl = el.closest('.step');
+    const step = parseInt(stepEl.dataset.step);
+    const isCorrect = el.dataset.correct === 'true';
+    
+    stepEl.querySelectorAll('.opt').forEach(opt => opt.classList.add('disabled'));
+    el.classList.add('selected');
+    
+    const fb = feedbacks[step][isCorrect ? 'correct' : 'wrong'];
+    const title = isCorrect ? '✓ Верно' : '⚠️ Не совсем так';
+    
+    document.getElementById('fb-title').textContent = title;
+    document.getElementById('fb-text').textContent = fb;
+    document.getElementById('fb-law').textContent = feedbacks[step].law;
+    document.getElementById('modal-feedback').classList.add('show');
+    
+    document.getElementById('btn-next').onclick = () => {
+      closeModal('modal-feedback');
+      currentStep = step + 1;
+      showStep(currentStep);
+    };
+    document.getElementById('btn-next').classList.add('active');
+    document.getElementById('btn-next').disabled = false;
+    triggerResize();
+  }
+
+  function handleMultiOption(el) {
+    if (el.classList.contains('disabled')) return;
+    const id = el.dataset.id;
+    if (selectedMulti.has(id)) {
+      selectedMulti.delete(id);
+      el.classList.remove('selected');
+    } else {
+      selectedMulti.add(id);
+      el.classList.add('selected');
+    }
+    
+    const btn = document.getElementById('btn-check');
+    if (selectedMulti.size > 0) {
+      btn.classList.add('active');
+      btn.disabled = false;
+    } else {
+      btn.classList.remove('active');
+      btn.disabled = true;
+    }
+  }
+
+  function checkMultiAnswer() {
+    const correctIds = new Set(['inv', 'proj', 'perm', 'reg']);
+    const isCorrect = selectedMulti.size === 4 && 
+                      [...selectedMulti].every(id => correctIds.has(id)) && 
+                      !selectedMulti.has('charter');
+    
+    const fb = feedbacks[3][isCorrect ? 'correct' : 'wrong'];
+    const title = isCorrect ? '✓ Верно' : '⚠️ Не совсем так';
+    
+    document.getElementById('fb-title').textContent = title;
+    document.getElementById('fb-text').textContent = fb;
+    document.getElementById('fb-law').textContent = feedbacks[3].law;
+    document.getElementById('modal-feedback').classList.add('show');
+    
+    document.getElementById('btn-check').disabled = true;
+    document.getElementById('btn-check').style.display = 'none';
+    
+    document.getElementById('btn-next').onclick = () => {
+      closeModal('modal-feedback');
+      currentStep = 'final';
+      showStep('final');
+      document.getElementById('btn-next').style.display = 'none';
+    };
+    document.getElementById('btn-next').classList.add('active');
+    document.getElementById('btn-next').disabled = false;
+    triggerResize();
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+    triggerResize();
+  }
+
+  function reset() {
+    currentStep = 1;
+    selectedMulti = new Set();
+    
+    document.querySelectorAll('.opt').forEach(opt => {
+      opt.classList.remove('selected', 'disabled');
+    });
+    
+    document.getElementById('btn-next').style.display = 'inline-block';
+    document.getElementById('btn-next').classList.remove('active');
+    document.getElementById('btn-next').disabled = true;
+    
+    document.getElementById('btn-check').style.display = 'inline-block';
+    document.getElementById('btn-check').classList.remove('active');
+    document.getElementById('btn-check').disabled = true;
+    
+    showStep(1);
+  }
+
+  // Event Listeners
+  document.querySelectorAll('.step[data-step="1"] .opt').forEach(opt => opt.addEventListener('click', () => handleSingleOption(opt)));
+  document.querySelectorAll('.step[data-step="2"] .opt').forEach(opt => opt.addEventListener('click', () => handleSingleOption(opt)));
+  document.querySelectorAll('#multi-options .opt').forEach(opt => opt.addEventListener('click', () => handleMultiOption(opt)));
+  document.getElementById('btn-check').addEventListener('click', checkMultiAnswer);
+  
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) closeModal(overlay.id);
+    });
+  });
+
+  // Init
+  window.addEventListener('load', () => {
+    updateProgress();
+    triggerResize();
+    const observer = new ResizeObserver(() => triggerResize());
+    observer.observe(document.querySelector('.container'));
+  });
+</script>
+
+</body>
+</html>
