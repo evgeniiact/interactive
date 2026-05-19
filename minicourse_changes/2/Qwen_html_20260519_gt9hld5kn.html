@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Реорганизация предприятия – как действовать экологу</title>
+<!-- Скрипт iframe-resizer для корректного масштабирования -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #fff;
+    --text-main: #2d3748;
+    --text-light: #718096;
+    --green-light: #e8f5e9;
+    --green-border: #a5d6a7;
+    --green-solid: #66bb6a;
+    --green-dark: #2e7d32;
+    --orange: #f59e0b;
+    --orange-soft: #fff7ed;
+    --radius: 16px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .container {
+    width: 100%;
+    max-width: 670px;
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 20px;
+  }
+  h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--green-dark); }
+  .task-desc { font-size: 14px; color: var(--text-light); margin-bottom: 16px; line-height: 1.4; }
+  
+  /* Cases List */
+  .cases-list { display: flex; flex-direction: column; gap: 12px; }
+  .case-card {
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .case-card:hover { border-color: var(--green-solid); background: var(--green-light); }
+  .case-card.completed { opacity: 0.6; pointer-events: none; }
+  .case-title {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 8px;
+    color: var(--green-dark);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .case-title::before { content: '📋'; font-size: 16px; }
+  .case-preview { font-size: 14px; line-height: 1.4; color: var(--text-main); }
+  
+  /* Question Screen */
+  .question-screen { display: none; animation: fadeIn 0.25s; }
+  .question-screen.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .scenario {
+    background: var(--green-light);
+    border-left: 4px solid var(--green-solid);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .question {
+    font-weight: 600;
+    font-size: 15px;
+    margin-bottom: 12px;
+    color: var(--text-main);
+  }
+  
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 8px; }
+  .opt {
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+    background: #fff;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .opt:hover { border-color: var(--green-solid); background: var(--green-light); }
+  .opt.selected { border-color: var(--green-dark); background: var(--green-light); font-weight: 600; }
+  .chk {
+    width: 20px; height: 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .opt.selected .chk { background: var(--green-dark); border-color: var(--green-dark); color: #fff; }
+  .chk::after { content: '✓'; font-size: 12px; font-weight: 700; display: none; }
+  .opt.selected .chk::after { display: block; }
+  
+  .back-btn {
+    margin-top: 16px;
+    padding: 8px 16px;
+    border: none;
+    background: #fff;
+    color: var(--text-main);
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+  }
+  .back-btn:hover { background: var(--green-light); }
+  
+  /* Modal */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; backdrop-filter: blur(2px);
+  }
+  .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
+  .modal {
+    background: #fff; border-radius: 12px; max-width: 500px; width: 100%;
+    padding: 20px; position: relative;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+    animation: slideUp 0.25s;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-close {
+    position: absolute; top: 12px; right: 12px; width: 28px; height: 28px;
+    border: none; background: #f0f2f5; border-radius: 50%; cursor: pointer;
+    font-size: 18px; color: #666; display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: #e4e6eb; }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; color: var(--green-dark); }
+  .modal-title.success { color: var(--green-dark); }
+  .modal-title.hint { color: var(--orange); }
+  .modal-text { font-size: 14px; line-height: 1.5; color: var(--text-main); margin-bottom: 12px; }
+  .modal-btn {
+    width: 100%; padding: 10px; margin-top: 4px;
+    background: var(--green-solid); color: #fff; border: none;
+    border-radius: 8px; font-weight: 600; cursor: pointer;
+  }
+  .modal-btn:hover { background: var(--green-dark); }
+  .modal-btn-secondary {
+    width: 100%; padding: 10px; margin-top: 8px;
+    background: #fff; color: var(--green-dark); border: 2px solid var(--green-solid);
+    border-radius: 8px; font-weight: 600; cursor: pointer;
+  }
+  .modal-btn-secondary:hover { background: var(--green-light); }
+  
+  /* Final Algorithm Modal */
+  .modal-algo { max-width: 600px; }
+  .algo-step {
+    background: var(--green-light);
+    border-left: 4px solid var(--green-dark);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 10px;
+  }
+  .algo-step strong { display: block; margin-bottom: 4px; font-size: 14px; color: var(--green-dark); }
+  .algo-step p { font-size: 13px; color: var(--text-main); margin: 0; }
+  .algo-note {
+    background: var(--orange-soft);
+    border-left: 3px solid var(--orange);
+    border-radius: 6px;
+    padding: 10px;
+    margin-top: 12px;
+    font-size: 13px;
+    color: var(--text-main);
+  }
+
+  @media (max-width: 500px) {
+    .container { padding: 16px; }
+    .modal { max-width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Реорганизация предприятия – как действовать экологу</h2>
+  <p class="task-desc">Прочитайте ситуацию и выберите правильный алгоритм действий.</p>
+  
+  <!-- Cases List -->
+  <div class="cases-list" id="cases-list">
+    <div class="case-card" data-case="1">
+      <div class="case-title">Кейс 1</div>
+      <div class="case-preview">
+        Предприятие прошло реорганизацию. Название и структура изменились, но объект НВОС остался у той же организации...
+      </div>
+    </div>
+    <div class="case-card" data-case="2">
+      <div class="case-title">Кейс 2</div>
+      <div class="case-preview">
+        В результате реорганизации объект НВОС передан новому юридическому лицу. Именно оно теперь эксплуатирует объект...
+      </div>
+    </div>
+  </div>
+  
+  <!-- Question Screen -->
+  <div class="question-screen" id="question-screen">
+    <div class="scenario" id="scenario-text"></div>
+    <div class="question">Какой алгоритм применять?</div>
+    <div class="options" id="options-container"></div>
+    <button class="back-btn" onclick="showCases()">← Вернуться к списку</button>
+  </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal-overlay" id="modal-feedback">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-feedback')">&times;</button>
+    <div class="modal-title" id="fb-title"></div>
+    <div class="modal-text" id="fb-text"></div>
+    <button class="modal-btn" id="btn-algo" onclick="showAlgoModal()" style="display:none;">📋 Посмотреть алгоритм</button>
+    <button class="modal-btn" onclick="closeModal('modal-feedback')">Продолжить</button>
+  </div>
+</div>
+
+<!-- Final Algorithm Modal -->
+<div class="modal-overlay" id="modal-algo">
+  <div class="modal modal-algo">
+    <button class="modal-close" onclick="closeModal('modal-algo')">&times;</button>
+    <div class="modal-title success">✓ Алгоритм действий при реорганизации</div>
+    <div class="modal-text">
+      При реорганизации эколог сначала определяет не форму изменений, а судьбу объекта НВОС.
+    </div>
+    
+    <div class="algo-step">
+      <strong>Если объект НВОС остался у того же хозяйствующего субъекта:</strong>
+      <p>Обновляют сведения в документах и переоформляют разрешения по реквизитам. Алгоритм близок к изменению названия или адреса.</p>
+    </div>
+    
+    <div class="algo-step">
+      <strong>Если объект НВОС перешёл новому юрлицу:</strong>
+      <p>Алгоритм становится таким же, как при смене собственника: переоформляют КЭР, СЭЗ, водные решения, актуализируют реестр НВОС.</p>
+    </div>
+    
+    <div class="algo-note">
+      <strong>💡 Главное правило:</strong><br>
+      Сначала ответьте на вопрос: «Кто после изменений эксплуатирует объект НВОС?». От этого зависит весь дальнейший алгоритм.
+    </div>
+    
+    <button class="modal-btn" onclick="closeModal('modal-algo'); reset()">Закрыть и начать заново</button>
+  </div>
+</div>
+
+<script>
+  const cases = {
+    1: {
+      situation: 'Предприятие прошло реорганизацию. Название и организационная структура изменились, но объект НВОС остался у той же организации, которая продолжает его эксплуатировать. Производственная площадка и технологические процессы не изменились.',
+      options: [
+        { text: 'Обновить сведения в документах и переоформить разрешения по реквизитам', correct: true },
+        { text: 'Действовать как при смене собственника', correct: false },
+        { text: 'Ничего не делать', correct: false }
+      ],
+      feedback: {
+        correct: 'Верно. Если объект НВОС остался у того же хозяйствующего субъекта, алгоритм близок к изменению названия или других реквизитов. Эколог обновляет сведения о юрлице во внутренних документах, вносит изменения в проекты, инвентаризацию, программы и переоформляет те разрешения, где изменение реквизитов требует переоформления.',
+        wrong: 'Неверно. Здесь объект НВОС не перешел новому юрлицу. Значит, это не сценарий смены собственника, а сценарий обновления реквизитов и переоформления части документов.'
+      }
+    },
+    2: {
+      situation: 'В результате реорганизации объект НВОС передан новому юридическому лицу. Именно оно теперь эксплуатирует объект, ведет деятельность на площадке и несет обязательства по охране окружающей среды.',
+      options: [
+        { text: 'Обновить сведения в документах и переоформить разрешения по реквизитам', correct: false },
+        { text: 'Действовать как при смене собственника', correct: true },
+        { text: 'Ничего не делать', correct: false }
+      ],
+      feedback: {
+        correct: 'Верно. Если после реорганизации объект НВОС переходит другому юридическому лицу, для эколога это работает как смена собственника. Нужно обновить внутренние документы, переоформить ключевые разрешения, затем актуализировать сведения в государственном реестре объектов НВОС и после этого привести в соответствие отчетные документы.',
+        wrong: 'Неверно. Здесь изменился не только набор реквизитов. Изменилось лицо, которое эксплуатирует объект НВОС. Поэтому алгоритм уже не ограничивается правкой сведений в документах.'
+      }
+    }
+  };
+  
+  let currentCase = null;
+  let completedCases = [];
+  
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+  
+  function showCases() {
+    document.getElementById('cases-list').style.display = 'flex';
+    document.getElementById('question-screen').classList.remove('active');
+    triggerResize();
+  }
+  
+  function showQuestion(caseId) {
+    currentCase = caseId;
+    const c = cases[caseId];
+    
+    document.getElementById('scenario-text').textContent = c.situation;
+    
+    const optsContainer = document.getElementById('options-container');
+    optsContainer.innerHTML = '';
+    
+    c.options.forEach(opt => {
+      const el = document.createElement('div');
+      el.className = 'opt';
+      el.innerHTML = `<div class="chk"></div>${opt.text}`;
+      el.onclick = () => handleAnswer(el, opt.correct);
+      optsContainer.appendChild(el);
+    });
+    
+    document.getElementById('cases-list').style.display = 'none';
+    document.getElementById('question-screen').classList.add('active');
+    triggerResize();
+  }
+  
+  function handleAnswer(el, isCorrect) {
+    if (el.classList.contains('selected')) return;
+    
+    // Mark selection
+    document.querySelectorAll('.opt').forEach(opt => opt.classList.remove('selected'));
+    el.classList.add('selected');
+    
+    const c = cases[currentCase];
+    const title = isCorrect ? '✓ Верно' : '⚠️ Не совсем так';
+    const text = isCorrect ? c.feedback.correct : c.feedback.wrong;
+    
+    // Show feedback modal
+    document.getElementById('fb-title').textContent = title;
+    document.getElementById('fb-text').textContent = text;
+    
+    // Show "See algorithm" button only if correct
+    const btnAlgo = document.getElementById('btn-algo');
+    if (isCorrect) {
+      btnAlgo.style.display = 'block';
+      if (!completedCases.includes(currentCase)) {
+        completedCases.push(currentCase);
+      }
+    } else {
+      btnAlgo.style.display = 'none';
+    }
+    
+    document.getElementById('modal-feedback').classList.add('show');
+    triggerResize();
+  }
+  
+  function showAlgoModal() {
+    closeModal('modal-feedback');
+    document.getElementById('modal-algo').classList.add('show');
+    triggerResize();
+  }
+  
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+    triggerResize();
+  }
+  
+  function reset() {
+    completedCases = [];
+    currentCase = null;
+    document.querySelectorAll('.case-card').forEach(card => {
+      card.classList.remove('completed');
+    });
+    showCases();
+  }
+  
+  // Attach listeners
+  document.querySelectorAll('.case-card').forEach(card => {
+    card.addEventListener('click', () => {
+      const caseId = card.dataset.case;
+      if (!completedCases.includes(caseId)) {
+        showQuestion(caseId);
+      }
+    });
+  });
+  
+  // Close modals on outside click
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) overlay.classList.remove('show');
+    });
+  });
+  
+  // Init
+  window.addEventListener('load', () => {
+    triggerResize();
+    const observer = new ResizeObserver(() => triggerResize());
+    observer.observe(document.querySelector('.container'));
+  });
+</script>
+
+</body>
+</html>
