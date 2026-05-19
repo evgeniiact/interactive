@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Изменилось местонахождение объекта НВОС</title>
+<!-- Скрипт iframe-resizer для корректного масштабирования -->
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text-main: #2d3748;
+    --text-light: #718096;
+    --green-light: #e8f5e9;
+    --green-border: #a5d6a7;
+    --green-solid: #66bb6a;
+    --green-dark: #2e7d32;
+    --orange: #f59e0b;
+    --orange-soft: #fff7ed;
+    --radius: 16px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .container {
+    width: 100%;
+    max-width: 670px;
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 20px;
+    position: relative;
+  }
+  h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--green-dark); }
+  .intro { font-size: 14px; color: var(--text-light); margin-bottom: 16px; line-height: 1.4; }
+  
+  /* Progress */
+  .progress {
+    display: flex; align-items: center; gap: 8px; margin-bottom: 16px;
+    font-size: 13px; color: var(--text-light);
+  }
+  .progress-bar { flex: 1; height: 4px; background: #e2e8f0; border-radius: 2px; overflow: hidden; }
+  .progress-fill { height: 100%; background: var(--green-dark); width: 0%; transition: width 0.3s ease; }
+  
+  /* Steps */
+  .step { display: none; animation: fadeIn 0.25s; }
+  .step.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .scenario {
+    background: #f8fafc;
+    border-left: 4px solid var(--green-dark);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 16px;
+    font-size: 14px;
+    line-height: 1.4;
+  }
+  .question { font-weight: 600; font-size: 15px; margin-bottom: 12px; color: var(--text-main); }
+  
+  /* Options */
+  .options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 16px; }
+  .opt {
+    padding: 10px 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: 0.2s;
+    background: #fff;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+  }
+  .opt:hover { border-color: var(--green-solid); background: var(--green-light); }
+  .opt.selected { border-color: var(--green-dark); background: var(--green-light); font-weight: 600; }
+  .opt.disabled { pointer-events: none; opacity: 0.7; }
+  
+  .chk {
+    width: 20px; height: 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .opt.selected .chk { background: var(--green-dark); border-color: var(--green-dark); color: #fff; }
+  .chk::after { content: '✓'; font-size: 12px; font-weight: 700; display: none; }
+  .opt.selected .chk::after { display: block; }
+  
+  /* Checkbox specific */
+  .chk-box {
+    width: 20px; height: 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 6px;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .opt.selected .chk-box { background: var(--green-dark); border-color: var(--green-dark); color: #fff; }
+  .chk-box::after { content: '✓'; font-size: 14px; font-weight: 700; display: none; }
+  .opt.selected .chk-box::after { display: block; }
+  
+  /* Controls */
+  .controls {
+    display: flex; gap: 10px; justify-content: center; padding-top: 12px;
+    border-top: 1px solid #e2e8f0; margin-top: 8px;
+  }
+  .btn {
+    padding: 9px 18px; border: none; border-radius: 8px; font-size: 14px;
+    font-weight: 600; cursor: pointer; transition: 0.2s;
+  }
+  .btn-primary { background: var(--green-dark); color: #fff; opacity: 0.4; pointer-events: none; }
+  .btn-primary.active { opacity: 1; pointer-events: auto; }
+  .btn-primary:hover { background: #1b5e20; }
+  .btn-check { background: var(--green-dark); color: #fff; opacity: 0.4; pointer-events: none; }
+  .btn-check.active { opacity: 1; pointer-events: auto; }
+  .btn-check:hover { background: #1b5e20; }
+  .btn-secondary { background: #fff; color: var(--text-main); border: 1px solid #e2e8f0; }
+  .btn-secondary:hover { border-color: var(--green-solid); background: var(--green-light); }
+  .btn-restart { background: #fff; color: var(--text-main); border: 1px solid #e2e8f0; }
+  .btn-restart:hover { border-color: var(--green-solid); background: var(--green-light); }
+  
+  /* Modal */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; backdrop-filter: blur(2px);
+  }
+  .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
+  .modal {
+    background: #fff; border-radius: 12px; max-width: 500px; width: 100%;
+    padding: 20px; position: relative;
+    box-shadow: 0 12px 32px rgba(0,0,0,0.15);
+    animation: slideUp 0.25s;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-close {
+    position: absolute; top: 12px; right: 12px; width: 28px; height: 28px;
+    border: none; background: #f0f2f5; border-radius: 50%; cursor: pointer;
+    font-size: 18px; color: #666; display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: #e4e6eb; }
+  .modal-title { font-size: 16px; font-weight: 700; margin-bottom: 10px; color: var(--green-dark); }
+  .modal-title.success { color: var(--green-dark); }
+  .modal-title.hint { color: var(--orange); }
+  .modal-text { font-size: 14px; line-height: 1.5; color: var(--text-main); margin-bottom: 12px; }
+  .modal-law { font-size: 13px; color: var(--green-dark); font-weight: 500; display: block; margin-bottom: 16px; padding: 8px; background: var(--green-light); border-radius: 6px; }
+  .modal-footer { display: flex; justify-content: flex-end; gap: 10px; }
+
+  /* Final Summary */
+  .final-card {
+    background: var(--green-light);
+    border: 1px solid var(--green-border);
+    border-radius: 12px;
+    padding: 16px;
+    margin-top: 8px;
+  }
+  .final-card h4 { margin: 0 0 10px; font-size: 16px; color: var(--green-dark); }
+  .final-card p { font-size: 14px; line-height: 1.5; margin-bottom: 8px; }
+  .final-card ul { padding-left: 18px; font-size: 14px; margin: 8px 0; }
+  .final-card li { margin-bottom: 6px; }
+
+  @media (max-width: 500px) {
+    .container { padding: 16px; }
+    .controls { flex-direction: column; }
+    .btn { width: 100%; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Изменилось местонахождение объекта НВОС</h2>
+  <p class="intro">Разберите ситуацию и ответьте на вопросы по шагам. При неправильном ответе можно попробовать снова.</p>
+  
+  <div class="progress">
+    <span>Шаг <span id="step-num">1</span> из <span id="step-total">3</span></span>
+    <div class="progress-bar"><div class="progress-fill" id="progress-fill"></div></div>
+  </div>
+  
+  <!-- Step 1 -->
+  <div class="step active" data-step="1">
+    <div class="scenario">
+      <strong>Ситуация:</strong> Предприятие перенесло производственную площадку на другой участок. Юридический адрес в ЕГРЮЛ не изменился, но фактическое местонахождение объекта НВОС стало другим.
+    </div>
+    <div class="question">Вопрос 1. Что изменилось?</div>
+    <div class="options">
+      <div class="opt" data-correct="false" data-step="1">
+        <div class="chk"></div> Изменился юридический адрес организации
+      </div>
+      <div class="opt" data-correct="true" data-step="1">
+        <div class="chk"></div> Изменилось местонахождение объекта НВОС
+      </div>
+      <div class="opt" data-correct="false" data-step="1">
+        <div class="chk"></div> Изменилось наименование организации
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 2 -->
+  <div class="step" data-step="2">
+    <div class="scenario">
+      <strong>Верно.</strong> Изменилось именно местонахождение объекта. Теперь определим процедуру.
+    </div>
+    <div class="question">Вопрос 2. Какое действие по объекту НВОС выбрать?</div>
+    <div class="options">
+      <div class="opt" data-correct="false" data-step="2">
+        <div class="chk"></div> Снять объект с учета и поставить новый
+      </div>
+      <div class="opt" data-correct="true" data-step="2">
+        <div class="chk"></div> Актуализировать сведения об объекте НВОС
+      </div>
+      <div class="opt" data-correct="false" data-step="2">
+        <div class="chk"></div> Подать заявку на корректировку данных
+      </div>
+    </div>
+  </div>
+
+  <!-- Step 3 -->
+  <div class="step" data-step="3">
+    <div class="scenario">
+      <strong>Правильно.</strong> Осталось определить пакет документов.
+    </div>
+    <div class="question">Вопрос 3. Какие документы нужно переоформить или обновить?</div>
+    <div class="options" id="multi-options">
+      <div class="opt" data-id="nvos" data-correct="true">
+        <div class="chk-box"></div> Сведения об объекте НВОС в госреестре
+      </div>
+      <div class="opt" data-id="ker" data-correct="true">
+        <div class="chk-box"></div> Комплексное экологическое разрешение (КЭР)
+      </div>
+      <div class="opt" data-id="dvos" data-correct="true">
+        <div class="chk-box"></div> Декларация о воздействии (ДВОС)
+      </div>
+      <div class="opt" data-id="ndv" data-correct="true">
+        <div class="chk-box"></div> Проекты НДВ, НДС, НООЛР
+      </div>
+      <div class="opt" data-id="szz" data-correct="true">
+        <div class="chk-box"></div> Проект санитарно-защитной зоны (СЗЗ)
+      </div>
+      <div class="opt" data-id="name" data-correct="false">
+        <div class="chk-box"></div> Устав организации
+      </div>
+    </div>
+  </div>
+
+  <!-- Final -->
+  <div class="step" data-step="final">
+    <div class="final-card">
+      <h4>✓ Разбор пройден</h4>
+      <p>При изменении местонахождения объекта НВОС эколог действует по цепочке: актуализирует сведения в реестре → переоформляет КЭР/ДВОС → обновляет проекты → корректирует СЗЗ.</p>
+      <ul>
+        <li><strong>Актуализация</strong> — обязательна при изменении фактического адреса (30 дней)</li>
+        <li><strong>Переоформление</strong> — требуется для КЭР, ДВОС, проектов НДВ/НДС</li>
+        <li><strong>Корректировка</strong> — нужна для СЗЗ при изменении границ воздействия</li>
+      </ul>
+      <p style="margin-top:10px; font-size:13px; color:var(--text-light);"><strong>Важно:</strong> Устав организации и другие учредительные документы не меняются, если изменилось только местонахождение объекта, а не юридический адрес.</p>
+    </div>
+  </div>
+  
+  <div class="controls">
+    <button class="btn btn-restart" onclick="reset()">🔄 Заново</button>
+    <button class="btn btn-primary" id="btn-next" disabled onclick="goToNext()">Далее →</button>
+    <button class="btn btn-check" id="btn-check" disabled onclick="checkMultiAnswer()">Проверить ответ</button>
+  </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal-overlay" id="modal-feedback">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-feedback')">&times;</button>
+    <div class="modal-title" id="fb-title"></div>
+    <div class="modal-text" id="fb-text"></div>
+    <span class="modal-law" id="fb-law"></span>
+    <div class="modal-footer">
+      <button class="btn btn-secondary" onclick="closeModal('modal-feedback')">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  let currentStep = 1;
+  const totalSteps = 3;
+  let selectedMulti = new Set();
+  
+  const feedbacks = {
+    1: {
+      correct: 'Верно. Изменилось местонахождение объекта НВОС. Это требует актуализации сведений в реестре и переоформления разрешительной документации, привязанной к адресу.',
+      wrong: 'Неверно. В условии сказано: «Юридический адрес в ЕГРЮЛ не изменился». Значит, изменилось именно фактическое местонахождение объекта, а не реквизиты организации.',
+      law: '📖 п. 6 ст. 69.2 Закона № 7-ФЗ'
+    },
+    2: {
+      correct: 'Верно. При изменении местонахождения объекта проводится актуализация сведений в государственном реестре объектов НВОС. Снимать с учета и ставить заново не нужно.',
+      wrong: 'Неверно. Объект продолжает существовать, просто изменилось его местоположение. Поэтому проводится актуализация, а не снятие с учета или корректировка.',
+      law: '📖 п. 7 ст. 69.2 Закона № 7-ФЗ'
+    },
+    3: {
+      correct: 'Верно. При изменении местонахождения нужно актуализировать реестр НВОС, переоформить КЭР/ДВОС, обновить проекты и скорректировать СЗЗ. Устав организации не меняется.',
+      wrong: 'Не совсем так. При изменении местонахождения нужно актуализировать реестр НВОС, переоформить КЭР/ДВОС, обновить проекты и скорректировать СЗЗ. Устав организации не меняется, так как юридический адрес остался прежним.',
+      law: '📖 п. 6, 7 ст. 69.2; п. 17 ст. 31.1 Закона № 7-ФЗ; п. 9 постановления № 222'
+    }
+  };
+
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
+  function updateProgress() {
+    document.getElementById('step-num').textContent = currentStep;
+    document.getElementById('progress-fill').style.width = `${((currentStep - 1) / totalSteps) * 100}%`;
+  }
+
+  function showStep(n) {
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.querySelector(`.step[data-step="${n}"]`).classList.add('active');
+    updateProgress();
+    triggerResize();
+  }
+
+  function closeModal(id) {
+    const modal = document.getElementById(id);
+    modal.classList.remove('show');
+    
+    // Сброс выбора при закрытии модалки с ошибкой
+    if (id === 'modal-feedback') {
+      const activeStep = document.querySelector('.step.active');
+      if (activeStep) {
+        activeStep.querySelectorAll('.opt').forEach(opt => {
+          opt.classList.remove('selected', 'disabled');
+          opt.style.pointerEvents = 'auto';
+        });
+        if (activeStep.dataset.step === '3') {
+          selectedMulti.clear();
+          document.getElementById('btn-check').disabled = true;
+          document.getElementById('btn-check').classList.remove('active');
+        }
+      }
+    }
+    triggerResize();
+  }
+
+  function handleSingleOption(el) {
+    if (el.classList.contains('disabled')) return;
+    const stepEl = el.closest('.step');
+    const step = parseInt(stepEl.dataset.step);
+    const isCorrect = el.dataset.correct === 'true';
+    
+    stepEl.querySelectorAll('.opt').forEach(opt => opt.classList.add('disabled'));
+    el.classList.add('selected');
+    
+    const fb = feedbacks[step][isCorrect ? 'correct' : 'wrong'];
+    const title = isCorrect ? '✓ Верно' : '⚠️ Не совсем так';
+    
+    document.getElementById('fb-title').textContent = title;
+    document.getElementById('fb-text').textContent = fb;
+    document.getElementById('fb-law').textContent = feedbacks[step].law;
+    document.getElementById('modal-feedback').classList.add('show');
+    
+    // Активируем нижнюю кнопку только при верном ответе
+    if (isCorrect) {
+      document.getElementById('btn-next').classList.add('active');
+      document.getElementById('btn-next').disabled = false;
+    } else {
+      document.getElementById('btn-next').classList.remove('active');
+      document.getElementById('btn-next').disabled = true;
+    }
+    triggerResize();
+  }
+
+  function handleMultiOption(el) {
+    if (el.classList.contains('disabled')) return;
+    const id = el.dataset.id;
+    if (selectedMulti.has(id)) {
+      selectedMulti.delete(id);
+      el.classList.remove('selected');
+    } else {
+      selectedMulti.add(id);
+      el.classList.add('selected');
+    }
+    
+    const btn = document.getElementById('btn-check');
+    if (selectedMulti.size > 0) {
+      btn.classList.add('active');
+      btn.disabled = false;
+    } else {
+      btn.classList.remove('active');
+      btn.disabled = true;
+    }
+  }
+
+  function checkMultiAnswer() {
+    const correctIds = new Set(['nvos', 'ker', 'dvos', 'ndv', 'szz']);
+    const isCorrect = selectedMulti.size === 5 && 
+                      [...selectedMulti].every(id => correctIds.has(id)) && 
+                      !selectedMulti.has('name');
+    
+    const fb = feedbacks[3][isCorrect ? 'correct' : 'wrong'];
+    const title = isCorrect ? '✓ Верно' : '⚠️ Не совсем так';
+    
+    document.getElementById('fb-title').textContent = title;
+    document.getElementById('fb-text').textContent = fb;
+    document.getElementById('fb-law').textContent = feedbacks[3].law;
+    document.getElementById('modal-feedback').classList.add('show');
+    
+    if (isCorrect) {
+      document.getElementById('btn-next').classList.add('active');
+      document.getElementById('btn-next').disabled = false;
+      document.getElementById('btn-check').style.display = 'none';
+    } else {
+      document.getElementById('btn-next').classList.remove('active');
+      document.getElementById('btn-next').disabled = true;
+      document.getElementById('btn-check').style.display = 'inline-block';
+    }
+    triggerResize();
+  }
+
+  function goToNext() {
+    if (currentStep < 3) {
+      currentStep++;
+      showStep(currentStep);
+      // Сбрасываем состояние кнопки для следующего шага
+      document.getElementById('btn-next').classList.remove('active');
+      document.getElementById('btn-next').disabled = true;
+      // Показываем кнопку проверки на 3 шаге
+      if (currentStep === 3) {
+        document.getElementById('btn-check').style.display = 'inline-block';
+        document.getElementById('btn-check').disabled = true;
+        document.getElementById('btn-check').classList.remove('active');
+      }
+    } else {
+      currentStep = 'final';
+      showStep('final');
+      document.getElementById('btn-next').style.display = 'none';
+      document.getElementById('btn-check').style.display = 'none';
+    }
+  }
+
+  function reset() {
+    currentStep = 1;
+    selectedMulti = new Set();
+    
+    document.querySelectorAll('.opt').forEach(opt => {
+      opt.classList.remove('selected', 'disabled');
+      opt.style.pointerEvents = 'auto';
+    });
+    
+    document.getElementById('btn-next').style.display = 'inline-block';
+    document.getElementById('btn-next').classList.remove('active');
+    document.getElementById('btn-next').disabled = true;
+    
+    document.getElementById('btn-check').style.display = 'none';
+    document.getElementById('btn-check').classList.remove('active');
+    document.getElementById('btn-check').disabled = true;
+    
+    showStep(1);
+  }
+
+  // Event Listeners
+  document.querySelectorAll('.step[data-step="1"] .opt').forEach(opt => opt.addEventListener('click', () => handleSingleOption(opt)));
+  document.querySelectorAll('.step[data-step="2"] .opt').forEach(opt => opt.addEventListener('click', () => handleSingleOption(opt)));
+  document.querySelectorAll('#multi-options .opt').forEach(opt => opt.addEventListener('click', () => handleMultiOption(opt)));
+  
+  document.querySelectorAll('.modal-overlay').forEach(overlay => {
+    overlay.addEventListener('click', e => {
+      if (e.target === overlay) closeModal(overlay.id);
+    });
+  });
+
+  // Init
+  window.addEventListener('load', () => {
+    updateProgress();
+    triggerResize();
+    const observer = new ResizeObserver(() => triggerResize());
+    observer.observe(document.querySelector('.container'));
+  });
+</script>
+
+</body>
+</html>
