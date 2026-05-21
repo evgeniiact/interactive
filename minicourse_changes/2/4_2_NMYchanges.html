@@ -3,8 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новые правила НМУ: что делать экологу</title>
-<!-- Скрипт iframe-resizer для корректного масштабирования -->
+<title>Новые правила НМУ: проверьте свое предприятие</title>
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <style>
   :root {
@@ -16,6 +15,8 @@
     --green-border: #a5d6a7;
     --orange: #f59e0b;
     --orange-soft: #fff7ed;
+    --blue: #0ea5e9;
+    --blue-soft: #e0f2fe;
     --border: #e2e8f0;
     --radius: 16px;
     --shadow: 0 4px 12px rgba(0,0,0,0.06);
@@ -91,7 +92,6 @@
   .chk::after { content: '✓'; font-size: 12px; font-weight: 700; display: none; }
   .option.selected .chk::after { display: block; }
 
-  /* Cards for Step 2 */
   .cards-grid {
     display: flex;
     flex-direction: column;
@@ -136,6 +136,8 @@
     border-top: 1px dashed var(--border);
     display: none;
   }
+  .card-comment ul { padding-left: 16px; margin: 6px 0; }
+  .card-comment li { margin-bottom: 4px; }
   .card.active .card-comment { display: block; }
 
   .controls { display: flex; gap: 12px; justify-content: center; border-top: 1px solid var(--border); padding-top: 16px; }
@@ -151,7 +153,7 @@
   .btn-primary { background: var(--green); color: #fff; opacity: 0.4; pointer-events: none; }
   .btn-primary.active { opacity: 1; pointer-events: auto; }
   .btn-primary:hover { background: #1b5e20; }
-  .btn-info { background: #0ea5e9; color: #fff; }
+  .btn-info { background: var(--blue); color: #fff; }
   .btn-info:hover { background: #0284c7; }
   .btn-restart { background: #fff; color: var(--text-main); border: 1px solid var(--border); }
   .btn-restart:hover { background: #f8fafc; }
@@ -164,20 +166,22 @@
   }
   .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
   .modal {
-    background: #fff; border-radius: 16px; max-width: 500px; width: 100%;
+    background: #fff; border-radius: 16px; max-width: 550px; width: 100%;
     padding: 24px; box-shadow: 0 16px 48px rgba(0,0,0,0.2);
     border: 2px solid var(--green-light);
+    max-height: 90vh;
+    overflow-y: auto;
   }
-  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--green); }
+  .modal-title { font-size: 19px; font-weight: 700; margin-bottom: 14px; color: var(--green); }
   .modal-title.hint { color: var(--orange); }
   .modal-text { font-size: 14.5px; line-height: 1.6; color: var(--text-main); margin-bottom: 20px; }
   .modal-law { 
-    display: block; margin-bottom: 16px; padding: 8px 12px; 
+    display: block; margin-bottom: 18px; padding: 10px 14px; 
     background: var(--green-light); border-left: 3px solid var(--green); 
     border-radius: 6px; font-size: 13px; color: var(--green); font-weight: 500; 
   }
   .modal-btn {
-    width: 100%; padding: 10px; background: var(--green); color: #fff; border: none;
+    width: 100%; padding: 11px; background: var(--green); color: #fff; border: none;
     border-radius: 8px; font-weight: 600; cursor: pointer;
   }
   .modal-btn:hover { background: #1b5e20; }
@@ -192,42 +196,84 @@
   .final-card h3 { margin-bottom: 10px; color: var(--green); }
   .final-card ul { text-align: left; padding-left: 18px; margin: 12px 0; }
   .final-card li { margin-bottom: 6px; font-size: 14px; }
+  
+  .doc-list {
+    background: #fff;
+    border-radius: 8px;
+    padding: 12px;
+    margin: 10px 0;
+    text-align: left;
+  }
+  .doc-list h4 { font-size: 14px; color: var(--green-dark); margin-bottom: 8px; }
+  .doc-list ul { padding-left: 18px; }
+  .doc-list li { font-size: 13px; margin-bottom: 4px; color: var(--text-main); }
 
-  @media (max-width: 500px) { .container { padding: 20px; } }
+  .info-box {
+    background: var(--blue-soft);
+    border-left: 4px solid var(--blue);
+    padding: 12px;
+    border-radius: 8px;
+    margin: 16px 0;
+    font-size: 14px;
+  }
+  .info-box strong { color: var(--blue); display: block; margin-bottom: 8px; font-size: 15px; }
+  
+  .changes-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+    margin: 10px 0;
+  }
+  .changes-table th, .changes-table td {
+    padding: 6px 8px;
+    border-bottom: 1px solid var(--border);
+    text-align: left;
+  }
+  .changes-table th { background: var(--green-light); color: var(--green-dark); font-weight: 600; }
+  .changes-table .old { color: var(--orange); text-decoration: line-through; }
+  .changes-table .new { color: var(--green); font-weight: 600; }
+
+  @media (max-width: 600px) { .container { padding: 20px; } }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>Новые правила НМУ: что делать экологу</h2>
-  <p class="intro">С 1 марта 2026 года вступили в силу новые приказы Минприроды. Разберите алгоритм действий при изменениях в порядке согласования планов НМУ.</p>
+  <h2>Новые правила НМУ: проверьте свое предприятие</h2>
+  <p class="intro">С 1 марта 2026 года вступили в силу новые приказы Минприроды. Пройдите 4 шага алгоритма, чтобы понять, нужно ли вам переутверждать план мероприятий на период НМУ.</p>
+  
+  <div class="info-box">
+    <strong>📋 Что изменилось с 1 марта 2026?</strong>
+    <button class="btn btn-info" onclick="showChangesModal()" style="margin-top: 8px;">📊 Ключевые цифры</button>
+  </div>
   
   <div class="step-indicator">
     <div class="step-dot active" id="dot-1"></div>
     <div class="step-dot" id="dot-2"></div>
     <div class="step-dot" id="dot-3"></div>
+    <div class="step-dot" id="dot-4"></div>
   </div>
 
-  <!-- STEP 1: Identify the change -->
+  <!-- STEP 1 -->
   <div class="step active" id="step-1">
     <div class="scenario-box">
-      <strong>Ситуация:</strong> Вы узнали, что с 1 марта 2026 года вступили в силу три новых приказа Минприроды (№ 662, 651, 652), которые меняют порядок согласования планов мероприятий на период НМУ.
+      <strong>Ситуация:</strong> Вы узнали, что с 1 марта 2026 года вступили в силу три новых приказа Минприроды (№ 662, 651, 652), которые меняют порядок разработки, согласования и утверждения планов мероприятий на период НМУ.
     </div>
-    <div class="task-title">Шаг 1. Определите, что именно изменилось</div>
+    <div class="task-title">Шаг 1. Определите тип изменения</div>
+    <p style="font-size:13.5px; margin-bottom:14px; color:var(--text-light);">Уточните, к какой сфере относится новое требование:</p>
     <div class="options">
       <div class="option" onclick="selectOpt(this, 'wrong1')">
-        <div class="chk"></div> Изменились только сроки подачи отчетности по НМУ
-      </div>
-      <div class="option" onclick="selectOpt(this, 'correct')">
-        <div class="chk"></div> Изменились требования к разработке, согласованию плана и порядок действий в периоды НМУ
+        <div class="chk"></div> Разрешительный документ (КЭР, СЭЗ, лицензии)
       </div>
       <div class="option" onclick="selectOpt(this, 'wrong2')">
-        <div class="chk"></div> Изменилась только стоимость специализированных прогнозов
+        <div class="chk"></div> Отчетность и документы (ДВОС, 2-ТП, расчёт платы)
       </div>
-    </div>
-    
-    <div style="text-align:center; margin-bottom:12px;">
-      <button class="btn btn-info" onclick="showChangesInfo()">📋 Что изменилось по приказам</button>
+      <div class="option" onclick="selectOpt(this, 'wrong3')">
+        <div class="chk"></div> Сведения об объекте (реестр НВОС, категория)
+      </div>
+      <div class="option" onclick="selectOpt(this, 'correct')">
+        <div class="chk"></div> Специальный режим работы (планы мероприятий при НМУ)
+      </div>
     </div>
     
     <div class="controls">
@@ -236,54 +282,72 @@
     </div>
   </div>
 
-  <!-- STEP 2: Check impact with cards -->
+  <!-- STEP 2 -->
   <div class="step" id="step-2">
     <div class="scenario-box">
-      <strong>Логика:</strong> Новые правила касаются не всех предприятий одинаково. Оцените каждую ситуацию и решите, затрагивает ли она ваше предприятие.
+      <strong>Логика:</strong> Не все изменения касаются каждого предприятия. Ответьте на три вопроса, чтобы понять, нужно ли вам что-то менять.
     </div>
-    <div class="task-title">Шаг 2. Оцените влияние на ваше предприятие</div>
-    <p style="font-size:13px; margin-bottom:12px; color:var(--text-light);">Для каждой карточки выберите "Да" или "Нет", чтобы увидеть комментарий:</p>
+    <div class="task-title">Шаг 2. Проверьте, относится ли изменение к вашему объекту</div>
+    <p style="font-size:13.5px; margin-bottom:14px; color:var(--text-light);">Для каждой карточки выберите «Да» или «Нет»:</p>
     
     <div class="cards-grid" id="cards-container">
       <!-- Card 1 -->
       <div class="card" data-id="c1">
         <div class="card-header">
-          <div class="card-title">У вашего предприятия есть план мероприятий на период НМУ</div>
+          <div class="card-title">У вашего предприятия есть согласованный план НМУ?</div>
           <div class="card-actions">
             <button class="card-btn yes" onclick="selectCard(this, 'c1', true)">Да</button>
             <button class="card-btn no" onclick="selectCard(this, 'c1', false)">Нет</button>
           </div>
         </div>
         <div class="card-comment" id="comment-c1">
-          Если у вас уже есть согласованный план НМУ, новые правила требуют его переоформления. Срок согласования сокращен с 60 до 15 рабочих дней, а утверждения — до 3 рабочих дней после получения согласования.
+          <strong>Влияет на документы:</strong>
+          <ul>
+            <li>План мероприятий на период НМУ (переутверждение)</li>
+            <li>Инвентаризация выбросов (расчет рассеивания)</li>
+            <li>Проект НДВ (если есть)</li>
+          </ul>
+          <strong>Сроки:</strong> согласование — 15 раб. дней, утверждение — 3 раб. дня (п. 7, 12 Требований по приказу № 662).
         </div>
       </div>
 
       <!-- Card 2 -->
       <div class="card" data-id="c2">
         <div class="card-header">
-          <div class="card-title">Планируется модернизация, которая может увеличить выбросы на 10% и более</div>
+          <div class="card-title">Планируется модернизация с ростом выбросов на 10% и более?</div>
           <div class="card-actions">
             <button class="card-btn yes" onclick="selectCard(this, 'c2', true)">Да</button>
             <button class="card-btn no" onclick="selectCard(this, 'c2', false)">Нет</button>
           </div>
         </div>
         <div class="card-comment" id="comment-c2">
-          При росте совокупных выбросов объекта на 10% и более план НМУ подлежит обязательному пересмотру в срок не позднее 90 календарных дней с даты утверждения скорректированной инвентаризации (п. 13, 14 Требований по приказу № 662).
+          <strong>Влияет на документы:</strong>
+          <ul>
+            <li>План НМУ (обязательный пересмотр)</li>
+            <li>Инвентаризация выбросов (корректировка)</li>
+            <li>Проект НДВ / ДВОС / КЭР (актуализация нормативов)</li>
+          </ul>
+          <strong>Срок:</strong> пересмотр плана — не позднее 90 календарных дней с даты утверждения инвентаризации (п. 14 Требований по приказу № 662).
         </div>
       </div>
 
       <!-- Card 3 -->
       <div class="card" data-id="c3">
         <div class="card-header">
-          <div class="card-title">Ваш объект относится к категории НВОС и работает по специализированному прогнозу</div>
+          <div class="card-title">Ваш объект — категория НВОС и работает по специализированному прогнозу?</div>
           <div class="card-actions">
             <button class="card-btn yes" onclick="selectCard(this, 'c3', true)">Да</button>
             <button class="card-btn no" onclick="selectCard(this, 'c3', false)">Нет</button>
           </div>
         </div>
         <div class="card-comment" id="comment-c3">
-          Для объектов НВОС I категории договор о предоставлении специализированных прогнозов НМУ теперь обязателен. Объекты НВОС II–III категории и коммунальные службы вправе выбрать вид прогноза: общий или специализированный (п. 6 Требований по приказу № 662; приказ № 652).
+          <strong>Влияет на документы:</strong>
+          <ul>
+            <li>Договор с УГМС на специализированный прогноз (обязателен для категории НВОС)</li>
+            <li>План НМУ (эффективность мероприятий: 15%/20%/40%)</li>
+            <li>Протоколы мониторинга на границе СЗЗ</li>
+          </ul>
+          <strong>Стоимость прогноза:</strong> не более 365 179 руб./год, срок подготовки — 1–3 суток (п. 8, 10 ст. 19 Закона № 96-ФЗ; приказ № 652).
         </div>
       </div>
     </div>
@@ -294,29 +358,55 @@
     </div>
   </div>
 
-  <!-- STEP 3: Determine actions -->
+  <!-- STEP 3 -->
   <div class="step" id="step-3">
     <div class="scenario-box">
-      <strong>Результат:</strong> Вы выяснили, какие требования касаются вашего предприятия. Теперь определите необходимые действия.
+      <strong>Результат:</strong> Вы выяснили, какие требования касаются вашего предприятия. Теперь определите связанные документы.
     </div>
-    <div class="task-title">Шаг 3. Выберите правильные действия</div>
+    <div class="task-title">Шаг 3. Найдите связанные документы и процессы</div>
     <div class="options">
       <div class="option" onclick="selectOpt(this, 'action1')">
-        <div class="chk"></div> Подать план на согласование в течение 15 рабочих дней
+        <div class="chk"></div> Разрешения и уведомления (КЭР, СЭЗ, водопользование)
       </div>
       <div class="option" onclick="selectOpt(this, 'action2')">
-        <div class="chk"></div> Утвердить согласованный план в течение 3 рабочих дней
+        <div class="chk"></div> Отчётность и формы (ДВОС, 2-ТП, расчёт платы)
       </div>
       <div class="option" onclick="selectOpt(this, 'action3')">
-        <div class="chk"></div> Пересмотреть план, если выбросы выросли на 10% и более
+        <div class="chk"></div> Внутренние документы и процедуры (приказы, инструкции)
       </div>
       <div class="option" onclick="selectOpt(this, 'all')">
-        <div class="chk"></div> Выполнить все три действия
+        <div class="chk"></div> Все три группы документов
       </div>
     </div>
     <div class="controls">
       <button class="btn btn-restart" onclick="restart()">Перезапуск</button>
-      <button class="btn btn-primary" id="btn-3" disabled>Завершить</button>
+      <button class="btn btn-primary" id="btn-3" disabled>Далее</button>
+    </div>
+  </div>
+
+  <!-- STEP 4 -->
+  <div class="step" id="step-4">
+    <div class="scenario-box">
+      <strong>Итог:</strong> Вы определили тип изменения, проверили влияние и нашли документы. Осталось выбрать действие.
+    </div>
+    <div class="task-title">Шаг 4. Выберите действие по результатам</div>
+    <div class="options">
+      <div class="option" onclick="selectOpt(this, 'final1')">
+        <div class="chk"></div> Ничего не делать (требование не касается объекта)
+      </div>
+      <div class="option" onclick="selectOpt(this, 'final2')">
+        <div class="chk"></div> Внести изменения в документы и обновить сроки
+      </div>
+      <div class="option" onclick="selectOpt(this, 'final3')">
+        <div class="chk"></div> Переоформить разрешения и актуализировать объект
+      </div>
+      <div class="option" onclick="selectOpt(this, 'final4')">
+        <div class="chk"></div> Уведомить органы и участников (РО, ОМСУ, ФЭО)
+      </div>
+    </div>
+    <div class="controls">
+      <button class="btn btn-restart" onclick="restart()">Перезапуск</button>
+      <button class="btn btn-primary" id="btn-4" disabled>Завершить</button>
     </div>
   </div>
 
@@ -324,20 +414,39 @@
   <div class="step" id="step-final">
     <div class="final-card">
       <h3>Алгоритм пройден</h3>
-      <p>При изменениях в порядке НМУ эколог действует по цепочке:</p>
-      <ul>
-        <li>1. Определить тип изменения (новые приказы Минприроды № 662, 651, 652)</li>
-        <li>2. Проверить влияние (есть ли план НМУ, планируется ли рост выбросов ≥10%, категория объекта)</li>
-        <li>3. Выполнить действия:
-          <ul style="margin-top:6px; padding-left:16px;">
-            <li>Подать план на согласование (срок рассмотрения — 15 рабочих дней)</li>
-            <li>Утвердить согласованный план (в течение 3 рабочих дней)</li>
-            <li>Пересмотреть план при росте выбросов ≥10% (в течение 90 дней)</li>
-          </ul>
-        </li>
-      </ul>
+      <p>При внешних изменениях по НМУ эколог действует по цепочке:</p>
+      
+      <div class="doc-list">
+        <h4>📄 План мероприятий на период НМУ</h4>
+        <ul>
+          <li>Проект плана с мероприятиями по снижению выбросов</li>
+          <li>Расчет рассеивания с учетом мероприятий</li>
+          <li>Пояснительная записка (если требует регион)</li>
+          <li>Письмо о согласовании от госоргана</li>
+          <li>Приказ об утверждении плана руководителем</li>
+        </ul>
+      </div>
+      
+      <div class="doc-list">
+        <h4>📊 Инвентаризация и нормативы</h4>
+        <ul>
+          <li>Отчет об инвентаризации выбросов и ИЗАВ</li>
+          <li>Проект НДВ / ДВОС / КЭР (актуализация)</li>
+          <li>Протоколы замеров на границе СЗЗ</li>
+        </ul>
+      </div>
+      
+      <div class="doc-list">
+        <h4>🔔 Прогнозы и мониторинг</h4>
+        <ul>
+          <li>Договор с УГМС на специализированный прогноз (для категории НВОС)</li>
+          <li>Журнал записи прогнозов о НМУ (если требует регион)</li>
+          <li>Приказ о назначении ответственных за мероприятия при НМУ</li>
+        </ul>
+      </div>
+      
       <p style="margin-top:10px; font-size:13px; color:var(--text-light);">
-        <strong>Важно:</strong> Если на шаге 2 вы ответили "Нет" на все вопросы, новые требования пока не затрагивают ваше предприятие. Но стоит мониторить изменения, так как в будущем ситуация может измениться.
+        <strong>Важно:</strong> Если на шаге 2 вы ответили «Нет» на все вопросы, новые требования пока не затрагивают ваше предприятие. Но стоит мониторить изменения.
       </p>
     </div>
     <div class="controls">
@@ -346,45 +455,58 @@
   </div>
 </div>
 
-<!-- Modal: Changes Info -->
+<!-- Modal: Changes Info - Descriptive -->
 <div class="modal-overlay" id="modal-changes">
   <div class="modal">
-    <div class="modal-title">Что изменилось по приказам</div>
+    <div class="modal-title">📋 Что изменилось по приказам с 1 марта 2026</div>
     <div class="modal-text">
-      <strong>Приказ Минприроды № 662 от 28.11.2025:</strong><br>
-      • Срок согласования плана НМУ: 60 → 15 рабочих дней;<br>
-      • Срок утверждения согласованного плана: не позднее 3 рабочих дней;<br>
-      • План подлежит пересмотру при росте совокупных выбросов на 10% и более;<br>
-      • Пояснительная записка не требуется, но в план нужно включить расчеты рассеивания и методы контроля;<br>
-      • Журнал записи прогнозов о НМУ не требуется.<br><br>
+      <p><strong>Вступили в силу три новых приказа Минприроды:</strong></p>
+      <ul>
+        <li>№ 662 от 28.11.2025 - требования к разработке и согласованию плана</li>
+        <li>№ 651 от 26.11.2025 - требования к мероприятиям по снижению выбросов</li>
+        <li>№ 652 от 26.11.2025 - порядок предоставления специализированных прогнозов</li>
+      </ul>
       
-      <strong>Приказ Минприроды № 651 от 26.11.2025:</strong><br>
-      • Утверждены требования к мероприятиям по снижению выбросов;<br>
-      • Эффективность мероприятий: для общего прогноза — 20%, для специализированного — 15%/20%/40% в зависимости от степени НМУ;<br>
-      • В план включают только характерные вещества объекта, которые есть в перечне 2909-р.<br><br>
+      <h4 style="margin:16px 0 8px; color:var(--green); font-size:15px;">📅 Сроки согласования и утверждения</h4>
+      <p><strong>Согласование госорганом:</strong> сократили с 60 дней до <strong>15 рабочих дней</strong>. На 7-й день госорган вправе вернуть план на доработку.</p>
+      <p><strong>Доработка плана:</strong> установили срок <strong>22 рабочих дня</strong> с даты получения замечаний (ранее не устанавливали).</p>
+      <p><strong>Утверждение в организации:</strong> не позднее <strong>3 рабочих дней</strong> после получения согласования (ранее срок не устанавливали).</p>
       
-      <strong>Приказ Минприроды № 652 от 26.11.2025:</strong><br>
-      • Закреплен порядок предоставления специализированных прогнозов НМУ;<br>
-      • Для объектов НВОС I категории договор о прогнозах теперь обязателен;<br>
-      • Максимальная стоимость специализированного прогноза — 365 179 руб./год, срок подготовки — 1–3 суток.
+      <h4 style="margin:16px 0 8px; color:var(--green); font-size:15px;">🔄 Корректировка плана</h4>
+      <p><strong>Основание для пересмотра:</strong> если совокупные выбросы объекта увеличились на <strong>10% и более</strong> (ранее — при изменении выбросов от одного ИЗАВ на 25%).</p>
+      <p><strong>Срок корректировки:</strong> не позднее <strong>90 календарных дней</strong> с даты утверждения инвентаризации (ранее срок не устанавливали).</p>
+      
+      <h4 style="margin:16px 0 8px; color:var(--green); font-size:15px;">🔮 Вид прогноза НМУ</h4>
+      <p><strong>Объекты I категории:</strong> только специализированный прогноз (1, 2, 3 степень) — <strong>обязательно</strong>.</p>
+      <p><strong>Объекты II-III категории и коммунальные службы:</strong> вправе выбрать — общий без определения степени ИЛИ специализированный с определением 1, 2, 3 степени.</p>
+      <p><strong>Стоимость специализированного прогноза:</strong> не более 365 179 руб./год, срок подготовки — 1-3 суток.</p>
+      
+      <h4 style="margin:16px 0 8px; color:var(--green); font-size:15px;">📉 Эффективность мероприятий</h4>
+      <p><strong>Для объектов (кроме коммунальных служб):</strong></p>
+      <ul>
+        <li>Общий прогноз: 20% для всех степеней</li>
+        <li>Специализированный: 1-я степень — 15%, 2-я степень — 20%, 3-я степень — 40%</li>
+      </ul>
+      <p><strong>Для коммунальных служб:</strong></p>
+      <ul>
+        <li>Общий прогноз: 15% для всех степеней</li>
+        <li>Специализированный: 1-я степень — 5%, 2-я степень — 10%, 3-я степень — 20%</li>
+      </ul>
+      
+      <h4 style="margin:16px 0 8px; color:var(--green); font-size:15px;">🧪 Перечень веществ</h4>
+      <p><strong>Было:</strong> все нормируемые вещества, даже если их нет в перечне 2909-р.</p>
+      <p><strong>Стало:</strong> только <strong>характерные вещества объекта НВОС</strong>, которые есть в перечне 2909-р.</p>
+      
+      <h4 style="margin:16px 0 8px; color:var(--green); font-size:15px;">✅ Когда не нужны мероприятия</h4>
+      <p>Мероприятия не нужно разрабатывать, если по расчетам рассеивания <strong>нет превышений ПДК</strong> на границе и территории жилой зоны. План всё равно нужно согласовать и утвердить.</p>
+      
+      <h4 style="margin:16px 0 8px; color:var(--green); font-size:15px;">📄 Документация</h4>
+      <p><strong>Пояснительная записка:</strong> не требуется по федеральным требованиям, но в план нужно включить расчеты рассеивания и методы контроля. Регионы могут запросить записку.</p>
+      <p><strong>Журнал записи прогнозов о НМУ:</strong> не требуется (приказы № 651, 662 отменили требование).</p>
+      
+      <span class="modal-law">📖 Приказы Минприроды от 28.11.2025 № 662, от 26.11.2025 № 651, № 652</span>
     </div>
     <button class="modal-btn" onclick="closeModal('modal-changes')">Понятно</button>
-  </div>
-</div>
-
-<!-- Modal: All No scenario -->
-<div class="modal-overlay" id="modal-all-no">
-  <div class="modal">
-    <div class="modal-title">✓ Верно</div>
-    <div class="modal-text">
-      Если вы ответили "Нет" на все вопросы, новые требования НМУ пока не затрагивают ваше предприятие. В этом случае:
-      <ul style="margin-top:10px; padding-left:18px;">
-        <li>Действующий план НМУ продолжает действовать;</li>
-        <li>Новые сроки согласования к вам пока не применяются;</li>
-        <li>Но стоит мониторить изменения — если в будущем появится план НМУ или вырастут выбросы, правила начнут действовать.</li>
-      </ul>
-    </div>
-    <button class="modal-btn" onclick="closeModal('modal-all-no'); showStep('final')">Завершить</button>
   </div>
 </div>
 
@@ -401,6 +523,7 @@
 <script>
   let currentStep = 1;
   let step3Selection = null;
+  let step4Selection = null;
   const selectedCards = new Set();
 
   function triggerResize() {
@@ -408,7 +531,7 @@
   }
 
   function updateDots() {
-    for(let i=1; i<=3; i++) {
+    for(let i=1; i<=4; i++) {
       const dot = document.getElementById(`dot-${i}`);
       if(i <= currentStep) dot.classList.add('active');
       else dot.classList.remove('active');
@@ -428,12 +551,12 @@
     triggerResize();
   }
 
-  function showChangesInfo() {
+  function showChangesModal() {
     document.getElementById('modal-changes').classList.add('show');
     triggerResize();
   }
 
-  function showModal(title, text, law, isCorrect) {
+  function showModal(title, text, law, isCorrect, btnAction) {
     document.getElementById('fb-title').textContent = title;
     document.getElementById('fb-title').className = isCorrect ? 'modal-title' : 'modal-title hint';
     document.getElementById('fb-text').textContent = text;
@@ -441,7 +564,11 @@
     document.getElementById('modal-feedback').classList.add('show');
     
     const btn = document.getElementById('modal-btn');
-    btn.onclick = () => closeModal('modal-feedback');
+    btn.onclick = null;
+    btn.onclick = function() {
+      closeModal('modal-feedback');
+      if (btnAction) btnAction();
+    };
     triggerResize();
   }
 
@@ -453,17 +580,18 @@
       el.classList.add('selected');
       
       if(value === 'correct') {
-        showModal('Верно', 'Вы правильно определили тип изменения. Новые приказы меняют требования к разработке, согласованию плана и порядок действий в периоды НМУ.', 'Приказы Минприроды от 28.11.2025 № 662, от 26.11.2025 № 651, № 652', true);
-        
-        // Активируем кнопку "Далее" при верном ответе
-        const btn = document.getElementById('btn-1');
-        btn.classList.add('active');
-        btn.disabled = false;
+        showModal('Верно', 'Вы правильно определили тип изменения. Новые приказы меняют требования к разработке, согласованию плана и порядок действий в периоды НМУ.', 'Приказы Минприроды от 28.11.2025 № 662, от 26.11.2025 № 651, № 652', true, () => { 
+          const btn = document.getElementById('btn-1');
+          btn.classList.add('active');
+          btn.disabled = false;
+        });
       } else {
         const wrongText = value === 'wrong1' 
-          ? 'Сроки подачи отчетности не изменились. Изменились сроки согласования плана (60 → 15 рабочих дней) и утверждения (3 рабочих дня).' 
-          : 'Стоимость прогнозов — лишь одна из деталей. Главное — изменились требования к плану и порядок действий.';
-        showModal('Не совсем так', wrongText, 'Приказ Минприроды от 28.11.2025 № 662', false);
+          ? 'ДВОС — это отчётность, а не разрешительный документ. Разрешительные документы (КЭР, СЭЗ) требуют переоформления, а отчётность — обновления форм и сроков.' 
+          : value === 'wrong2'
+          ? 'Сведения об объекте (реестр НВОС, категория) меняются при изменении техпроцесса или адреса. Здесь меняется только форма отчёта.'
+          : 'Плата и сборы — это ставки и коэффициенты. В данном случае меняется форма декларации, а не размеры платежей.';
+        showModal('Не совсем так', wrongText, 'Алгоритм действий при внешних изменениях, шаг 1', false, null);
       }
     } else if (currentStep === 3) {
       document.querySelectorAll('#step-3 .option').forEach(o => o.classList.remove('selected'));
@@ -475,7 +603,19 @@
         btn.classList.add('active');
         btn.disabled = false;
       } else {
-        showModal('Не совсем так', 'Новые правила требуют выполнения всех трех действий: подать план на согласование (15 раб. дней), утвердить согласованный план (3 раб. дня), пересмотреть при росте выбросов ≥10%.', 'п. 1, п. 2, п. 13 Требований по приказу Минприроды от 28.11.2025 № 662', false);
+        showModal('Не совсем так', 'Внешнее изменение может затрагивать несколько групп документов одновременно. Отчётность (ДВОС) связана с разрешениями (КЭР) и внутренними регламентами. Выберите «Все три группы».', 'Алгоритм действий при внешних изменениях, шаг 3', false, null);
+      }
+    } else if (currentStep === 4) {
+      document.querySelectorAll('#step-4 .option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      step4Selection = value;
+      
+      if(value === 'final2') {
+        const btn = document.getElementById('btn-4');
+        btn.classList.add('active');
+        btn.disabled = false;
+      } else {
+        showModal('Не совсем так', 'При изменении формы отчётности нужно внести изменения в документы, обновить шаблоны, контрольные даты и внутренние инструкции. Ничего не делать нельзя, переоформлять разрешения не нужно (если не меняются реквизиты), уведомлять органы отдельно не требуется.', 'Алгоритм действий при внешних изменениях, шаг 4', false, null);
       }
     }
   }
@@ -498,14 +638,12 @@
     triggerResize();
   }
 
-  // --- ИСПРАВЛЕННАЯ ЛОГИКА ПЕРЕХОДОВ ---
+  // --- ЛОГИКА ПЕРЕХОДОВ ---
 
-  // Переход с Шага 1 на Шаг 2
   document.getElementById('btn-1').onclick = function() {
     showStep(2);
   };
 
-  // Переход с Шага 2 на Шаг 3 (или Финал)
   document.getElementById('btn-2').onclick = function() {
     if(selectedCards.size >= 3) {
       const allNo = [...selectedCards].every(id => {
@@ -514,25 +652,29 @@
       });
       
       if(allNo) {
-        document.getElementById('modal-all-no').classList.add('show');
+        showModal('✓ Верно', 'Если на все три вопросы ответ «Нет», изменение не относится к вашему объекту и обязанностям. Действия не требуются. Можно перейти к завершению.', 'Алгоритм действий при внешних изменениях, шаг 2', true, () => { showStep('final'); });
       } else {
-        showModal('Верно', 'Отлично. Вы оценили все ситуации. Если хотя бы на один вопрос ответ "Да", новые требования НМУ затрагивают ваше предприятие.', 'п. 1 приказа Минприроды от 28.11.2025 № 662', true);
-        showStep(3);
+        showModal('Верно', 'Отлично. Если хотя бы на один вопрос ответ «Да», внешнее изменение затрагивает ваше предприятие. Переходим к поиску связанных документов.', 'Алгоритм действий при внешних изменениях, шаг 2', true, () => { showStep(3); });
       }
     }
   };
 
-  // Переход с Шага 3 на Финал
   document.getElementById('btn-3').onclick = function() {
     if(step3Selection === 'all') {
-      showModal('Верно', 'Отлично! Вы определили все необходимые действия.', 'Приказы Минприроды от 28.11.2025 № 662, 651, 652', true);
-      showStep('final');
+      showModal('Верно', 'Верно. Внешнее изменение затрагивает отчётность (ДВОС), разрешения (КЭР) и внутренние регламенты. Переходим к выбору действия.', 'Алгоритм действий при внешних изменениях, шаг 3', true, () => { showStep(4); });
+    }
+  };
+
+  document.getElementById('btn-4').onclick = function() {
+    if(step4Selection === 'final2') {
+      showModal('Верно', 'Отлично! Вы выбрали правильное действие. При изменении формы отчётности нужно внести изменения в документы, обновить шаблоны, контрольные даты и внутренние инструкции.', 'Алгоритм действий при внешних изменениях, шаг 4', true, () => { showStep('final'); });
     }
   };
 
   function restart() {
     currentStep = 1;
     step3Selection = null;
+    step4Selection = null;
     selectedCards.clear();
     
     document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
