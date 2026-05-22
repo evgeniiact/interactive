@@ -3,7 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Новые правила НМУ: проверьте свое предприятие</title>
+<title>Какие документы и процессы проверять</title>
+<!-- Скрипт iframe-resizer -->
 <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <style>
   :root {
@@ -33,7 +34,7 @@
   }
   .container {
     width: 100%;
-    max-width: 690px;
+    max-width: 700px;
     background: #fff;
     border-radius: var(--radius);
     padding: 24px;
@@ -47,12 +48,14 @@
   }
   .step-dot {
     height: 4px; flex: 1; background: #e2e8f0; border-radius: 2px;
+    transition: background 0.3s;
   }
   .step-dot.active { background: var(--green); }
+  .step-dot.completed { background: var(--green-border); }
 
-  .step { display: none; animation: fadeIn 0.3s; }
+  .step { display: none; animation: fadeIn 0.25s; }
   .step.active { display: block; }
-  @keyframes fadeIn { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: translateY(0); } }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
 
   .scenario-box {
     background: #f8fafc;
@@ -76,9 +79,11 @@
     display: flex;
     align-items: flex-start;
     gap: 12px;
+    background: #fff;
   }
   .option:hover { border-color: var(--green-border); background: var(--green-light); }
   .option.selected { border-color: var(--green); background: var(--green-light); font-weight: 600; }
+  .option.disabled { pointer-events: none; opacity: 0.6; }
   
   .chk {
     width: 20px; height: 20px;
@@ -87,6 +92,7 @@
     flex-shrink: 0;
     margin-top: 2px;
     display: flex; align-items: center; justify-content: center;
+    transition: 0.2s;
   }
   .option.selected .chk { background: var(--green); border-color: var(--green); color: #fff; }
   .chk::after { content: '✓'; font-size: 12px; font-weight: 700; display: none; }
@@ -153,11 +159,12 @@
   .btn-primary { background: var(--green); color: #fff; opacity: 0.4; pointer-events: none; }
   .btn-primary.active { opacity: 1; pointer-events: auto; }
   .btn-primary:hover { background: #1b5e20; }
-  .btn-info { background: var(--blue); color: #fff; }
-  .btn-info:hover { background: #0284c7; }
+  .btn-secondary { background: #fff; color: var(--text-main); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: #f8fafc; }
   .btn-restart { background: #fff; color: var(--text-main); border: 1px solid var(--border); }
   .btn-restart:hover { background: #f8fafc; }
 
+  /* Modals */
   .modal-overlay {
     position: fixed; top: 0; left: 0; right: 0; bottom: 0;
     background: rgba(0,0,0,0.5);
@@ -166,85 +173,102 @@
   }
   .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
   .modal {
-    background: #fff; border-radius: 16px; max-width: 550px; width: 100%;
+    background: #fff; border-radius: 16px; max-width: 560px; width: 100%;
     padding: 24px; box-shadow: 0 16px 48px rgba(0,0,0,0.2);
     border: 2px solid var(--green-light);
-    max-height: 90vh;
+    max-height: 85vh;
     overflow-y: auto;
+    position: relative;
   }
-  .modal-title { font-size: 19px; font-weight: 700; margin-bottom: 14px; color: var(--green); }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--green); }
   .modal-title.hint { color: var(--orange); }
-  .modal-text { font-size: 14.5px; line-height: 1.6; color: var(--text-main); margin-bottom: 20px; }
-  .modal-law { 
-    display: block; margin-bottom: 18px; padding: 10px 14px; 
-    background: var(--green-light); border-left: 3px solid var(--green); 
-    border-radius: 6px; font-size: 13px; color: var(--green); font-weight: 500; 
-  }
+  .modal-text { font-size: 14.5px; line-height: 1.6; color: var(--text-main); margin-bottom: 16px; }
   .modal-btn {
-    width: 100%; padding: 11px; background: var(--green); color: #fff; border: none;
+    width: 100%; padding: 10px; background: var(--green); color: #fff; border: none;
     border-radius: 8px; font-weight: 600; cursor: pointer;
   }
   .modal-btn:hover { background: #1b5e20; }
+  .modal-close {
+    position: absolute; top: 12px; right: 12px; width: 28px; height: 28px;
+    border: none; background: #f0f2f5; border-radius: 50%; cursor: pointer;
+    font-size: 18px; color: #666; display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: #e4e6eb; }
 
+  /* Final Card Styles (Matching Image) */
   .final-card {
-    background: var(--green-light);
+    background: #f0fdf4; /* Light green bg for whole card */
     border: 1px solid var(--green-border);
     border-radius: 12px;
     padding: 20px;
     text-align: center;
   }
-  .final-card h3 { margin-bottom: 10px; color: var(--green); }
-  .final-card ul { text-align: left; padding-left: 18px; margin: 12px 0; }
-  .final-card li { margin-bottom: 6px; font-size: 14px; }
+  .final-card h3 { text-align: center; margin-bottom: 10px; color: var(--green); font-size: 20px; }
+  .final-intro { font-size: 14px; margin-bottom: 16px; color: var(--text-main); }
   
-  .doc-list {
-    background: #fff;
+  .exemptions-box {
+    background: #eff6ff; /* Light blue */
+    border-left: 4px solid #0ea5e9;
     border-radius: 8px;
     padding: 12px;
-    margin: 10px 0;
+    margin-bottom: 16px;
     text-align: left;
   }
-  .doc-list h4 { font-size: 14px; color: var(--green-dark); margin-bottom: 8px; }
-  .doc-list ul { padding-left: 18px; }
-  .doc-list li { font-size: 13px; margin-bottom: 4px; color: var(--text-main); }
-
-  .info-box {
-    background: var(--blue-soft);
-    border-left: 4px solid var(--blue);
-    padding: 12px;
-    border-radius: 8px;
-    margin: 16px 0;
+  .exemptions-box h4 {
+    color: #0284c7;
     font-size: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
   }
-  .info-box strong { color: var(--blue); display: block; margin-bottom: 8px; font-size: 15px; }
-  
-  .changes-table {
-    width: 100%;
-    border-collapse: collapse;
-    font-size: 13px;
-    margin: 10px 0;
-  }
-  .changes-table th, .changes-table td {
-    padding: 6px 8px;
-    border-bottom: 1px solid var(--border);
+  .exemptions-box ul { padding-left: 20px; margin: 0; }
+  .exemptions-box li { font-size: 13px; margin-bottom: 4px; color: #0f172a; line-height: 1.4; }
+
+  .connection-box {
+    background: #fff;
+    border: 1px solid var(--green-border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-top: 10px;
     text-align: left;
   }
-  .changes-table th { background: var(--green-light); color: var(--green-dark); font-weight: 600; }
-  .changes-table .old { color: var(--orange); text-decoration: line-through; }
-  .changes-table .new { color: var(--green); font-weight: 600; }
+  .connection-box h4 { font-size: 14px; color: var(--text-main); margin-bottom: 6px; display: flex; align-items: center; gap: 6px; }
+  .connection-box ul { padding-left: 20px; margin: 0; }
+  .connection-box li { font-size: 13px; margin-bottom: 3px; color: var(--text-main); line-height: 1.4; }
 
-  @media (max-width: 600px) { .container { padding: 20px; } }
+  /* Algo Breakdown Styles */
+  .breakdown-item {
+    background: #fff;
+    border: 1px solid var(--green-border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    text-align: left;
+    position: relative;
+  }
+  .breakdown-item.success { border-left: 4px solid var(--green); }
+  .breakdown-item.warning { border-left: 4px solid var(--orange); }
+  .breakdown-item h4 { font-size: 14px; margin-bottom: 6px; color: var(--text-main); display: flex; align-items: center; gap: 8px; }
+  .breakdown-item p { font-size: 13.5px; color: var(--text-light); line-height: 1.4; margin: 0; }
+  .breakdown-tag {
+    font-size: 11px;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-weight: 600;
+    margin-left: auto;
+  }
+  .tag-correct { background: var(--green-light); color: var(--green); }
+  .tag-wrong { background: var(--orange-soft); color: var(--orange); }
+
+  @media (max-width: 600px) { .container { padding: 16px; } }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <h2>Новые правила НМУ: проверьте свое предприятие</h2>
-  <p class="intro">С 1 марта 2026 года вступили в силу новые приказы Минприроды. Пройдите 4 шага алгоритма, чтобы понять, нужно ли вам переутверждать план мероприятий на период НМУ.</p>
-  
-  <div class="info-box">
-    <button class="btn btn-info" onclick="showChangesModal()" style="margin-top: 8px;">📋 Что изменилось с 1 марта 2026?</button>
-  </div>
+  <h2>Какие документы и процессы проверять</h2>
+  <p class="intro">Вы узнали об изменениях в порядке отчетности и актуализации данных. Пройдите 4 шага алгоритма, чтобы проверить документы и не пропустить старые шаблоны.</p>
   
   <div class="step-indicator">
     <div class="step-dot active" id="dot-1"></div>
@@ -256,28 +280,27 @@
   <!-- STEP 1 -->
   <div class="step active" id="step-1">
     <div class="scenario-box">
-      <strong>Ситуация:</strong> Вы узнали, что с 1 марта 2026 года вступили в силу три новых приказа Минприроды (№ 662, 651, 652), которые меняют порядок разработки, согласования и утверждения планов мероприятий на период НМУ.
+      <strong>Ситуация:</strong> Вы узнали, что изменилась форма отчетности по воздействию на окружающую среду и порядок подачи данных в реестр объектов НВОС.
     </div>
     <div class="task-title">Шаг 1. Определите тип изменения</div>
     <p style="font-size:13.5px; margin-bottom:14px; color:var(--text-light);">Уточните, к какой сфере относится новое требование:</p>
     <div class="options">
-      <div class="option" onclick="selectOpt(this, 'wrong1')">
-        <div class="chk"></div> Разрешительный документ (КЭР, СЭЗ, лицензии)
+      <div class="option" onclick="handleStep1('wrong1')">
+        <div class="chk"></div> Разрешительный режим (КЭР, ДВОС, СЭЗ)
       </div>
-      <div class="option" onclick="selectOpt(this, 'wrong2')">
-        <div class="chk"></div> Отчетность и документы (ДВОС, 2-ТП, расчёт платы)
+      <div class="option" onclick="handleStep1('correct')">
+        <div class="chk"></div> Порядок отчетности и актуализации данных (2-ТП, отчет о выполнении ДВОС, реестр НВОС)
       </div>
-      <div class="option" onclick="selectOpt(this, 'wrong3')">
-        <div class="chk"></div> Сведения об объекте (реестр НВОС, категория)
+      <div class="option" onclick="handleStep1('wrong2')">
+        <div class="chk"></div> Технологический процесс или состав источников выбросов
       </div>
-      <div class="option" onclick="selectOpt(this, 'correct')">
-        <div class="chk"></div> Специальный режим работы (планы мероприятий при НМУ)
+      <div class="option" onclick="handleStep1('wrong3')">
+        <div class="chk"></div> Плата за негативное воздействие (ставки, коэффициенты)
       </div>
     </div>
-    
     <div class="controls">
       <button class="btn btn-restart" onclick="restart()">Перезапуск</button>
-      <button class="btn btn-primary" id="btn-1" disabled>Далее</button>
+      <button class="btn btn-primary" id="btn-1" disabled onclick="goToStep(2)">Далее</button>
     </div>
   </div>
 
@@ -290,70 +313,64 @@
     <p style="font-size:13.5px; margin-bottom:14px; color:var(--text-light);">Для каждой карточки выберите «Да» или «Нет»:</p>
     
     <div class="cards-grid" id="cards-container">
-      <!-- Card 1 -->
       <div class="card" data-id="c1">
         <div class="card-header">
-          <div class="card-title">У вашего предприятия есть согласованный план НМУ?</div>
+          <div class="card-title">Ваш объект подает отчетность по воздействию на окружающую среду?</div>
           <div class="card-actions">
-            <button class="card-btn yes" onclick="selectCard(this, 'c1', true)">Да</button>
-            <button class="card-btn no" onclick="selectCard(this, 'c1', false)">Нет</button>
+            <button class="card-btn yes" onclick="toggleCard(this, 'c1', true)">Да</button>
+            <button class="card-btn no" onclick="toggleCard(this, 'c1', false)">Нет</button>
           </div>
         </div>
-        <div class="card-comment" id="comment-c1">
-          <strong>Влияет на документы:</strong>
+        <div class="card-comment">
+          <strong>Цепочка зависимостей:</strong>
           <ul>
-            <li>План мероприятий на период НМУ (переутверждение)</li>
-            <li>Инвентаризация выбросов (расчет рассеивания)</li>
-            <li>Проект НДВ (если есть)</li>
+            <li>Новая форма → Шаблон файла (нужно скачать актуальный)</li>
+            <li>Изменение формы → Инструкция по сбору данных (нужно переписать)</li>
+            <li>Изменение сроков → Внутренний календарь (нужно сдвинуть контрольные даты)</li>
           </ul>
-          <strong>Сроки:</strong> согласование — 15 раб. дней, утверждение — 3 раб. дня (п. 7, 12 Требований по приказу № 662).
         </div>
       </div>
 
-      <!-- Card 2 -->
       <div class="card" data-id="c2">
         <div class="card-header">
-          <div class="card-title">Планируется модернизация с ростом выбросов на 10% и более?</div>
+          <div class="card-title">Используете ли вы данные из реестра объектов НВОС в других документах?</div>
           <div class="card-actions">
-            <button class="card-btn yes" onclick="selectCard(this, 'c2', true)">Да</button>
-            <button class="card-btn no" onclick="selectCard(this, 'c2', false)">Нет</button>
+            <button class="card-btn yes" onclick="toggleCard(this, 'c2', true)">Да</button>
+            <button class="card-btn no" onclick="toggleCard(this, 'c2', false)">Нет</button>
           </div>
         </div>
-        <div class="card-comment" id="comment-c2">
-          <strong>Влияет на документы:</strong>
+        <div class="card-comment">
+          <strong>Цепочка зависимостей:</strong>
           <ul>
-            <li>План НМУ (обязательный пересмотр)</li>
-            <li>Инвентаризация выбросов (корректировка)</li>
-            <li>Проект НДВ / ДВОС / КЭР (актуализация нормативов)</li>
+            <li>Изменение порядка актуализации → Карточка в реестре НВОС</li>
+            <li>Данные реестра → Разрешения (КЭР, ДВОС) (нужно сверить реквизиты)</li>
+            <li>Данные реестра → Внутренние приказы (нужно обновить преамбулу)</li>
           </ul>
-          <strong>Срок:</strong> пересмотр плана — не позднее 90 календарных дней с даты утверждения инвентаризации (п. 14 Требований по приказу № 662).
         </div>
       </div>
 
-      <!-- Card 3 -->
       <div class="card" data-id="c3">
         <div class="card-header">
-          <div class="card-title">Ваш объект — категория НВОС и работает по специализированному прогнозу?</div>
+          <div class="card-title">Есть ли у вас внутренние инструкции по подготовке и подаче отчетности?</div>
           <div class="card-actions">
-            <button class="card-btn yes" onclick="selectCard(this, 'c3', true)">Да</button>
-            <button class="card-btn no" onclick="selectCard(this, 'c3', false)">Нет</button>
+            <button class="card-btn yes" onclick="toggleCard(this, 'c3', true)">Да</button>
+            <button class="card-btn no" onclick="toggleCard(this, 'c3', false)">Нет</button>
           </div>
         </div>
-        <div class="card-comment" id="comment-c3">
-          <strong>Влияет на документы:</strong>
+        <div class="card-comment">
+          <strong>Цепочка зависимостей:</strong>
           <ul>
-            <li>Договор с УГМС на специализированный прогноз (обязателен для категории НВОС)</li>
-            <li>План НМУ (эффективность мероприятий: 15%/20%/40%)</li>
-            <li>Протоколы мониторинга на границе СЗЗ</li>
+            <li>Изменение регламента → Инструкция эколога (нужно изменить текст)</li>
+            <li>Изменение порядка → Маршрут согласования (нужно добавить/убрать визы)</li>
+            <li>Новые требования → Ответственные лица (нужно проинструктировать под подпись)</li>
           </ul>
-          <strong>Стоимость прогноза:</strong> не более 365 179 руб./год, срок подготовки — 1–3 суток (п. 8, 10 ст. 19 Закона № 96-ФЗ; приказ № 652).
         </div>
       </div>
     </div>
 
     <div class="controls">
       <button class="btn btn-restart" onclick="restart()">Перезапуск</button>
-      <button class="btn btn-primary" id="btn-2" disabled>Далее</button>
+      <button class="btn btn-primary" id="btn-2" disabled onclick="evaluateStep2()">Далее</button>
     </div>
   </div>
 
@@ -364,22 +381,22 @@
     </div>
     <div class="task-title">Шаг 3. Найдите связанные документы и процессы</div>
     <div class="options">
-      <div class="option" onclick="selectOpt(this, 'action1')">
-        <div class="chk"></div> Разрешения и уведомления (КЭР, СЭЗ, водопользование)
+      <div class="option" onclick="handleStep3('action1')">
+        <div class="chk"></div> Разрешения и уведомления (КЭР, ДВОС, водопользование)
       </div>
-      <div class="option" onclick="selectOpt(this, 'action2')">
-        <div class="chk"></div> Отчётность и формы (ДВОС, 2-ТП, расчёт платы)
+      <div class="option" onclick="handleStep3('action2')">
+        <div class="chk"></div> Отчетность и формы (2-ТП, отчет о выполнении ДВОС, расчёт платы, шаблоны файлов)
       </div>
-      <div class="option" onclick="selectOpt(this, 'action3')">
-        <div class="chk"></div> Внутренние документы и процедуры (приказы, инструкции)
+      <div class="option" onclick="handleStep3('action3')">
+        <div class="chk"></div> Внутренние документы и процедуры (приказы, инструкции, календари)
       </div>
-      <div class="option" onclick="selectOpt(this, 'all')">
+      <div class="option" onclick="handleStep3('all')">
         <div class="chk"></div> Все три группы документов
       </div>
     </div>
     <div class="controls">
       <button class="btn btn-restart" onclick="restart()">Перезапуск</button>
-      <button class="btn btn-primary" id="btn-3" disabled>Далее</button>
+      <button class="btn btn-primary" id="btn-3" disabled onclick="goToStep(4)">Далее</button>
     </div>
   </div>
 
@@ -389,141 +406,115 @@
       <strong>Итог:</strong> Вы определили тип изменения, проверили влияние и нашли документы. Осталось выбрать действие.
     </div>
     <div class="task-title">Шаг 4. Выберите действие по результатам</div>
+    <div style="background:var(--orange-soft); border-left:3px solid var(--orange); padding:10px; margin-bottom:14px; border-radius:6px; font-size:13px;">
+      💡 <strong>Подсказка:</strong> Ошибка часто возникает не потому, что эколог не знает о новом требовании, а потому, что предприятие продолжает пользоваться прежними формами, сроками и маршрутами согласования.
+    </div>
     <div class="options">
-      <div class="option" onclick="selectOpt(this, 'final1')">
+      <div class="option" onclick="handleStep4('final1')">
         <div class="chk"></div> Ничего не делать (требование не касается объекта)
       </div>
-      <div class="option" onclick="selectOpt(this, 'final2')">
-        <div class="chk"></div> Внести изменения в документы и обновить сроки
+      <div class="option" onclick="handleStep4('final2')">
+        <div class="chk"></div> Внести изменения в документы, обновить шаблоны и проинформировать ответственных
       </div>
-      <div class="option" onclick="selectOpt(this, 'final3')">
+      <div class="option" onclick="handleStep4('final3')">
         <div class="chk"></div> Переоформить разрешения и актуализировать объект
       </div>
-      <div class="option" onclick="selectOpt(this, 'final4')">
+      <div class="option" onclick="handleStep4('final4')">
         <div class="chk"></div> Уведомить органы и участников (РО, ОМСУ, ФЭО)
       </div>
     </div>
     <div class="controls">
       <button class="btn btn-restart" onclick="restart()">Перезапуск</button>
-      <button class="btn btn-primary" id="btn-4" disabled>Завершить</button>
+      <button class="btn btn-primary" id="btn-4" disabled onclick="goToFinal()">Завершить</button>
     </div>
   </div>
 
-  <!-- Final -->
+  <!-- FINAL -->
   <div class="step" id="step-final">
     <div class="final-card">
       <h3>Алгоритм пройден</h3>
-      <p>При внешних изменениях по НМУ эколог действует по цепочке:</p>
+      <p class="final-intro">Вы прошли все шаги проверки. Вот как ваши действия влияют на документы:</p>
       
-      <div class="doc-list">
-        <h4>📄 План мероприятий на период НМУ</h4>
+      <!-- Blue Box -->
+      <div class="exemptions-box">
+        <h4>⛔ Когда изменения НЕ касаются предприятия</h4>
         <ul>
-          <li>Проект плана с мероприятиями по снижению выбросов</li>
-          <li>Расчет рассеивания с учетом мероприятий</li>
-          <li>Пояснительная записка (если требует регион)</li>
-          <li>Письмо о согласовании от госоргана</li>
-          <li>Приказ об утверждении плана руководителем</li>
+          <li>Объекты IV категории НВОС</li>
+          <li>Предприятия без нормируемых источников выбросов</li>
+          <li>Если расчеты рассеивания показывают отсутствие превышений ПДК</li>
+          <li>Новые регионы (ДНР, ЛНР, Запорожская, Херсонская обл.) — переходный период до 01.03.2028</li>
         </ul>
       </div>
-      
-      <div class="doc-list">
-        <h4>📊 Инвентаризация и нормативы</h4>
-        <ul>
-          <li>Отчет об инвентаризации выбросов и ИЗАВ</li>
-          <li>Проект НДВ / ДВОС / КЭР (актуализация)</li>
-          <li>Протоколы замеров на границе СЗЗ</li>
-        </ul>
-      </div>
-      
-      <div class="doc-list">
-        <h4>🔔 Прогнозы и мониторинг</h4>
-        <ul>
-          <li>Договор с УГМС на специализированный прогноз (для категории НВОС)</li>
-          <li>Журнал записи прогнозов о НМУ (если требует регион)</li>
-          <li>Приказ о назначении ответственных за мероприятия при НМУ</li>
-        </ul>
-      </div>
-      
-      <p style="margin-top:10px; font-size:13px; color:var(--text-light);">
-        <strong>Важно:</strong> Если на шаге 2 вы ответили «Нет» на все вопросы, новые требования пока не затрагивают ваше предприятие. Но стоит мониторить изменения.
-      </p>
-    </div>
-    <div class="controls">
-      <button class="btn btn-restart" onclick="restart()">Пройти заново</button>
-    </div>
-  </div>
-</div>
 
-<!-- Modal: Changes Info - Descriptive -->
-<div class="modal-overlay" id="modal-changes">
-  <div class="modal">
-    <div class="modal-title">📋 Что изменилось по приказам с 1 марта 2026</div>
-    <div class="modal-text">
-      <p><strong>Вступили в силу три новых приказа Минприроды:</strong></p>
-      <ul>
-        <li>№ 662 от 28.11.2025 - требования к разработке и согласованию плана</li>
-        <li>№ 651 от 26.11.2025 - требования к мероприятиям по снижению выбросов</li>
-        <li>№ 652 от 26.11.2025 - порядок предоставления специализированных прогнозов</li>
-      </ul>
-      
-      <h4 style="margin:16px 0 8px; color:var(--green); font-size:15px;">📅 Сроки согласования и утверждения</h4>
-      <p><strong>Согласование госорганом:</strong> сократили с 60 дней до <strong>15 рабочих дней</strong>. На 7-й день госорган вправе вернуть план на доработку.</p>
-      <p><strong>Доработка плана:</strong> установили срок <strong>22 рабочих дня</strong> с даты получения замечаний (ранее не устанавливали).</p>
-      <p><strong>Утверждение в организации:</strong> не позднее <strong>3 рабочих дней</strong> после получения согласования (ранее срок не устанавливали).</p>
-      
-      <h4 style="margin:16px 0 8px; color:var(--green); font-size:15px;">🔄 Корректировка плана</h4>
-      <p><strong>Основание для пересмотра:</strong> если совокупные выбросы объекта увеличились на <strong>10% и более</strong> (ранее — при изменении выбросов от одного ИЗАВ на 25%).</p>
-      <p><strong>Срок корректировки:</strong> не позднее <strong>90 календарных дней</strong> с даты утверждения инвентаризации (ранее срок не устанавливали).</p>
-      
-      <h4 style="margin:16px 0 8px; color:var(--green); font-size:15px;">🔮 Вид прогноза НМУ</h4>
-      <p><strong>Объекты I категории:</strong> только специализированный прогноз (1, 2, 3 степень) — <strong>обязательно</strong>.</p>
-      <p><strong>Объекты II-III категории и коммунальные службы:</strong> вправе выбрать — общий без определения степени ИЛИ специализированный с определением 1, 2, 3 степени.</p>
-      <p><strong>Срок подготовки — 1-3 суток.</p>
-      
-      <h4 style="margin:16px 0 8px; color:var(--green); font-size:15px;">📉 Эффективность мероприятий</h4>
-      <p><strong>Для объектов (кроме коммунальных служб):</strong></p>
-      <ul>
-        <li>Общий прогноз: 20% для всех степеней</li>
-        <li>Специализированный: 1-я степень — 15%, 2-я степень — 20%, 3-я степень — 40%</li>
-      </ul>
-      <p><strong>Для коммунальных служб:</strong></p>
-      <ul>
-        <li>Общий прогноз: 15% для всех степеней</li>
-        <li>Специализированный: 1-я степень — 5%, 2-я степень — 10%, 3-я степень — 20%</li>
-      </ul>
-      
-      <h4 style="margin:16px 0 8px; color:var(--green); font-size:15px;">🧪 Перечень веществ</h4>
-      <p><strong>Было:</strong> все нормируемые вещества, даже если их нет в перечне 2909-р.</p>
-      <p><strong>Стало:</strong> только <strong>характерные вещества объекта НВОС</strong>, которые есть в перечне 2909-р.</p>
-      
-      <h4 style="margin:16px 0 8px; color:var(--green); font-size:15px;">✅ Когда не нужны мероприятия</h4>
-      <p>Мероприятия не нужно разрабатывать, если по расчетам рассеивания <strong>нет превышений ПДК</strong> на границе и территории жилой зоны. План всё равно нужно согласовать и утвердить.</p>
-      
-      <h4 style="margin:16px 0 8px; color:var(--green); font-size:15px;">📄 Документация</h4>
-      <p><strong>Пояснительная записка:</strong> не требуется по федеральным требованиям, но в план нужно включить расчеты рассеивания и методы контроля. Регионы могут запросить записку.</p>
-      <p><strong>Журнал записи прогнозов о НМУ:</strong> не требуется (приказы № 651, 662 отменили требование).</p>
-      
-      <span class="modal-law">📖 Приказы Минприроды от 28.11.2025 № 662, от 26.11.2025 № 651, № 652</span>
+      <!-- Connection 1 -->
+      <div class="connection-box">
+        <h4>📄 Связка «Отчетность и Формы»</h4>
+        <ul>
+          <li>Изменение формы → Шаблон файла (проверить на актуальность)</li>
+          <li>Изменение состава показателей → Расчетные формулы</li>
+          <li>Изменение срока подачи → Внутренний календарь (сдвинуть контрольные даты)</li>
+        </ul>
+      </div>
+
+      <!-- Connection 2 -->
+      <div class="connection-box">
+        <h4>🔗 Связка «Данные Реестра и Разрешения»</h4>
+        <ul>
+          <li>Актуализация сведений → КЭР, ДВОС, Проекты НДВ (сверить реквизиты)</li>
+          <li>Изменение данных → Внутренние приказы (обновить преамбулу)</li>
+          <li>Новые данные → Шаблоны служебных записок</li>
+        </ul>
+      </div>
+
+      <!-- Connection 3 -->
+      <div class="connection-box">
+        <h4>⚙️ Связка «Процессы и Люди»</h4>
+        <ul>
+          <li>Новый регламент → Инструкция эколога (переписать раздел)</li>
+          <li>Изменение порядка → Маршрут согласования (скорректировать визы)</li>
+          <li>Новые обязанности → Инструктаж ответственных (провести под подпись)</li>
+        </ul>
+      </div>
+
+      <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+        <button class="btn btn-secondary" onclick="showAlgoBreakdown()">📋 Разбор алгоритма</button>
+        <button class="btn btn-restart" onclick="restart()">Пройти заново</button>
+      </div>
     </div>
-    <button class="modal-btn" onclick="closeModal('modal-changes')">Понятно</button>
   </div>
 </div>
 
 <!-- Feedback Modal -->
 <div class="modal-overlay" id="modal-feedback">
   <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-feedback')">&times;</button>
     <div class="modal-title" id="fb-title">Комментарий</div>
     <div class="modal-text" id="fb-text"></div>
-    <span class="modal-law" id="fb-law"></span>
     <button class="modal-btn" id="modal-btn">Продолжить</button>
   </div>
 </div>
 
+<!-- Algo Breakdown Modal -->
+<div class="modal-overlay" id="modal-algo-breakdown">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-algo-breakdown')">&times;</button>
+    <div class="modal-title">📋 Разбор ваших ответов</div>
+    <div id="breakdown-content">
+      <!-- Here the breakdown will be generated -->
+    </div>
+    <button class="modal-btn" onclick="closeModal('modal-algo-breakdown')" style="margin-top:16px;">Закрыть</button>
+  </div>
+</div>
+
 <script>
+  // State variables to store user choices
+  let userChoices = {
+    step1: null,      // 'correct' or 'wrong'
+    step2: {},        // { c1: true/false, c2: true/false, c3: true/false }
+    step3: null,      // 'all' or 'wrong'
+    step4: null       // 'final2' or 'wrong'
+  };
   let currentStep = 1;
-  let step3Selection = null;
-  let step4Selection = null;
-  const selectedCards = new Set();
 
   function triggerResize() {
     if (window.iFrameResize) window.iFrameResize({ log: false, checkOrigin: false }, '*');
@@ -532,12 +523,13 @@
   function updateDots() {
     for(let i=1; i<=4; i++) {
       const dot = document.getElementById(`dot-${i}`);
-      if(i <= currentStep) dot.classList.add('active');
-      else dot.classList.remove('active');
+      dot.classList.remove('active', 'completed');
+      if(i < currentStep) dot.classList.add('completed');
+      else if(i === currentStep) dot.classList.add('active');
     }
   }
 
-  function showStep(n) {
+  function goToStep(n) {
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
     document.getElementById(`step-${n}`).classList.add('active');
     currentStep = n;
@@ -550,16 +542,16 @@
     triggerResize();
   }
 
-  function showChangesModal() {
-    document.getElementById('modal-changes').classList.add('show');
+  function showAlgoBreakdown() {
+    generateBreakdown();
+    document.getElementById('modal-algo-breakdown').classList.add('show');
     triggerResize();
   }
 
-  function showModal(title, text, law, isCorrect, btnAction) {
+  function showModal(title, text, isCorrect, btnAction) {
     document.getElementById('fb-title').textContent = title;
     document.getElementById('fb-title').className = isCorrect ? 'modal-title' : 'modal-title hint';
     document.getElementById('fb-text').textContent = text;
-    document.getElementById('fb-law').textContent = law;
     document.getElementById('modal-feedback').classList.add('show');
     
     const btn = document.getElementById('modal-btn');
@@ -571,55 +563,42 @@
     triggerResize();
   }
 
-  function selectOpt(el, value) {
-    if(el.classList.contains('selected')) return;
+  // --- Step 1 Handler ---
+  function handleStep1(value) {
+    // If already answered correctly - ignore
+    if(userChoices.step1 === 'correct') return; 
     
-    if(currentStep === 1) {
-      document.querySelectorAll('#step-1 .option').forEach(o => o.classList.remove('selected'));
-      el.classList.add('selected');
-      
-      if(value === 'correct') {
-        showModal('Верно', 'Вы правильно определили тип изменения. Новые приказы меняют требования к разработке, согласованию плана и порядок действий в периоды НМУ.', 'Приказы Минприроды от 28.11.2025 № 662, от 26.11.2025 № 651, № 652', true, () => { 
-          const btn = document.getElementById('btn-1');
-          btn.classList.add('active');
-          btn.disabled = false;
+    const options = document.querySelectorAll('#step-1 .option');
+    options.forEach(opt => {
+      if(opt.getAttribute('onclick').includes(`'${value}'`)) {
+        opt.classList.add('selected');
+        // If error - do not block, allow retry when modal closes
+      } else {
+        opt.style.opacity = '0.5';
+      }
+    });
+
+    if(value === 'correct') {
+      userChoices.step1 = 'correct';
+      showModal('Верно', 'Вы правильно определили тип изменения. Новые требования касаются порядка отчетности и актуализации данных.', true, () => { 
+        document.getElementById('btn-1').classList.add('active');
+        document.getElementById('btn-1').disabled = false;
+        options.forEach(o => o.style.opacity = '1');
+      });
+    } else {
+      userChoices.step1 = null; // Reset to allow retry
+      showModal('Не совсем так', 'Разрешительный режим меняется при изменении техпроцесса. Здесь же меняется форма и порядок подачи данных. Попробуйте еще раз.', false, () => {
+        // Reset visual for retry
+        options.forEach(o => {
+            o.classList.remove('selected');
+            o.style.opacity = '1';
         });
-      } else {
-        const wrongText = value === 'wrong1' 
-          ? 'ДВОС — это отчётность, а не разрешительный документ. Разрешительные документы (КЭР, СЭЗ) требуют переоформления, а отчётность — обновления форм и сроков.' 
-          : value === 'wrong2'
-          ? 'Сведения об объекте (реестр НВОС, категория) меняются при изменении техпроцесса или адреса. Здесь меняется только форма отчёта.'
-          : 'Плата и сборы — это ставки и коэффициенты. В данном случае меняется форма декларации, а не размеры платежей.';
-        showModal('Не совсем так', wrongText, 'Алгоритм действий при внешних изменениях, шаг 1', false, null);
-      }
-    } else if (currentStep === 3) {
-      document.querySelectorAll('#step-3 .option').forEach(o => o.classList.remove('selected'));
-      el.classList.add('selected');
-      step3Selection = value;
-      
-      if(value === 'all') {
-        const btn = document.getElementById('btn-3');
-        btn.classList.add('active');
-        btn.disabled = false;
-      } else {
-        showModal('Не совсем так', 'Внешнее изменение может затрагивать несколько групп документов одновременно. Отчётность (ДВОС) связана с разрешениями (КЭР) и внутренними регламентами. Выберите «Все три группы».', 'Алгоритм действий при внешних изменениях, шаг 3', false, null);
-      }
-    } else if (currentStep === 4) {
-      document.querySelectorAll('#step-4 .option').forEach(o => o.classList.remove('selected'));
-      el.classList.add('selected');
-      step4Selection = value;
-      
-      if(value === 'final2') {
-        const btn = document.getElementById('btn-4');
-        btn.classList.add('active');
-        btn.disabled = false;
-      } else {
-        showModal('Не совсем так', 'При изменении формы отчётности нужно внести изменения в документы, обновить шаблоны, контрольные даты и внутренние инструкции. Ничего не делать нельзя, переоформлять разрешения не нужно (если не меняются реквизиты), уведомлять органы отдельно не требуется.', 'Алгоритм действий при внешних изменениях, шаг 4', false, null);
-      }
+      });
     }
   }
 
-  function selectCard(btn, cardId, isYes) {
+  // --- Step 2 Card Toggle ---
+  function toggleCard(btn, cardId, isYes) {
     const card = btn.closest('.card');
     const buttons = card.querySelectorAll('.card-btn');
     
@@ -627,63 +606,176 @@
     btn.classList.add('selected');
     
     card.classList.add('active');
-    selectedCards.add(cardId);
+    userChoices.step2[cardId] = isYes;
     
-    if(selectedCards.size >= 3) {
+    // Check if all 3 cards are answered
+    const answeredCount = Object.keys(userChoices.step2).length;
+    if(answeredCount >= 3) {
       document.getElementById('btn-2').classList.add('active');
       document.getElementById('btn-2').disabled = false;
     }
-    
     triggerResize();
   }
 
-  // --- ЛОГИКА ПЕРЕХОДОВ ---
+  // --- Step 2 Evaluation ---
+  function evaluateStep2() {
+    const answers = userChoices.step2;
+    const allNo = Object.values(answers).every(val => val === false);
+    
+    if(allNo) {
+      // Changed "Верно" to "Не относится"
+      showModal('Не относится', 'Если на все три вопроса ответ «Нет», изменение не относится к вашему объекту. Пересматривать документы не нужно.', true, () => { goToStep('final'); });
+    } else {
+      // Changed "Верно" to "Относится"
+      showModal('Относится', 'Если хотя бы на один вопрос ответ «Да», внешнее изменение относится к вашему предприятию. Переходим к поиску связанных документов.', true, () => { goToStep(3); });
+    }
+  }
 
-  document.getElementById('btn-1').onclick = function() {
-    showStep(2);
-  };
-
-  document.getElementById('btn-2').onclick = function() {
-    if(selectedCards.size >= 3) {
-      const allNo = [...selectedCards].every(id => {
-        const card = document.querySelector(`.card[data-id="${id}"]`);
-        return card.querySelector('.card-btn.no').classList.contains('selected');
-      });
-      
-      if(allNo) {
-        showModal('✓ Верно', 'Если на все три вопросы ответ «Нет», изменение не относится к вашему объекту и обязанностям. Действия не требуются. Можно перейти к завершению.', 'Алгоритм действий при внешних изменениях, шаг 2', true, () => { showStep('final'); });
+  // --- Step 3 Handler ---
+  function handleStep3(value) {
+    if(userChoices.step3 === 'all') return; // If already correct - stop
+    
+    const options = document.querySelectorAll('#step-3 .option');
+    options.forEach(opt => {
+      if(opt.getAttribute('onclick').includes(`'${value}'`)) {
+        opt.classList.add('selected');
       } else {
-        showModal('Верно', 'Отлично. Если хотя бы на один вопрос ответ «Да», внешнее изменение затрагивает ваше предприятие. Переходим к поиску связанных документов.', 'Алгоритм действий при внешних изменениях, шаг 2', true, () => { showStep(3); });
+        opt.style.opacity = '0.5';
+      }
+    });
+
+    if(value === 'all') {
+      userChoices.step3 = 'all';
+      showModal('Верно', 'Верно. Внешнее изменение затрагивает отчетность, связанные разрешения и внутренние процедуры.', true, () => { 
+        document.getElementById('btn-3').classList.add('active');
+        document.getElementById('btn-3').disabled = false;
+        options.forEach(o => o.style.opacity = '1');
+      });
+    } else {
+      userChoices.step3 = null;
+      showModal('Не совсем так', 'Изменение может затрагивать несколько групп документов одновременно. Отчетность связана с разрешениями и внутренними регламентами. Попробуйте еще раз.', false, () => {
+        options.forEach(o => {
+            o.classList.remove('selected');
+            o.style.opacity = '1';
+        });
+      });
+    }
+  }
+
+  // --- Step 4 Handler ---
+  function handleStep4(value) {
+    if(userChoices.step4 === 'final2') return; // If already correct - stop
+    
+    const options = document.querySelectorAll('#step-4 .option');
+    options.forEach(opt => {
+      if(opt.getAttribute('onclick').includes(`'${value}'`)) {
+        opt.classList.add('selected');
+      } else {
+        opt.style.opacity = '0.5';
+      }
+    });
+
+    if(value === 'final2') {
+      userChoices.step4 = 'final2';
+      showModal('Верно', 'Отлично! Вы выбрали правильное действие. Нужно внести изменения в документы, обновить шаблоны и проинформировать ответственных.', true, () => { 
+        document.getElementById('btn-4').classList.add('active');
+        document.getElementById('btn-4').disabled = false;
+        options.forEach(o => o.style.opacity = '1');
+      });
+    } else {
+      userChoices.step4 = null;
+      showModal('Не совсем так', 'При изменении порядка отчетности нужно внести изменения в документы и обновить шаблоны. Переоформлять разрешения не нужно. Попробуйте еще раз.', false, () => {
+        options.forEach(o => {
+            o.classList.remove('selected');
+            o.style.opacity = '1';
+        });
+      });
+    }
+  }
+
+  // --- Generate Final Breakdown (For Modal) ---
+  function generateBreakdown() {
+    const container = document.getElementById('breakdown-content');
+    let html = '';
+
+    // Check if stopped early (All No on Step 2)
+    const stoppedEarly = userChoices.step2 && Object.values(userChoices.step2).every(v => v === false);
+
+    // STEP 1 ANALYSIS
+    if(userChoices.step1 === 'correct') {
+      html += `
+        <div class="breakdown-item success">
+          <h4>Шаг 1. Вы определили тип изменения <span class="breakdown-tag tag-correct">Верно</span></h4>
+          <p>Вы верно определили, что изменение касается <strong>порядка отчетности</strong>. Это фундаментальный шаг: ошибка здесь привела бы к поиску ненужных документов.</p>
+        </div>
+      `;
+    }
+
+    // STEP 2 ANALYSIS
+    if(stoppedEarly) {
+      html += `
+        <div class="breakdown-item success">
+          <h4>Шаг 2. Вы проверили влияние на объект <span class="breakdown-tag tag-correct">Не относится</span></h4>
+          <p>Вы ответили «Нет» на все вопросы. Это означает, что требования пока <strong>не касаются вашего предприятия</strong>. Вы правильно сэкономили время. Алгоритм завершен.</p>
+        </div>
+      `;
+    } else if(userChoices.step2) {
+       const yesCount = Object.values(userChoices.step2).filter(v => v === true).length;
+       html += `
+        <div class="breakdown-item success">
+          <h4>Шаг 2. Вы проверили влияние на объект <span class="breakdown-tag tag-correct">Относится</span></h4>
+          <p>Вы ответили «Да» на ${yesCount} из 3 вопросов. Это подтверждает, что изменения касаются вашего предприятия.</p>
+        </div>
+      `;
+      
+      // STEP 3 ANALYSIS
+      if(userChoices.step3 === 'all') {
+        html += `
+          <div class="breakdown-item success">
+            <h4>Шаг 3. Вы нашли связанные документы <span class="breakdown-tag tag-correct">Верно</span></h4>
+            <p>Вы выбрали «Все три группы». Это правильный выбор. Внешнее изменение редко затрагивает только один файл.</p>
+          </div>
+        `;
+
+        // STEP 4 ANALYSIS
+        if(userChoices.step4 === 'final2') {
+          html += `
+            <div class="breakdown-item success">
+              <h4>Шаг 4. Вы выбрали действие <span class="breakdown-tag tag-correct">Верно</span></h4>
+              <p>Вы выбрали «Внести изменения и обновить шаблоны». Это главное действие. Скачивание новой формы бессмысленно без обновления внутреннего календаря и инструктажа ответственных.</p>
+            </div>
+          `;
+        }
       }
     }
-  };
 
-  document.getElementById('btn-3').onclick = function() {
-    if(step3Selection === 'all') {
-      showModal('Верно', 'Верно. Внешнее изменение затрагивает отчётность (ДВОС), разрешения (КЭР) и внутренние регламенты. Переходим к выбору действия.', 'Алгоритм действий при внешних изменениях, шаг 3', true, () => { showStep(4); });
-    }
-  };
+    container.innerHTML = html;
+  }
 
-  document.getElementById('btn-4').onclick = function() {
-    if(step4Selection === 'final2') {
-      showModal('Верно', 'Отлично! Вы выбрали правильное действие. При изменении формы отчётности нужно внести изменения в документы, обновить шаблоны, контрольные даты и внутренние инструкции.', 'Алгоритм действий при внешних изменениях, шаг 4', true, () => { showStep('final'); });
-    }
-  };
+  function goToFinal() {
+    goToStep('final');
+  }
 
   function restart() {
     currentStep = 1;
-    step3Selection = null;
-    step4Selection = null;
-    selectedCards.clear();
+    userChoices = { step1: null, step2: {}, step3: null, step4: null };
     
-    document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+    document.querySelectorAll('.option').forEach(o => {
+        o.classList.remove('selected', 'disabled');
+        o.style.opacity = '1';
+    });
     document.querySelectorAll('.card').forEach(c => {
       c.classList.remove('active');
       c.querySelectorAll('.card-btn').forEach(b => b.classList.remove('selected'));
     });
-    document.querySelectorAll('.btn-primary').forEach(b => { b.classList.remove('active'); b.disabled = true; });
+    document.querySelectorAll('.btn-primary').forEach(b => { 
+      b.classList.remove('active'); 
+      b.disabled = true; 
+    });
     
-    showStep(1);
+    document.getElementById('btn-2').onclick = evaluateStep2;
+    
+    goToStep(1);
   }
 
   // Init
