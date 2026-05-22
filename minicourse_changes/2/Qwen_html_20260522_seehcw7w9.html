@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Изменились техпроцессы и очистка: выберите ситуацию</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text-main: #2d3748;
+    --text-light: #718096;
+    --green: #2e7d32;
+    --green-light: #e8f5e9;
+    --green-border: #a5d6a7;
+    --orange: #f59e0b;
+    --orange-soft: #fff7ed;
+    --blue: #0ea5e9;
+    --border: #e2e8f0;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .container {
+    width: 100%;
+    max-width: 700px;
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 24px;
+    position: relative;
+  }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--green); }
+  .intro { font-size: 14.5px; color: var(--text-light); margin-bottom: 20px; line-height: 1.5; }
+  
+  .step-indicator {
+    display: flex; gap: 8px; margin-bottom: 20px;
+  }
+  .step-dot {
+    height: 4px; flex: 1; background: #e2e8f0; border-radius: 2px;
+    transition: background 0.3s;
+  }
+  .step-dot.active { background: var(--green); }
+  .step-dot.completed { background: var(--green-border); }
+
+  .screen { display: none; animation: fadeIn 0.25s; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .scenario-box {
+    background: #f8fafc;
+    border-left: 4px solid var(--green);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .task-title { font-weight: 600; font-size: 16px; margin-bottom: 14px; color: var(--text-main); }
+  
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .option {
+    padding: 12px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14.5px;
+    transition: 0.2s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #fff;
+  }
+  .option:hover { border-color: var(--green-border); background: var(--green-light); }
+  .option.selected { border-color: var(--green); background: var(--green-light); font-weight: 600; }
+  .option.correct { border-color: var(--green); background: #d4edda; }
+  .option.incorrect { border-color: var(--orange); background: var(--orange-soft); }
+  
+  .chk {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .option.selected .chk { background: var(--green); border-color: var(--green); color: #fff; }
+  .chk::after { content: '✓'; font-size: 12px; font-weight: 700; display: none; }
+  .option.selected .chk::after { display: block; }
+
+  .case-cards {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .case-card {
+    padding: 14px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .case-card:hover { border-color: var(--green-border); background: var(--green-light); }
+  .case-card h3 { font-size: 15px; margin-bottom: 6px; color: var(--text-main); }
+  .case-card p { font-size: 13.5px; color: var(--text-light); line-height: 1.4; }
+
+  .controls { display: flex; gap: 12px; justify-content: center; border-top: 1px solid var(--border); padding-top: 16px; }
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .btn-primary { background: var(--green); color: #fff; opacity: 0.4; pointer-events: none; }
+  .btn-primary.active { opacity: 1; pointer-events: auto; }
+  .btn-primary:hover { background: #1b5e20; }
+  .btn-secondary { background: #fff; color: var(--text-main); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: #f8fafc; }
+  .btn-restart { background: #fff; color: var(--text-main); border: 1px solid var(--border); }
+
+  /* Modals */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; backdrop-filter: blur(2px);
+  }
+  .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
+  .modal {
+    background: #fff; border-radius: 16px; max-width: 580px; width: 100%;
+    padding: 24px; box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+    border: 2px solid var(--green-light);
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--green); }
+  .modal-title.hint { color: var(--orange); }
+  .modal-text { font-size: 14.5px; line-height: 1.6; color: var(--text-main); margin-bottom: 16px; }
+  .modal-btn {
+    width: 100%; padding: 10px; background: var(--green); color: #fff; border: none;
+    border-radius: 8px; font-weight: 600; cursor: pointer;
+  }
+  .modal-btn:hover { background: #1b5e20; }
+  .modal-close {
+    position: absolute; top: 12px; right: 12px; width: 28px; height: 28px;
+    border: none; background: #f0f2f5; border-radius: 50%; cursor: pointer;
+    font-size: 18px; color: #666;
+  }
+
+  .breakdown-item {
+    background: #fff;
+    border: 1px solid var(--green-border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    text-align: left;
+  }
+  .breakdown-item h4 { font-size: 15px; margin-bottom: 8px; color: var(--text-main); display: flex; align-items: center; justify-content: space-between; }
+  .breakdown-item p { font-size: 14px; color: var(--text-light); line-height: 1.5; margin: 0; }
+  .breakdown-tag {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .tag-correct { background: var(--green-light); color: var(--green); }
+  .tag-warning { background: var(--orange-soft); color: var(--orange); }
+
+  @media (max-width: 600px) { .container { padding: 16px; } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Изменились техпроцессы и очистка: выберите ситуацию</h2>
+  <p class="intro">Выберите кейс, который ближе к вашей практике. Внутри кейса вы по шагам определите, как изменение техпроцесса или системы очистки влияет на объект НВОС и какие действия нужны.</p>
+  
+  <!-- Case Selection -->
+  <div id="screen-select" class="screen active">
+    <div class="case-cards">
+      <div class="case-card" onclick="selectCase(1)">
+        <h3>Кейс 1. Новое оборудование очистки выбросов</h3>
+        <p>На участке покраски демонтировали старый фильтр и установили новый рукавный фильтр с большей производительностью. Режим работы линии покраски остался прежним.</p>
+      </div>
+      <div class="case-card" onclick="selectCase(2)">
+        <h3>Кейс 2. Изменение техпроцесса без замены очистки</h3>
+        <p>На линии покраски перешли на новый лакокрасочный материал и увеличили скорость конвейера. Система очистки выбросов осталась прежней.</p>
+      </div>
+      <div class="case-card" onclick="selectCase(3)">
+        <h3>Кейс 3. Новая схема очистки сточных вод</h3>
+        <p>На очистных сооружениях модернизировали систему: добавили стадию доочистки, изменили схему подачи стоков и режим работы оборудования.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Steps Container -->
+  <div id="screen-steps" class="screen">
+    <div class="step-indicator">
+      <div class="step-dot" id="dot-1"></div>
+      <div class="step-dot" id="dot-2"></div>
+      <div class="step-dot" id="dot-3"></div>
+    </div>
+    <div class="scenario-box" id="scenario-text"></div>
+    <div id="step-content"></div>
+    <div class="controls">
+      <button class="btn btn-restart" onclick="restart()">Выбрать другой кейс</button>
+      <button class="btn btn-primary" id="btn-check" disabled onclick="checkAnswer()">Проверить ответ</button>
+    </div>
+  </div>
+
+  <!-- Final Screen -->
+  <div id="screen-final" class="screen">
+    <h3 style="text-align:center; margin-bottom:16px; color:var(--green);">Алгоритм пройден</h3>
+    <p style="margin-bottom:16px;">Вы прошли все шаги. Вот как изменения влияют на документы:</p>
+    
+    <!-- Document Breakdown Section -->
+    <div class="breakdown-item">
+      <h4>📄 Инвентаризация и характеристики источников</h4>
+      <p><strong>Что проверить:</strong> Параметры ИЗАВ, массы и состав выбросов/сбросов, эффективность очистки.</p>
+      <p><strong>Что изменить:</strong> Внести новые/исключенные источники, пересчитать выбросы, обновить отчет об инвентаризации.</p>
+    </div>
+
+    <div class="breakdown-item">
+      <h4>🔗 Разрешительные документы (КЭР, ДВОС, НДВ)</h4>
+      <p><strong>Что проверить:</strong> Соответствие фактических выбросов нормативам, срок действия разрешений.</p>
+      <p><strong>Что изменить:</strong> Если выбросы изменились >10% или категория объекта — актуализировать КЭР/ДВОС/НДВ.</p>
+    </div>
+
+    <div class="breakdown-item">
+      <h4>⚙️ Внутренние документы и контроль</h4>
+      <p><strong>Что проверить:</strong> Программа ПЭК, план НМУ, инструкции для персонала, паспорта оборудования.</p>
+      <p><strong>Что изменить:</strong> Включить новые точки контроля в ПЭК, скорректировать план НМУ при росте выбросов, обновить инструкции.</p>
+    </div>
+
+    <div class="breakdown-item">
+      <h4>📋 Реестры и отчетность</h4>
+      <p><strong>Что проверить:</strong> Сведения в реестре НВОС, формы 2-ТП, декларации.</p>
+      <p><strong>Что изменить:</strong> Актуализировать данные в реестре НВОС в течение 30 дней после изменений.</p>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+      <button class="btn btn-secondary" onclick="showBreakdownModal()">📋 Разбор алгоритма</button>
+      <button class="btn btn-restart" onclick="restart()">Выбрать другой кейс</button>
+    </div>
+  </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal-overlay" id="modal-feedback">
+  <div class="modal">
+    <div class="modal-title" id="fb-title">Комментарий</div>
+    <div class="modal-text" id="fb-text"></div>
+    <button class="modal-btn" id="modal-btn">Продолжить</button>
+  </div>
+</div>
+
+<!-- Breakdown Modal -->
+<div class="modal-overlay" id="modal-breakdown">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-breakdown')">&times;</button>
+    <div class="modal-title">📋 Разбор ваших шагов</div>
+    <div id="breakdown-content" style="font-size: 14px; line-height: 1.5;">
+      <!-- Content injected via JS -->
+    </div>
+    <button class="modal-btn" onclick="closeModal('modal-breakdown')" style="margin-top:16px;">Закрыть</button>
+  </div>
+</div>
+
+<script>
+  // State
+  const state = {
+    selectedCase: null,
+    currentStep: 1,
+    answers: {
+      1: { step1: null, step2: [], step3: null },
+      2: { step1: null, step2: [], step3: null },
+      3: { step1: null, step2: [], step3: null }
+    }
+  };
+
+  // Correct answers for each case
+  const correctAnswers = {
+    1: { step1: 1, step2: [0, 1, 3], step3: 3 },
+    2: { step1: 1, step2: [0, 1, 2], step3: 2 },
+    3: { step1: 1, step2: [0, 1, 3], step3: 3 }
+  };
+
+  // Case Data
+  const cases = {
+    1: {
+      title: "Кейс 1. Новое оборудование очистки выбросов",
+      scenario: "На участке покраски демонтировали старый фильтр и установили новый рукавный фильтр с большей производительностью. Режим работы линии покраски остался прежним.",
+      correct: { step1: 1, step2: [0, 1, 3], step3: 3 },
+      steps: {
+        1: {
+          q: "Как это изменение влияет на объект НВОС?",
+          type: "radio",
+          options: [
+            "Меняется только модель фильтра, характеристики объекта НВОС не затрагиваются.",
+            "Меняются параметры системы очистки и фактические выбросы после очистки, значит, меняются характеристики объекта НВОС.",
+            "Меняется только график обслуживания оборудования, объект НВОС и документы можно не трогать."
+          ],
+          feedback: {
+            correct: "Вы связываете замену фильтра с характеристиками объекта НВОС. При изменении системы очистки меняются фактические выбросы после очистки и параметры источников.",
+            wrong: "Если рассматривать замену фильтра как чисто техническую замену, есть риск, что в документах останутся старые данные по выбросам и эффективности очистки, а фактический объект НВОС уже другой."
+          }
+        },
+        2: {
+          q: "Какие документы и сведения эколог должен проверить в этой ситуации?",
+          type: "checkbox",
+          options: [
+            "Инвентаризацию и характеристики источника выбросов (массы, состав, параметры источника).",
+            "Проект/расчеты НДВ и рассеивания с учетом нового фильтра.",
+            "Разрешение на выбросы по веществам, которые очищает новый фильтр.",
+            "Паспорт и регламенты эксплуатации нового фильтра.",
+            "Только график ПЭК и план ТО фильтра, без изменения инвентаризации и проектов."
+          ],
+          feedback: {
+            good: "Вы проверяете инвентаризацию, расчеты и документы по фильтру. Это соответствует подходу: сначала инвентаризация и расчеты, затем корректировка эко‑документации и, при необходимости, разрешений.",
+            bad: "Ограничиваться паспортом и графиком обслуживания недостаточно. При изменении системы очистки нужно обновить инвентаризацию и, при необходимости, расчеты и разрешительные документы."
+          }
+        },
+        3: {
+          q: "Какой уровень действий нужен в этой ситуации? Выберите один вариант.",
+          type: "radio",
+          options: [
+            "Действий не требуется. Объект НВОС и разрешения остаются актуальными.",
+            "Обновить только внутренние документы: регламенты работы фильтра, инструкции, планы ТО.",
+            "Скорректировать экологическую документацию: инвентаризацию и, при необходимости, проекты и программы контроля, без переоформления разрешений.",
+            "Переоформить разрешения и актуализировать объект НВОС: обновить сведения об объекте, пересчитать НДВ и внести изменения в разрешения."
+          ],
+          feedback: {
+            good: "Вы выбрали уровень действий, при котором изменения в системе очистки отражаются в инвентаризации и эко‑документации, а при необходимости – и в разрешениях и сведениях об объекте НВОС.",
+            bad: "Если ограничиться внутренними документами, есть риск, что в инвентаризации и проектах останется старый фильтр с другими характеристиками, а фактическая схема очистки уже изменилась."
+          }
+        }
+      }
+    },
+    2: {
+      title: "Кейс 2. Изменение техпроцесса без замены очистки",
+      scenario: "На линии покраски перешли на новый лакокрасочный материал и увеличили скорость конвейера. Система очистки выбросов осталась прежней.",
+      correct: { step1: 1, step2: [0, 1, 2], step3: 2 },
+      steps: {
+        1: {
+          q: "Как это влияет на объект НВОС?",
+          type: "radio",
+          options: [
+            "Если фильтр тот же, объект НВОС не меняется.",
+            "Меняются фактические выбросы (масса, возможно состав), значит, меняются характеристики объекта НВОС.",
+            "Меняется только производительность линии, экодокументацию трогать не нужно."
+          ],
+          feedback: {
+            correct: "Вы верно определили, что изменение сырья и скорости конвейера влияет на фактические выбросы, даже если система очистки осталась прежней.",
+            wrong: "Игнорирование изменения фактических выбросов из‑за нового материала может привести к расхождениям между документами и реальной ситуацией на объекте НВОС."
+          }
+        },
+        2: {
+          q: "Что эколог должен проверить из‑за изменения техпроцесса при прежней системе очистки?",
+          type: "checkbox",
+          options: [
+            "Фактические выбросы и их сравнение с НДВ (инвентаризация, расчеты).",
+            "Разделы проекта НВОС, где описан источник и система очистки.",
+            "Разрешение на выбросы по ключевым веществам.",
+            "Только технологический регламент и инструкции для персонала."
+          ],
+          feedback: {
+            good: "Вы выбрали ключевые документы для проверки при изменении техпроцесса: инвентаризацию, расчеты и разрешения. Это закрывает все уровни воздействия.",
+            bad: "Ограничиваться только технологическим регламентом недостаточно. При изменении параметров производства нужно обязательно свериться с инвентаризацией, расчетами и разрешениями."
+          }
+        },
+        3: {
+          q: "Какой уровень действий нужен в этой ситуации? Выберите один вариант.",
+          type: "radio",
+          options: [
+            "Действий не требуется. Объект НВОС и разрешения остаются актуальными.",
+            "Обновить только внутренние документы: регламенты работы фильтра, инструкции, планы ТО.",
+            "Скорректировать экологическую документацию: инвентаризацию и, при необходимости, проекты и программы контроля, без переоформления разрешений.",
+            "Переоформить разрешения и актуализировать объект НВОС: обновить сведения об объекте, пересчитать НДВ и внести изменения в разрешения."
+          ],
+          feedback: {
+            good: "Вы отнесли изменение к уровню корректировки эко‑документации или разрешений, что соответствует реальному влиянию техпроцесса на объект НВОС.",
+            bad: "Если техпроцесс меняет массы или состав выбросов, ограничиваться внутренними документами нельзя. Нужно отразить изменения в инвентаризации и, при необходимости, в разрешениях."
+          }
+        }
+      }
+    },
+    3: {
+      title: "Кейс 3. Новая схема очистки сточных вод",
+      scenario: "На очистных сооружениях модернизировали систему: добавили стадию доочистки, изменили схему подачи стоков и режим работы оборудования.",
+      correct: { step1: 1, step2: [0, 1, 3], step3: 3 },
+      steps: {
+        1: {
+          q: "Как это изменение влияет на объект НВОС?",
+          type: "radio",
+          options: [
+            "Меняется только внутренняя схема трубопроводов, объект НВОС не затрагивается.",
+            "Меняются параметры сбросов (масса, состав, эффективность очистки), значит, меняются характеристики объекта НВОС.",
+            "Меняется только договор с обслуживающей организацией."
+          ],
+          feedback: {
+            correct: "Вы правильно связали модернизацию очистных с изменением характеристик объекта НВОС: меняются параметры сбросов и эффективность очистки.",
+            wrong: "Модернизация очистных сооружений напрямую влияет на параметры сбросов. Если не обновить данные, объект НВОС в реестре и документах не будет соответствовать факту."
+          }
+        },
+        2: {
+          q: "Какие документы и сведения проверить?",
+          type: "checkbox",
+          options: [
+            "Инвентаризацию по объекту НВОС по водному направлению, характеристики сбросов.",
+            "Проект НДС, расчеты по сбросам, программы контроля.",
+            "Разрешительные документы по сбросам (ДВОС и другие решения).",
+            "Паспорта и регламенты работы очистных сооружений.",
+            "Только договор на обслуживание очистных, без изменений в эко‑документации."
+          ],
+          feedback: {
+            good: "Вы выбрали полный спектр документов: от инвентаризации и расчетов до разрешений и паспортов. Это закрывает все слои учета и контроля.",
+            bad: "При изменении схемы очистки нельзя ограничиваться только договором или паспортами. Нужно обязательно сверить инвентаризацию, расчеты НДС и разрешительные документы."
+          }
+        },
+        3: {
+          q: "Какой уровень действий нужен в этой ситуации? Выберите один вариант.",
+          type: "radio",
+          options: [
+            "Действий не требуется. Объект НВОС и разрешения остаются актуальными.",
+            "Обновить только внутренние документы: регламенты работы фильтра, инструкции, планы ТО.",
+            "Скорректировать экологическую документацию: инвентаризацию и, при необходимости, проекты и программы контроля, без переоформления разрешений.",
+            "Переоформить разрешения и актуализировать объект НВОС: обновить сведения об объекте, пересчитать НДВ и внести изменения в разрешения."
+          ],
+          feedback: {
+            good: "Вы выбрали адекватный уровень действий для модернизации очистных: обновление инвентаризации, расчетов и, при изменении лимитов, разрешений.",
+            bad: "Изменение схемы очистки сбросов требует отражения в инвентаризации и расчетах. Ограничиваться внутренними регламентами нельзя."
+          }
+        }
+      }
+    }
+  };
+
+  // UI Helpers
+  function showScreen(id) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(id).classList.add('active');
+    triggerResize();
+  }
+
+  function updateDots() {
+    for(let i=1; i<=3; i++) {
+      const dot = document.getElementById(`dot-${i}`);
+      dot.classList.remove('active', 'completed');
+      if(i < state.currentStep) dot.classList.add('completed');
+      else if(i === state.currentStep) dot.classList.add('active');
+    }
+  }
+
+  function triggerResize() {
+    if (window.iFrameResize) window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+    triggerResize();
+  }
+
+  function selectCase(id) {
+    state.selectedCase = id;
+    state.currentStep = 1;
+    renderStep();
+    showScreen('screen-steps');
+  }
+
+  function renderStep() {
+    const c = cases[state.selectedCase];
+    const s = c.steps[state.currentStep];
+    document.getElementById('scenario-text').innerHTML = `<strong>${c.title}</strong><br>${c.scenario}`;
+    
+    let html = `<div class="task-title">Шаг ${state.currentStep}. ${s.q}</div><div class="options">`;
+    
+    s.options.forEach((opt, idx) => {
+      html += `<div class="option" onclick="selectOption(this, ${idx}, '${s.type}')" id="opt-${idx}">
+        <div class="chk" style="${s.type==='radio'?'border-radius:50%':'border-radius:4px'}"></div>
+        <span>${opt}</span>
+      </div>`;
+    });
+    html += `</div>`;
+    
+    document.getElementById('step-content').innerHTML = html;
+    document.getElementById('btn-check').classList.remove('active');
+    document.getElementById('btn-check').disabled = true;
+    updateDots();
+    triggerResize();
+  }
+
+  function selectOption(el, idx, type) {
+    if(type === 'radio') {
+      document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+      document.getElementById('btn-check').classList.add('active');
+      document.getElementById('btn-check').disabled = false;
+    } else {
+      el.classList.toggle('selected');
+      const selectedCount = document.querySelectorAll('.option.selected').length;
+      if(selectedCount >= 2) {
+        document.getElementById('btn-check').classList.add('active');
+        document.getElementById('btn-check').disabled = false;
+      } else {
+        document.getElementById('btn-check').classList.remove('active');
+        document.getElementById('btn-check').disabled = true;
+      }
+    }
+  }
+
+  function checkAnswer() {
+    const ans = state.answers[state.selectedCase];
+    const stepData = cases[state.selectedCase].steps[state.currentStep];
+    const correct = correctAnswers[state.selectedCase];
+    
+    let isCorrect = false;
+    let text = "";
+    let title = "";
+    
+    if(state.currentStep === 1) {
+      const userAnswer = parseInt(document.querySelector('.option.selected')?.id?.replace('opt-', ''));
+      isCorrect = userAnswer === correct.step1;
+      title = isCorrect ? "✓ Верно" : "⚠️ Обратите внимание";
+      text = isCorrect ? stepData.feedback.correct : stepData.feedback.wrong;
+      
+      document.querySelectorAll('.option').forEach((opt, idx) => {
+        if(idx === correct.step1) opt.classList.add('correct');
+        else if(opt.classList.contains('selected')) opt.classList.add('incorrect');
+      });
+      
+    } else if(state.currentStep === 2) {
+      const selectedOptions = Array.from(document.querySelectorAll('.option.selected')).map(o => 
+        parseInt(o.id.replace('opt-', ''))
+      );
+      const correctOptions = correct.step2;
+      
+      const hasAllCorrect = correctOptions.every(opt => selectedOptions.includes(opt));
+      const hasNoWrong = selectedOptions.every(opt => correctOptions.includes(opt));
+      isCorrect = hasAllCorrect && hasNoWrong && selectedOptions.length >= 2;
+      
+      title = isCorrect ? "✓ Верно" : "⚠️ Обратите внимание";
+      text = isCorrect ? stepData.feedback.good : stepData.feedback.bad;
+      
+      document.querySelectorAll('.option').forEach((opt, idx) => {
+        if(correctOptions.includes(idx)) opt.classList.add('correct');
+        else if(opt.classList.contains('selected')) opt.classList.add('incorrect');
+      });
+      
+    } else if(state.currentStep === 3) {
+      const userAnswer = parseInt(document.querySelector('.option.selected')?.id?.replace('opt-', ''));
+      isCorrect = userAnswer === correct.step3;
+      title = isCorrect ? "✓ Верно" : "⚠️ Обратите внимание";
+      text = isCorrect ? stepData.feedback.good : stepData.feedback.bad;
+      
+      document.querySelectorAll('.option').forEach((opt, idx) => {
+        if(idx === correct.step3) opt.classList.add('correct');
+        else if(opt.classList.contains('selected')) opt.classList.add('incorrect');
+      });
+    }
+    
+    showModal(title, text, isCorrect, () => {
+      if(isCorrect) {
+        if(state.currentStep === 1) {
+          ans.step1 = parseInt(document.querySelector('.option.selected').id.replace('opt-', ''));
+        } else if(state.currentStep === 2) {
+          ans.step2 = Array.from(document.querySelectorAll('.option.selected')).map(o => 
+            parseInt(o.id.replace('opt-', ''))
+          );
+        } else if(state.currentStep === 3) {
+          ans.step3 = parseInt(document.querySelector('.option.selected').id.replace('opt-', ''));
+        }
+        
+        if(state.currentStep < 3) {
+          state.currentStep++;
+          renderStep();
+        } else {
+          showFinalScreen();
+        }
+      } else {
+        document.querySelectorAll('.option').forEach(opt => {
+          opt.classList.remove('selected', 'correct', 'incorrect');
+        });
+        document.getElementById('btn-check').classList.remove('active');
+        document.getElementById('btn-check').disabled = true;
+      }
+    });
+  }
+
+  function showModal(title, text, isCorrect, btnAction) {
+    document.getElementById('fb-title').textContent = title;
+    document.getElementById('fb-title').className = isCorrect ? 'modal-title' : 'modal-title hint';
+    document.getElementById('fb-text').textContent = text;
+    document.getElementById('modal-feedback').classList.add('show');
+    
+    const btn = document.getElementById('modal-btn');
+    btn.onclick = null;
+    btn.onclick = function() {
+      closeModal('modal-feedback');
+      if (btnAction) btnAction();
+    };
+    triggerResize();
+  }
+
+  function showFinalScreen() {
+    showScreen('screen-final');
+  }
+
+  function showBreakdownModal() {
+    const ans = state.answers[state.selectedCase];
+    const c = cases[state.selectedCase];
+    
+    // Determine status icons/text based on correctness
+    const isStep1Correct = ans.step1 === 1;
+    const isStep2Correct = JSON.stringify(ans.step2.sort()) === JSON.stringify(c.correct.step2.sort());
+    const isStep3Correct = ans.step3 === c.correct.step3;
+
+    let html = `<div style="margin-bottom: 15px; color: var(--text-light); font-size: 13px;">Кейс: <strong>${c.title}</strong></div>`;
+
+    // --- STEP 1 ANALYSIS ---
+    html += `<div class="breakdown-item">`;
+    html += `<h4>Шаг 1. Оценка влияния на объект НВОС</h4>`;
+    
+    if (isStep1Correct) {
+      html += `<p><strong style="color:var(--green)">✅ Верно.</strong> Вы правильно связали изменение (фильтр/сырье) с характеристикой объекта НВОС.</p>`;
+      html += `<p><strong>Польза:</strong> Всегда начинайте с вопроса «Меняется ли состав/масса выбросов?». Если да — объект меняется, даже если оборудование выглядит так же.</p>`;
+    } else {
+      html += `<p><strong style="color:var(--orange)">⚠️ Требуется внимание.</strong> Вы выбрали вариант, который игнорирует влияние на НВОС.</p>`;
+      html += `<p><strong>Риск:</strong> Ошибка на этом шаге ведет к «слепой зоне». Если не зафиксировать изменение выбросов сейчас, оно выльется в штраф за неактуальную инвентаризацию или КЭР позже.</p>`;
+    }
+    html += `</div>`;
+
+    // --- STEP 2 ANALYSIS ---
+    html += `<div class="breakdown-item">`;
+    html += `<h4>Шаг 2. Какие документы проверять</h4>`;
+    
+    if (isStep2Correct) {
+      html += `<p><strong style="color:var(--green)">✅ Верно.</strong> Вы выбрали полный набор: инвентаризация, расчеты, паспорта.</p>`;
+      html += `<p><strong>Золотое правило:</strong> При изменении «железа» (очистки) или «софта» (технологии) всегда сверяем: <br>1. Факт (Инвентаризация) <br>2. Расчет (НДВ/Рассеивание) <br>3. Разрешение (КЭР/ДВОС).</p>`;
+    } else {
+      html += `<p><strong style="color:var(--orange)">⚠️ Вы пропустили важные документы.</strong></p>`;
+      html += `<p><strong>Совет:</strong> Не ограничивайтесь только внутренними паспортами оборудования. Главное — обновить <strong>инвентаризацию выбросов</strong>. Без неё любые расчеты НДВ и КЭР будут ошибочными.</p>`;
+    }
+    html += `</div>`;
+
+    // --- STEP 3 ANALYSIS ---
+    html += `<div class="breakdown-item">`;
+    html += `<h4>Шаг 3. Уровень действий</h4>`;
+    
+    if (isStep3Correct) {
+      html += `<p><strong style="color:var(--green)">✅ Адекватный выбор.</strong> Уровень действий совпадает с реальным влиянием.</p>`;
+      html += `<p><strong>Практика:</strong> Для модернизации очистки/техпроцесса чаще всего нужно <strong>минимум «скорректировать эко-документацию»</strong> (обновить расчеты). Переходите на «переоформление разрешений», если выбросы вышли за лимиты НДВ.</p>`;
+    } else {
+      html += `<p><strong style="color:var(--orange)">⚠️ Выбран неверный уровень.</strong></p>`;
+      html += `<p><strong>Ошибка:</strong> ${ans.step3 <= 1 ? 'Недооценка риска. Оставить все как есть нельзя.' : 'Избыточная бюрократия. Переоформлять КЭР нужно только при изменении категории или лимитов.'}</p>`;
+    }
+    html += `</div>`;
+
+    // --- FINAL SUMMARY / CHEAT SHEET ---
+    html += `<div style="background: #f0f9ff; border: 1px solid #bae6fd; border-radius: 8px; padding: 12px; margin-top: 10px;">`;
+    html += `<h4 style="margin-top:0; color: #0284c7;">💡 Памятка экологу (Чек-лист изменений)</h4>`;
+    html += `<ul style="margin-bottom:0; padding-left: 20px; color: #334155;">`;
+    html += `<li><strong>Порог срабатывания:</strong> Рост выбросов >10% (совокупно) или >25% (по источнику) = пересмотр НДВ/Инвентаризации.</li>`;
+    html += `<li><strong>Смена сырья:</strong> Всегда меняет состав выбросов, даже если фильтр тот же.</li>`;
+    html += `<li><strong>Новый фильтр:</strong> Меняет эффективность очистки → меняются валовые выбросы → пересчет НДВ.</li>`;
+    html += `</ul>`;
+    html += `</div>`;
+
+    document.getElementById('breakdown-content').innerHTML = html;
+    document.getElementById('modal-breakdown').classList.add('show');
+    triggerResize();
+  }
+
+  function restart() {
+    state.selectedCase = null;
+    state.currentStep = 1;
+    state.answers = {
+      1: { step1: null, step2: [], step3: null },
+      2: { step1: null, step2: [], step3: null },
+      3: { step1: null, step2: [], step3: null }
+    };
+    showScreen('screen-select');
+  }
+
+  window.addEventListener('load', () => {
+    triggerResize();
+    const observer = new ResizeObserver(() => triggerResize());
+    observer.observe(document.querySelector('.container'));
+  });
+</script>
+
+</body>
+</html>
