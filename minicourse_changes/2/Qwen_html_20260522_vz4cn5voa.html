@@ -1,0 +1,703 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Изменились технологии обращения с отходами</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --text-main: #2d3748;
+    --text-light: #718096;
+    --green: #2e7d32;
+    --green-light: #e8f5e9;
+    --green-border: #a5d6a7;
+    --orange: #f59e0b;
+    --orange-soft: #fff7ed;
+    --blue: #0ea5e9;
+    --border: #e2e8f0;
+    --radius: 16px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text-main);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .container {
+    width: 100%;
+    max-width: 700px;
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 24px;
+    position: relative;
+  }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--green); }
+  .intro { font-size: 14.5px; color: var(--text-light); margin-bottom: 20px; line-height: 1.5; }
+  
+  .step-indicator {
+    display: flex; gap: 8px; margin-bottom: 20px;
+  }
+  .step-dot {
+    height: 4px; flex: 1; background: #e2e8f0; border-radius: 2px;
+    transition: background 0.3s;
+  }
+  .step-dot.active { background: var(--green); }
+  .step-dot.completed { background: var(--green-border); }
+
+  .screen { display: none; animation: fadeIn 0.25s; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .scenario-box {
+    background: #f8fafc;
+    border-left: 4px solid var(--green);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .task-title { font-weight: 600; font-size: 16px; margin-bottom: 14px; color: var(--text-main); }
+  
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .option {
+    padding: 12px;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14.5px;
+    transition: 0.2s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #fff;
+  }
+  .option:hover { border-color: var(--green-border); background: var(--green-light); }
+  .option.selected { border-color: var(--green); background: var(--green-light); font-weight: 600; }
+  .option.correct { border-color: var(--green); background: #d4edda; }
+  .option.incorrect { border-color: var(--orange); background: var(--orange-soft); }
+  
+  .chk {
+    width: 20px; height: 20px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .option.selected .chk { background: var(--green); border-color: var(--green); color: #fff; }
+  .chk::after { content: '✓'; font-size: 12px; font-weight: 700; display: none; }
+  .option.selected .chk::after { display: block; }
+
+  .case-cards {
+    display: grid;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .case-card {
+    padding: 14px;
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .case-card:hover { border-color: var(--green-border); background: var(--green-light); }
+  .case-card h3 { font-size: 15px; margin-bottom: 6px; color: var(--text-main); }
+  .case-card p { font-size: 13.5px; color: var(--text-light); line-height: 1.4; }
+
+  .controls { display: flex; gap: 12px; justify-content: center; border-top: 1px solid var(--border); padding-top: 16px; }
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .btn-primary { background: var(--green); color: #fff; opacity: 0.4; pointer-events: none; }
+  .btn-primary.active { opacity: 1; pointer-events: auto; }
+  .btn-primary:hover { background: #1b5e20; }
+  .btn-secondary { background: #fff; color: var(--text-main); border: 1px solid var(--border); }
+  .btn-secondary:hover { background: #f8fafc; }
+  .btn-restart { background: #fff; color: var(--text-main); border: 1px solid var(--border); }
+
+  /* Modals */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px; backdrop-filter: blur(2px);
+  }
+  .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
+  .modal {
+    background: #fff; border-radius: 16px; max-width: 580px; width: 100%;
+    padding: 24px; box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+    border: 2px solid var(--green-light);
+    max-height: 85vh;
+    overflow-y: auto;
+    position: relative;
+  }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--green); }
+  .modal-title.hint { color: var(--orange); }
+  .modal-text { font-size: 14.5px; line-height: 1.6; color: var(--text-main); margin-bottom: 16px; }
+  .modal-btn {
+    width: 100%; padding: 10px; background: var(--green); color: #fff; border: none;
+    border-radius: 8px; font-weight: 600; cursor: pointer;
+  }
+  .modal-btn:hover { background: #1b5e20; }
+  .modal-close {
+    position: absolute; top: 12px; right: 12px; width: 28px; height: 28px;
+    border: none; background: #f0f2f5; border-radius: 50%; cursor: pointer;
+    font-size: 18px; color: #666;
+  }
+
+  .breakdown-item {
+    background: #fff;
+    border: 1px solid var(--green-border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    text-align: left;
+  }
+  .breakdown-item h4 { font-size: 15px; margin-bottom: 8px; color: var(--text-main); display: flex; align-items: center; justify-content: space-between; }
+  .breakdown-item p { font-size: 14px; color: var(--text-light); line-height: 1.5; margin: 0; }
+  .breakdown-tag {
+    font-size: 11px;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-weight: 600;
+  }
+  .tag-correct { background: var(--green-light); color: var(--green); }
+  .tag-warning { background: var(--orange-soft); color: var(--orange); }
+
+  @media (max-width: 600px) { .container { padding: 16px; } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Изменились технологии обращения с отходами: выберите ситуацию</h2>
+  <p class="intro">Выберите кейс, который ближе к вашей практике. Внутри кейса вы по шагам разберете, как изменение обращения с отходами влияет на объект НВОС и какие действия нужны.</p>
+  
+  <!-- Case Selection -->
+  <div id="screen-select" class="screen active">
+    <div class="case-cards">
+      <div class="case-card" onclick="startCase(1)">
+        <h3>Кейс 1. Переход к использованию отходов</h3>
+        <p>Часть отходов, которые раньше вывозили на полигон, теперь передают на утилизацию другой организации. Поменяли переработчика и условия договора.</p>
+      </div>
+      <div class="case-card" onclick="startCase(2)">
+        <h3>Кейс 2. Переход к обезвреживанию</h3>
+        <p>Предприятие перестало вывозить отходы на полигон и заключило договор на обезвреживание на сторонней установке. Изменились объемы.</p>
+      </div>
+      <div class="case-card" onclick="startCase(3)">
+        <h3>Кейс 3. Изменение состава отходов</h3>
+        <p>После изменений в техпроцессах появился новый вид отхода и изменился состав существующего. Объемы перераспределились.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="screen-game" class="screen">
+    <div class="step-indicator">
+      <div class="step-dot" id="ind-1"></div>
+      <div class="step-dot" id="ind-2"></div>
+      <div class="step-dot" id="ind-3"></div>
+    </div>
+
+    <div class="scenario-box" id="scenario-text"></div>
+    <h3 id="question-title"></h3>
+    <div id="options-container"></div>
+
+    <div class="controls">
+      <button class="btn btn-restart" onclick="restart()">Выбрать другой кейс</button>
+      <button class="btn btn-primary" id="btn-check" disabled onclick="handleNext()">Проверить ответ</button>
+    </div>
+  </div>
+
+  <!-- Final Screen -->
+  <div id="screen-final" class="screen">
+    <h3 style="text-align:center; margin-bottom:16px; color:var(--green);">Алгоритм пройден</h3>
+    <p style="margin-bottom:16px;">Вы прошли все шаги. Вот как изменения влияют на документы:</p>
+    
+    <!-- Document Breakdown Section -->
+    <div class="breakdown-item">
+      <h4>📄 Паспорта и инвентаризация отходов</h4>
+      <p><strong>Что проверить:</strong> Состав, класс опасности, коды ФККО, объемы образования.</p>
+      <p><strong>Что изменить:</strong> Оформить новые паспорта для измененных отходов, актуализировать отчет об инвентаризации.</p>
+    </div>
+
+    <div class="breakdown-item">
+      <h4>🔗 Договоры и учет движения</h4>
+      <p><strong>Что проверить:</strong> Лицензии подрядчиков, условия договоров, журналы учета.</p>
+      <p><strong>Что изменить:</strong> Включить новые отходы в договоры, обновить журналы, запросить акты утилизации/обезвреживания.</p>
+    </div>
+
+    <div class="breakdown-item">
+      <h4>⚙️ Программа ПЭК и внутренние регламенты</h4>
+      <p><strong>Что проверить:</strong> Точки контроля, периодичность, ответственные лица.</p>
+      <p><strong>Что изменить:</strong> Включить новые отходы в программу ПЭК, обновить инструкции для персонала.</p>
+    </div>
+
+    <div class="breakdown-item">
+      <h4>📋 Сведения об объекте НВОС</h4>
+      <p><strong>Что проверить:</strong> Категорию объекта, коды ФККО в реестре.</p>
+      <p><strong>Что изменить:</strong> Актуализировать сведения в реестре НВОС в течение 30 дней после изменений.</p>
+    </div>
+
+    <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+      <button class="btn btn-secondary" onclick="showBreakdownModal()">📋 Разбор алгоритма</button>
+      <button class="btn btn-restart" onclick="restart()">Выбрать другой кейс</button>
+    </div>
+  </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal-overlay" id="modal-feedback">
+  <div class="modal">
+    <div class="modal-title" id="fb-title">Комментарий</div>
+    <div class="modal-text" id="fb-text"></div>
+    <button class="modal-btn" id="modal-btn">Попробовать еще раз</button>
+  </div>
+</div>
+
+<!-- Breakdown Modal -->
+<div class="modal-overlay" id="modal-breakdown">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-breakdown')">&times;</button>
+    <div class="modal-title">📋 Разбор ваших шагов</div>
+    <div id="breakdown-content" style="font-size: 14px; line-height: 1.5;"></div>
+    <button class="modal-btn" onclick="closeModal('modal-breakdown')" style="margin-top:16px;">Закрыть</button>
+  </div>
+</div>
+
+<script>
+  // State
+  const state = {
+    selectedCase: null,
+    currentStep: 1,
+    answers: {
+      1: { step1: null, step2: [], step3: null },
+      2: { step1: null, step2: [], step3: null },
+      3: { step1: null, step2: [], step3: null }
+    }
+  };
+
+  // Correct answers for each case
+  const correctAnswers = {
+    1: { step1: 1, step2: [1, 2, 3], step3: [2, 3] },
+    2: { step1: 1, step2: [1, 3, 4], step3: [2, 3] },
+    3: { step1: 1, step2: [1, 2, 3], step3: [2, 3] }
+  };
+
+  // Case Data
+  const cases = {
+    1: {
+      title: "Кейс 1. Переход к использованию отходов",
+      scenario: "Часть отходов, которые раньше вывозили на полигон, теперь передают на утилизацию (использование) другой организации. Поменяли переработчика и условия договора.",
+      correct: { step1: 1, step2: [1, 2, 3], step3: [2, 3] },
+      steps: [
+        {
+          type: "single",
+          question: "Что изменилось для объекта НВОС?",
+          options: [
+            "Меняется только контрагент, которому передают отходы. Описание объекта НВОС не затрагивается.",
+            "Меняется технология обращения с отходами: вместо размещения часть отходов теперь используют. Это влияет на описание объекта НВОС и учет отходов.",
+            "Меняется только стоимость услуг по обращению с отходами, документы по отходам можно не трогать."
+          ],
+          feedback: {
+            correct: "Вы отнесли изменение к технологиям обращения с отходами. Это влияет на то, как объект фактически обращается с отходами, и на описание объекта НВОС.",
+            wrong: "Если считать, что меняется только подрядчик или цена, легко пропустить изменение технологии обращения с отходами. Тогда описание объекта НВОС и учет отходов расходятся с фактом."
+          }
+        },
+        {
+          type: "multi",
+          question: "Какие документы и сведения по отходам нужно проверить?",
+          options: [
+            "Инвентаризацию отходов и перечень видов отходов на объекте НВОС.",
+            "Паспорта отходов (новые и измененные), при необходимости — протоколы исследований.",
+            "Журналы учета движения отходов и внутренние формы учета.",
+            "Договоры и приложения с организациями, которые используют/обезвреживают отходы.",
+            "Сведения об объекте НВОС и разделы проектной документации.",
+            "Только бухгалтерские документы по оплате услуг, без изменения экодокументации."
+          ],
+          required: [1, 2, 3],
+          forbidden: [5],
+          feedback: {
+            correct: "Вы проверяете паспорта, учет, договоры и, при необходимости, сведения об объекте НВОС. Это полный блок документов при изменении технологий обращения.",
+            partial: "Вы учитываете паспорта и договоры. Добавьте к проверке инвентаризацию и журналы учета, чтобы объемы и способы обращения с отходами в учете совпадали с фактом.",
+            wrong: "Ограничиваться договорами и бухгалтерскими документами недостаточно. При изменении технологий обращения с отходами нужно пересмотреть паспорта, учет и при необходимости сведения об объекте НВОС."
+          }
+        },
+        {
+          type: "single",
+          question: "Какой уровень действий выбрать по схеме «что делать при изменениях»?",
+          options: [
+            "Действий не требуется. Объект НВОС и документы остаются актуальными.",
+            "Обновить только внутренние документы (инструкции, регламенты), не меняя паспорта и сведения об объекте.",
+            "Скорректировать экологическую документацию: инвентаризацию, паспорта, журналы учета, не затрагивая разрешения.",
+            "Кроме коррекции паспортов и учета, актуализировать сведения об объекте НВОС и разрешения, если меняются характеристики объекта."
+          ],
+          correct: [2, 3],
+          feedback: {
+            correct: "Вы выбрали уровень действий, при котором изменение технологий обращения отражается в паспортах, учете и, при необходимости, в сведениях об объекте НВОС.",
+            wrong: "Если ограничиться отсутствием действий или только внутренними инструкциями, в паспортах и сведениях об объекте НВОС останется старая схема. Это создает расхождение между фактом и документами."
+          }
+        }
+      ]
+    },
+    2: {
+      title: "Кейс 2. Переход к обезвреживанию",
+      scenario: "Предприятие перестало вывозить отходы на полигон и заключило договор на обезвреживание на сторонней установке. Изменились условия по видам, классам и объемам отходов.",
+      correct: { step1: 1, step2: [1, 3, 4], step3: [2, 3] },
+      steps: [
+        {
+          type: "single",
+          question: "Как это изменение влияет на объект НВОС?",
+          options: [
+            "Меняется только способ транспортировки, на характеристики объекта это не влияет.",
+            "Меняется технология обращения (захоронение заменено на обезвреживание). Это меняет блок характеристик объекта НВОС по отходам.",
+            "Это касается только отдела логистики, экологические документы не меняются."
+          ],
+          correct: 1,
+          feedback: {
+            correct: "Вы верно определили: переход от размещения к обезвреживанию меняет технологию обращения, а значит, и блок характеристик объекта НВОС.",
+            wrong: "Обезвреживание — это иная технология обращения, чем захоронение. Игнорирование этого факта ведет к некорректным данным в отчетах и сведениях об объекте."
+          }
+        },
+        {
+          type: "multi",
+          question: "Какие документы и сведения по отходам нужно проверить?",
+          options: [
+            "Инвентаризацию отходов и перечень видов отходов.",
+            "Паспорта отходов (особенно если изменился класс опасности при обезвреживании).",
+            "Журналы учета движения отходов и схемы потоков.",
+            "Договоры на обезвреживание и акты приема-передачи.",
+            "Сведения об объекте НВОС (код по ФККО, способ обработки).",
+            "Только счета-фактуры от подрядчика."
+          ],
+          required: [1, 3, 4],
+          forbidden: [5],
+          feedback: {
+            correct: "Верно. При смене технологии (обезвреживание) критически важно проверить паспорта, журналы и договоры, а также актуализировать сведения об объекте.",
+            partial: "Вы выбрали ключевые документы, но убедитесь, что обновлены журналы учета и инвентаризация, так как потоки отходов изменились.",
+            wrong: "Только бухгалтерских документов недостаточно. Смена технологии требует пересмотра экологической документации (паспорта, инвентаризация)."
+          }
+        },
+        {
+          type: "single",
+          question: "Какой уровень действий выбрать?",
+          options: [
+            "Ничего не менять, договор есть — документы актуальны.",
+            "Обновить только внутренние инструкции по складированию.",
+            "Скорректировать паспорта и журналы учета, проверить расчеты нормативов.",
+            "Актуализировать сведения об объекте НВОС и паспорта, так как изменился способ обработки отходов."
+          ],
+          correct: [2, 3],
+          feedback: {
+            correct: "Отлично. Смена способа обработки (обезвреживание вместо захоронения) требует пересмотра паспортов и сведений об объекте.",
+            wrong: "Изменение способа обращения с отходами — это изменение технологии. Ограничиваться внутренними инструкциями нельзя, нужно обновлять эко-документацию."
+          }
+        }
+      ]
+    },
+    3: {
+      title: "Кейс 3. Изменение состава отходов",
+      scenario: "После изменений в техпроцессах появился новый вид отхода и изменился состав существующего отхода. Объемы по видам отходов перераспределились.",
+      correct: { step1: 1, step2: [1, 2, 3], step3: [2, 3] },
+      steps: [
+        {
+          type: "single",
+          question: "Затрагивает ли это объект НВОС?",
+          options: [
+            "Нет, объемы общие не изменились, просто поменялись пропорции.",
+            "Да, изменение состава и появление нового вида отхода меняет описание объекта НВОС.",
+            "Нет, это вопрос только для технологов производства."
+          ],
+          correct: 1,
+          feedback: {
+            correct: "Верно. Новый вид отхода или изменение состава — это прямое изменение характеристик объекта НВОС.",
+            wrong: "Даже если общие тоннажи те же, изменение состава или появление нового кода ФККО требует пересмотра описания объекта и паспортов."
+          }
+        },
+        {
+          type: "multi",
+          question: "Какие документы проверить в первую очередь?",
+          options: [
+            "Инвентаризацию отходов (для подтверждения новых составов).",
+            "Паспорта отходов (нужны новые протоколы для новых составов).",
+            "Журналы учета (для фиксации новых видов).",
+            "Договоры (проверить, принимает ли подрядчик новые составы).",
+            "Сведения об объекте НВОС (вносить новый код ФККО).",
+            "Только прайс-лист на вывоз отходов."
+          ],
+          required: [1, 2, 3],
+          forbidden: [5],
+          feedback: {
+            correct: "Вы выбрали правильный набор: инвентаризация, новые паспорта (протоколы), учет и проверка договоров на прием новых составов.",
+            partial: "Не забудьте про инвентаризацию и паспорта. Новый состав требует новых протоколов исследований и обновления паспортов.",
+            wrong: "Изменение состава отходов требует обновления паспортов и инвентаризации. Только договора и цены здесь не помогут."
+          }
+        },
+        {
+          type: "single",
+          question: "Какой уровень действий выбрать?",
+          options: [
+            "Действий не требуется.",
+            "Обновить только инструкцию для рабочих.",
+            "Провести новую инвентаризацию, оформить паспорта на новые отходы, обновить журналы.",
+            "Актуализировать сведения об объекте НВОС (добавить новые коды ФККО) и обновить все документы по отходам."
+          ],
+          correct: [2, 3],
+          feedback: {
+            correct: "Верно. Появление новых отходов требует пересмотра инвентаризации, паспортов и сведений об объекте.",
+            wrong: "Новый отход — это новый код ФККО. Его нужно легализовать через инвентаризацию, паспорт и внесение в сведения об объекте."
+          }
+        }
+      ]
+    }
+  };
+
+  // UI Helpers
+  function showScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+    const target = document.getElementById(screenId);
+    if (target) target.classList.add('active');
+    triggerResize();
+  }
+
+  function updateIndicators() {
+    for(let i=1; i<=3; i++) {
+      const dot = document.getElementById(`ind-${i}`);
+      dot.classList.remove('active', 'completed');
+      if(i < state.currentStep) dot.classList.add('completed');
+      else if(i === state.currentStep) dot.classList.add('active');
+    }
+  }
+
+  function triggerResize() {
+    if (window.iFrameResize) window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+    triggerResize();
+  }
+
+  function startCase(caseId) {
+    state.selectedCase = caseId;
+    state.currentStep = 1;
+    state.answers[caseId] = { step1: null, step2: [], step3: null };
+    renderStep();
+    showScreen('screen-game');
+  }
+
+  function renderStep() {
+    const c = cases[state.selectedCase];
+    const s = c.steps[state.currentStep - 1];
+    
+    document.getElementById('scenario-text').innerHTML = `<strong>${c.title}</strong><br>${c.scenario}`;
+    document.getElementById('question-title').innerText = `Шаг ${state.currentStep}. ${s.question}`;
+    
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+    
+    s.options.forEach((opt, idx) => {
+      const div = document.createElement('div');
+      div.className = 'option';
+      div.id = `opt-${idx}`;
+      div.innerHTML = `<div class="chk" style="${s.type==='radio'?'border-radius:50%':'border-radius:4px'}"></div><span>${opt}</span>`;
+      
+      div.onclick = () => {
+        if(s.type === 'single') {
+          document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+          div.classList.add('selected');
+          document.getElementById('btn-check').classList.add('active');
+          document.getElementById('btn-check').disabled = false;
+        } else {
+          div.classList.toggle('selected');
+          const selectedCount = document.querySelectorAll('.option.selected').length;
+          if(selectedCount >= 2) {
+            document.getElementById('btn-check').classList.add('active');
+            document.getElementById('btn-check').disabled = false;
+          } else {
+            document.getElementById('btn-check').classList.remove('active');
+            document.getElementById('btn-check').disabled = true;
+          }
+        }
+      };
+      container.appendChild(div);
+    });
+    
+    document.getElementById('btn-check').classList.remove('active');
+    document.getElementById('btn-check').disabled = true;
+    updateIndicators();
+    triggerResize();
+  }
+
+  function handleNext() {
+    const c = cases[state.selectedCase];
+    const s = c.steps[state.currentStep - 1];
+    const correct = correctAnswers[state.selectedCase];
+    
+    let isCorrect = false;
+    let feedbackText = '';
+    
+    if(state.currentStep === 1) {
+      const selected = parseInt(document.querySelector('.option.selected')?.id?.replace('opt-', ''));
+      isCorrect = selected === correct.step1;
+      feedbackText = isCorrect ? s.feedback.correct : s.feedback.wrong;
+      
+      // Visual feedback - show correct answer
+      document.querySelectorAll('.option').forEach((opt, idx) => {
+        if(idx === correct.step1) opt.classList.add('correct');
+        else if(opt.classList.contains('selected')) opt.classList.add('incorrect');
+      });
+      
+    } else if(state.currentStep === 2) {
+      const selected = Array.from(document.querySelectorAll('.option.selected')).map(o => parseInt(o.id.replace('opt-', '')));
+      const hasRequired = correct.step2.every(req => selected.includes(req));
+      const hasForbidden = selected.some(opt => s.forbidden?.includes(opt));
+      
+      isCorrect = hasRequired && !hasForbidden;
+      feedbackText = isCorrect ? s.feedback.correct : (hasRequired ? s.feedback.partial : s.feedback.wrong);
+      
+      // Visual feedback
+      document.querySelectorAll('.option').forEach((opt, idx) => {
+        if(correct.step2.includes(idx)) opt.classList.add('correct');
+        else if(selected.includes(idx)) opt.classList.add('incorrect');
+      });
+      
+    } else if(state.currentStep === 3) {
+      const selected = parseInt(document.querySelector('.option.selected')?.id?.replace('opt-', ''));
+      isCorrect = correct.step3.includes(selected);
+      feedbackText = isCorrect ? s.feedback.correct : s.feedback.wrong;
+      
+      // Visual feedback
+      document.querySelectorAll('.option').forEach((opt, idx) => {
+        if(correct.step3.includes(idx)) opt.classList.add('correct');
+        else if(opt.classList.contains('selected')) opt.classList.add('incorrect');
+      });
+    }
+    
+    // Show feedback modal
+    showFeedbackModal(isCorrect ? "✓ Верно" : "⚠ Попробуйте еще раз", feedbackText, isCorrect, () => {
+      if(isCorrect) {
+        // Save answer and proceed
+        if(state.currentStep === 1) {
+          state.answers[state.selectedCase].step1 = parseInt(document.querySelector('.option.selected').id.replace('opt-', ''));
+        } else if(state.currentStep === 2) {
+          state.answers[state.selectedCase].step2 = Array.from(document.querySelectorAll('.option.selected')).map(o => parseInt(o.id.replace('opt-', '')));
+        } else if(state.currentStep === 3) {
+          state.answers[state.selectedCase].step3 = parseInt(document.querySelector('.option.selected').id.replace('opt-', ''));
+        }
+        
+        if(state.currentStep < 3) {
+          state.currentStep++;
+          renderStep();
+        } else {
+          showFinalScreen();
+        }
+      } else {
+        // Reset selection for retry - WRONG ANSWER: user must try again
+        document.querySelectorAll('.option').forEach(opt => {
+          opt.classList.remove('selected', 'correct', 'incorrect');
+        });
+        document.getElementById('btn-check').classList.remove('active');
+        document.getElementById('btn-check').disabled = true;
+      }
+    });
+  }
+
+  function showFeedbackModal(title, text, isCorrect, callback) {
+    document.getElementById('fb-title').textContent = title;
+    document.getElementById('fb-title').className = 'modal-title ' + (isCorrect ? '' : 'hint');
+    document.getElementById('fb-text').textContent = text;
+    
+    const btn = document.getElementById('modal-btn');
+    btn.onclick = null;
+    btn.onclick = function() {
+      closeModal('modal-feedback');
+      callback();
+    };
+    
+    // Change button text for wrong answers
+    btn.textContent = isCorrect ? "Продолжить" : "Попробовать еще раз";
+    
+    document.getElementById('modal-feedback').classList.add('show');
+    triggerResize();
+  }
+
+  function showFinalScreen() {
+    showScreen('screen-final');
+  }
+
+  function showBreakdownModal() {
+    const ans = state.answers[state.selectedCase];
+    const c = cases[state.selectedCase];
+    const correct = correctAnswers[state.selectedCase];
+    
+    let html = `<div style="margin-bottom:15px; color:var(--text-light); font-size:13px;">Кейс: <strong>${c.title}</strong></div>`;
+    
+    // Step 1
+    const s1Correct = ans.step1 === correct.step1;
+    html += `<div class="breakdown-item">
+      <h4>Шаг 1. Оценка влияния на объект НВОС <span class="breakdown-tag ${s1Correct?'tag-correct':'tag-warning'}">${s1Correct?'Верно':'Требует внимания'}</span></h4>
+      <p><strong>Ваш выбор:</strong> ${c.steps[0].options[ans.step1]}</p>
+      <p><strong>Польза:</strong> Всегда начинайте с вопроса «Меняется ли технология обращения с отходами?». Если да — объект меняется, даже если подрядчик тот же.</p>
+    </div>`;
+    
+    // Step 2
+    const s2Correct = correct.step2.every(req => ans.step2.includes(req)) && !ans.step2.some(opt => c.steps[1].forbidden?.includes(opt));
+    html += `<div class="breakdown-item">
+      <h4>Шаг 2. Документы для проверки <span class="breakdown-tag ${s2Correct?'tag-correct':'tag-warning'}">${s2Correct?'Достаточно':'Неполно'}</span></h4>
+      <p><strong>Отмечено:</strong> ${ans.step2.map(i => c.steps[1].options[i]).join(', ') || 'не выбрано'}</p>
+      <p><strong>Золотое правило:</strong> При изменении технологии обращения с отходами всегда проверяйте: 1) инвентаризацию, 2) паспорта, 3) журналы учета, 4) договоры с подрядчиками.</p>
+    </div>`;
+    
+    // Step 3
+    const s3Correct = correct.step3.includes(ans.step3);
+    html += `<div class="breakdown-item">
+      <h4>Шаг 3. Уровень действий <span class="breakdown-tag ${s3Correct?'tag-correct':'tag-warning'}">${s3Correct?'Адекватный':'Недостаточный'}</span></h4>
+      <p><strong>Ваш выбор:</strong> ${c.steps[2].options[ans.step3]}</p>
+      <p><strong>Практика:</strong> Для изменения технологии обращения с отходами обычно нужно <strong>минимум «скорректировать эко-документацию»</strong> (паспорта, инвентаризация). Переходите на «актуализацию сведений об объекте», если меняется категория или коды ФККО.</p>
+    </div>`;
+    
+    // Cheat sheet
+    html += `<div style="background:#f0f9ff; border:1px solid #bae6fd; border-radius:8px; padding:12px; margin-top:10px;">
+      <h4 style="margin-top:0; color:#0284c7;">💡 Памятка экологу (Чек-лист изменений)</h4>
+      <ul style="margin-bottom:0; padding-left:20px; color:#334155;">
+        <li><strong>Порог срабатывания:</strong> Новый код ФККО или изменение класса опасности = новые паспорта + актуализация инвентаризации.</li>
+        <li><strong>Смена подрядчика:</strong> Проверяйте лицензию на новый вид деятельности (утилизация/обезвреживание).</li>
+        <li><strong>Новый состав:</strong> Требует новых протоколов исследований и обновления паспортов в течение 30 дней.</li>
+        <li><strong>Реестр НВОС:</strong> Актуализируйте сведения в течение 30 дней после любых изменений в обращении с отходами.</li>
+      </ul>
+    </div>`;
+    
+    document.getElementById('breakdown-content').innerHTML = html;
+    document.getElementById('modal-breakdown').classList.add('show');
+    triggerResize();
+  }
+
+  function restart() {
+    state.selectedCase = null;
+    state.currentStep = 1;
+    showScreen('screen-select');
+  }
+
+  window.addEventListener('load', () => {
+    triggerResize();
+    const observer = new ResizeObserver(() => triggerResize());
+    observer.observe(document.querySelector('.container'));
+  });
+</script>
+
+</body>
+</html>
