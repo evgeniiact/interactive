@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Интерактив: Действия эколога при изменениях</title>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <style>
   :root {
     --bg: #fff;
@@ -140,6 +140,17 @@
   .btn-modal { background: var(--green-solid); color: #fff; padding: 10px 24px; }
   .btn-modal:hover { background: var(--green-dark); }
 
+  .tip-box {
+    background: #f0f9ff;
+    border-left: 3px solid #0ea5e9;
+    padding: 12px;
+    border-radius: 8px;
+    margin-top: 12px;
+    font-size: 13.5px;
+    line-height: 1.4;
+  }
+  .tip-box strong { color: #0284c7; display: block; margin-bottom: 4px; }
+
   @keyframes shake {
     0% { transform: translateX(0); } 25% { transform: translateX(-5px); } 
     50% { transform: translateX(5px); } 75% { transform: translateX(-5px); } 100% { transform: translateX(0); }
@@ -203,7 +214,8 @@
           "<strong>Что поменялось:</strong> Только ФИО руководителя (должностное лицо). Данные ЕГРЮЛ о самом юрлице и его объектах не менялись.",
           "<strong>Влияние на НВОС:</strong> Объект НВОС, площадка и процессы не менялись. Смена директора не влияет на параметры воздействия.",
           "<strong>Документы:</strong> Разрешения и сведения об объекте НВОС выдаются на организацию, а не на директора. Действий по экологической документации не требуется."
-        ]
+        ],
+        tip: "💡 <strong>Важное уточнение:</strong> Эколог не переоформляет НВОС‑документы только при простой смене директора без изменения реквизитов, собственника и ОПФ. На практике экологу стоит уточнить у юристов, не менялись ли вместе с директором регистрационные данные организации и подписи в ключевых договорах и разрешениях."
       },
       feedbackIncorrect: {
         title: "Подумайте еще раз",
@@ -264,10 +276,10 @@
     {
       id: 4,
       text: "Вышел новый порядок контроля выбросов, ваши объекты подпадают под него.",
-      correct: 1, // Б (или В в зависимости от контекста, но Б надежнее как база)
+      correct: 1, // Б
       feedbackCorrect: {
         title: "Верно. Обновляем документы.",
-        text: "Вы выбрали вариант <b>Внести изменения в документы</b> (или Уведомить).",
+        text: "Вы выбрали вариант <b>Внести изменения в документы</b>.",
         steps: [
           "<strong>Что поменялось:</strong> Нормативная база. Появились новые требования к контролю.",
           "<strong>Влияние на НВОС:</strong> Объекты прежние, но правила игры изменились. Старые программы контроля могут устареть.",
@@ -338,10 +350,6 @@
       showModal(scenario.feedbackCorrect, 'success');
     } else {
       btnElement.classList.add('selected-wrong');
-      // Allow retrying after modal closes? Or just show hint and let them try again?
-      // The prompt implies "Feedback for wrong answer", usually implies a hint to try again or learn.
-      // Let's reset selection after modal close so they can try again, or mark it and move on?
-      // Usually in these trainers, wrong answer -> hint -> try again.
       showModal(scenario.feedbackIncorrect, 'hint');
       
       // Reset after modal close to allow retry
@@ -361,9 +369,12 @@
       stepsHtml += `<li>${step}</li>`;
     });
     
+    let tipHtml = data.tip ? `<div class="tip-box">${data.tip}</div>` : '';
+    
     modalBody.innerHTML = `
       <p>${data.text}</p>
       <ul>${stepsHtml}</ul>
+      ${tipHtml}
     `;
     
     if (type === 'success') {
