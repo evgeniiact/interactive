@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Смена адреса: определите тип изменений</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <style>
   :root {
     --bg: #ffffff;
@@ -79,7 +80,7 @@
   }
   .option:hover { border-color: var(--green-border); background: var(--green-light); }
   .option.selected { border-color: var(--green); background: var(--green-light); font-weight: 600; }
-  .option.correct { border-color: var(--green); background: #d4edda; }
+  .option.correct { border-color: var(--green); background: #d4edda; pointer-events: none; }
   .option.incorrect { border-color: var(--orange); background: var(--orange-soft); }
   
   .chk {
@@ -189,12 +190,12 @@
   <div id="screen-select" class="screen active">
     <div class="case-cards">
       <div class="case-card" onclick="startCase(1)">
-        <h3>Кейс 1</h3>
-        <p>У ООО "ПромТех" изменился адрес в ЕГРЮЛ с «г. Москва, ул. Тверская, д. 15» на «г. Москва, Ленинградский проспект, д. 42». Производственная площадка, очистные сооружения и все источники выбросов находятся по адресу «Московская обл., г. Подольск,производственная зона «Северная».</p>
+        <h3>🏢 Кейс 1</h3>
+        <p>У ООО "ПромТех" изменился адрес в ЕГРЮЛ с «г. Москва, ул. Тверская, д. 15» на «г. Москва, Ленинградский проспект, д. 42». Производственная площадка, очистные сооружения и все источники выбросов находятся по адресу «Московская обл., г. Подольск, промышленная зона «Северная».</p>
       </div>
       <div class="case-card" onclick="startCase(2)">
-        <h3>Кейс 2</h3>
-        <p>Руководство ООО "ПромТех" решило перености производство. Старая площадка в г. Подольске закрыта, оборудование демонтировано. Новое производственное помещение арендовано в г. Домодедово, производственная зона «Южная». Сюда перевезли технологические линии, установили новые газоочистные сооружения, организовали места накопления отходов. Юридический адрес в ЕГРЮЛ остался прежним — «г. Москва, ул. Тверская, д. 15».</p>
+        <h3>🏭 Кейс 2</h3>
+        <p>Руководство ООО "ПромТех" решило перенести производство. Старая площадка в г. Подольске закрыта, оборудование демонтировано. Новое производственное помещение арендовано в г. Домодедово, промышленная зона «Южная». Сюда перевезли технологические линии, установили новые газоочистные сооружения, организовали места накопления отходов. Юридический адрес в ЕГРЮЛ остался прежним — «г. Москва, ул. Тверская, д. 15».</p>
       </div>
     </div>
   </div>
@@ -436,19 +437,32 @@
     
     state.answers[state.selectedCase][`step${state.currentStep}`] = selected;
     
-    showFeedbackModal(isCorrect ? "✓ Верно" : "⚠ Обратите внимание", s.feedback, () => {
-      if(state.currentStep < 3) {
-        state.currentStep++;
-        renderStep();
+    showFeedbackModal(isCorrect ? "✓ Верно" : "⚠ Обратите внимание", s.feedback, isCorrect, () => {
+      if(isCorrect) {
+        if(state.currentStep < 3) {
+          state.currentStep++;
+          renderStep();
+        } else {
+          showFinalScreen();
+        }
       } else {
-        showFinalScreen();
+        // Allow retry: reset button and allow re-selection
+        document.getElementById('btn-check').classList.add('active');
+        document.getElementById('btn-check').disabled = false;
+        document.getElementById('btn-check').textContent = "Проверить ответ";
+        document.querySelectorAll('.option').forEach(opt => {
+          opt.style.pointerEvents = 'auto';
+          if(opt.classList.contains('incorrect')) {
+            opt.classList.remove('incorrect');
+          }
+        });
       }
     });
   }
 
-  function showFeedbackModal(title, text, callback) {
+  function showFeedbackModal(title, text, isCorrect, callback) {
     document.getElementById('fb-title').textContent = title;
-    document.getElementById('fb-title').className = 'modal-title';
+    document.getElementById('fb-title').className = 'modal-title ' + (isCorrect ? '' : 'hint');
     document.getElementById('fb-text').textContent = text;
     
     const btn = document.getElementById('modal-btn');
