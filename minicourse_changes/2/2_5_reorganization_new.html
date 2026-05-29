@@ -1,0 +1,498 @@
+
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Реорганизация: определите тип изменений</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --text: #1e293b;
+    --text-light: #64748b;
+    --green: #16a34a;
+    --green-light: #dcfce7;
+    --green-border: #86efac;
+    --orange: #f59e0b;
+    --orange-soft: #fff7ed;
+    --radius: 16px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .container {
+    width: 100%;
+    max-width: 700px;
+    background: #fff;
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--green); }
+  .intro { font-size: 14.5px; color: var(--text-light); margin-bottom: 20px; line-height: 1.5; }
+  
+  .step-indicator { display: flex; gap: 8px; margin-bottom: 20px; }
+  .step-dot { height: 4px; flex: 1; background: #e2e8f0; border-radius: 2px; transition: background 0.3s; }
+  .step-dot.active { background: var(--green); }
+  .step-dot.completed { background: var(--green-border); }
+
+  .screen { display: none; animation: fadeIn 0.25s; }
+  .screen.active { display: block; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+
+  .scenario-box {
+    background: #f8fafc;
+    border-left: 4px solid var(--green);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  
+  .options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 24px; }
+  .option {
+    padding: 12px;
+    border: 2px solid #e2e8f0;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 14.5px;
+    transition: 0.2s;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    background: #fff;
+  }
+  .option:hover { border-color: var(--green-border); background: var(--green-light); }
+  .option.selected { border-color: var(--green); background: var(--green-light); font-weight: 600; }
+  .option.correct { border-color: var(--green); background: #d4edda; pointer-events: none; }
+  .option.incorrect { border-color: var(--orange); background: var(--orange-soft); }
+  
+  .chk {
+    width: 20px; height: 20px;
+    border: 2px solid #e2e8f0;
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 2px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .option.selected .chk { background: var(--green); border-color: var(--green); color: #fff; }
+  .chk::after { content: '✓'; font-size: 12px; font-weight: 700; display: none; }
+  .option.selected .chk::after { display: block; }
+
+  .case-cards { display: flex; flex-direction: column; gap: 14px; margin-bottom: 24px; }
+  .case-card {
+    background: #fff;
+    border: 2px solid #e2e8f0;
+    border-radius: 12px;
+    padding: 18px;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .case-card:hover { border-color: var(--green-border); background: var(--green-light); }
+  .case-card h3 { font-size: 16px; margin-bottom: 8px; color: var(--text); }
+  .case-card p { font-size: 14px; line-height: 1.5; color: var(--text-light); }
+  
+  .controls { display: flex; gap: 12px; justify-content: center; border-top: 1px solid #e2e8f0; padding-top: 16px; }
+  .btn {
+    padding: 10px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .btn-primary { background: var(--green); color: #fff; opacity: 0.4; pointer-events: none; }
+  .btn-primary.active { opacity: 1; pointer-events: auto; }
+  .btn-primary:hover { background: #15803d; }
+  .btn-secondary { background: #fff; color: var(--text); border: 1px solid #e2e8f0; }
+  .btn-secondary:hover { background: #f8fafc; }
+  .btn-restart { background: #fff; color: var(--text); border: 1px solid #e2e8f0; }
+  
+  /* Modals */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px;
+  }
+  .modal-overlay.show { display: flex; animation: fadeIn 0.2s; }
+  .modal {
+    background: #fff; border-radius: 16px; max-width: 560px; width: 100%;
+    padding: 24px; position: relative; box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+    border: 2px solid var(--green-light);
+    max-height: 85vh; overflow-y: auto;
+  }
+  .modal-close {
+    position: absolute; top: 12px; right: 12px; width: 28px; height: 28px;
+    border: none; background: #f1f5f9; border-radius: 50%; cursor: pointer;
+    font-size: 18px; color: #64748b;
+  }
+  .modal-title { font-size: 18px; font-weight: 700; margin-bottom: 12px; color: var(--green); }
+  .modal-title.hint { color: var(--orange); }
+  .modal-body { font-size: 14.5px; line-height: 1.6; color: var(--text); }
+  .modal-footer { margin-top: 20px; text-align: center; }
+  
+  .breakdown-item {
+    background: #fff;
+    border: 1px solid var(--green-border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 12px;
+    text-align: left;
+  }
+  .breakdown-item h4 { font-size: 15px; margin-bottom: 8px; color: var(--text); }
+  .breakdown-item p { font-size: 14px; color: var(--text-light); line-height: 1.5; margin: 0; }
+  .breakdown-tag { font-size: 11px; padding: 3px 8px; border-radius: 4px; font-weight: 600; }
+  .tag-correct { background: var(--green-light); color: var(--green); }
+  .tag-warning { background: var(--orange-soft); color: var(--orange); }
+  
+  @media (max-width: 600px) { .container { padding: 18px; } }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Реорганизация: определите тип изменений</h2>
+  <p class="intro">Внимательно изучите ситуацию. Ключевые детали скрыты в описании. Пройдите 2 шага, чтобы определить алгоритм действий эколога.</p>
+  
+  <!-- Case Selection -->
+  <div id="screen-select" class="screen active">
+    <div class="case-cards">
+      <div class="case-card" onclick="startCase(1)">
+        <h3>🏢 Кейс 1: Смена вывески и руководства</h3>
+        <p>ООО «ПромЭко» вошло в новый холдинг. Поменялось фирменное наименование, сменился генеральный директор и юридический адрес. ИНН и ОГРН остались прежними. Производственная площадка, источники выбросов и договоры на утилизацию отходов остались в ведении прежней компании.</p>
+      </div>
+      <div class="case-card" onclick="startCase(2)">
+        <h3>🏭 Кейс 2: Выделение цеха в самостоятельное предприятие</h3>
+        <p>Машиностроительный завод передал литейный цех со всем оборудованием и очистными сооружениями на баланс вновь созданного ООО «Литейные технологии». Прежний завод вывел цех из баланса. Новый директор назначил эколога, который приступил к аудиту паспортов и инвентаризации выбросов.</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- Game Screen -->
+  <div id="screen-game" class="screen">
+    <div class="step-indicator" id="step-indicator"></div>
+    <div class="scenario-box" id="scenario-text"></div>
+    <h3 style="font-size: 16px; margin-bottom: 14px;" id="question-title"></h3>
+    <div id="options-container"></div>
+    
+    <div class="controls">
+      <button class="btn btn-restart" onclick="restart()">Выбрать другой кейс</button>
+      <button class="btn btn-primary" id="btn-next" disabled onclick="handleNext()" type="button">Проверить ответ</button>
+    </div>
+  </div>
+
+  <!-- Final Screen -->
+  <div id="screen-final" class="screen">
+    <h3 style="text-align:center; margin-bottom:16px; color:var(--green);">Алгоритм пройден</h3>
+    <p style="margin-bottom:16px;">Вы разобрали ситуацию. Запомните главное правило:</p>
+    
+    <div class="breakdown-item">
+      <h4>🔑 Главный вопрос эколога</h4>
+      <p>При любых реорганизациях сначала ответьте: <strong>«Кто после изменений эксплуатирует объект НВОС?»</strong> От этого зависит весь алгоритм.</p>
+    </div>
+    
+    <div class="breakdown-item">
+      <h4> Если объект остался у того же юрлица</h4>
+      <p>Актуализируем реквизиты в документах: реестр НВОС (30 дней), КЭР/ДВОС, внутренние приказы. Инвентаризация и нормативы не пересчитываются.</p>
+    </div>
+    
+    <div class="breakdown-item">
+      <h4>🏭 Если объект перешёл новому юрлицу</h4>
+      <p>Полный алгоритм смены оператора: новый учёт в реестре НВОС, переоформление КЭР/ДВОС, новая инвентаризация, актуализация паспортов отходов.</p>
+    </div>
+    
+    <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap; justify-content:center;">
+      <button class="btn btn-secondary" onclick="showBreakdownModal()">📋 Разбор вашего решения</button>
+      <button class="btn btn-restart" onclick="restart()">Выбрать другой кейс</button>
+    </div>
+  </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal-overlay" id="modal-feedback">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-feedback')" type="button">&times;</button>
+    <div class="modal-title" id="fb-title"></div>
+    <div class="modal-body" id="fb-text"></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary active" id="modal-btn" type="button">Продолжить</button>
+    </div>
+  </div>
+</div>
+
+<!-- Breakdown Modal -->
+<div class="modal-overlay" id="modal-breakdown">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal('modal-breakdown')" type="button">&times;</button>
+    <div class="modal-title">📋 Разбор вашего решения</div>
+    <div id="breakdown-content"></div>
+    <div class="modal-footer">
+      <button class="btn btn-primary active" onclick="closeModal('modal-breakdown')" type="button">Закрыть</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // State Management
+  const state = {
+    selectedCase: null,
+    currentStep: 0,
+    answers: []
+  };
+
+  // Case Data Structure
+  const cases = {
+    1: {
+      title: "Кейс 1: Смена вывески и руководства",
+      scenario: "ООО «ПромЭко» вошло в новый холдинг. Поменялось фирменное наименование, сменился генеральный директор и юридический адрес. ИНН и ОГРН остались прежними. Производственная площадка, источники выбросов и договоры на утилизацию отходов остались в ведении прежней компании.",
+      steps: [
+        {
+          question: "Шаг 1. Что изменилось для объекта НВОС?",
+          options: [
+            "Изменились только реквизиты. Эксплуатант объекта НВОС остался прежним.",
+            "Изменился пользователь объекта. Цех перешел к новому юридическому лицу.",
+            "Изменилась категория объекта из-за смены руководства."
+          ],
+          correct: 0,
+          feedbackCorrect: "Верно! ИНН не менялся, значит юридическое лицо осталось тем же. Для экологии это изменение реквизитов.",
+          feedbackWrong: "Обратите внимание: ИНН и баланс не менялись. Объект остался у того же оператора."
+        },
+        {
+          question: "Шаг 2. Какой алгоритм действий применять?",
+          options: [
+            "Актуализировать реестр НВОС и переоформить КЭР/ДВОС на новое название.",
+            "Ставить объект на учет заново как новый пользователь.",
+            "Пересчитывать нормативы выбросов и проводить новую инвентаризацию."
+          ],
+          correct: 0,
+          feedbackCorrect: "Отлично! При смене реквизитов достаточно актуализировать данные в реестре (30 дней) и внести правки в разрешения.",
+          feedbackWrong: "Не нужно ставить на учет заново или пересчитывать нормативы. Меняется только наименование в документах."
+        }
+      ]
+    },
+    2: {
+      title: "Кейс 2: Выделение цеха в самостоятельное предприятие",
+      scenario: "Машиностроительный завод передал литейный цех со всем оборудованием и очистными сооружениями на баланс вновь созданного ООО «Литейные технологии». Прежний завод вывел цех из баланса. Новый директор назначил эколога, который приступил к аудиту паспортов и инвентаризации выбросов.",
+      steps: [
+        {
+          question: "Шаг 1. Что изменилось для объекта НВОС?",
+          options: [
+            "Изменились только реквизиты завода. Эксплуатант объекта остался прежним.",
+            "Изменился пользователь объекта. Цех перешел к новому юридическому лицу.",
+            "Произошло временное приостановление деятельности."
+          ],
+          correct: 1,
+          feedbackCorrect: "Верно! Цех передан на баланс нового ООО. Эксплуатант объекта НВОС сменился.",
+          feedbackWrong: "Прочитайте внимательно: цех передан на баланс нового ООО, прежний завод вывел его из баланса. Эксплуатант изменился."
+        },
+        {
+          question: "Шаг 2. Какой алгоритм действий применять?",
+          options: [
+            "Только обновить реквизиты в действующих разрешениях.",
+            "Полный алгоритм смены оператора: новый учёт, переоформление КЭР/ДВОС, новая инвентаризация.",
+            "Уведомить Росприроднадзор письмом, документы не менять."
+          ],
+          correct: 1,
+          feedbackCorrect: "Отлично! Смена оператора требует полного цикла: регистрация в реестре, новые разрешения, инвентаризация.",
+          feedbackWrong: "Простого уведомления или смены реквизитов недостаточно. Ответственность за воздействие перешла к новому юрлицу."
+        }
+      ]
+    }
+  };
+
+  // UI Helpers
+  function showScreen(name) {
+    document.querySelectorAll('.screen').forEach(el => el.classList.remove('active'));
+    document.getElementById(name).classList.add('active');
+    triggerResize();
+  }
+
+  function triggerResize() {
+    if (window.iFrameResize) window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+    triggerResize();
+  }
+
+  function startCase(caseId) {
+    state.selectedCase = caseId;
+    state.currentStep = 0;
+    state.answers = [];
+    renderStep();
+    showScreen('screen-game');
+  }
+
+  function renderStep() {
+    const c = cases[state.selectedCase];
+    const step = c.steps[state.currentStep];
+    
+    // Update indicators
+    const indContainer = document.getElementById('step-indicator');
+    indContainer.innerHTML = '';
+    c.steps.forEach((_, i) => {
+      const dot = document.createElement('div');
+      dot.className = 'step-dot' + (i === state.currentStep ? ' active' : (i < state.currentStep ? ' completed' : ''));
+      indContainer.appendChild(dot);
+    });
+
+    document.getElementById('scenario-text').innerHTML = `<strong>${c.title}</strong><br>${c.scenario}`;
+    document.getElementById('question-title').innerText = step.question;
+    
+    const container = document.getElementById('options-container');
+    container.innerHTML = '';
+    
+    step.options.forEach((opt, idx) => {
+      const div = document.createElement('div');
+      div.className = 'option';
+      div.id = `opt-${idx}`;
+      div.innerHTML = `<div class="chk"></div><span>${opt}</span>`;
+      
+      div.onclick = () => {
+        document.querySelectorAll('.option').forEach(o => o.classList.remove('selected'));
+        div.classList.add('selected');
+        enableButton();
+      };
+      container.appendChild(div);
+    });
+    
+    resetButton();
+  }
+
+  function enableButton() {
+    const btn = document.getElementById('btn-next');
+    btn.classList.add('active');
+    btn.disabled = false;
+    btn.textContent = "Проверить ответ";
+  }
+
+  function resetButton() {
+    const btn = document.getElementById('btn-next');
+    btn.classList.remove('active');
+    btn.disabled = true;
+    btn.textContent = "Проверить ответ";
+  }
+
+  function handleNext() {
+    const btn = document.getElementById('btn-next');
+    const c = cases[state.selectedCase];
+    const step = c.steps[state.currentStep];
+    
+    // If button says "Далее", move to next step or finish
+    if (btn.textContent.trim() === "Далее") {
+      if (state.currentStep < c.steps.length - 1) {
+        state.currentStep++;
+        renderStep();
+      } else {
+        showScreen('screen-final');
+      }
+      return;
+    }
+    
+    // Validate answer
+    const selectedEl = document.querySelector('.option.selected');
+    if (!selectedEl) return;
+    
+    const selectedIdx = parseInt(selectedEl.id.replace('opt-', ''));
+    const isCorrect = selectedIdx === step.correct;
+    
+    if (isCorrect) {
+      selectedEl.classList.remove('selected');
+      selectedEl.classList.add('correct');
+      state.answers.push(selectedIdx);
+      
+      // Lock options
+      document.querySelectorAll('.option').forEach(opt => opt.style.pointerEvents = 'none');
+      
+      btn.textContent = "Далее";
+      showFeedbackModal("✓ Верно!", step.feedbackCorrect, true);
+    } else {
+      selectedEl.classList.remove('selected');
+      selectedEl.classList.add('incorrect');
+      
+      btn.textContent = "Исправить ответ";
+      btn.classList.remove('active');
+      btn.disabled = true;
+      
+      showFeedbackModal("⚠ Обратите внимание", step.feedbackWrong, false, () => {
+        // Allow retry
+        const wrongEl = document.querySelector('.option.incorrect');
+        if (wrongEl) wrongEl.classList.remove('incorrect');
+        document.querySelectorAll('.option').forEach(opt => opt.style.pointerEvents = 'auto');
+        enableButton();
+      });
+    }
+  }
+
+  function showFeedbackModal(title, text, isCorrect, onRetry) {
+    document.getElementById('fb-title').textContent = title;
+    document.getElementById('fb-title').className = 'modal-title ' + (isCorrect ? '' : 'hint');
+    document.getElementById('fb-text').textContent = text;
+    
+    const btn = document.getElementById('modal-btn');
+    btn.onclick = () => {
+      closeModal('modal-feedback');
+      if (!isCorrect && onRetry) onRetry();
+    };
+    btn.textContent = isCorrect ? "Продолжить" : "Попробовать снова";
+    document.getElementById('modal-feedback').classList.add('show');
+    triggerResize();
+  }
+
+  function showBreakdownModal() {
+    const c = cases[state.selectedCase];
+    const isCase1Correct = state.answers[0] === c.steps[0].correct && state.answers[1] === c.steps[1].correct;
+    
+    let html = `<div style="margin-bottom:15px; color:var(--text-light); font-size:13px;">${c.title}</div>`;
+    
+    html += `<div class="breakdown-item">
+      <h4>Ключевая деталь <span class="breakdown-tag ${isCase1Correct?'tag-correct':'tag-warning'}">${isCase1Correct?'Верно':'Ошибка'}</span></h4>
+      <p><strong>В кейсе 1:</strong> ИНН не менялся, баланс не передавался. Значит юридическое лицо осталось тем же. Это изменение реквизитов.</p>
+      <p><strong>В кейсе 2:</strong> Цех передан на баланс нового ООО с новым ИНН. Эксплуатант объекта НВОС сменился. Это смена пользователя.</p>
+    </div>`;
+    
+    html += `<div class="breakdown-item">
+      <h4>Алгоритм действий</h4>
+      <p><strong>Если реквизиты:</strong> Актуализировать реестр НВОС (30 дней), переоформить КЭР/ДВОС на новое название, обновить внутренние приказы.</p>
+      <p><strong>Если смена оператора:</strong> Новый пользователь ставит объект на учет в реестре НВОС, переоформляет КЭР/ДВОС, проводит новую инвентаризацию, актуализирует паспорта отходов.</p>
+    </div>`;
+    
+    html += `<div style="background:#f0f9ff; border-left: 4px solid #0ea5e9; padding: 12px; border-radius: 8px; margin-top: 14px; font-size: 14px;">
+      <strong style="color:#0284c7; display:block; margin-bottom:6px;">💡 Главное правило</strong>
+      При реорганизации сначала ответьте: «Кто после изменений эксплуатирует объект НВОС?» Если тот же — актуализируем реквизиты. Если новый — полный алгоритм передачи.
+    </div>`;
+    
+    document.getElementById('breakdown-content').innerHTML = html;
+    document.getElementById('modal-breakdown').classList.add('show');
+    triggerResize();
+  }
+
+  function restart() {
+    state.selectedCase = null;
+    state.currentStep = 0;
+    state.answers = [];
+    showScreen('screen-select');
+  }
+
+  window.addEventListener('load', () => {
+    triggerResize();
+    const observer = new ResizeObserver(() => triggerResize());
+    observer.observe(document.querySelector('.container'));
+  });
+</script>
+
+</body>
+</html>
