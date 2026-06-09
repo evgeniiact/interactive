@@ -1,0 +1,958 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Соберите учебное предприятие</title>
+  <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+  <style>
+    :root {
+      --bg: #f6f7f5;
+      --card: #ffffff;
+      --text: #1f2a24;
+      --muted: #68756e;
+      --line: #dce5df;
+      --green: #2d6a4f;
+      --green-soft: #e7f3ed;
+      --green-soft-2: #f4faf7;
+      --shadow: 0 16px 44px rgba(26, 36, 31, 0.12);
+      --radius: 18px;
+      --transition: 180ms ease;
+      --orange-bg: #fff4e5;
+      --orange-border: #f59e0b;
+      --orange-text: #92400e;
+      --blue-bg: #eff6ff;
+      --blue-border: #3b82f6;
+      --blue-text: #1e40af;
+      --brown-bg: #fef3c7;
+      --brown-border: #d97706;
+      --brown-text: #92400e;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: #ffffff;
+      color: var(--text);
+      line-height: 1.5;
+      padding: 18px 10px 24px;
+    }
+
+    .wrap {
+      max-width: 760px;
+      max-height: 820px;
+      background: var(--card);
+      margin: 0 auto;
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--shadow);
+    }
+
+    .header {
+      background: linear-gradient(135deg, var(--green-soft) 0, var(--green-soft-2) 100%);
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--line);
+      flex-shrink: 0;
+    }
+
+    .header h2 {
+      margin: 0 0 6px;
+      font-size: 1.3rem;
+      font-weight: 600;
+      color: var(--green);
+    }
+
+    .header p {
+      margin: 0;
+      font-size: 0.92rem;
+      color: var(--muted);
+    }
+
+    .content {
+      padding: 20px 24px;
+      overflow-y: auto;
+      flex: 1;
+    }
+
+    .welcome-note {
+      background: var(--blue-bg);
+      border: 1px solid var(--blue-border);
+      border-radius: 10px;
+      padding: 12px 14px;
+      margin: 0 0 16px;
+      font-size: 0.88rem;
+      color: var(--blue-text);
+      line-height: 1.5;
+    }
+
+    .welcome-note strong {
+      display: block;
+      margin-bottom: 4px;
+      font-weight: 600;
+    }
+
+    .instruction {
+      font-size: 0.9rem;
+      color: var(--green);
+      margin: 0 0 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px dashed var(--line);
+    }
+
+    .step {
+      display: none;
+      padding: 14px;
+      border-radius: 14px;
+      background: var(--green-soft-2);
+      border: 1px solid var(--line);
+    }
+
+    .step.active {
+      display: block;
+    }
+
+    .step-title {
+      font-size: 0.98rem;
+      font-weight: 600;
+      color: var(--green);
+      margin-bottom: 4px;
+    }
+
+    .step-sub {
+      font-size: 0.84rem;
+      color: var(--muted);
+      margin-bottom: 10px;
+    }
+
+    .step-hint {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 12px;
+      padding: 8px 10px;
+      border-radius: 8px;
+      font-size: 0.82rem;
+      font-weight: 500;
+    }
+
+    .step-hint.blue {
+      background: var(--blue-bg);
+      border: 1px solid var(--blue-border);
+      color: var(--blue-text);
+    }
+
+    .step-hint.brown {
+      background: var(--brown-bg);
+      border: 1px solid var(--brown-border);
+      color: var(--brown-text);
+    }
+
+    .step-hint button {
+      background: none;
+      border: none;
+      font-size: 0.82rem;
+      font-weight: 600;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+      flex-shrink: 0;
+    }
+
+    .step-hint.blue button { color: var(--blue-text); }
+    .step-hint.brown button { color: var(--brown-text); }
+
+    .options-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .option-card {
+      background: var(--card);
+      border: 1px solid var(--line);
+      border-radius: 12px;
+      padding: 10px;
+      cursor: pointer;
+      transition: var(--transition);
+      font-size: 0.85rem;
+    }
+
+    .option-card strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text);
+    }
+
+    .option-card span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .option-card:hover {
+      border-color: var(--green);
+      background: #f8fcfa;
+      transform: translateY(-1px);
+    }
+
+    .option-card.selected {
+      border-color: var(--green);
+      background: var(--green-soft);
+    }
+
+    .nav-buttons {
+      margin-top: 12px;
+      display: flex;
+      justify-content: space-between;
+      gap: 8px;
+    }
+
+    .btn-main,
+    .btn-secondary {
+      padding: 8px 14px;
+      border-radius: 10px;
+      cursor: pointer;
+      font-size: 0.88rem;
+      font-weight: 600;
+      transition: var(--transition);
+    }
+
+    .btn-main {
+      border: none;
+      background: var(--green);
+      color: #fff;
+    }
+
+    .btn-secondary {
+      border: 1px solid var(--line);
+      background: var(--card);
+      color: var(--muted);
+    }
+
+    .btn-secondary:hover {
+      border-color: var(--green);
+      color: var(--green);
+    }
+
+    .result-card {
+      display: none;
+      padding: 14px 16px;
+      border-radius: 14px;
+      border: 1px solid var(--line);
+      background: var(--green-soft-2);
+      font-size: 0.88rem;
+    }
+
+    .result-title {
+      font-weight: 600;
+      color: var(--green);
+      margin-bottom: 10px;
+      font-size: 1rem;
+    }
+
+    .result-layout {
+      display: grid;
+      grid-template-columns: 150px 1fr;
+      gap: 14px;
+      align-items: start;
+      margin-bottom: 12px;
+    }
+
+    .result-image img {
+      width: 100%;
+      border-radius: 10px;
+      display: block;
+      border: 1px solid var(--line);
+    }
+
+    .result-block {
+      margin-bottom: 10px;
+      padding: 10px 12px;
+      border-radius: 12px;
+      background: #fff;
+      border: 1px solid var(--line);
+    }
+
+    .result-block strong {
+      display: block;
+      margin-bottom: 4px;
+      color: var(--text);
+      font-size: 0.88rem;
+    }
+
+    .result-block p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.84rem;
+    }
+
+    .toggle-group {
+      margin-top: 8px;
+      border-radius: 10px;
+      border: 1px solid var(--line);
+      background: var(--card);
+      overflow: hidden;
+    }
+
+    .toggle-header {
+      padding: 9px 10px;
+      font-size: 0.86rem;
+      font-weight: 600;
+      color: var(--green);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      cursor: pointer;
+      background: #f8fcfa;
+    }
+
+    .toggle-body {
+      display: none;
+      padding: 8px 10px 10px;
+      font-size: 0.84rem;
+      color: var(--muted);
+    }
+
+    .toggle-body ul {
+      margin: 4px 0 0;
+      padding-left: 18px;
+    }
+
+    .toggle-body li {
+      margin-bottom: 4px;
+    }
+
+    .orange-note {
+      margin-top: 10px;
+      padding: 10px 12px;
+      border-radius: 10px;
+      background: var(--orange-bg);
+      border: 1px solid var(--orange-border);
+      color: var(--orange-text);
+      font-size: 0.82rem;
+    }
+
+    .footnote {
+      margin-top: 8px;
+      font-size: 0.8rem;
+      color: var(--muted);
+    }
+
+    .result-actions {
+      margin-top: 12px;
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    /* Modal / popup */
+    .modal-overlay {
+      position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+      background: rgba(0,0,0,0.35);
+      display: none; align-items: center; justify-content: center;
+      z-index: 1000; padding: 20px;
+    }
+    .modal-overlay.show { display: flex; }
+    .modal-box {
+      background: #fff; border-radius: 14px; width: 100%; max-width: 480px;
+      padding: 20px 22px; box-shadow: 0 12px 36px rgba(0,0,0,0.18);
+      animation: slideUp 0.25s ease;
+    }
+    @keyframes slideUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+    .modal-box h3 {
+      font-size: 0.95rem; font-weight: 700; color: var(--green);
+      margin: 0 0 10px; display: flex; align-items: center; gap: 8px;
+    }
+    .modal-box p { font-size: 0.84rem; color: var(--text); line-height: 1.5; margin: 0 0 8px; }
+    .modal-box ul { padding-left: 18px; margin: 6px 0 12px; }
+    .modal-box li { font-size: 0.82rem; color: var(--muted); margin-bottom: 4px; }
+    .modal-box .close-modal {
+      margin-top: 4px; padding: 7px 18px; border-radius: 8px;
+      border: 1px solid var(--line); background: var(--card);
+      font-size: 0.82rem; font-weight: 600; cursor: pointer; color: var(--muted);
+    }
+    .modal-box .close-modal:hover { border-color: var(--green); color: var(--green); }
+
+    @media (max-width: 560px) {
+      .options-grid { grid-template-columns: 1fr; }
+      .result-layout { grid-template-columns: 1fr; }
+      .wrap { max-height: none; }
+    }
+  </style>
+</head>
+<body>
+<div class="wrap">
+  <div class="header">
+    <h2>Соберите учебное предприятие</h2>
+    <p>Выберите предприятие, его воздействие и расположение. В конце вы получите разбор объекта и список документов, с которыми будете работать как эколог.</p>
+  </div>
+
+  <div class="content">
+    <div class="welcome-note" id="welcome-note">
+      <strong>Добро пожаловать в программу!</strong>
+      Это первое задание. Сейчас многое может быть непонятно – это нормально. Вы только начинаете путь промышленного эколога. К концу программы вы будете уверенно разбираться во всех документах и процедурах. А пока просто выберите варианты, которые кажутся вам ближе. Ошибиться нельзя – это учебный пример, который поможет вам освоиться.
+    </div>
+
+    <p class="instruction">
+      В этом интерактиве вы выбираете предприятие, на котором будете отрабатывать задания в программе профпереподготовки. Ваши ответы на каждом шаге будут влиять на набор документов и задачи, которые вы будете решать в курсе.
+    </p>
+
+    <!-- Step 1 -->
+    <div class="step active" data-step="1">
+      <div class="step-title">Шаг 1. Тип предприятия</div>
+      <div class="step-sub">Выберите объект, который вам ближе по опыту или интересу. Это определит базовую категорию НВОС и объем документации.</div>
+      <div class="options-grid" id="step1-options">
+        <div class="option-card" data-value="cat1">
+          <strong>Крупный химический или металлургический комплекс</strong>
+          <span>Крупное производство, несколько цехов, высокие трубы, большие объемы выбросов и отходов.</span>
+        </div>
+        <div class="option-card" data-value="cat2">
+          <strong>Средний промышленный завод</strong>
+          <span>Несколько цехов, стационарные источники выбросов, заметный объем отходов.</span>
+        </div>
+        <div class="option-card" data-value="cat3">
+          <strong>Небольшая котельная или деревообрабатывающий цех</strong>
+          <span>Одна труба или вентиляция, умеренные выбросы, отходы производства.</span>
+        </div>
+        <div class="option-card" data-value="cat4">
+          <strong>Небольшая пекарня или склад</strong>
+          <span>Минимальное воздействие, бытовые стоки, немного в основном неопасных отходов.</span>
+        </div>
+      </div>
+      <div class="nav-buttons">
+        <span></span>
+        <button class="btn-main" data-next="2">Далее</button>
+      </div>
+    </div>
+
+    <!-- Step 2: Technology & Water Discharge -->
+    <div class="step" data-step="2">
+      <div class="step-title">Шаг 2. Технология и водоотведение</div>
+      <div class="step-sub">Выберите тип технологического процесса и способ сброса сточных вод. Это определит необходимость проектов НДВ/НДС и договоров водопользования.</div>
+      <div class="step-hint blue">
+        💡
+        <span>Здесь вы указываете, как работает производство и куда уходят стоки: в водный объект, в замкнутый цикл или в городскую канализацию.</span>
+        <button type="button" onclick="openHint('hint2')">Подробнее</button>
+      </div>
+      <div class="options-grid" id="step2-options"></div>
+      <div class="nav-buttons">
+        <button class="btn-secondary" data-prev="1">Назад</button>
+        <button class="btn-main" data-next="3">Далее</button>
+      </div>
+    </div>
+
+    <!-- Step 3: Waste & Recycling -->
+    <div class="step" data-step="3">
+      <div class="step-title">Шаг 3. Отходы и переработка</div>
+      <div class="step-sub">Укажите состав отходов и наличие опасных веществ. Это повлияет на лицензии, паспорта отходов и договоры с регоператором.</div>
+      <div class="step-hint brown">
+        ️
+        <span>Здесь вы определяете, образуются ли у вас отходы I-II классов, идет ли переработка на месте или вывоз на полигон.</span>
+        <button type="button" onclick="openHint('hint3')">Подробнее</button>
+      </div>
+      <div class="options-grid" id="step3-options"></div>
+      <div class="nav-buttons">
+        <button class="btn-secondary" data-prev="2">Назад</button>
+        <button class="btn-main" data-next="4">Далее</button>
+      </div>
+    </div>
+
+    <!-- Step 4 -->
+    <div class="step" data-step="4">
+      <div class="step-title">Шаг 4. Расположение объекта</div>
+      <div class="step-sub">Выберите окружение, в котором работает предприятие. Это влияет на требования к СЗЗ, договоры водопользования и риски жалоб.</div>
+      <div class="options-grid" id="step4-options"></div>
+      <div class="nav-buttons">
+        <button class="btn-secondary" data-prev="3">Назад</button>
+        <button class="btn-main" id="show-result">Показать разбор</button>
+      </div>
+    </div>
+
+    <!-- Result -->
+    <div class="result-card" id="result">
+      <div class="result-title">Разбор вашего предприятия</div>
+
+      <div class="result-layout">
+        <div class="result-image">
+          <img id="enterprise-image" src="img/enterprise_cat3_small_industry.png" alt="Учебный пример предприятия">
+        </div>
+        <div>
+          <div class="result-block" id="res-summary"></div>
+          <div class="result-block" id="res-encouragement"></div>
+          <div class="result-block" id="res-work"></div>
+        </div>
+      </div>
+
+      <div class="result-block" id="res-steps"></div>
+      <div class="result-block" id="res-case"></div>
+      <div class="result-block" id="res-docs"></div>
+      <div class="result-block" id="res-how"></div>
+
+      <div class="orange-note" id="res-tip"></div>
+
+      <p class="footnote">
+        Это учебный пример. В реальной работе состав документов и обязанности вы уточняете по фактическим данным по объекту.
+      </p>
+
+      <div class="result-actions">
+        <button class="btn-secondary" id="restart">Выбрать предприятие заново</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for hints -->
+<div class="modal-overlay" id="hintModal" onclick="if(event.target===this)closeHint()">
+  <div class="modal-box">
+    <h3 id="hintModalTitle">💡 Подсказка</h3>
+    <div id="hintModalBody"></div>
+    <button class="close-modal" onclick="closeHint()">Понятно</button>
+  </div>
+</div>
+
+<script>
+  const hintContent = {
+    hint2: {
+      title: 'Шаг 2: Технология и водоотведение',
+      body: '<p>На этом шаге вы определяете технологический профиль и схему водоотведения.</p><ul><li><strong>Сброс в водный объект</strong> – требует проекта НДС, договора водопользования, мониторинга качества стоков.</li><li><strong>Замкнутый цикл водооборота</strong> – стоки очищаются и возвращаются в производство. Проекты НДС не нужны, но требуется учет внутренних очистных сооружений.</li><li><strong>Централизованная канализация</strong> – стоки уходят в городские сети. Нужен договор с водоканалом и декларация о составе стоков.</li></ul><p><strong>Критерий выбора:</strong> если у предприятия есть прямые сбросы в реку/озеро или собственные очистные, выбирайте соответствующие варианты. Если только бытовые стоки в городскую сеть – выбирайте варианты без промышленных сбросов.</p>'
+    },
+    hint3: {
+      title: 'Шаг 3: Отходы и переработка',
+      body: '<p>На этом шаге вы определяете профиль отходов и схему их обращения.</p><ul><li><strong>Отходы I-II классов</strong> – кислоты, масла, реактивы. Требуют лицензии, паспортов, договоров с ФЭО или спецпредприятиями.</li><li><strong>Отходы III-IV классов с переработкой</strong> – металлы, картон, пластик. Часть идет на утилизацию, часть на полигон. Нужны договоры с переработчиками и регоператором.</li><li><strong>Неопасные производственные и бытовые отходы</strong> – упаковка, пищевые, стружка. Достаточно договора с регоператором и базового журнала учета.</li></ul><p><strong>Критерий выбора:</strong> если на объекте есть опасные вещества или сложная химия, выбирайте варианты с отходами I-II классов. Если стандартное производство с упаковкой и металлом – выбирайте переработку. Если офис/склад/пекарня – только неопасные отходы.</p>'
+    }
+  };
+
+  function openHint(id) {
+    const data = hintContent[id];
+    if (!data) return;
+    document.getElementById('hintModalTitle').innerHTML = data.title;
+    document.getElementById('hintModalBody').innerHTML = data.body;
+    document.getElementById('hintModal').classList.add('show');
+    if (typeof iFrameResize !== 'undefined') iFrameResize();
+  }
+
+  function closeHint() {
+    document.getElementById('hintModal').classList.remove('show');
+  }
+
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHint(); });
+
+  const scenarios = {
+    cat1: {
+      title: 'крупный химический или металлургический комплекс',
+      image: 'img/enterprise_cat1_large_plant.png',
+      imageAlt: 'Крупное предприятие I категории НВОС',
+      category: 'I',
+      shortName: 'крупное предприятие I категории',
+      step2: [
+        { value: 'high', title: 'Сложные технологические процессы со сбросами в водный объект', text: 'Промышленные стоки проходят очистку и сбрасываются в реку или озеро. Требуется проект НДС и договор водопользования.' },
+        { value: 'medium', title: 'Технологии с замкнутым циклом водооборота', text: 'Стоки очищаются на собственных сооружениях и возвращаются в производство. Прямых сбросов в водоем нет.' }
+      ],
+      step3: [
+        { value: 'haz', title: 'Образуются отходы I-II классов, требуют лицензии и спецобращения', text: 'Кислоты, щелочи, отработанные масла, загрязненные реагенты. Утилизация через лицензированные предприятия.' },
+        { value: 'mixed', title: 'Большой объем отходов III-IV классов с частичной переработкой', text: 'Металлолом, шлаки, картон, пластик. Часть передается на утилизацию, часть размещается на полигонах.' }
+      ],
+      step4: [
+        { value: 'industrial', title: 'Крупная промышленная зона', text: 'Объект окружен другими крупными промышленными предприятиями.' },
+        { value: 'nature', title: 'Рядом водный объект или ООПТ', text: 'Нужно внимательно оценивать воздействие на водный объект или охраняемую территорию.' }
+      ],
+      docs: {
+        project: [
+          'Инвентаризация выбросов ЗВ в атмосферный воздух',
+          'Проект НДВ (нормативов допустимых выбросов)',
+          'Проект НДС (нормативов допустимых сбросов)',
+          'Проект ПНООЛР (нормативов образования отходов и лимитов)',
+          'Программа производственного экологического контроля (ПЭК)',
+          'Программа повышения экологической эффективности (ППЭЭ)'
+        ],
+        permit: [
+          'Комплексное экологическое разрешение (КЭР)',
+          'Лицензия на обращение с отходами I-IV классов опасности',
+          'Решение о предоставлении водного объекта в пользование',
+          'Санитарно-эпидемиологическое заключение (СЭЗ) на проекты'
+        ],
+        account: [
+          'Паспорта отходов I-IV классов опасности',
+          'Журнал учета движения отходов',
+          'Журнал работы газоочистных установок',
+          'Материалы ПЭК по выбросам, сбросам и отходам',
+          'Учет побочных продуктов производства'
+        ],
+        report: [
+          'Отчет о реализации программы ПЭК',
+          'Декларация о плате за НВОС',
+          '2-ТП (воздух, водхоз, отходы)',
+          '4-ОС, 1-ВС, отчеты по РОП',
+          'Ежемесячные отчеты о качестве питьевой воды'
+        ]
+      }
+    },
+    cat2: {
+      title: 'средний промышленный завод',
+      image: 'img/enterprise_cat2_mid_plant.png',
+      imageAlt: 'Предприятие II категории НВОС',
+      category: 'II',
+      shortName: 'предприятие II категории',
+      step2: [
+        { value: 'medium', title: 'Стандартное оборудование со сбросами в централизованную систему', text: 'Промышленные и бытовые стоки уходят в городскую канализацию. Нужен договор с водоканалом и декларация о составе стоков.' },
+        { value: 'low', title: 'Локальные источники с бытовыми стоками', text: 'Выбросы есть, но водоотведение только хозяйственно-бытовое. Промышленные сбросы отсутствуют.' }
+      ],
+      step3: [
+        { value: 'many', title: 'Преобладают отходы III-IV классов, часть передается на переработку', text: 'Стружка, фильтры, тара, обрезки. Есть договоры с переработчиками и регоператором.' },
+        { value: 'haz', title: 'Умеренный объем производственных отходов без веществ I-II классов', text: 'Масла и химикаты в малых количествах, основной поток – безопасные производственные остатки.' }
+      ],
+      step4: [
+        { value: 'industrial', title: 'Промышленная зона', text: 'Объект находится в обычной промзоне или промышленном районе.' },
+        { value: 'housing', title: 'Рядом жилая застройка', text: 'Нужно учитывать воздействие на население и СЗЗ.' }
+      ],
+      docs: {
+        project: [
+          'Инвентаризация выбросов ЗВ в атмосферный воздух',
+          'Проект НДВ',
+          'Проект НДС (при наличии сбросов)',
+          'Проект ПНООЛР',
+          'Программа производственного экологического контроля (ПЭК)'
+        ],
+        permit: [
+          'Декларация о воздействии на окружающую среду (ДВОС)',
+          'Лицензия на обращение с отходами I-IV классов опасности (при наличии)',
+          'Договор водопользования или решение о предоставлении водного объекта'
+        ],
+        account: [
+          'Паспорта отходов I-IV классов опасности',
+          'Журнал учета движения отходов',
+          'Материалы ПЭК по выбросам и сбросам',
+          'Учет побочных продуктов'
+        ],
+        report: [
+          'Отчет по программе ПЭК',
+          'Декларация о плате за НВОС',
+          '2-ТП (воздух, водхоз, отходы)',
+          '4-ОС, 1-ВС, отчеты по РОП'
+        ]
+      }
+    },
+    cat3: {
+      title: 'небольшая котельная или деревообрабатывающий цех',
+      image: 'img/enterprise_cat3_small_industry.png',
+      imageAlt: 'Предприятие III категории НВОС',
+      category: 'III',
+      shortName: 'объект III категории',
+      step2: [
+        { value: 'low', title: 'Простая технология с отсутствием промышленных сбросов', text: 'Только бытовая вентиляция и хозяйственные стоки. Проекты НДВ/НДС не требуются.' },
+        { value: 'none', title: 'Минимальное водоотведение в общедомовую канализацию', text: 'Нет производственных источников. Только бытовые нужды персонала.' }
+      ],
+      step3: [
+        { value: 'many', title: 'Небольшие объемы производственных отходов, в основном неопасные', text: 'Пыль, стружка, зола, обрезки. Вывоз через регоператора или переработку.' },
+        { value: 'few', title: 'Только бытовые и упаковочные отходы', text: 'Отходы есть, но их немного, класс опасности V или неопасные.' }
+      ],
+      step4: [
+        { value: 'industrial', title: 'Промышленная или коммунальная зона', text: 'Объект расположен в зоне инженерной застройки.' },
+        { value: 'housing', title: 'Рядом жилая застройка', text: 'Нужно учитывать жалобы населения и СЗЗ.' }
+      ],
+      docs: {
+        project: [
+          'Инвентаризация стационарных источников (при наличии)',
+          'Проект НДВ (при необходимости)',
+          'Программа производственного экологического контроля (ПЭК)'
+        ],
+        permit: [
+          'Договор на водоотведение (при наличии сбросов)',
+          'Договоры на передачу отходов регоператору/ФЭО'
+        ],
+        account: [
+          'Паспорта отходов I-IV классов опасности (при наличии)',
+          'Журнал учета движения отходов',
+          'Документы учета работы источников и оборудования'
+        ],
+        report: [
+          'Декларация о плате за НВОС',
+          'Отчетность по отходам (2-ТП, 4-ОС, 1-ВС)',
+          'Отчеты по РОП (при наличии)'
+        ]
+      }
+    },
+    cat4: {
+      title: 'небольшая пекарня или склад',
+      image: 'img/enterprise_cat4_low_impact.png',
+      imageAlt: 'Объект IV категории НВОС',
+      category: 'IV',
+      shortName: 'объект IV категории',
+      step2: [
+        { value: 'none', title: 'Отсутствие промышленных источников, только бытовая вентиляция', text: 'Нет технологических выбросов и производственных стоков.' },
+        { value: 'low', title: 'Минимальная вытяжка и хозяйственные стоки в городскую сеть', text: 'Локальный источник с малым объемом. Водопользование бытовое.' }
+      ],
+      step3: [
+        { value: 'few', title: 'Отсутствие опасных веществ, только ТКО и пищевые отходы', text: 'Небольшие объемы, класс опасности не выше V.' },
+        { value: 'fewsafe', title: 'Минимальное количество неопасных отходов, полный вывоз регоператором', text: 'Упаковка, бытовой мусор, пищевые остатки. Лицензии и ФЭО не нужны.' }
+      ],
+      step4: [
+        { value: 'industrial', title: 'Складская или хозяйственная зона', text: 'Объект расположен среди складов или хозпостроек.' },
+        { value: 'housing', title: 'Встроенное помещение в жилой застройке', text: 'Например, пекарня на первом этаже жилого дома.' }
+      ],
+      docs: {
+        project: [
+          'Материалы об источниках воздействия (при наличии)',
+          'Упрощенная программа производственного контроля'
+        ],
+        permit: [
+          'Сведения в реестре объектов НВОС (IV категория)',
+          'Договор на вывоз отходов с регоператором'
+        ],
+        account: [
+          'Журнал учета движения отходов (при образовании)',
+          'Паспорта отходов (только при наличии I-IV классов)'
+        ],
+        report: [
+          'Обязательная отчетность по объекту IV категории',
+          'Декларация о плате за НВОС (если возникает плата)',
+          'Отчеты по РОП (при наличии тары/упаковки)'
+        ]
+      }
+    }
+  };
+
+  let answers = {
+    enterprise: null,
+    impact: null,
+    waste: null,
+    location: null
+  };
+
+  function showStep(num) {
+    document.querySelectorAll('.step').forEach(s => {
+      s.classList.toggle('active', s.dataset.step === String(num));
+    });
+    // Toggle welcome note visibility
+    const welcomeNote = document.getElementById('welcome-note');
+    if (welcomeNote) {
+      welcomeNote.style.display = (num === 1) ? 'block' : 'none';
+    }
+  }
+
+  function renderCards(containerId, items, key) {
+    const container = document.getElementById(containerId);
+    container.innerHTML = items.map(item => `
+      <div class="option-card ${answers[key] === item.value ? 'selected' : ''}" data-key="${key}" data-value="${item.value}">
+        <strong>${item.title}</strong>
+        <span>${item.text}</span>
+      </div>
+    `).join('');
+  }
+
+  function renderDependentSteps() {
+    const enterprise = answers.enterprise;
+    if (!enterprise || !scenarios[enterprise]) return;
+    const s = scenarios[enterprise];
+    renderCards('step2-options', s.step2, 'impact');
+    renderCards('step3-options', s.step3, 'waste');
+    renderCards('step4-options', s.step4, 'location');
+  }
+
+  function selectedText(items, value) {
+    const found = items.find(i => i.value === value);
+    return found ? found.title : 'не выбрано';
+  }
+
+  document.getElementById('step1-options').addEventListener('click', (e) => {
+    const card = e.target.closest('.option-card');
+    if (!card) return;
+    document.querySelectorAll('#step1-options .option-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    answers.enterprise = card.dataset.value;
+    answers.impact = null; answers.waste = null; answers.location = null;
+    renderDependentSteps();
+  });
+
+  document.getElementById('step2-options').addEventListener('click', (e) => {
+    const card = e.target.closest('.option-card');
+    if (!card) return;
+    document.querySelectorAll('#step2-options .option-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    answers.impact = card.dataset.value;
+  });
+
+  document.getElementById('step3-options').addEventListener('click', (e) => {
+    const card = e.target.closest('.option-card');
+    if (!card) return;
+    document.querySelectorAll('#step3-options .option-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    answers.waste = card.dataset.value;
+  });
+
+  document.getElementById('step4-options').addEventListener('click', (e) => {
+    const card = e.target.closest('.option-card');
+    if (!card) return;
+    document.querySelectorAll('#step4-options .option-card').forEach(c => c.classList.remove('selected'));
+    card.classList.add('selected');
+    answers.location = card.dataset.value;
+  });
+
+  document.querySelectorAll('[data-next]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const next = btn.getAttribute('data-next');
+      if (next === '2' && !answers.enterprise) { alert('Сначала выберите тип предприятия.'); return; }
+      if (next === '3' && !answers.impact) { alert('Сначала выберите вариант по технологии и водоотведению.'); return; }
+      if (next === '4' && !answers.waste) { alert('Сначала выберите вариант по отходам и переработке.'); return; }
+      showStep(next);
+      if (typeof iFrameResize !== 'undefined') iFrameResize();
+    });
+  });
+
+  document.querySelectorAll('[data-prev]').forEach(btn => {
+    btn.addEventListener('click', () => { showStep(btn.getAttribute('data-prev')); if (typeof iFrameResize !== 'undefined') iFrameResize(); });
+  });
+
+  function buildSummary(scenario) {
+    const impact = selectedText(scenario.step2, answers.impact).toLowerCase();
+    const waste = selectedText(scenario.step3, answers.waste).toLowerCase();
+    const location = selectedText(scenario.step4, answers.location).toLowerCase();
+    return `
+      <strong>1. Паспорт предприятия</strong>
+      <p>Вы выбрали ${scenario.shortName} (категория НВОС ${scenario.category}). У объекта ${impact}, образуются ${waste}, расположение: ${location}. Это станет вашей «лабораторией» на весь курс: все задания будут привязаны к этим параметрам.</p>
+    `;
+  }
+
+  function buildEncouragement() {
+    return `
+      <strong>2. Как это будет работать в программе</strong>
+      <p>Вы выбрали предприятие, которое можете использовать как пример при обучении в программе. В модулях дальше мы разберем все документы и процессы: от инвентаризации выбросов до сдачи отчетности. Сейчас список может выглядеть объемным, но в курсе мы пройдем все шаги последовательно. Вы научитесь заполнять формы, считать нормативы и вести журналы без ошибок. Не пытайтесь запомнить всё сразу – программа построена так, чтобы вы отрабатывали навыки на практике.</p>
+    `;
+  }
+
+  function buildWork(scenario) {
+    let text = '';
+    if (scenario.category === 'I') text = 'Вы научитесь работать с полным циклом разрешений: от инвентаризации до КЭР и ППЭЭ. Это даст навык вести сложную экологическую документацию без ошибок при проверках.';
+    else if (scenario.category === 'II') text = 'Вы отработаете баланс между ДВОС и проектами, научитесь оформлять лицензии на отходы и вести ПЭК. Это самый частый сценарий в промышленности, который сэкономит вам часы на реальной работе.';
+    else if (scenario.category === 'III') text = 'Вы сосредоточитесь на базовых, но обязательных документах: ДВОС, паспорта отходов, журналы, отчеты. Это быстрый вход в профессию без перегруза, но с полным пониманием логики НВОС.';
+    else text = 'Вы разберетесь в минимальном, но строго регламентированном наборе для IV категории: реестр, договоры с регоператором, упрощенный контроль. Это научит вас отличать реальную нагрузку от избыточных требований.';
+    return `
+      <strong>3. Практическая польза выбора</strong>
+      <p>${text}</p>
+    `;
+  }
+
+  function buildSteps(scenario) {
+    const impactTitle = selectedText(scenario.step2, answers.impact);
+    const wasteTitle = selectedText(scenario.step3, answers.waste);
+    const locationTitle = selectedText(scenario.step4, answers.location);
+    
+    let diffText = '';
+    if (scenario.category === 'I') diffText = 'Каждый ваш выбор на шагах 2-4 добавляет документы: сложная технология и сбросы в водоем – проекты НДВ/НДС и договоры водопользования; опасные отходы – лицензии и строгие журналы; близость к природе/жилью – усиленный мониторинг и СЗЗ.';
+    else if (scenario.category === 'II') diffText = 'Ваши ответы формируют среднюю нагрузку: замкнутый цикл или канализация определяет необходимость НДС; переработка отходов снижает объем лицензий, но добавляет договоры с утилизаторами.';
+    else if (scenario.category === 'III') diffText = 'Здесь выбор шагов 2-4 упрощает задачу: отсутствие промышленных сбросов и опасных веществ снимает необходимость в НДС и лицензиях. Фокус смещается на учет, журналы и договоры с регоператором.';
+    else diffText = 'Ваши ответы подтверждают минимальный статус: отсутствие источников и опасных отходов означает, что вам не нужны проекты и разрешения. Вы работаете только с реестром, договорами и базовой отчетностью.';
+
+    return `
+      <strong>4. Как ваши ответы меняют документацию</strong>
+      <p><b>Тип предприятия (Шаг 1).</b> Задает базовую категорию НВОС и определяет, будет ли нужен КЭР, ДВОС или только реестр.</p>
+      <p><b>Технология и водоотведение (Шаг 2).</b> Вы выбрали «${impactTitle}». Это напрямую влияет на необходимость проектов НДВ/НДС, мониторинга воды и учета очистных сооружений.</p>
+      <p><b>Отходы и переработка (Шаг 3).</b> Вы выбрали «${wasteTitle}». Это определяет, оформляете ли вы лицензии, паспорта опасных отходов или только договоры с регоператором.</p>
+      <p><b>Расположение (Шаг 4).</b> Вы выбрали «${locationTitle}». Это влияет на требования к СЗЗ, договоры водопользования и риски жалоб.</p>
+      <p>${diffText}</p>
+    `;
+  }
+
+  function buildCase(scenario) {
+    let tasks = '';
+    if (scenario.category === 'I') tasks = 'искать данные для инвентаризации, разбирать структуру КЭР и ППЭЭ, проверять журналы ПЭК и сложные формы отчетности.';
+    else if (scenario.category === 'II') tasks = 'учиться заполнять ДВОС, подбирать данные для НДВ и ПНООЛР, оформлять лицензии и отчеты по НВОС.';
+    else if (scenario.category === 'III') tasks = 'отрабатывать оформление ДВОС, паспортов отходов, журналов учета и базовых отчетных форм.';
+    else tasks = 'тренироваться на простом объекте: подавать сведения в реестр, оформлять договоры с регоператором и проверять необходимость платы за НВОС.';
+
+    return `
+      <strong>5. Как вы будете использовать это предприятие в курсе</strong>
+      <p>В заданиях курса вы будете возвращаться к этому объекту и ${tasks} Каждый модуль добавляет новый слой документов, но основа остается вашей, что ускоряет погружение в материал.</p>
+    `;
+  }
+
+  function docsGroup(title, id, items) {
+    return `
+      <div class="toggle-group">
+        <div class="toggle-header" data-toggle="${id}">
+          <span>${title}</span>
+          <span>+</span>
+        </div>
+        <div class="toggle-body" id="${id}">
+          <ul>${items.map(i => `<li>${i}</li>`).join('')}</ul>
+        </div>
+      </div>
+    `;
+  }
+
+  function buildDocs(scenario) {
+    return `
+      <strong>6. Документы по вашему объекту</strong>
+      <p>Это актуальный перечень, который формируется на основе ваших ответов. Он соответствует требованиям Закона N 7-ФЗ и приказам Минприроды для категории ${scenario.category}.</p>
+      ${docsGroup('Проектные документы', 'docs-project', scenario.docs.project)}
+      ${docsGroup('Разрешительные документы', 'docs-permit', scenario.docs.permit)}
+      ${docsGroup('Учетные документы', 'docs-account', scenario.docs.account)}
+      ${docsGroup('Отчетные документы', 'docs-report', scenario.docs.report)}
+    `;
+  }
+
+  function buildHow(scenario) {
+    return `
+      <strong>7. Как работать с этим предприятием в курсе</strong>
+      <p>Начните с проектных документов (инвентаризация, НДВ/НДС, ПНООЛР). Затем перейдите к разрешениям (КЭР/ДВОС, лицензии). После этого проверьте учетные журналы и паспорта. В конце разберите отчетность и декларацию о плате за НВОС. Такой порядок имитирует реальную работу эколога при запуске или аудите объекта.</p>
+    `;
+  }
+
+  function buildTip(scenario) {
+    if (scenario.category === 'I') return `<strong>Практический вывод</strong><span> Этот вариант подготовит вас к работе на сложных объектах. Вы сразу увидите полную цепочку документов и научитесь не терять связи между проектами, разрешениями и отчетами.</span>`;
+    if (scenario.category === 'II') return `<strong>Практический вывод</strong><span> Это самый востребованный сценарий на рынке. Навык работы с ДВОС, ПЭК и отходами II категории закроет 70% задач промышленного эколога.</span>`;
+    if (scenario.category === 'III') return `<strong>Практический вывод</strong><span> Удобный старт без перегруза. Вы поймете логику НВОС на реальном производственном объекте и сможете масштабировать знания на более сложные категории.</span>`;
+    return `<strong>Практический вывод</strong><span> Мягкий вход в тему. На таком объекте проще всего отработать базовые процедуры учета и отчетности, которые одинаковы для всех категорий, но без сложной разрешительной нагрузки.</span>`;
+  }
+
+  document.getElementById('show-result').addEventListener('click', () => {
+    if (!answers.location) { alert('Сначала выберите расположение объекта.'); return; }
+    const scenario = scenarios[answers.enterprise];
+
+    document.getElementById('enterprise-image').src = scenario.image;
+    document.getElementById('enterprise-image').alt = scenario.imageAlt;
+
+    document.getElementById('res-summary').innerHTML = buildSummary(scenario);
+    document.getElementById('res-encouragement').innerHTML = buildEncouragement();
+    document.getElementById('res-work').innerHTML = buildWork(scenario);
+    document.getElementById('res-steps').innerHTML = buildSteps(scenario);
+    document.getElementById('res-case').innerHTML = buildCase(scenario);
+    document.getElementById('res-docs').innerHTML = buildDocs(scenario);
+    document.getElementById('res-how').innerHTML = buildHow(scenario);
+    document.getElementById('res-tip').innerHTML = buildTip(scenario);
+
+    document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
+    document.getElementById('result').style.display = 'block';
+    if (typeof iFrameResize !== 'undefined') iFrameResize();
+  });
+
+  document.getElementById('restart').addEventListener('click', () => {
+    answers = { enterprise: null, impact: null, waste: null, location: null };
+    document.querySelectorAll('.option-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('step2-options').innerHTML = '';
+    document.getElementById('step3-options').innerHTML = '';
+    document.getElementById('step4-options').innerHTML = '';
+    document.getElementById('result').style.display = 'none';
+    showStep(1);
+    if (typeof iFrameResize !== 'undefined') iFrameResize();
+  });
+
+  document.addEventListener('click', (e) => {
+    const header = e.target.closest('.toggle-header');
+    if (!header) return;
+    const id = header.getAttribute('data-toggle');
+    const body = document.getElementById(id);
+    if (!body) return;
+    const isOpen = body.style.display === 'block';
+    body.style.display = isOpen ? 'none' : 'block';
+    header.querySelector('span:last-child').textContent = isOpen ? '+' : '-';
+  });
+
+  showStep(1);
+</script>
+</body>
+</html>
