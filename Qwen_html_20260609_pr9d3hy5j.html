@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Конструктор предприятия: документы по категориям НВОС</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g200: #bbf7d0;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 720px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--g800); }
+  .intro { font-size: 14.5px; color: var(--text); line-height: 1.5; margin-bottom: 20px; }
+  
+  .task {
+    background: var(--g50);
+    border-left: 4px solid var(--g600);
+    border-radius: 8px;
+    padding: 14px;
+    margin-bottom: 20px;
+    font-size: 14px;
+    color: var(--g800);
+  }
+  
+  /* Category selector */
+  .cat-select {
+    margin-bottom: 20px;
+    text-align: center;
+  }
+  .cat-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: var(--g800);
+  }
+  .cat-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+  }
+  @media (max-width: 600px) { .cat-buttons { grid-template-columns: repeat(2, 1fr); } }
+  
+  .cat-btn {
+    padding: 10px 8px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .cat-btn:hover { border-color: var(--g600); background: var(--g50); }
+  .cat-btn.sel { border-color: var(--g600); background: var(--g100); color: var(--g800); }
+  .cat-btn .cat-num { font-size: 18px; font-weight: 700; color: var(--g700); display: block; margin-bottom: 2px; }
+  
+  /* Drum for cards */
+  .drum-container {
+    background: #fff;
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 20px;
+    margin-bottom: 16px;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+  }
+  .drum-label {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 12px;
+    text-align: center;
+  }
+  .current-card {
+    background: #fff;
+    border: 2px solid var(--g600);
+    border-radius: 10px;
+    padding: 16px 20px;
+    font-size: 14px;
+    font-weight: 500;
+    text-align: center;
+    max-width: 400px;
+    width: 100%;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    animation: slideIn 0.3s ease;
+    cursor: grab;
+    transition: transform 0.2s;
+  }
+  .current-card:active { cursor: grabbing; }
+  .current-card:hover { transform: translateY(-2px); }
+  .current-card.correct { border-color: var(--g600); background: #dcfce7; cursor: default; }
+  .current-card.wrong { border-color: #f97316; background: #ffedd5; cursor: default; }
+  @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+  
+  .drum-controls {
+    display: flex;
+    gap: 12px;
+    margin-top: 16px;
+    align-items: center;
+  }
+  .drum-btn {
+    padding: 8px 16px;
+    border: 2px solid var(--border);
+    background: #fff;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    transition: 0.2s;
+  }
+  .drum-btn:hover:not(:disabled) { border-color: var(--g600); background: var(--g50); }
+  .drum-btn:disabled { opacity: 0.3; cursor: not-allowed; }
+  .card-counter { font-size: 13px; color: var(--muted); font-weight: 500; }
+  
+  /* Drop zones */
+  .zones { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; margin-bottom: 20px; }
+  @media (max-width: 600px) { .zones { grid-template-columns: 1fr; } }
+  
+  .zone {
+    background: #fff;
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    padding: 12px;
+    min-height: 180px;
+    transition: 0.2s;
+  }
+  .zone.drag-over { border-color: var(--g600); background: var(--g50); }
+  .zone-header {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--g800);
+    padding: 8px;
+    margin-bottom: 10px;
+    text-align: center;
+    border-bottom: 2px solid var(--g200);
+    border-radius: 6px;
+  }
+  .zone.need .zone-header { background: var(--g100); border-color: var(--g600); }
+  .zone.skip .zone-header { background: #f1f5f9; border-color: #cbd5e1; }
+  .zone-cards { display: flex; flex-direction: column; gap: 8px; min-height: 120px; }
+  .zone-card {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    font-size: 13px;
+    text-align: center;
+    animation: fadeIn 0.3s ease;
+  }
+  .zone-card.correct { border-color: var(--g600); background: #dcfce7; }
+  .zone-card.wrong { border-color: #f97316; background: #ffedd5; }
+  
+  /* Benefit panel */
+  .benefit-panel {
+    background: var(--g50);
+    border-left: 4px solid var(--g600);
+    border-radius: 8px;
+    padding: 14px;
+    margin: 16px 0;
+    display: none;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .benefit-panel.show { display: block; animation: fadeIn 0.3s; }
+  .benefit-panel h4 { font-size: 14px; font-weight: 700; color: var(--g800); margin-bottom: 6px; }
+  .benefit-panel ul { padding-left: 20px; margin: 8px 0; }
+  .benefit-panel li { margin-bottom: 4px; }
+  
+  /* Controls */
+  .ctrls { display: flex; justify-content: center; gap: 12px; margin-top: 16px; }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .btn-p { background: var(--g600); color: #fff; opacity: 0.3; pointer-events: none; }
+  .btn-p.act { opacity: 1; pointer-events: auto; }
+  .btn-p:hover { background: var(--g700); }
+  .btn-s { background: var(--g100); color: var(--g800); display: none; }
+  .btn-s.show { display: inline-block; }
+  .btn-s:hover { background: var(--g200); }
+  .btn-info { background: var(--g600); color: #fff; display: none; }
+  .btn-info.show { display: inline-block; }
+  .btn-info:hover { background: var(--g700); }
+  
+  .feedback {
+    padding: 14px;
+    border-radius: 8px;
+    margin: 16px 0;
+    display: none;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .feedback.show { display: block; animation: fadeIn 0.3s; }
+  .feedback.success { background: var(--g50); border: 1px solid var(--g200); color: var(--g800); }
+  .feedback.hint { background: #fff7ed; border: 1px solid #fed7aa; color: #9a3412; }
+  
+  .final {
+    background: var(--g50);
+    border-radius: 8px;
+    padding: 16px;
+    margin-top: 16px;
+    font-size: 14px;
+    color: var(--g800);
+    line-height: 1.5;
+    display: none;
+  }
+  .final.show { display: block; }
+  .final strong { display: block; margin-bottom: 4px; font-weight: 700; }
+  
+  /* Modal */
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none; align-items: center; justify-content: center;
+    z-index: 1000; padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 12px; max-width: 500px; width: 100%;
+    padding: 24px; position: relative; box-shadow: 0 8px 32px rgba(0,0,0,0.15);
+    animation: slideUp 0.3s ease;
+    max-height: 80vh;
+    overflow-y: auto;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-close {
+    position: absolute; top: 16px; right: 16px;
+    width: 32px; height: 32px; border-radius: 50%; border: none;
+    background: var(--g100); color: var(--g700);
+    font-size: 20px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .modal-close:hover { background: var(--g200); }
+  .modal h3 { font-size: 18px; font-weight: 700; color: var(--g800); margin-bottom: 14px; }
+  .modal h4 { font-size: 15px; font-weight: 600; color: var(--g700); margin: 16px 0 8px; }
+  .modal p { font-size: 14px; line-height: 1.6; color: var(--text); margin-bottom: 10px; }
+  .modal ul { padding-left: 20px; margin: 8px 0; }
+  .modal li { font-size: 14px; line-height: 1.5; margin-bottom: 6px; }
+  .highlight {
+    background: var(--g50); border-left: 4px solid var(--g600);
+    border-radius: 6px; padding: 12px; margin: 12px 0;
+  }
+  .highlight strong { color: var(--g800); display: block; margin-bottom: 4px; }
+  
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h2>Конструктор предприятия: документы по категориям НВОС</h2>
+  <p class="intro">Вы начинаете строить своё предприятие в учебной программе. Выберите категорию объекта НВОС и распределите документы: что нужно оформить, а что не требуется на первом этапе.</p>
+  
+  <div class="task">
+    <strong>Задание:</strong> Выберите категорию вашего предприятия, затем перетащите карточки документов в нужную колонку.
+  </div>
+  
+  <!-- Category selector -->
+  <div class="cat-select">
+    <span class="cat-label">Категория объекта НВОС:</span>
+    <div class="cat-buttons">
+      <button class="cat-btn" onclick="selectCat('I',this)"><span class="cat-num">I</span>Высокое воздействие</button>
+      <button class="cat-btn" onclick="selectCat('II',this)"><span class="cat-num">II</span>Умеренное</button>
+      <button class="cat-btn" onclick="selectCat('III',this)"><span class="cat-num">III</span>Минимальное</button>
+      <button class="cat-btn" onclick="selectCat('IV',this)"><span class="cat-num">IV</span>Незначительное</button>
+    </div>
+  </div>
+  
+  <!-- Card drum -->
+  <div class="drum-container" id="drumContainer" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+    <div class="drum-label">📋 Перетащите текущую карточку в нужную колонку</div>
+    <div class="current-card" id="currentCard" draggable="true" ondragstart="drag(event)"></div>
+    <div class="drum-controls">
+      <button class="drum-btn" id="prevBtn" onclick="prevCard()">← Предыдущая</button>
+      <div class="card-counter" id="cardCounter">0 из 12 распределено</div>
+      <button class="drum-btn" id="nextBtn" onclick="nextCard()">Следующая →</button>
+    </div>
+  </div>
+  
+  <!-- Drop zones -->
+  <div class="zones">
+    <div class="zone need" id="zoneNeed" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+      <div class="zone-header">✅ Нужно оформить</div>
+      <div class="zone-cards" id="cardsNeed"></div>
+    </div>
+    <div class="zone skip" id="zoneSkip" ondrop="drop(event)" ondragover="allowDrop(event)" ondragleave="leaveDrop(event)">
+      <div class="zone-header">⏸ Не нужно сейчас</div>
+      <div class="zone-cards" id="cardsSkip"></div>
+    </div>
+  </div>
+  
+  <!-- Benefit panel -->
+  <div class="benefit-panel" id="benefitPanel">
+    <h4>💡 Почему это важно:</h4>
+    <div id="benefitText"></div>
+  </div>
+  
+  <div class="feedback" id="feedback"></div>
+  
+  <div class="ctrls">
+    <button class="btn btn-s" id="retryBtn" onclick="reset()">Распределить снова</button>
+    <button class="btn btn-p" id="checkBtn" onclick="check()">Проверить</button>
+    <button class="btn btn-info" id="summaryBtn" onclick="showSummary()">📋 Итоговый разбор</button>
+  </div>
+  
+  <div class="final" id="final">
+    <strong>Главная мысль:</strong>
+    Чем выше категория НВОС, тем больше документов требуется. Начинайте с минимального набора для вашей категории — это сэкономит время и ресурсы.
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">×</button>
+    <h3>📋 Итоговый разбор: документы по категориям НВОС</h3>
+    
+    <div class="highlight">
+      <strong>Главная мысль:</strong>
+      Чем выше категория НВОС, тем больше документов требуется. Начинайте с минимального набора для вашей категории — это сэкономит время и ресурсы.
+    </div>
+    
+    <h4>📊 Разница между категориями:</h4>
+    <ul>
+      <li><strong>Кат. I</strong> — полный пакет: КЭР, проекты НДВ/НДС/НООЛР, ППЭЭ, ПЭК, инвентаризации, СЭЗ, лицензии</li>
+      <li><strong>Кат. II</strong> — КЭР (или ДВОС + разрешения), проекты, ПЭК, инвентаризации, базовые лицензии</li>
+      <li><strong>Кат. III</strong> — ПЭК, инвентаризации, паспорта отходов, базовые отчеты (без КЭР/ДВОС)</li>
+      <li><strong>Кат. IV</strong> — только регистрация в реестре, упрощённый ПЭК, договоры с регоператором</li>
+    </ul>
+    
+    <h4>💡 Практическая польза:</h4>
+    <ul>
+      <li>✅ <strong>Не переоформляйте лишнее</strong> — для кат. III–IV не нужны КЭР, ДВОС, сложные проекты</li>
+      <li>✅ <strong>Фокусируйтесь на приоритетах</strong> — сначала реестр НВОС и ПЭК, потом остальное</li>
+      <li>✅ <strong>Экономьте время</strong> — зная свою категорию, вы сразу видите необходимый минимум документов</li>
+    </ul>
+    
+    <h4>🚀 Следующий шаг в программе:</h4>
+    <p>После этого упражнения вы перейдёте к конструктору предприятия, где сможете:</p>
+    <ul>
+      <li>Добавить источники выбросов и рассчитать категорию НВОС</li>
+      <li>Сформировать индивидуальный чек-лист документов</li>
+      <li>Отработать сценарии изменений (смена адреса, реквизитов, технологий)</li>
+    </ul>
+    
+    <div class="highlight" style="background: #fff7ed; border-left-color: #f59e0b;">
+      <strong>💡 Совет:</strong>
+      Сохраните результат этого упражнения — он станет основой для вашего учебного предприятия в конструкторе.
+    </div>
+  </div>
+</div>
+
+<script>
+  // Documents data with correct zone by category
+  const docsByCat = {
+    I: {
+      need: ['nvos','cer','proj','ppe','pek','inv','sez','szz','water','lic','report','waste'],
+      ignore: []
+    },
+    II: {
+      need: ['nvos','cer','proj','pek','inv','sez','water','lic','report','waste'],
+      ignore: ['ppe','szz']
+    },
+    III: {
+      need: ['nvos','pek','inv','waste','report'],
+      ignore: ['cer','proj','ppe','sez','szz','water','lic']
+    },
+    IV: {
+      need: ['nvos','pek','waste','report'],
+      ignore: ['cer','proj','ppe','inv','sez','szz','water','lic']
+    }
+  };
+  
+  // Benefits text by category
+  const benefits = {
+    I: 'Кат. I — максимальная нагрузка. Вам нужен полный пакет разрешений. Правильный выбор сэкономит месяцы работы: вы сразу видите, что КЭР, ППЭЭ и проекты — обязательны, а не опциональны.',
+    II: 'Кат. II — умеренная нагрузка. Вы можете выбрать путь: КЭР (если применяете НДТ) или ДВОС + разрешения. Понимание разницы поможет выбрать оптимальный путь и не тратить ресурсы на лишние проекты.',
+    III: 'Кат. III — минимальная нагрузка. Вам не нужны КЭР, ДВОС, сложные проекты. Фокус на ПЭК, инвентаризации и отчётности. Это экономит время и бюджет на старте.',
+    IV: 'Кат. IV — незначительное воздействие. Только регистрация в реестре и упрощённый ПЭК. Вы не тратите время на разрешения, которые вам не требуются по закону.'
+  };
+  
+  const cardsData = [
+    {id:'nvos',text:'Сведения в реестре объектов НВОС',zones:{I:'need',II:'need',III:'need',IV:'need'}},
+    {id:'cer',text:'Комплексное экологическое разрешение (КЭР)',zones:{I:'need',II:'need',III:'ignore',IV:'ignore'}},
+    {id:'proj',text:'Проекты НДВ, НДС, НООЛР',zones:{I:'need',II:'need',III:'ignore',IV:'ignore'}},
+    {id:'ppe',text:'Программа повышения экологической эффективности (ППЭЭ)',zones:{I:'need',II:'ignore',III:'ignore',IV:'ignore'}},
+    {id:'pek',text:'Программа производственного экологического контроля (ПЭК)',zones:{I:'need',II:'need',III:'need',IV:'need'}},
+    {id:'inv',text:'Отчёт об инвентаризации выбросов/сбросов',zones:{I:'need',II:'need',III:'need',IV:'ignore'}},
+    {id:'sez',text:'Санитарно-эпидемиологическое заключение (СЭЗ)',zones:{I:'need',II:'need',III:'ignore',IV:'ignore'}},
+    {id:'szz',text:'Решение об установлении санитарно-защитной зоны (СЗЗ)',zones:{I:'need',II:'ignore',III:'ignore',IV:'ignore'}},
+    {id:'water',text:'Договор/решение о водопользовании',zones:{I:'need',II:'need',III:'ignore',IV:'ignore'}},
+    {id:'lic',text:'Лицензии (недра, отходы)',zones:{I:'need',II:'need',III:'ignore',IV:'ignore'}},
+    {id:'report',text:'Отчётность (2-ТП, 4-ОС и др.)',zones:{I:'need',II:'need',III:'need',IV:'need'}},
+    {id:'waste',text:'Договоры с регоператором/ФЭО',zones:{I:'need',II:'need',III:'need',IV:'need'}}
+  ];
+
+  let currentCat = '';
+  let currentIndex = 0;
+  let checked = false;
+  let distributed = [];
+
+  function init() {
+    if (!currentCat) return;
+    
+    // Filter and shuffle cards for selected category
+    const shuffled = [...cardsData].sort(() => Math.random() - 0.5);
+    distributed = shuffled.map(c => ({...c, placed: false}));
+    currentIndex = 0;
+    
+    document.getElementById('cardsNeed').innerHTML = '';
+    document.getElementById('cardsSkip').innerHTML = '';
+    updateCurrentCard();
+    updateCounter();
+    updateButtons();
+    
+    document.getElementById('checkBtn').classList.remove('act');
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('benefitPanel').classList.remove('show');
+    document.getElementById('final').classList.remove('show');
+    document.getElementById('summaryBtn').classList.remove('show');
+    document.getElementById('checkBtn').style.display = 'inline-block';
+    document.getElementById('retryBtn').style.display = 'none';
+    checked = false;
+  }
+
+  function selectCat(cat, el) {
+    currentCat = cat;
+    document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('sel'));
+    el.classList.add('sel');
+    init();
+    // Show benefit immediately after category selection
+    document.getElementById('benefitText').textContent = benefits[cat];
+    document.getElementById('benefitPanel').classList.add('show');
+  }
+
+  function updateCurrentCard() {
+    if (!currentCat) return;
+    
+    const card = distributed[currentIndex];
+    const el = document.getElementById('currentCard');
+    
+    if (card.placed) {
+      el.style.display = 'none';
+      const nextUnplaced = distributed.findIndex(c => !c.placed);
+      if (nextUnplaced !== -1) {
+        currentIndex = nextUnplaced;
+        updateCurrentCard();
+      } else {
+        el.style.display = 'block';
+        el.textContent = 'Все карточки распределены!';
+        el.draggable = false;
+      }
+    } else {
+      el.style.display = 'block';
+      el.textContent = card.text;
+      el.dataset.id = card.id;
+      el.dataset.correct = card.zones[currentCat];
+      el.className = 'current-card';
+      el.draggable = true;
+    }
+    updateCounter();
+  }
+
+  function updateCounter() {
+    const placed = distributed.filter(c => c.placed).length;
+    const total = distributed.length;
+    document.getElementById('cardCounter').textContent = `${placed} из ${total} распределено`;
+  }
+
+  function updateButtons() {
+    document.getElementById('prevBtn').disabled = currentIndex === 0;
+    document.getElementById('nextBtn').disabled = currentIndex === distributed.length - 1;
+  }
+
+  function prevCard() {
+    if (currentIndex > 0) { currentIndex--; updateCurrentCard(); updateButtons(); }
+  }
+
+  function nextCard() {
+    if (currentIndex < distributed.length - 1) { currentIndex++; updateCurrentCard(); updateButtons(); }
+  }
+
+  function allowDrop(e) { e.preventDefault(); e.currentTarget.classList.add('drag-over'); }
+  function leaveDrop(e) { e.currentTarget.classList.remove('drag-over'); }
+  
+  function drag(e) {
+    if (checked || !currentCat || distributed[currentIndex].placed) { e.preventDefault(); return; }
+    e.dataTransfer.setData('text', distributed[currentIndex].id);
+  }
+  
+  function drop(e) {
+    if (checked || !currentCat) return;
+    e.preventDefault();
+    
+    const zone = e.currentTarget;
+    zone.classList.remove('drag-over');
+    
+    const cardId = e.dataTransfer.getData('text');
+    const cardIndex = distributed.findIndex(c => c.id === cardId);
+    if (cardIndex === -1 || distributed[cardIndex].placed) return;
+    
+    let targetZone;
+    if (zone.id === 'zoneNeed') targetZone = 'need';
+    else if (zone.id === 'zoneSkip') targetZone = 'skip';
+    else return;
+    
+    distributed[cardIndex].placed = true;
+    distributed[cardIndex].targetZone = targetZone;
+    
+    const targetDiv = document.getElementById(targetZone === 'need' ? 'cardsNeed' : 'cardsSkip');
+    const cardEl = document.createElement('div');
+    cardEl.className = 'zone-card';
+    cardEl.textContent = distributed[cardIndex].text;
+    cardEl.dataset.id = cardId;
+    targetDiv.appendChild(cardEl);
+    
+    const nextUnplaced = distributed.findIndex(c => !c.placed);
+    if (nextUnplaced !== -1) currentIndex = nextUnplaced;
+    
+    updateCurrentCard();
+    updateCounter();
+    updateButtons();
+    
+    if (distributed.filter(c => c.placed).length > 0) {
+      document.getElementById('checkBtn').classList.add('act');
+    }
+  }
+  
+  function check() {
+    if (checked || !currentCat) return;
+    checked = true;
+    
+    let allCorrect = true;
+    
+    distributed.forEach(card => {
+      if (!card.placed) { allCorrect = false; return; }
+      
+      const correctZone = card.zones[currentCat];
+      const isCorrect = card.targetZone === correctZone;
+      const zoneDiv = document.getElementById(card.targetZone === 'need' ? 'cardsNeed' : 'cardsSkip');
+      const cardEl = Array.from(zoneDiv.children).find(el => el.dataset.id === card.id);
+      
+      if (cardEl) cardEl.classList.add(isCorrect ? 'correct' : 'wrong');
+      if (!isCorrect) allCorrect = false;
+    });
+    
+    const allPlaced = distributed.every(c => c.placed);
+    if (!allPlaced) allCorrect = false;
+    
+    const fb = document.getElementById('feedback');
+    if (allCorrect) {
+      fb.textContent = 'Верно! Вы правильно определили необходимый набор документов для категории ' + currentCat + '. Это основа для вашего учебного предприятия.';
+      fb.className = 'feedback show success';
+      document.getElementById('checkBtn').style.display = 'none';
+      document.getElementById('retryBtn').style.display = 'none';
+      document.getElementById('summaryBtn').classList.add('show');
+      document.getElementById('final').classList.add('show');
+      if (typeof iFrameResize !== 'undefined') iFrameResize();
+    } else {
+      fb.textContent = 'Есть неточности. Проверьте: для категории ' + currentCat + ' некоторые документы не требуются на первом этапе. Нажмите «Распределить снова» для новой попытки.';
+      fb.className = 'feedback show hint';
+      document.getElementById('retryBtn').classList.add('show');
+    }
+  }
+  
+  function showSummary() {
+    document.getElementById('modal').classList.add('show');
+    if (typeof iFrameResize !== 'undefined') iFrameResize();
+  }
+  
+  function closeModal() {
+    document.getElementById('modal').classList.remove('show');
+  }
+  
+  function reset() {
+    if (currentCat) init();
+  }
+  
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+</script>
+
+</body>
+</html>
