@@ -7,7 +7,7 @@
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
   <style>
     :root {
-      --bg: #fffff;
+      --bg: #f6f7f5;
       --card: #ffffff;
       --text: #1f2a24;
       --muted: #68756e;
@@ -31,6 +31,8 @@
 
     * { box-sizing: border-box; }
 
+    html { scroll-behavior: smooth; }
+
     body {
       margin: 0;
       font-family: Inter, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
@@ -42,15 +44,14 @@
 
     .wrap {
       max-width: 760px;
-      max-height: 820px;
       background: var(--card);
       margin: 0 auto;
       border: 1px solid var(--line);
       border-radius: var(--radius);
-      overflow: hidden;
+      box-shadow: var(--shadow);
+      min-height: 400px;
       display: flex;
       flex-direction: column;
-      box-shadow: var(--shadow);
     }
 
     .header {
@@ -73,35 +74,65 @@
       color: var(--muted);
     }
 
-    .content {
-      padding: 20px 24px;
-      overflow-y: auto;
-      flex: 1;
+    /* Start Screen Styles */
+    #start-screen {
+      padding: 30px 24px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 20px;
+    }
+
+    .start-icon {
+      font-size: 48px;
+      margin-bottom: 10px;
+      display: block;
     }
 
     .welcome-note {
       background: var(--blue-bg);
       border: 1px solid var(--blue-border);
-      border-radius: 10px;
-      padding: 12px 14px;
-      margin: 0 0 16px;
-      font-size: 0.88rem;
+      border-radius: 12px;
+      padding: 16px 20px;
+      font-size: 0.95rem;
       color: var(--blue-text);
       line-height: 1.5;
+      text-align: left;
+      max-width: 600px;
     }
 
     .welcome-note strong {
       display: block;
-      margin-bottom: 4px;
-      font-weight: 600;
+      margin-bottom: 6px;
+      font-weight: 700;
+      font-size: 1rem;
     }
 
-    .instruction {
-      font-size: 0.9rem;
-      color: var(--green);
-      margin: 0 0 16px;
-      padding-bottom: 16px;
-      border-bottom: 1px dashed var(--line);
+    .btn-start {
+      padding: 12px 32px;
+      border: none;
+      border-radius: 12px;
+      background: var(--green);
+      color: #fff;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: var(--transition);
+      box-shadow: 0 4px 12px rgba(45, 106, 79, 0.2);
+      margin-top: 10px;
+    }
+
+    .btn-start:hover {
+      background: #245840;
+      transform: translateY(-2px);
+      box-shadow: 0 6px 16px rgba(45, 106, 79, 0.3);
+    }
+
+    /* Steps Styles */
+    #steps-screen {
+      display: none;
+      padding: 20px 24px;
     }
 
     .step {
@@ -239,6 +270,7 @@
       color: var(--green);
     }
 
+    /* Result Styles */
     .result-card {
       display: none;
       padding: 14px 16px;
@@ -380,7 +412,6 @@
     @media (max-width: 560px) {
       .options-grid { grid-template-columns: 1fr; }
       .result-layout { grid-template-columns: 1fr; }
-      .wrap { max-height: none; }
     }
   </style>
 </head>
@@ -391,115 +422,119 @@
     <p>Выберите предприятие, его воздействие и расположение. В конце вы получите разбор объекта и список документов, с которыми будете работать как эколог.</p>
   </div>
 
-  <div class="content">
-    <div class="welcome-note" id="welcome-note">
-      <strong>Добро пожаловать в программу!</strong>
-      Это первое задание. Сейчас многое может быть непонятно – это нормально. Вы только начинаете путь промышленного эколога. К концу программы вы будете уверенно разбираться во всех документах и процедурах. А пока просто выберите варианты, которые кажутся вам ближе. Ошибиться нельзя – это учебный пример, который поможет вам освоиться.
+  <!-- Start Screen -->
+  <div id="start-screen">
+    <div class="welcome-note">
+      <strong>👋 Добро пожаловать в программу!</strong>
+      Это первое задание. Сейчас многое может быть непонятно — это нормально. Вы только начинаете путь промышленного эколога. К концу программы вы будете уверенно разбираться во всех документах и процедурах. <br><br>
+      А пока просто выберите варианты, которые кажутся вам ближе. Ошибиться нельзя — это учебный пример, который поможет вам освоиться.
     </div>
+    <button class="btn-start" id="btn-select">Выбрать предприятие →</button>
+  </div>
 
-    <p class="instruction">
-      В этом интерактиве вы выбираете предприятие, на котором будете отрабатывать задания в программе профпереподготовки. Ваши ответы на каждом шаге будут влиять на набор документов и задачи, которые вы будете решать в курсе.
-    </p>
-
-    <!-- Step 1 -->
-    <div class="step active" data-step="1">
-      <div class="step-title">Шаг 1. Тип предприятия</div>
-      <div class="step-sub">Выберите объект, который вам ближе по опыту или интересу. Это определит базовую категорию НВОС и объем документации.</div>
-      <div class="options-grid" id="step1-options">
-        <div class="option-card" data-value="cat1">
-          <strong>Крупный химический или металлургический комплекс</strong>
-          <span>Крупное производство, несколько цехов, высокие трубы, большие объемы выбросов и отходов.</span>
+  <!-- Steps Screen -->
+  <div id="steps-screen">
+    <div class="content">
+      <!-- Step 1 -->
+      <div class="step active" data-step="1">
+        <div class="step-title">Шаг 1. Тип предприятия</div>
+        <div class="step-sub">Выберите объект, который вам ближе по опыту или интересу. Это определит базовую категорию НВОС и объем документации.</div>
+        <div class="options-grid" id="step1-options">
+          <div class="option-card" data-value="cat1">
+            <strong>Крупный химический или металлургический комплекс</strong>
+            <span>Крупное производство, несколько цехов, высокие трубы, большие объемы выбросов и отходов.</span>
+          </div>
+          <div class="option-card" data-value="cat2">
+            <strong>Средний промышленный завод</strong>
+            <span>Несколько цехов, стационарные источники выбросов, заметный объем отходов.</span>
+          </div>
+          <div class="option-card" data-value="cat3">
+            <strong>Небольшая котельная или деревообрабатывающий цех</strong>
+            <span>Одна труба или вентиляция, умеренные выбросы, отходы производства.</span>
+          </div>
+          <div class="option-card" data-value="cat4">
+            <strong>Небольшая пекарня или склад</strong>
+            <span>Минимальное воздействие, бытовые стоки, немного в основном неопасных отходов.</span>
+          </div>
         </div>
-        <div class="option-card" data-value="cat2">
-          <strong>Средний промышленный завод</strong>
-          <span>Несколько цехов, стационарные источники выбросов, заметный объем отходов.</span>
-        </div>
-        <div class="option-card" data-value="cat3">
-          <strong>Небольшая котельная или деревообрабатывающий цех</strong>
-          <span>Одна труба или вентиляция, умеренные выбросы, отходы производства.</span>
-        </div>
-        <div class="option-card" data-value="cat4">
-          <strong>Небольшая пекарня или склад</strong>
-          <span>Минимальное воздействие, бытовые стоки, немного в основном неопасных отходов.</span>
-        </div>
-      </div>
-      <div class="nav-buttons">
-        <span></span>
-        <button class="btn-main" data-next="2">Далее</button>
-      </div>
-    </div>
-
-    <!-- Step 2: Technology & Water Discharge -->
-    <div class="step" data-step="2">
-      <div class="step-title">Шаг 2. Технология и водоотведение</div>
-      <div class="step-sub">Выберите тип технологического процесса и способ сброса сточных вод. Это определит необходимость проектов НДВ/НДС и договоров водопользования.</div>
-      <div class="step-hint blue">
-        💡
-        <span>Здесь вы указываете, как работает производство и куда уходят стоки: в водный объект, в замкнутый цикл или в городскую канализацию.</span>
-        <button type="button" onclick="openHint('hint2')">Подробнее</button>
-      </div>
-      <div class="options-grid" id="step2-options"></div>
-      <div class="nav-buttons">
-        <button class="btn-secondary" data-prev="1">Назад</button>
-        <button class="btn-main" data-next="3">Далее</button>
-      </div>
-    </div>
-
-    <!-- Step 3: Waste & Recycling -->
-    <div class="step" data-step="3">
-      <div class="step-title">Шаг 3. Отходы и переработка</div>
-      <div class="step-sub">Укажите состав отходов и наличие опасных веществ. Это повлияет на лицензии, паспорта отходов и договоры с регоператором.</div>
-      <div class="step-hint brown">
-        ️
-        <span>Здесь вы определяете, образуются ли у вас отходы I-II классов, идет ли переработка на месте или вывоз на полигон.</span>
-        <button type="button" onclick="openHint('hint3')">Подробнее</button>
-      </div>
-      <div class="options-grid" id="step3-options"></div>
-      <div class="nav-buttons">
-        <button class="btn-secondary" data-prev="2">Назад</button>
-        <button class="btn-main" data-next="4">Далее</button>
-      </div>
-    </div>
-
-    <!-- Step 4 -->
-    <div class="step" data-step="4">
-      <div class="step-title">Шаг 4. Расположение объекта</div>
-      <div class="step-sub">Выберите окружение, в котором работает предприятие. Это влияет на требования к СЗЗ, договоры водопользования и риски жалоб.</div>
-      <div class="options-grid" id="step4-options"></div>
-      <div class="nav-buttons">
-        <button class="btn-secondary" data-prev="3">Назад</button>
-        <button class="btn-main" id="show-result">Показать разбор</button>
-      </div>
-    </div>
-
-    <!-- Result -->
-    <div class="result-card" id="result">
-      <div class="result-title">Разбор вашего предприятия</div>
-
-      <div class="result-layout">
-        <div class="result-image">
-          <img id="enterprise-image" src="img/enterprise_cat3_small_industry.png" alt="Учебный пример предприятия">
-        </div>
-        <div>
-          <div class="result-block" id="res-summary"></div>
-          <div class="result-block" id="res-encouragement"></div>
-          <div class="result-block" id="res-work"></div>
+        <div class="nav-buttons">
+          <span></span>
+          <button class="btn-main" data-next="2">Далее</button>
         </div>
       </div>
 
-      <div class="result-block" id="res-steps"></div>
-      <div class="result-block" id="res-case"></div>
-      <div class="result-block" id="res-docs"></div>
-      <div class="result-block" id="res-how"></div>
+      <!-- Step 2: Technology & Water Discharge -->
+      <div class="step" data-step="2">
+        <div class="step-title">Шаг 2. Технология и водоотведение</div>
+        <div class="step-sub">Выберите тип технологического процесса и способ сброса сточных вод. Это определит необходимость проектов НДВ/НДС и договоров водопользования.</div>
+        <div class="step-hint blue">
+          💡
+          <span>Здесь вы указываете, как работает производство и куда уходят стоки: в водный объект, в замкнутый цикл или в городскую канализацию.</span>
+          <button type="button" onclick="openHint('hint2')">Подробнее</button>
+        </div>
+        <div class="options-grid" id="step2-options"></div>
+        <div class="nav-buttons">
+          <button class="btn-secondary" data-prev="1">Назад</button>
+          <button class="btn-main" data-next="3">Далее</button>
+        </div>
+      </div>
 
-      <div class="orange-note" id="res-tip"></div>
+      <!-- Step 3: Waste & Recycling -->
+      <div class="step" data-step="3">
+        <div class="step-title">Шаг 3. Отходы и переработка</div>
+        <div class="step-sub">Укажите состав отходов и наличие опасных веществ. Это повлияет на лицензии, паспорта отходов и договоры с регоператором.</div>
+        <div class="step-hint brown">
+          ♻️
+          <span>Здесь вы определяете, образуются ли у вас отходы I-II классов, идет ли переработка на месте или вывоз на полигон.</span>
+          <button type="button" onclick="openHint('hint3')">Подробнее</button>
+        </div>
+        <div class="options-grid" id="step3-options"></div>
+        <div class="nav-buttons">
+          <button class="btn-secondary" data-prev="2">Назад</button>
+          <button class="btn-main" data-next="4">Далее</button>
+        </div>
+      </div>
 
-      <p class="footnote">
-        Это учебный пример. В реальной работе состав документов и обязанности вы уточняете по фактическим данным по объекту.
-      </p>
+      <!-- Step 4 -->
+      <div class="step" data-step="4">
+        <div class="step-title">Шаг 4. Расположение объекта</div>
+        <div class="step-sub">Выберите окружение, в котором работает предприятие. Это влияет на требования к СЗЗ, договоры водопользования и риски жалоб.</div>
+        <div class="options-grid" id="step4-options"></div>
+        <div class="nav-buttons">
+          <button class="btn-secondary" data-prev="3">Назад</button>
+          <button class="btn-main" id="show-result">Показать разбор</button>
+        </div>
+      </div>
 
-      <div class="result-actions">
-        <button class="btn-secondary" id="restart">Выбрать предприятие заново</button>
+      <!-- Result -->
+      <div class="result-card" id="result">
+        <div class="result-title">Разбор вашего предприятия</div>
+
+        <div class="result-layout">
+          <div class="result-image">
+            <img id="enterprise-image" src="img/enterprise_cat3_small_industry.png" alt="Учебный пример предприятия">
+          </div>
+          <div>
+            <div class="result-block" id="res-summary"></div>
+            <div class="result-block" id="res-encouragement"></div>
+            <div class="result-block" id="res-work"></div>
+          </div>
+        </div>
+
+        <div class="result-block" id="res-steps"></div>
+        <div class="result-block" id="res-case"></div>
+        <div class="result-block" id="res-docs"></div>
+        <div class="result-block" id="res-how"></div>
+
+        <div class="orange-note" id="res-tip"></div>
+
+        <p class="footnote">
+          Это учебный пример. В реальной работе состав документов и обязанности вы уточняете по фактическим данным по объекту.
+        </p>
+
+        <div class="result-actions">
+          <button class="btn-secondary" id="restart">Выбрать предприятие заново</button>
+        </div>
       </div>
     </div>
   </div>
@@ -515,6 +550,13 @@
 </div>
 
 <script>
+  // Helper for iframe resize
+  function triggerResize() {
+    if (typeof iFrameResize !== 'undefined') {
+      iFrameResize();
+    }
+  }
+
   const hintContent = {
     hint2: {
       title: 'Шаг 2: Технология и водоотведение',
@@ -532,14 +574,22 @@
     document.getElementById('hintModalTitle').innerHTML = data.title;
     document.getElementById('hintModalBody').innerHTML = data.body;
     document.getElementById('hintModal').classList.add('show');
-    if (typeof iFrameResize !== 'undefined') iFrameResize();
+    triggerResize();
   }
 
   function closeHint() {
     document.getElementById('hintModal').classList.remove('show');
+    triggerResize();
   }
 
   document.addEventListener('keydown', e => { if (e.key === 'Escape') closeHint(); });
+
+  // Transition to steps
+  document.getElementById('btn-select').addEventListener('click', () => {
+    document.getElementById('start-screen').style.display = 'none';
+    document.getElementById('steps-screen').style.display = 'block';
+    triggerResize();
+  });
 
   const scenarios = {
     cat1: {
@@ -727,11 +777,7 @@
     document.querySelectorAll('.step').forEach(s => {
       s.classList.toggle('active', s.dataset.step === String(num));
     });
-    // Toggle welcome note visibility
-    const welcomeNote = document.getElementById('welcome-note');
-    if (welcomeNote) {
-      welcomeNote.style.display = (num === 1) ? 'block' : 'none';
-    }
+    triggerResize();
   }
 
   function renderCards(containerId, items, key) {
@@ -799,12 +845,11 @@
       if (next === '3' && !answers.impact) { alert('Сначала выберите вариант по технологии и водоотведению.'); return; }
       if (next === '4' && !answers.waste) { alert('Сначала выберите вариант по отходам и переработке.'); return; }
       showStep(next);
-      if (typeof iFrameResize !== 'undefined') iFrameResize();
     });
   });
 
   document.querySelectorAll('[data-prev]').forEach(btn => {
-    btn.addEventListener('click', () => { showStep(btn.getAttribute('data-prev')); if (typeof iFrameResize !== 'undefined') iFrameResize(); });
+    btn.addEventListener('click', () => showStep(parseInt(btn.getAttribute('data-prev'))));
   });
 
   function buildSummary(scenario) {
@@ -927,7 +972,7 @@
 
     document.querySelectorAll('.step').forEach(s => s.classList.remove('active'));
     document.getElementById('result').style.display = 'block';
-    if (typeof iFrameResize !== 'undefined') iFrameResize();
+    triggerResize();
   });
 
   document.getElementById('restart').addEventListener('click', () => {
@@ -937,8 +982,12 @@
     document.getElementById('step3-options').innerHTML = '';
     document.getElementById('step4-options').innerHTML = '';
     document.getElementById('result').style.display = 'none';
+    
+    // Reset to start screen
+    document.getElementById('steps-screen').style.display = 'none';
+    document.getElementById('start-screen').style.display = 'flex';
     showStep(1);
-    if (typeof iFrameResize !== 'undefined') iFrameResize();
+    triggerResize();
   });
 
   document.addEventListener('click', (e) => {
@@ -950,6 +999,7 @@
     const isOpen = body.style.display === 'block';
     body.style.display = isOpen ? 'none' : 'block';
     header.querySelector('span:last-child').textContent = isOpen ? '+' : '-';
+    triggerResize();
   });
 
   showStep(1);
