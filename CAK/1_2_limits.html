@@ -140,6 +140,7 @@
     display: flex;
     align-items: center;
     gap: 6px;
+    width: 100%;
   }
   .hint-btn:hover { background: var(--g100); border-color: var(--g600); }
   
@@ -152,10 +153,13 @@
     font-weight: 600;
     cursor: pointer;
     transition: 0.2s;
+    background: var(--g600);
+    color: #fff;
+    opacity: 0.3;
+    pointer-events: none;
   }
-  .btn-next { background: var(--g600); color: #fff; opacity: 0.3; pointer-events: none; }
-  .btn-next.active { opacity: 1; pointer-events: auto; }
-  .btn-next:hover { background: var(--g700); }
+  .btn.active { opacity: 1; pointer-events: auto; }
+  .btn:hover { background: var(--g700); }
   
   .final-screen { display: none; }
   .final-screen.show { display: block; animation: fadeIn 0.3s; }
@@ -172,6 +176,7 @@
   .final-box h4 { font-size: 14px; font-weight: 700; color: var(--g800); margin-bottom: 6px; }
   .final-box p { font-size: 13.5px; line-height: 1.5; color: var(--text); }
   
+  /* Modal - fixed overlay above everything */
   .modal-overlay {
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
@@ -179,7 +184,7 @@
     display: none;
     align-items: center;
     justify-content: center;
-    z-index: 1000;
+    z-index: 9999;
     padding: 20px;
   }
   .modal-overlay.show { display: flex; }
@@ -193,6 +198,8 @@
     padding: 24px;
     box-shadow: 0 16px 48px rgba(0,0,0,0.2);
     animation: slideUp 0.3s ease;
+    position: relative;
+    z-index: 10000;
   }
   @keyframes slideUp {
     from { opacity: 0; transform: translateY(20px); }
@@ -295,7 +302,7 @@
 </div>
 
 <!-- Modal for hint -->
-<div class="modal-overlay" id="hintModal">
+<div class="modal-overlay" id="hintModal" onclick="if(event.target===this)closeHintModal()">
   <div class="modal">
     <div class="modal-header">
       <h3 class="modal-title" id="hintModalTitle">Справочная информация</h3>
@@ -309,7 +316,7 @@
 </div>
 
 <!-- Modal for answer feedback -->
-<div class="modal-overlay" id="feedbackModal">
+<div class="modal-overlay" id="feedbackModal" onclick="if(event.target===this)closeFeedbackModal()">
   <div class="modal">
     <div class="modal-header">
       <h3 class="modal-title" id="feedbackTitle"></h3>
@@ -459,7 +466,7 @@
             ${c.docs.inventory.rows.map(r => `<div class="doc-row">${r}</div>`).join('')}
           </div>
           <button class="hint-btn" onclick="showHint()">
-            💡 ${c.docs.hint.title}
+             ${c.docs.hint.title}
           </button>
         </div>
       </div>
@@ -612,14 +619,6 @@
       closeHintModal();
       closeFeedbackModal();
     }
-  });
-
-  document.getElementById('hintModal').addEventListener('click', e => {
-    if (e.target.id === 'hintModal') closeHintModal();
-  });
-
-  document.getElementById('feedbackModal').addEventListener('click', e => {
-    if (e.target.id === 'feedbackModal') closeFeedbackModal();
   });
 
   renderCase();
