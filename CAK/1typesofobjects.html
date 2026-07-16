@@ -1,0 +1,430 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Определите, по какой ветке проверять объект</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g200: #bbf7d0;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 720px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--g800); }
+  .intro { font-size: 14.5px; color: var(--text); line-height: 1.5; margin-bottom: 20px; }
+  .intro strong { color: var(--g800); }
+  
+  .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .prog-bar { flex: 1; height: 6px; background: var(--g100); border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--g600); width: 0%; transition: width 0.4s; border-radius: 3px; }
+  .prog-txt { font-size: 13px; color: var(--muted); font-weight: 500; min-width: 80px; text-align: right; }
+  
+  .case-card {
+    background: var(--g50);
+    border-left: 4px solid var(--g600);
+    border-radius: 8px;
+    padding: 16px;
+    margin-bottom: 20px;
+  }
+  .case-label { font-size: 12px; font-weight: 700; text-transform: uppercase; color: var(--g800); margin-bottom: 8px; }
+  .case-text { font-size: 14.5px; line-height: 1.5; color: var(--text); }
+  
+  .options { display: grid; gap: 10px; margin-bottom: 20px; }
+  .option {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 14.5px;
+    font-weight: 500;
+  }
+  .option:hover { border-color: var(--g600); background: var(--g50); }
+  .option.selected { border-color: var(--g600); background: var(--g100); }
+  .option.correct { border-color: var(--g600); background: #dcfce7; pointer-events: none; }
+  .option.wrong { border-color: #f97316; background: #ffedd5; pointer-events: none; }
+  
+  .ctrls { display: flex; justify-content: center; gap: 12px; }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .btn-next { background: var(--g600); color: #fff; opacity: 0.3; pointer-events: none; }
+  .btn-next.active { opacity: 1; pointer-events: auto; }
+  .btn-next:hover { background: var(--g700); }
+  
+  .final-screen { display: none; }
+  .final-screen.show { display: block; animation: fadeIn 0.3s; }
+  .final-title { font-size: 18px; font-weight: 700; color: var(--g800); margin-bottom: 12px; }
+  .final-text { font-size: 14.5px; line-height: 1.6; color: var(--text); margin-bottom: 12px; }
+  .final-text strong { color: var(--g700); }
+  .final-box {
+    background: var(--g50);
+    border-left: 4px solid var(--g600);
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 16px;
+  }
+  .final-box h4 { font-size: 14px; font-weight: 700; color: var(--g800); margin-bottom: 8px; }
+  .final-box p { font-size: 13.5px; line-height: 1.5; color: var(--text); }
+  
+  /* Modal */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 14px;
+    max-width: 520px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 24px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .modal-title.correct { color: var(--g700); }
+  .modal-title.wrong { color: #ea580c; }
+  .modal-close {
+    background: #f1f5f9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .modal-close:hover { background: #e2e8f0; }
+  
+  .modal-section {
+    margin-bottom: 16px;
+  }
+  .modal-section:last-child { margin-bottom: 0; }
+  .modal-section h4 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .modal-section p {
+    font-size: 14px;
+    line-height: 1.6;
+    color: var(--text);
+  }
+  .modal-section.practice {
+    background: var(--g50);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .modal-section.mistake {
+    background: #fff7ed;
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .modal-section.mistake h4 { color: #ea580c; }
+  
+  .modal-btn {
+    width: 100%;
+    margin-top: 20px;
+    padding: 12px;
+    background: var(--g600);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .modal-btn:hover { background: var(--g700); }
+  
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 600px) { .wrap { padding: 16px; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h2>Определите, по какой ветке проверять объект</h2>
+  <p class="intro">На практике вопрос по САК начинается не с датчиков и не с подрядчика. Сначала вы определяете, по какой нормативной ветке проверять объект. Если ошибетесь на этом шаге, дальше будете проверять не те вещества, не те источники и не те сроки.</p>
+
+  <div class="progress">
+    <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-txt" id="progTxt">Кейс 1 из 3</div>
+  </div>
+
+  <div id="caseArea"></div>
+
+  <div class="final-screen" id="finalScreen">
+    <div class="final-title">Что вы должны запомнить</div>
+    <div class="final-text">
+      <p>Проверку всегда начинайте с объекта, а не с источника. Сначала ответьте на два вопроса:</p>
+      <p><strong>1.</strong> Относится ли объект к I категории НВОС?</p>
+      <p><strong>2.</strong> Включен ли объект в перечень квотируемых?</p>
+      <p>Если объект I категории – идете в ветку ПП РФ N 779. Если объект квотируемый и относится к I-II категории – идете в ветку ПП РФ N 39. Если объект не I категории и не квотируемый – САК по этим постановлениям не обязательна.</p>
+    </div>
+    <div class="final-box">
+      <h4>Мини-результат</h4>
+      <p>После этого интерактива вы умеете определять стартовую ветку проверки по реальному объекту. Это первый шаг перед проверкой веществ, ИЗАВ и сроков создания САК.</p>
+    </div>
+    <div class="final-box" style="background: #fff7ed; border-left-color: #f59e0b; margin-top: 12px;">
+      <h4 style="color: #92400e;">Важно</h4>
+      <p>На реальном объекте этот шаг занимает 10-15 минут, если у вас под рукой есть карточка объекта НВОС, КЭР и актуальная информация о квотировании. Но именно здесь часто делают первую ошибку – начинают обсуждать датчики и проект, не определив, обязателен ли САК по закону.</p>
+    </div>
+    <div class="ctrls" style="margin-top: 20px;">
+      <button class="btn btn-next active" onclick="restart()">Пройти заново</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="modalTitle"></h3>
+      <button class="modal-close" onclick="closeModal()">×</button>
+    </div>
+    <div class="modal-section">
+      <h4>Пояснение</h4>
+      <p id="modalExplanation"></p>
+    </div>
+    <div class="modal-section practice">
+      <h4>Что делать на практике</h4>
+      <p id="modalPractice"></p>
+    </div>
+    <div class="modal-section mistake">
+      <h4>Типичная ошибка</h4>
+      <p id="modalMistake"></p>
+    </div>
+    <button class="modal-btn" onclick="closeModal()">Понятно</button>
+  </div>
+</div>
+
+<script>
+  function triggerResize() {
+    if (typeof iFrameResize !== 'undefined') {
+      iFrameResize();
+    }
+  }
+
+  const cases = [
+    {
+      label: 'Кейс 1',
+      text: 'Металлургический завод. У предприятия есть комплексное экологическое разрешение. В карточке объекта НВОС указана I категория. Объект не включен в перечень квотируемых по проекту Чистый воздух. На площадке есть организованные стационарные источники выбросов от печей и котельной.',
+      correct: 0,
+      options: [
+        'Проверять по ПП РФ N 779',
+        'Проверять по ПП РФ N 39',
+        'САК по ПП РФ N 779 и N 39 не обязательна'
+      ],
+      explanation: {
+        correct: 'Объект относится к I категории НВОС. Значит, сначала вы применяете Правила создания и эксплуатации САК по ПП РФ N 779. Дальше нужно проверять каждый ИЗАВ по критериям этого постановления: связь с установкой, наличие маркерных веществ, превышение порога и возможность автоматического измерения.',
+        wrong: 'Неверно. Объект относится к I категории НВОС и не включен в перечень квотируемых. Для таких объектов применяется ПП РФ N 779.'
+      },
+      practice: 'Откройте карточку объекта НВОС и КЭР. Подтвердите I категорию и составьте черновой список стационарных организованных источников, которые дальше будете проверять по ПП РФ N 779.',
+      mistake: 'Эколог видит I категорию и сразу считает, что САК нужна на все трубы. Это неверно. После выбора ветки по ПП РФ N 779 нужно отдельно проверять каждый источник.'
+    },
+    {
+      label: 'Кейс 2',
+      text: 'Коксохимическое предприятие работает в городе – участнике проекта Чистый воздух. Объект включен в перечень квотируемых. В карточке объекта указана II категория НВОС. На предприятии есть несколько организованных источников выбросов, по инвентаризации присутствуют вещества, которые входят в перечень приоритетных загрязняющих веществ для территории.',
+      correct: 1,
+      options: [
+        'Проверять по ПП РФ N 779',
+        'Проверять по ПП РФ N 39',
+        'САК по ПП РФ N 779 и N 39 не обязательна'
+      ],
+      explanation: {
+        correct: 'Объект включен в перечень квотируемых и относится к I-II категории. Для таких объектов действуют особенности создания и эксплуатации САК по ПП РФ N 39. Здесь вы проверяете приоритетные загрязняющие вещества для конкретной территории и источники, которые подлежат автоматическому контролю по правилам квотирования.',
+        wrong: 'Неверно. Объект включен в перечень квотируемых и относится к II категории. Для квотируемых объектов I-II категорий применяется ПП РФ N 39.'
+      },
+      practice: 'Поднимите перечень квотируемых объектов для территории и перечень приоритетных загрязняющих веществ для города. Сверьте их с данными инвентаризации источников выбросов на предприятии.',
+      mistake: 'Эколог ориентируется только на категорию объекта и пропускает статус квотируемого. В результате объект II категории ошибочно исключают из темы САК, хотя для квотируемых объектов II категории требования по ПП РФ N 39 действуют.'
+    },
+    {
+      label: 'Кейс 3',
+      text: 'Пищевое предприятие. В карточке объекта указана III категория НВОС. Объект не включен в перечень квотируемых по проекту Чистый воздух. На площадке есть вентиляционные выбросы и локальные выпуски, но предприятие не относится к объектам I категории и не участвует в квотировании.',
+      correct: 2,
+      options: [
+        'Проверять по ПП РФ N 779',
+        'Проверять по ПП РФ N 39',
+        'САК по ПП РФ N 779 и N 39 не обязательна'
+      ],
+      explanation: {
+        correct: 'Объект не относится к I категории и не включен в перечень квотируемых. Значит, обязанности по созданию САК по ПП РФ N 779 и N 39 у него нет. Но этот вывод лучше оформить письменно, чтобы при проверке было видно, на каком основании вы не запускали проект САК.',
+        wrong: 'Неверно. Объект относится к III категории и не включен в перечень квотируемых. Для таких объектов САК по ПП РФ N 779 и N 39 не обязательна.'
+      },
+      practice: 'Проверьте карточку объекта НВОС и отсутствие объекта в перечне квотируемых. После этого зафиксируйте вывод в служебной записке или рабочей справке.',
+      mistake: 'Эколог видит стационарные источники и считает, что одной их наличия уже достаточно для обязательной САК. Это неверно. Сначала смотрят категорию объекта и статус квотирования.'
+    }
+  ];
+
+  let currentCase = 0;
+  let answered = false;
+
+  function renderCase() {
+    const c = cases[currentCase];
+    const area = document.getElementById('caseArea');
+    
+    area.innerHTML = `
+      <div class="case-card">
+        <div class="case-label">${c.label}</div>
+        <div class="case-text">${c.text}</div>
+      </div>
+      <div class="options" id="options"></div>
+      <div class="ctrls">
+        <button class="btn btn-next" id="nextBtn" onclick="nextCase()">Далее</button>
+      </div>
+    `;
+    
+    const optsContainer = document.getElementById('options');
+    c.options.forEach((opt, i) => {
+      const el = document.createElement('div');
+      el.className = 'option';
+      el.textContent = opt;
+      el.onclick = () => selectAnswer(i, el);
+      optsContainer.appendChild(el);
+    });
+    
+    updateProgress();
+    triggerResize();
+  }
+
+  function selectAnswer(idx, el) {
+    if (answered) return;
+    answered = true;
+    
+    const c = cases[currentCase];
+    const isCorrect = idx === c.correct;
+    
+    document.querySelectorAll('.option').forEach((opt, i) => {
+      opt.style.pointerEvents = 'none';
+      if (i === c.correct) opt.classList.add('correct');
+      else if (i === idx && !isCorrect) opt.classList.add('wrong');
+    });
+    
+    // Show modal with explanation
+    document.getElementById('modalTitle').textContent = isCorrect ? 'Верно' : 'Неверно';
+    document.getElementById('modalTitle').className = 'modal-title ' + (isCorrect ? 'correct' : 'wrong');
+    document.getElementById('modalExplanation').textContent = isCorrect ? c.explanation.correct : c.explanation.wrong;
+    document.getElementById('modalPractice').textContent = c.practice;
+    document.getElementById('modalMistake').textContent = c.mistake;
+    document.getElementById('modal').classList.add('show');
+    
+    triggerResize();
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('show');
+    document.getElementById('nextBtn').classList.add('active');
+    triggerResize();
+  }
+
+  function nextCase() {
+    if (!answered) return;
+    currentCase++;
+    answered = false;
+    
+    if (currentCase < cases.length) {
+      renderCase();
+    } else {
+      document.getElementById('caseArea').style.display = 'none';
+      document.querySelector('.progress').style.display = 'none';
+      document.getElementById('finalScreen').classList.add('show');
+      triggerResize();
+    }
+  }
+
+  function updateProgress() {
+    const pct = ((currentCase + 1) / cases.length) * 100;
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progTxt').textContent = `Кейс ${currentCase + 1} из ${cases.length}`;
+  }
+
+  function restart() {
+    currentCase = 0;
+    answered = false;
+    document.getElementById('caseArea').style.display = 'block';
+    document.querySelector('.progress').style.display = 'flex';
+    document.getElementById('finalScreen').classList.remove('show');
+    renderCase();
+  }
+
+  // Close modal on Escape
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') closeModal();
+  });
+
+  // Close modal on overlay click
+  document.getElementById('modal').addEventListener('click', e => {
+    if (e.target.id === 'modal') closeModal();
+  });
+
+  renderCase();
+</script>
+
+</body>
+</html>
