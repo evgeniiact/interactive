@@ -1,0 +1,629 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Отберите вещества для проверки по источнику</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.2/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #f8fafc;
+    --card: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g200: #bbf7d0;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 20px;
+    display: flex;
+    justify-content: center;
+    min-height: 100vh;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 900px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+  }
+  h2 { font-size: 20px; font-weight: 700; margin-bottom: 8px; color: var(--g800); }
+  .intro { font-size: 14.5px; color: var(--text); line-height: 1.5; margin-bottom: 20px; }
+  
+  .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .prog-bar { flex: 1; height: 6px; background: var(--g100); border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--g600); width: 0%; transition: width 0.4s; border-radius: 3px; }
+  .prog-txt { font-size: 13px; color: var(--muted); font-weight: 500; min-width: 80px; text-align: right; }
+  
+  .case-layout {
+    display: grid;
+    grid-template-columns: 1fr 340px;
+    gap: 20px;
+    margin-bottom: 20px;
+  }
+  @media (max-width: 700px) {
+    .case-layout { grid-template-columns: 1fr; }
+  }
+  
+  .question-box {
+    background: var(--g50);
+    border: 1px solid var(--g200);
+    border-radius: 10px;
+    padding: 16px;
+  }
+  .q-title { font-size: 15px; font-weight: 700; color: var(--g800); margin-bottom: 12px; }
+  .options { display: grid; gap: 8px; }
+  .option {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 12px 14px;
+    cursor: pointer;
+    transition: 0.2s;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .option:hover { border-color: var(--g600); background: #fff; }
+  .option.selected { border-color: var(--g600); background: var(--g100); }
+  .option.correct { border-color: var(--g600); background: #dcfce7; pointer-events: none; }
+  .option.wrong { border-color: #f97316; background: #ffedd5; pointer-events: none; }
+  .option.missed { border-color: var(--g600); background: #dcfce7; pointer-events: none; }
+  .chk {
+    width: 18px; height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 4px;
+    flex-shrink: 0;
+    display: flex; align-items: center; justify-content: center;
+    transition: 0.2s;
+  }
+  .option.selected .chk { background: var(--g600); border-color: var(--g600); color: #fff; }
+  .chk::after { content: '✓'; font-size: 12px; font-weight: 700; display: none; }
+  .option.selected .chk::after { display: block; }
+  
+  .docs-box {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .doc-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 12px;
+  }
+  .doc-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    color: var(--g700);
+    margin-bottom: 6px;
+    letter-spacing: 0.3px;
+  }
+  .doc-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text);
+    margin-bottom: 4px;
+  }
+  .doc-row {
+    font-size: 13px;
+    color: var(--text);
+    padding: 3px 0;
+    line-height: 1.4;
+  }
+  .doc-row strong { color: var(--g800); }
+  
+  .hint-btn {
+    background: var(--g50);
+    border: 1px solid var(--g200);
+    border-radius: 8px;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--g700);
+    transition: 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .hint-btn:hover { background: var(--g100); border-color: var(--g600); }
+  
+  .ctrls { display: flex; justify-content: center; gap: 12px; }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .btn-next { background: var(--g600); color: #fff; opacity: 0.3; pointer-events: none; }
+  .btn-next.active { opacity: 1; pointer-events: auto; }
+  .btn-next:hover { background: var(--g700); }
+  
+  .final-screen { display: none; }
+  .final-screen.show { display: block; animation: fadeIn 0.3s; }
+  .final-title { font-size: 18px; font-weight: 700; color: var(--g800); margin-bottom: 12px; }
+  .final-text { font-size: 14.5px; line-height: 1.6; color: var(--text); margin-bottom: 12px; }
+  .final-text strong { color: var(--g700); }
+  .final-box {
+    background: var(--g50);
+    border-left: 4px solid var(--g600);
+    border-radius: 8px;
+    padding: 14px;
+    margin-top: 12px;
+  }
+  .final-box h4 { font-size: 14px; font-weight: 700; color: var(--g800); margin-bottom: 6px; }
+  .final-box p { font-size: 13.5px; line-height: 1.5; color: var(--text); }
+  
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 20px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 14px;
+    max-width: 520px;
+    width: 100%;
+    max-height: 85vh;
+    overflow-y: auto;
+    padding: 24px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.2);
+    animation: slideUp 0.3s ease;
+  }
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  .modal-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 16px;
+  }
+  .modal-title {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0;
+  }
+  .modal-title.correct { color: var(--g700); }
+  .modal-title.wrong { color: #ea580c; }
+  .modal-close {
+    background: #f1f5f9;
+    border: none;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .modal-close:hover { background: #e2e8f0; }
+  .modal-section { margin-bottom: 14px; }
+  .modal-section h4 {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: var(--muted);
+    margin-bottom: 6px;
+  }
+  .modal-section p { font-size: 14px; line-height: 1.6; color: var(--text); }
+  .modal-section.explanation {
+    background: var(--g50);
+    border-radius: 8px;
+    padding: 12px;
+  }
+  .modal-btn {
+    width: 100%;
+    margin-top: 16px;
+    padding: 12px;
+    background: var(--g600);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    font-size: 15px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .modal-btn:hover { background: var(--g700); }
+  .modal-btn.retry {
+    background: #fff;
+    color: var(--g700);
+    border: 2px solid var(--g600);
+  }
+  .modal-btn.retry:hover { background: var(--g50); }
+  
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 600px) { .wrap { padding: 16px; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h2>Отберите вещества для проверки по источнику</h2>
+  <p class="intro">На каждом экране один вопрос. Посмотрите документы справа и отметьте вещества, которые нужно взять в дальнейшую проверку по САК.</p>
+
+  <div class="progress">
+    <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-txt" id="progTxt">Кейс 1 из 3</div>
+  </div>
+
+  <div id="caseArea"></div>
+
+  <div class="final-screen" id="finalScreen">
+    <div class="final-title">Что вы должны запомнить</div>
+    <div class="final-text">
+      <p>Сначала определите, по какой нормативной ветке идет объект. Потом возьмите только те вещества, которые относятся к этой ветке. И только после этого сравните их с порогами.</p>
+      <p>В дальнейшую проверку по САК попадает не любое вещество из инвентаризации, а только то, которое соответствует нормативной ветке объекта, есть в выбросе и превышает порог по массе.</p>
+    </div>
+    <div class="final-box">
+      <h4>Мини-результат</h4>
+      <p>После этого интерактива вы умеете отбирать вещества по источнику с учетом нормативной ветки и порогов. Это ключевой шаг перед расчетом ИЗАВ и проектированием САК.</p>
+    </div>
+    <div class="ctrls" style="margin-top: 20px;">
+      <button class="btn btn-next active" onclick="restart()">Пройти заново</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal for hint -->
+<div class="modal-overlay" id="hintModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="hintModalTitle">Справочная информация</h3>
+      <button class="modal-close" onclick="closeHintModal()">×</button>
+    </div>
+    <div class="modal-section">
+      <p id="hintModalBody"></p>
+    </div>
+    <button class="modal-btn" onclick="closeHintModal()">Понятно</button>
+  </div>
+</div>
+
+<!-- Modal for answer feedback -->
+<div class="modal-overlay" id="feedbackModal">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="feedbackTitle"></h3>
+      <button class="modal-close" onclick="closeFeedbackModal()">×</button>
+    </div>
+    <div class="modal-section explanation">
+      <h4>Разбор</h4>
+      <p id="feedbackExplanation"></p>
+    </div>
+    <button class="modal-btn" id="feedbackBtn" onclick="handleFeedbackBtn()">Далее</button>
+  </div>
+</div>
+
+<script>
+  function triggerResize() {
+    if (typeof iFrameResize !== 'undefined') {
+      iFrameResize();
+    }
+  }
+
+  const cases = [
+    {
+      label: 'Кейс 1',
+      docs: {
+        card: {
+          title: 'АО «Цемент-Пром»',
+          rows: [
+            '<strong>Категория объекта НВОС:</strong> I',
+            '<strong>Статус квотирования:</strong> В перечень квотируемых объектов не включен'
+          ]
+        },
+        inventory: {
+          title: 'ИЗАВ № 0007. Сушильный барабан',
+          rows: [
+            'взвешенные вещества – 3,6 кг/ч',
+            'диоксид серы – 12 кг/ч',
+            'оксиды азота – 8 кг/ч',
+            'бензапирен – 0,00002 кг/ч'
+          ]
+        },
+        hint: {
+          title: 'Подсказка по нормативке',
+          text: 'Для объекта I категории проверяйте маркерные вещества из ПП РФ № 779. Порог для взвешенных веществ – 3 кг/ч. Для диоксида серы – 30 кг/ч. Для оксидов азота – 30 кг/ч.'
+        }
+      },
+      question: 'Какие вещества по этому источнику нужно взять в дальнейшую проверку по САК',
+      options: ['взвешенные вещества', 'диоксид серы', 'оксиды азота', 'бензапирен'],
+      correct: [0],
+      explanation: {
+        correct: 'Объект идет по ПП РФ № 779. Из веществ источника в перечень маркерных входят взвешенные вещества, диоксид серы и оксиды азота. Но порог превышен только по взвешенным веществам (3,6 > 3 кг/ч). Их и берете в дальнейшую проверку.',
+        wrong: 'Объект идет по ПП РФ № 779. Из веществ источника в перечень маркерных входят взвешенные вещества, диоксид серы и оксиды азота. Но порог превышен только по взвешенным веществам (3,6 > 3 кг/ч). Диоксид серы (12 < 30) и оксиды азота (8 < 30) порог не превышают. Бензапирен не входит в маркерные для этого источника.'
+      }
+    },
+    {
+      label: 'Кейс 2',
+      docs: {
+        card: {
+          title: 'ПАО «Коксохим»',
+          rows: [
+            '<strong>Категория объекта НВОС:</strong> II',
+            '<strong>Статус квотирования:</strong> Объект включен в перечень квотируемых по проекту Чистый воздух для г. Челябинска'
+          ]
+        },
+        inventory: {
+          title: 'ИЗАВ № 0018. Коксовая батарея',
+          rows: [
+            'бензол – 2,4 кг/ч',
+            'сероводород – 0,18 кг/ч',
+            'фенол – 0,7 кг/ч',
+            'диоксид серы – 11 кг/ч'
+          ]
+        },
+        hint: {
+          title: 'Территориальный перечень и пороги',
+          text: 'Приоритетные загрязняющие вещества для г. Челябинска: бензол, сероводород. Порог по ПП РФ № 39: бензол – 1 кг/ч, сероводород – 0,1 кг/ч.'
+        }
+      },
+      question: 'Какие вещества по этому источнику нужно взять в дальнейшую проверку по САК',
+      options: ['бензол', 'сероводород', 'фенол', 'диоксид серы'],
+      correct: [0, 1],
+      explanation: {
+        correct: 'Объект квотируемый, поэтому ориентируетесь на ПП РФ № 39 и территориальный перечень. В проверку берете только вещества, которые есть и в источнике, и в перечне, и превышают порог. Бензол (2,4 > 1 кг/ч) и сероводород (0,18 > 0,1 кг/ч) проходят все три условия.',
+        wrong: 'Объект квотируемый, поэтому ориентируетесь на ПП РФ № 39 и территориальный перечень. В проверку берете только вещества, которые есть и в источнике, и в перечне, и превышают порог. Бензол (2,4 > 1 кг/ч) и сероводород (0,18 > 0,1 кг/ч) проходят все три условия. Фенол и диоксид серы не входят в территориальный перечень для этого города.'
+      }
+    },
+    {
+      label: 'Кейс 3',
+      docs: {
+        card: {
+          title: 'АО «Металл-Ресурс»',
+          rows: [
+            '<strong>Категория объекта НВОС:</strong> I',
+            '<strong>Статус квотирования:</strong> Объект включен в перечень квотируемых по проекту Чистый воздух для г. Красноярска'
+          ]
+        },
+        inventory: {
+          title: 'ИЗАВ № 0025. Агломерационная машина',
+          rows: [
+            'диоксид серы – 31 кг/ч',
+            'оксиды азота – 22 кг/ч',
+            'взвешенные вещества – 2,9 кг/ч',
+            'бензол – 0,8 кг/ч'
+          ]
+        },
+        hint: {
+          title: 'Территориальный перечень и пороги',
+          text: 'Приоритетные загрязняющие вещества для г. Красноярска: диоксид серы, бензол. Пороги: по ПП РФ № 779 – диоксид серы 30 кг/ч, оксиды азота 30 кг/ч, взвешенные вещества 3 кг/ч; по ПП РФ № 39 – бензол 1 кг/ч.'
+        }
+      },
+      question: 'Какие вещества по этому источнику нужно взять в дальнейшую проверку по САК',
+      options: ['диоксид серы', 'оксиды азота', 'взвешенные вещества', 'бензол'],
+      correct: [0],
+      explanation: {
+        correct: 'Объект одновременно I категории и квотируемый, значит смотрите обе ветки. Но в дальнейшую проверку попадут только вещества с превышением порога. Диоксид серы (31 > 30 кг/ч по ПП РФ № 779) превышает порог и входит в территориальный перечень. Оксиды азота (22 < 30) и взвешенные вещества (2,9 < 3) порог не превышают. Бензол (0,8 < 1 по ПП РФ № 39) тоже не достигает порога.',
+        wrong: 'Объект одновременно I категории и квотируемый, значит смотрите обе ветки. Но в дальнейшую проверку попадут только вещества с превышением порога. Диоксид серы (31 > 30 кг/ч по ПП РФ № 779) превышает порог и входит в территориальный перечень. Оксиды азота (22 < 30) и взвешенные вещества (2,9 < 3) порог не превышают. Бензол (0,8 < 1 по ПП РФ № 39) тоже не достигает порога.'
+      }
+    }
+  ];
+
+  let currentCase = 0;
+  let answered = false;
+  let selected = [];
+  let lastAnswerCorrect = false;
+
+  function renderCase() {
+    const c = cases[currentCase];
+    const area = document.getElementById('caseArea');
+    selected = [];
+    answered = false;
+    lastAnswerCorrect = false;
+    
+    area.innerHTML = `
+      <div class="case-layout">
+        <div class="question-box">
+          <div class="q-title">${c.label}. ${c.question}</div>
+          <div class="options" id="options"></div>
+        </div>
+        <div class="docs-box">
+          <div class="doc-card">
+            <div class="doc-label">Карточка объекта НВОС</div>
+            <div class="doc-title">${c.docs.card.title}</div>
+            ${c.docs.card.rows.map(r => `<div class="doc-row">${r}</div>`).join('')}
+          </div>
+          <div class="doc-card">
+            <div class="doc-label">Выписка из инвентаризации</div>
+            <div class="doc-title">${c.docs.inventory.title}</div>
+            ${c.docs.inventory.rows.map(r => `<div class="doc-row">${r}</div>`).join('')}
+          </div>
+          <button class="hint-btn" onclick="showHint()">
+            💡 ${c.docs.hint.title}
+          </button>
+        </div>
+      </div>
+      <div class="ctrls">
+        <button class="btn btn-next" id="nextBtn" onclick="checkAnswer()">Проверить</button>
+      </div>
+    `;
+    
+    const optsContainer = document.getElementById('options');
+    c.options.forEach((opt, i) => {
+      const el = document.createElement('div');
+      el.className = 'option';
+      el.innerHTML = `<div class="chk"></div><div>${opt}</div>`;
+      el.onclick = () => toggleOption(i, el);
+      optsContainer.appendChild(el);
+    });
+    
+    updateProgress();
+    triggerResize();
+  }
+
+  function showHint() {
+    const c = cases[currentCase];
+    document.getElementById('hintModalTitle').textContent = c.docs.hint.title;
+    document.getElementById('hintModalBody').textContent = c.docs.hint.text;
+    document.getElementById('hintModal').classList.add('show');
+    triggerResize();
+  }
+
+  function closeHintModal() {
+    document.getElementById('hintModal').classList.remove('show');
+    triggerResize();
+  }
+
+  function toggleOption(idx, el) {
+    if (answered) return;
+    
+    if (selected.includes(idx)) {
+      selected = selected.filter(i => i !== idx);
+      el.classList.remove('selected');
+    } else {
+      selected.push(idx);
+      el.classList.add('selected');
+    }
+    
+    if (selected.length > 0) {
+      document.getElementById('nextBtn').classList.add('active');
+    } else {
+      document.getElementById('nextBtn').classList.remove('active');
+    }
+  }
+
+  function checkAnswer() {
+    if (answered || selected.length === 0) return;
+    
+    answered = true;
+    
+    const c = cases[currentCase];
+    lastAnswerCorrect = selected.length === c.correct.length && 
+                        selected.every(i => c.correct.includes(i)) &&
+                        c.correct.every(i => selected.includes(i));
+    
+    document.querySelectorAll('.option').forEach((opt, i) => {
+      opt.style.pointerEvents = 'none';
+      if (c.correct.includes(i)) {
+        if (selected.includes(i)) opt.classList.add('correct');
+        else opt.classList.add('missed');
+      } else if (selected.includes(i)) {
+        opt.classList.add('wrong');
+      }
+    });
+    
+    document.getElementById('feedbackTitle').textContent = lastAnswerCorrect ? 'Верно' : 'Не совсем';
+    document.getElementById('feedbackTitle').className = 'modal-title ' + (lastAnswerCorrect ? 'correct' : 'wrong');
+    document.getElementById('feedbackExplanation').textContent = lastAnswerCorrect ? c.explanation.correct : c.explanation.wrong;
+    
+    const btn = document.getElementById('feedbackBtn');
+    if (lastAnswerCorrect) {
+      btn.textContent = 'Далее';
+      btn.className = 'modal-btn';
+      btn.onclick = () => {
+        closeFeedbackModal();
+        nextCase();
+      };
+    } else {
+      btn.textContent = 'Переответить';
+      btn.className = 'modal-btn retry';
+      btn.onclick = () => {
+        closeFeedbackModal();
+        retryAnswer();
+      };
+    }
+    
+    document.getElementById('feedbackModal').classList.add('show');
+    triggerResize();
+  }
+
+  function retryAnswer() {
+    answered = false;
+    selected = [];
+    
+    document.querySelectorAll('.option').forEach(opt => {
+      opt.classList.remove('correct', 'wrong', 'missed', 'selected');
+      opt.style.pointerEvents = 'auto';
+    });
+    
+    document.getElementById('nextBtn').classList.remove('active');
+    document.getElementById('nextBtn').textContent = 'Проверить';
+    triggerResize();
+  }
+
+  function closeFeedbackModal() {
+    document.getElementById('feedbackModal').classList.remove('show');
+    triggerResize();
+  }
+
+  function nextCase() {
+    currentCase++;
+    answered = false;
+    selected = [];
+    
+    if (currentCase < cases.length) {
+      renderCase();
+    } else {
+      document.getElementById('caseArea').style.display = 'none';
+      document.querySelector('.progress').style.display = 'none';
+      document.getElementById('finalScreen').classList.add('show');
+      triggerResize();
+    }
+  }
+
+  function updateProgress() {
+    const pct = ((currentCase + 1) / cases.length) * 100;
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progTxt').textContent = `Кейс ${currentCase + 1} из ${cases.length}`;
+  }
+
+  function restart() {
+    currentCase = 0;
+    answered = false;
+    selected = [];
+    document.getElementById('caseArea').style.display = 'block';
+    document.querySelector('.progress').style.display = 'flex';
+    document.getElementById('finalScreen').classList.remove('show');
+    renderCase();
+  }
+
+  document.addEventListener('keydown', e => {
+    if (e.key === 'Escape') {
+      closeHintModal();
+      closeFeedbackModal();
+    }
+  });
+
+  document.getElementById('hintModal').addEventListener('click', e => {
+    if (e.target.id === 'hintModal') closeHintModal();
+  });
+
+  document.getElementById('feedbackModal').addEventListener('click', e => {
+    if (e.target.id === 'feedbackModal') closeFeedbackModal();
+  });
+
+  renderCase();
+</script>
+
+</body>
+</html>
