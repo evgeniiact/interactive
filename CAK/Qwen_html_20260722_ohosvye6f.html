@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Соберите команду проекта</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --card: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g200: #bbf7d0;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --wrong: #f97316;
+    --wrong-bg: #ffedd5;
+    --radius: 10px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+  }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 650px;
+    height: auto;
+    min-height: 300px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+  h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--g800); }
+  .instruction { 
+    font-size: 13px; color: var(--text); line-height: 1.4; margin-bottom: 14px; 
+    background: var(--g50); padding: 10px 14px; border-radius: 8px; border-left: 3px solid var(--g600);
+  }
+  
+  .current-task {
+    background: #f8fafc;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 14px;
+    min-height: 80px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .current-task-label {
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--muted);
+  }
+  .current-task-card {
+    background: #fff;
+    border: 2px solid var(--g600);
+    border-radius: 6px;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    line-height: 1.4;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    transition: all 0.15s ease;
+  }
+  .current-task-card:hover { background: var(--g50); }
+  .current-task-card.dragging {
+    opacity: 0.85;
+    border-style: dashed;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+    cursor: grabbing;
+  }
+  .current-task-empty {
+    font-size: 12px;
+    color: var(--muted);
+    font-style: italic;
+    padding: 8px;
+  }
+  
+  .roles-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+  @media (max-width: 600px) {
+    .roles-grid { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 380px) {
+    .roles-grid { grid-template-columns: 1fr; }
+  }
+  
+  .role-col {
+    background: #fff;
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.15s ease;
+  }
+  .role-col.drag-over {
+    border-color: var(--g600);
+    background: var(--g50);
+    border-style: solid;
+  }
+  .role-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--g700);
+    text-align: center;
+    padding: 6px 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .role-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+    min-height: 50px;
+  }
+  
+  .role-cards .task-card {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 10.5px;
+    line-height: 1.3;
+    cursor: pointer;
+    user-select: none;
+    touch-action: none;
+    transition: all 0.15s ease;
+  }
+  .role-cards .task-card:hover { border-color: var(--g600); }
+  .role-cards .task-card.dragging {
+    opacity: 0.85;
+    border-style: dashed;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+    cursor: grabbing;
+  }
+  
+  .task-card.correct {
+    border-color: var(--g600);
+    background: #dcfce7;
+  }
+  .task-card.wrong {
+    border-color: var(--wrong);
+    background: var(--wrong-bg);
+  }
+
+  .progress-info {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+  .progress-bar {
+    height: 4px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+    margin-bottom: 14px;
+  }
+  .progress-fill {
+    height: 100%;
+    background: var(--g600);
+    width: 0%;
+    transition: width 0.3s ease;
+    border-radius: 2px;
+  }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.15s;
+    background: var(--g600);
+    color: #fff;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  .btn.active { opacity: 1; pointer-events: auto; }
+  .btn:hover { background: var(--g700); }
+  .btn-reset {
+    background: #fff;
+    color: var(--g700);
+    border: 2px solid var(--g600);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .btn-reset:hover { background: var(--g50); }
+
+  .tooltip {
+    position: fixed;
+    background: #1e293b;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    max-width: 280px;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .tooltip.show { opacity: 1; }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h2>Соберите команду проекта</h2>
+  <div class="instruction">
+    Объекту нужна САК. Мало оформить служебную записку – нужно собрать рабочую команду, чтобы получить данные по источникам, выйти на площадку и подготовить сильное ТЗ.<br><br>
+    Распределите задачи между участниками проекта. Перетащите карточку в нужную колонку. После переноса появится следующая задача. Наведите курсор на карточку в колонке, чтобы увидеть комментарий.
+  </div>
+
+  <div class="progress-info">
+    <span>Распределено задач: <strong id="progressText">0 из 10</strong></span>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+
+  <div class="current-task" id="currentTask">
+    <div class="current-task-label">Следующая задача</div>
+    <div class="current-task-empty">Загрузка...</div>
+  </div>
+
+  <div class="roles-grid" id="rolesGrid">
+    <div class="role-col" data-role="ecologist">
+      <div class="role-title">Эколог</div>
+      <div class="role-cards"></div>
+    </div>
+    <div class="role-col" data-role="technologist">
+      <div class="role-title">Технолог</div>
+      <div class="role-cards"></div>
+    </div>
+    <div class="role-col" data-role="kipia">
+      <div class="role-title">КИПиА</div>
+      <div class="role-cards"></div>
+    </div>
+    <div class="role-col" data-role="engineer">
+      <div class="role-title">Инженер / энергетик</div>
+      <div class="role-cards"></div>
+    </div>
+    <div class="role-col" data-role="procurement">
+      <div class="role-title">Закупки и тендерный отдел</div>
+      <div class="role-cards"></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-reset" onclick="resetGame()">Начать заново</button>
+    <button class="btn" id="checkBtn" onclick="checkAnswers()">Проверить</button>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
+  const tasks = [
+    { id: 't1', text: 'Подготовить служебную записку о старте проекта и обосновать, почему объект подпадает под требования по САК.', role: 'ecologist', hint: 'Эколог инициирует проект и формирует служебную записку для руководителя.' },
+    { id: 't2', text: 'Сформировать перечень источников, веществ и параметров, которые нужно учесть в проекте.', role: 'ecologist', hint: 'Перечень источников и веществ – зона ответственности эколога на основе инвентаризации и нормативов.' },
+    { id: 't3', text: 'Подтвердить реальные режимы работы источника: пуски, остановки и нештатные ситуации.', role: 'technologist', hint: 'Реальные режимы работы источника подтверждает технолог – только он знает фактические циклы производства.' },
+    { id: 't4', text: 'Проверить, где на объекте реально можно поставить датчики, площадки и узлы отбора проб.', role: 'engineer', hint: 'Это задачи обследования площадки. Их решают инженер и технические службы на объекте.' },
+    { id: 't5', text: 'Оценить состояние площадок, лестниц, трасс, питания и мест для шкафов.', role: 'engineer', hint: 'Оценка состояния инфраструктуры – задача инженера или энергетика при обследовании объекта.' },
+    { id: 't6', text: 'Проверить, можно ли встроить САК в действующие системы контроля и линии связи.', role: 'kipia', hint: 'Без КИПиА нельзя проверить, как САК встроится в действующие измерительные контуры и линии связи.' },
+    { id: 't7', text: 'Дать замечания по запыленности, влажности, обмерзанию, коррозии и другим условиям среды.', role: 'engineer', hint: 'Замечания по условиям среды дает инженер при обследовании – это часть оценки площадки.' },
+    { id: 't8', text: 'Разработать ТЗ с учетом технических требований к источникам, данным и приемке.', role: 'ecologist', hint: 'Техническое содержание ТЗ и требования к системе – зона ответственности эколога совместно с технологом и КИПиА.' },
+    { id: 't9', text: 'Подготовить закупочную процедуру и конкурсные документы без потери технического смысла ТЗ.', role: 'procurement', hint: 'Эколог отвечает за технический смысл ТЗ. Но конкурсную документацию и процедуру ведет закупочный блок.' },
+    { id: 't10', text: 'Проверить, чтобы требования к подрядчику, составу работ и составу заявки не исказились в закупке.', role: 'procurement', hint: 'Контроль за сохранением требований ТЗ в закупке – совместная задача эколога и тендерного отдела, но процедуру ведет закупка.' }
+  ];
+
+  let taskQueue = [];
+  let currentTaskIndex = 0;
+  let isChecked = false;
+  let draggedEl = null;
+  let offsetX = 0, offsetY = 0;
+  let dragSource = null;
+
+  function shuffle(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function initGame() {
+    taskQueue = shuffle(tasks);
+    currentTaskIndex = 0;
+    isChecked = false;
+    
+    document.querySelectorAll('.role-cards').forEach(col => col.innerHTML = '');
+    document.getElementById('checkBtn').classList.remove('active');
+    
+    showCurrentTask();
+    updateProgress();
+    triggerResize();
+  }
+
+  function showCurrentTask() {
+    const container = document.getElementById('currentTask');
+    container.innerHTML = '<div class="current-task-label">Следующая задача</div>';
+    
+    if (currentTaskIndex >= taskQueue.length) {
+      container.innerHTML += '<div class="current-task-empty">Все задачи распределены. Нажмите «Проверить».</div>';
+      return;
+    }
+    
+    const task = taskQueue[currentTaskIndex];
+    const card = document.createElement('div');
+    card.className = 'current-task-card';
+    card.dataset.id = task.id;
+    card.textContent = task.text;
+    card.addEventListener('pointerdown', handlePointerDownFromCurrent);
+    container.appendChild(card);
+  }
+
+  function handlePointerDownFromCurrent(e) {
+    if (isChecked) return;
+    const card = e.target.closest('.current-task-card');
+    if (!card) return;
+    
+    e.preventDefault();
+    draggedEl = card;
+    dragSource = 'current';
+    const rect = card.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    
+    draggedEl.style.position = 'fixed';
+    draggedEl.style.width = rect.width + 'px';
+    draggedEl.style.zIndex = 1000;
+    draggedEl.style.left = rect.left + 'px';
+    draggedEl.style.top = rect.top + 'px';
+    draggedEl.classList.add('dragging');
+    
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+  }
+
+  function handlePointerDownFromRole(e) {
+    if (isChecked) return;
+    const card = e.target.closest('.task-card');
+    if (!card) return;
+    
+    e.preventDefault();
+    draggedEl = card;
+    dragSource = 'role';
+    const rect = card.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    
+    draggedEl.style.position = 'fixed';
+    draggedEl.style.width = rect.width + 'px';
+    draggedEl.style.zIndex = 1000;
+    draggedEl.style.left = rect.left + 'px';
+    draggedEl.style.top = rect.top + 'px';
+    draggedEl.classList.add('dragging');
+    
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+  }
+
+  function onPointerMove(e) {
+    if (!draggedEl) return;
+    draggedEl.style.left = (e.clientX - offsetX) + 'px';
+    draggedEl.style.top = (e.clientY - offsetY) + 'px';
+    
+    document.querySelectorAll('.role-col').forEach(col => {
+      const rect = col.getBoundingClientRect();
+      if (e.clientX >= rect.left && e.clientX <= rect.right && 
+          e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        col.classList.add('drag-over');
+      } else {
+        col.classList.remove('drag-over');
+      }
+    });
+  }
+
+  function onPointerUp(e) {
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.querySelectorAll('.role-col').forEach(col => col.classList.remove('drag-over'));
+    
+    if (!draggedEl) return;
+    
+    draggedEl.style.display = 'none';
+    let elemBelow = document.elementFromPoint(e.clientX, e.clientY);
+    draggedEl.style.display = '';
+    
+    let placed = false;
+    if (elemBelow) {
+      const target = elemBelow.closest('.role-col');
+      if (target) {
+        const cardsContainer = target.querySelector('.role-cards');
+        
+        if (dragSource === 'role') {
+          draggedEl.remove();
+        }
+        
+        const task = tasks.find(t => t.id === draggedEl.dataset.id);
+        const newCard = document.createElement('div');
+        newCard.className = 'task-card';
+        newCard.dataset.id = task.id;
+        newCard.textContent = task.text;
+        newCard.addEventListener('pointerdown', handlePointerDownFromRole);
+        cardsContainer.appendChild(newCard);
+        
+        placed = true;
+        
+        if (dragSource === 'current') {
+          currentTaskIndex++;
+          showCurrentTask();
+          updateProgress();
+        }
+      }
+    }
+    
+    draggedEl.style.position = '';
+    draggedEl.style.width = '';
+    draggedEl.style.zIndex = '';
+    draggedEl.style.left = '';
+    draggedEl.style.top = '';
+    draggedEl.classList.remove('dragging');
+    
+    draggedEl = null;
+    dragSource = null;
+    
+    updateCheckButton();
+    triggerResize();
+  }
+
+  function updateProgress() {
+    const placed = document.querySelectorAll('.role-cards .task-card').length;
+    document.getElementById('progressText').textContent = `${placed} из 10`;
+    document.getElementById('progressFill').style.width = `${(placed / 10) * 100}%`;
+  }
+
+  function updateCheckButton() {
+    const placed = document.querySelectorAll('.role-cards .task-card').length;
+    const btn = document.getElementById('checkBtn');
+    if (placed === 10) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  }
+
+  function checkAnswers() {
+    const placed = document.querySelectorAll('.role-cards .task-card').length;
+    if (placed < 10) return;
+    
+    isChecked = true;
+    let correctCount = 0;
+    
+    document.querySelectorAll('.role-col').forEach(col => {
+      const role = col.dataset.role;
+      const cards = col.querySelectorAll('.task-card');
+      cards.forEach(card => {
+        const taskId = card.dataset.id;
+        const task = tasks.find(t => t.id === taskId);
+        if (task.role === role) {
+          card.classList.add('correct');
+          correctCount++;
+        } else {
+          card.classList.add('wrong');
+        }
+      });
+    });
+    
+    triggerResize();
+  }
+
+  function resetGame() {
+    document.getElementById('tooltip').classList.remove('show');
+    initGame();
+  }
+
+  // Делегирование событий для тултипа
+  const tooltip = document.getElementById('tooltip');
+  const rolesGrid = document.getElementById('rolesGrid');
+  
+  rolesGrid.addEventListener('mouseover', (e) => {
+    const card = e.target.closest('.task-card');
+    if (!card) return;
+    
+    const taskId = card.dataset.id;
+    const task = tasks.find(t => t.id === taskId);
+    if (!task) return;
+    
+    tooltip.textContent = task.hint;
+    tooltip.classList.add('show');
+    positionTooltip(card, tooltip);
+  });
+  
+  rolesGrid.addEventListener('mousemove', (e) => {
+    const card = e.target.closest('.task-card');
+    if (!card) return;
+    positionTooltip(card, tooltip);
+  });
+  
+  rolesGrid.addEventListener('mouseout', (e) => {
+    const card = e.target.closest('.task-card');
+    if (!card) return;
+    
+    const related = e.relatedTarget;
+    if (related && card.contains(related)) return;
+    
+    tooltip.classList.remove('show');
+  });
+
+  function positionTooltip(card, tooltip) {
+    const cardRect = card.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+
+    let top = cardRect.top + cardRect.height / 2 - tooltipRect.height / 2;
+    let left = cardRect.right + 12;
+
+    if (left + tooltipRect.width > window.innerWidth - 20) {
+      left = cardRect.left - tooltipRect.width - 12;
+    }
+
+    if (top < 10) top = 10;
+    if (top + tooltipRect.height > window.innerHeight - 10) {
+      top = window.innerHeight - tooltipRect.height - 10;
+    }
+
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+  }
+
+  const wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(() => { 
+      triggerResize(); 
+    }).observe(wrap);
+  }
+
+  window.addEventListener('load', () => {
+    initGame();
+    triggerResize();
+  });
+</script>
+
+</body>
+</html>
