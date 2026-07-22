@@ -1,0 +1,605 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Риск – последствие</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --card: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g200: #bbf7d0;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --wrong: #f97316;
+    --wrong-bg: #ffedd5;
+    --radius: 10px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    margin: 0; padding: 0; min-height: 100%;
+  }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 720px;
+    height: auto;
+    min-height: 300px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+  h2 { font-size: 18px; font-weight: 700; margin-bottom: 6px; color: var(--g800); }
+  .instruction { 
+    font-size: 13px; color: var(--text); line-height: 1.4; margin-bottom: 14px; 
+    background: var(--g50); padding: 10px 14px; border-radius: 8px; border-left: 3px solid var(--g600);
+  }
+  
+  .col-headers {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .col-title {
+    font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px;
+    color: var(--muted); text-align: center;
+  }
+  
+  .pairs-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-rows: repeat(6, auto);
+    gap: 8px 12px;
+    margin-bottom: 14px;
+  }
+  
+  .slot {
+    min-height: 60px;
+    display: flex;
+    align-items: stretch;
+  }
+  
+  .card {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    padding: 10px 12px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    font-size: 12.5px;
+    line-height: 1.35;
+    position: relative;
+    width: 100%;
+    display: flex;
+    align-items: center;
+  }
+  .card:hover { border-color: var(--g600); }
+  .card.selected { border-color: var(--g600); background: var(--g100); }
+  
+  .card.paired { 
+    border-color: var(--g700); 
+    background: var(--g50); 
+    cursor: pointer;
+  }
+  .card.paired::before {
+    content: attr(data-pair-num);
+    position: absolute;
+    top: -7px;
+    left: 10px;
+    background: var(--g700);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 8px;
+  }
+  
+  .card.correct { border-color: var(--g600); background: #dcfce7; cursor: pointer; }
+  .card.correct::after { content: ' ✓'; color: var(--g600); font-weight: 700; margin-left: auto; }
+  .card.wrong { border-color: var(--wrong); background: var(--wrong-bg); cursor: pointer; }
+  .card.wrong::after { content: ' ✕'; color: var(--wrong); font-weight: 700; margin-left: auto; }
+
+  .slot.empty {
+    border: 1px dashed var(--border);
+    border-radius: 6px;
+    background: #fafafa;
+  }
+
+  .tooltip {
+    position: fixed;
+    background: #1e293b;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    max-width: 280px;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    background: #1e293b;
+    transform: translateY(-50%) rotate(45deg);
+  }
+  .tooltip.left::before { right: -4px; }
+  .tooltip.right::before { left: -4px; }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 6px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.15s;
+    background: var(--g600);
+    color: #fff;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  .btn.active { opacity: 1; pointer-events: auto; }
+  .btn:hover { background: var(--g700); }
+  .btn-reset {
+    background: #fff;
+    color: var(--g700);
+    border: 2px solid var(--g600);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .btn-reset:hover { background: var(--g50); }
+
+  .modal-overlay {
+    position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.5); display: none; align-items: center; justify-content: center;
+    z-index: 9999; padding: 16px;
+  }
+  .modal-overlay.show { display: flex; }
+  .modal {
+    background: #fff; border-radius: 12px; max-width: 460px; width: 100%;
+    max-height: 80vh; overflow-y: auto; padding: 20px;
+    box-shadow: 0 16px 48px rgba(0,0,0,0.2); animation: slideUp 0.25s ease;
+  }
+  @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+  .modal-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 14px; }
+  .modal-title { font-size: 16px; font-weight: 700; margin: 0; }
+  .modal-title.success { color: var(--g700); }
+  .modal-title.warning { color: var(--wrong); }
+  .modal-close {
+    background: #f1f5f9; border: none; width: 28px; height: 28px; border-radius: 50%;
+    cursor: pointer; font-size: 16px; color: var(--muted);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+  }
+  .modal-close:hover { background: #e2e8f0; }
+  .modal-body { font-size: 13px; line-height: 1.5; color: var(--text); margin-bottom: 14px; }
+  .modal-body p { margin-bottom: 10px; }
+  .modal-body ul { padding-left: 18px; margin-bottom: 10px; }
+  .modal-body li { margin-bottom: 6px; }
+  .modal-body strong { color: var(--g800); }
+  .modal-btn {
+    width: 100%; padding: 10px; background: var(--g600); color: #fff;
+    border: none; border-radius: 6px; font-size: 13px; font-weight: 600; cursor: pointer;
+  }
+  .modal-btn:hover { background: var(--g700); }
+
+  @media (max-width: 600px) {
+    .pairs-grid { grid-template-columns: 1fr; grid-template-rows: repeat(12, auto); }
+    .col-headers { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h2>Риск – последствие</h2>
+  <div class="instruction">
+    Слева – ошибка в проекте САК. Справа – практическое последствие.<br>
+    Нажмите на карточку слева, затем на карточку справа, чтобы собрать пару. Когда соберете все 6 пар, нажмите «Проверить». После проверки наведите курсор на пару, чтобы увидеть разбор с привязкой к нормативам.
+  </div>
+
+  <div class="col-headers">
+    <div class="col-title">Ошибка в проекте</div>
+    <div class="col-title">Последствие на объекте</div>
+  </div>
+
+  <div class="pairs-grid" id="pairsGrid"></div>
+
+  <div class="controls">
+    <button class="btn btn-reset" onclick="resetGame()">Начать заново</button>
+    <button class="btn" id="checkBtn" onclick="checkAnswers()">Проверить</button>
+  </div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<div class="modal-overlay" id="resultModal" onclick="if(event.target===this)closeModal('resultModal')">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 class="modal-title" id="resultTitle">Результат</h3>
+      <button class="modal-close" onclick="closeModal('resultModal')">×</button>
+    </div>
+    <div class="modal-body" id="resultBody"></div>
+    <button class="modal-btn" onclick="closeModal('resultModal')">Понятно</button>
+  </div>
+</div>
+
+<script>
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
+  const risks = [
+    { 
+      id: 'r1', 
+      text: 'Рассчитали диапазон датчика только по КЭР без учета пусковых режимов. Запас по ПП № 778 не соблюден.',
+      hint: 'По ПП РФ № 778 верхний предел измерения должен иметь 2,5-кратный запас относительно максимальной фактической концентрации. КЭР содержит только нормативные значения. Если заложить диапазон «впритык», прибор уйдет в насыщение при первом запуске.'
+    },
+    { 
+      id: 'r2', 
+      text: 'В ТЗ указали только перечень источников и веществ. Не прописали требования к каналам связи, защите оборудования и формату передачи данных.',
+      hint: 'Общее ТЗ не фиксирует состав работ и условия площадки. Без четких требований к интеграции и каналам связи сравнить коммерческие предложения по существу невозможно, что срывает процедуру закупки.'
+    },
+    { 
+      id: 'r3', 
+      text: 'На источнике высокая запыленность, но подрядчик поставил узел отбора проб без циклона и системы продувки. ГОСТ Р ЕН 15259-2015 требует защиты.',
+      hint: 'ГОСТ Р ЕН 15259-2015 обязывает учитывать температуру, запыленность, вибрации и риск обмерзания. Без защиты узел отбора проб быстро выходит из строя. Доработка после монтажа обходится значительно дороже и требует повторных согласований.'
+    },
+    { 
+      id: 'r4', 
+      text: 'Выбрали подрядчика по минимальной цене, не проверив его опыт интеграции с требованиями приказа Росприроднадзора № 382.',
+      hint: 'Приказ № 382 устанавливает формат передачи данных в государственный реестр. Если подрядчик не закрывал этот контур на аналогичных объектах, система не пройдет тестовую передачу, что блокирует ввод в эксплуатацию.'
+    },
+    { 
+      id: 'r5', 
+      text: 'Тендерный отдел убрал из ТЗ требование к метрологической поверке, заменив его на общую формулировку «оборудование должно соответствовать законодательству РФ».',
+      hint: 'Когда тендерный отдел адаптирует ТЗ под формальные требования, технический смысл размывается. В документацию попадают общие формулировки без привязки к утвержденному типу СИ и межповерочному интервалу, что ведет к штрафным санкциям.'
+    },
+    { 
+      id: 'r6', 
+      text: 'Эколог работал над проектом один, не привлекая технолога для данных о пусковых режимах и КИПиА для согласования точек установки.',
+      hint: 'Проект САК требует участия эколога, технолога, специалиста КИПиА и закупок. Без технолога не собрать данные о реальных режимах работы источников. Без КИПиА не согласовать точки установки по ГОСТ Р ЕН 15259-2015.'
+    }
+  ];
+
+  const consequences = [
+    { id: 'cA', text: 'При первом пуске прибор ушел в насыщение. Потребовалась срочная замена датчиков на оборудование с более широким диапазоном измерения.', correctRisk: 'r1' },
+    { id: 'cB', text: 'Подрядчики дали несопоставимые заявки: одни заложили оптоволокно, другие – мобильные модемы. Выбрать победителя по существу стало невозможно.', correctRisk: 'r2' },
+    { id: 'cC', text: 'Через короткое время эксплуатации фильтр забился, прибор перестал передавать данные. Потребовалась доработка узла уже после монтажа.', correctRisk: 'r3' },
+    { id: 'cD', text: 'При тестовой передаче реестр отклонил данные из-за неверной XML-схемы. Приемка системы сдвинулась на неопределенный срок из-за доработки модуля интеграции.', correctRisk: 'r4' },
+    { id: 'cE', text: 'Подрядчик поставил приборы без действующего свидетельства о поверке. При приемке Росприроднадзор выставил предписание об устранении нарушений.', correctRisk: 'r5' },
+    { id: 'cF', text: 'Проект затормозился на старте. Сбор исходных данных и согласование точек установки заняли критически много времени, сроки по контракту оказались под угрозой срыва.', correctRisk: 'r6' }
+  ];
+
+  let selectedLeft = null;
+  let pairs = {};
+  let isChecked = false;
+  let shuffledConsequences = [];
+
+  function shuffle(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function initCards() {
+    shuffledConsequences = shuffle(consequences);
+    renderGrid();
+  }
+
+  function renderGrid() {
+    const grid = document.getElementById('pairsGrid');
+    grid.innerHTML = '';
+
+    const leftCards = risks.map(r => {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.dataset.id = r.id;
+      el.dataset.side = 'left';
+      el.textContent = r.text;
+      el.onclick = () => handleLeftClick(r.id);
+      return el;
+    });
+
+    const rightCards = shuffledConsequences.map(c => {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.dataset.id = c.id;
+      el.dataset.side = 'right';
+      el.textContent = c.text;
+      el.onclick = () => handleRightClick(c.id);
+      return el;
+    });
+
+    const leftPlaced = {};
+    const rightPlaced = {};
+
+    const pairKeys = Object.keys(pairs);
+    pairKeys.forEach((leftId, idx) => {
+      const rightId = pairs[leftId];
+      const leftCard = leftCards.find(c => c.dataset.id === leftId);
+      const rightCard = rightCards.find(c => c.dataset.id === rightId);
+      if (leftCard && rightCard) {
+        leftPlaced[idx] = leftCard;
+        rightPlaced[idx] = rightCard;
+      }
+    });
+
+    const leftPool = leftCards.filter(c => !Object.values(leftPlaced).includes(c));
+    const rightPool = rightCards.filter(c => !Object.values(rightPlaced).includes(c));
+
+    for (let i = 0; i < 6; i++) {
+      const leftSlot = document.createElement('div');
+      leftSlot.className = 'slot';
+      
+      const rightSlot = document.createElement('div');
+      rightSlot.className = 'slot';
+
+      if (leftPlaced[i]) {
+        const card = leftPlaced[i];
+        card.classList.add('paired');
+        card.dataset.pairNum = i + 1;
+        leftSlot.appendChild(card);
+      } else if (leftPool.length > 0) {
+        leftSlot.appendChild(leftPool.shift());
+      } else {
+        leftSlot.classList.add('empty');
+      }
+
+      if (rightPlaced[i]) {
+        const card = rightPlaced[i];
+        card.classList.add('paired');
+        card.dataset.pairNum = i + 1;
+        rightSlot.appendChild(card);
+      } else if (rightPool.length > 0) {
+        rightSlot.appendChild(rightPool.shift());
+      } else {
+        rightSlot.classList.add('empty');
+      }
+
+      grid.appendChild(leftSlot);
+      grid.appendChild(rightSlot);
+    }
+
+    updateCheckButton();
+    triggerResize();
+  }
+
+  function handleLeftClick(id) {
+    if (isChecked) return;
+    
+    if (pairs[id]) {
+      delete pairs[id];
+      selectedLeft = null;
+    } else {
+      selectedLeft = (selectedLeft === id) ? null : id;
+    }
+    renderGrid();
+  }
+
+  function handleRightClick(id) {
+    if (isChecked) return;
+    if (!selectedLeft) return;
+
+    const existingLeft = Object.keys(pairs).find(key => pairs[key] === id);
+    if (existingLeft) {
+      delete pairs[existingLeft];
+    }
+
+    pairs[selectedLeft] = id;
+    selectedLeft = null;
+    renderGrid();
+  }
+
+  function updateCheckButton() {
+    const btn = document.getElementById('checkBtn');
+    if (Object.keys(pairs).length === 6) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  }
+
+  function checkAnswers() {
+    isChecked = true;
+    let correctCount = 0;
+
+    risks.forEach(r => {
+      const rightId = pairs[r.id];
+      const correctRight = consequences.find(c => c.correctRisk === r.id).id;
+      if (rightId === correctRight) {
+        correctCount++;
+      }
+    });
+
+    let title = '';
+    let titleClass = '';
+    let bodyHtml = '';
+
+    if (correctCount === 6) {
+      title = 'Верно';
+      titleClass = 'success';
+      bodyHtml = '<p>Вы видите логику проекта САК. Ошибка на старте редко остается локальной: она уходит в стоимость, сроки, приемку или доработку системы.</p><p>Наведите курсор на любую карточку, чтобы увидеть разбор с привязкой к нормативам.</p>';
+    } else if (correctCount >= 4) {
+      title = 'Хороший результат';
+      titleClass = 'success';
+      bodyHtml = '<p>Основную логику вы понимаете. Пересмотрите ошибки по ТЗ и выбору подрядчика – именно там чаще всего теряют деньги и сроки.</p><p>Наведите курсор на карточки, чтобы увидеть разбор.</p>';
+    } else {
+      title = 'Нужно повторить';
+      titleClass = 'warning';
+      bodyHtml = '<p>Вы видите риски по отдельности, но не всегда связываете их с последствиями. Вернитесь к блокам про обследование, ТЗ и выбор подрядчика.</p><p>Наведите курсор на карточки, чтобы увидеть разбор.</p>';
+    }
+
+    document.getElementById('resultTitle').textContent = title;
+    document.getElementById('resultTitle').className = 'modal-title ' + titleClass;
+    document.getElementById('resultBody').innerHTML = bodyHtml;
+    
+    document.getElementById('resultModal').classList.add('show');
+    
+    document.querySelectorAll('.card').forEach(card => {
+      const id = card.dataset.id;
+      const side = card.dataset.side;
+      
+      if (side === 'left') {
+        const rightId = pairs[id];
+        const correctRight = consequences.find(c => c.correctRisk === id).id;
+        if (rightId === correctRight) {
+          card.classList.add('correct');
+        } else {
+          card.classList.add('wrong');
+        }
+      } else {
+        const leftId = Object.keys(pairs).find(key => pairs[key] === id);
+        const correctRightData = consequences.find(c => c.id === id);
+        if (leftId === correctRightData.correctRisk) {
+          card.classList.add('correct');
+        } else {
+          card.classList.add('wrong');
+        }
+      }
+    });
+
+    setupTooltip();
+  }
+
+  function setupTooltip() {
+    const tooltip = document.getElementById('tooltip');
+    const cards = document.querySelectorAll('.card.paired');
+
+    cards.forEach(card => {
+      card.addEventListener('mouseenter', (e) => {
+        const id = card.dataset.id;
+        const side = card.dataset.side;
+        
+        let hintText = '';
+        if (side === 'left') {
+          const risk = risks.find(r => r.id === id);
+          hintText = risk.hint;
+        } else {
+          const leftId = Object.keys(pairs).find(key => pairs[key] === id);
+          const risk = risks.find(r => r.id === leftId);
+          hintText = risk.hint;
+        }
+
+        tooltip.textContent = hintText;
+        tooltip.classList.add('show');
+        positionTooltip(e.target, tooltip);
+      });
+
+      card.addEventListener('mousemove', (e) => {
+        positionTooltip(e.target, tooltip);
+      });
+
+      card.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('show');
+      });
+    });
+  }
+
+  function positionTooltip(card, tooltip) {
+    const cardRect = card.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const side = card.dataset.side;
+
+    let top = cardRect.top + cardRect.height / 2 - tooltipRect.height / 2;
+    let left;
+
+    if (side === 'left') {
+      left = cardRect.right + 12;
+      tooltip.classList.remove('left');
+      tooltip.classList.add('right');
+      
+      if (left + tooltipRect.width > window.innerWidth - 20) {
+        left = cardRect.left - tooltipRect.width - 12;
+        tooltip.classList.remove('right');
+        tooltip.classList.add('left');
+      }
+    } else {
+      left = cardRect.left - tooltipRect.width - 12;
+      tooltip.classList.remove('right');
+      tooltip.classList.add('left');
+      
+      if (left < 20) {
+        left = cardRect.right + 12;
+        tooltip.classList.remove('left');
+        tooltip.classList.add('right');
+      }
+    }
+
+    if (top < 10) top = 10;
+    if (top + tooltipRect.height > window.innerHeight - 10) {
+      top = window.innerHeight - tooltipRect.height - 10;
+    }
+
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+  }
+
+  function resetGame() {
+    selectedLeft = null;
+    pairs = {};
+    isChecked = false;
+    document.getElementById('tooltip').classList.remove('show');
+    initCards();
+  }
+
+  function closeModal(id) {
+    document.getElementById(id).classList.remove('show');
+    triggerResize();
+  }
+
+  const wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(() => { 
+      triggerResize(); 
+    }).observe(wrap);
+  }
+
+  window.addEventListener('load', () => {
+    initCards();
+    triggerResize();
+  });
+</script>
+
+</body>
+</html>
