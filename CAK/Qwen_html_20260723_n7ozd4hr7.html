@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Вводный тест по САК</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --card: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --o50: #fff7ed;
+    --o100: #ffedd5;
+    --o600: #ea580c;
+    --o800: #9a3412;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 650px;
+    height: auto;
+    min-height: 300px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+  h2 { font-size: 19px; font-weight: 700; margin-bottom: 6px; color: var(--g800); }
+  .intro { font-size: 14px; color: var(--text); line-height: 1.5; margin-bottom: 16px; }
+
+  .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .prog-bar { flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--g600); width: 0%; transition: width 0.4s; border-radius: 3px; }
+  .prog-txt { font-size: 12px; color: var(--muted); font-weight: 600; min-width: 80px; text-align: right; }
+
+  .question-block { display: none; flex-direction: column; gap: 14px; animation: fadeIn 0.3s ease; }
+  .question-block.active { display: flex; }
+
+  .q-text { font-size: 15px; font-weight: 600; line-height: 1.4; color: var(--text); }
+
+  .options { display: flex; gap: 12px; }
+  .opt-btn {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+  }
+  .opt-btn:hover { border-color: var(--g600); background: var(--g50); }
+  .opt-btn.selected-correct { border-color: var(--g600); background: var(--g100); color: var(--g800); pointer-events: none; }
+  .opt-btn.selected-wrong { border-color: var(--o600); background: var(--o100); color: var(--o800); pointer-events: none; }
+  .opt-btn.disabled { pointer-events: none; opacity: 0.5; }
+
+  /* Блок пояснения: зеленый для верного */
+  .explanation {
+    display: none;
+    border-radius: 8px;
+    padding: 14px;
+    font-size: 14px;
+    line-height: 1.5;
+    animation: fadeIn 0.3s ease;
+  }
+  .explanation.show { display: block; }
+  .explanation.correct {
+    background: var(--g50);
+    border-left: 4px solid var(--g600);
+  }
+  .explanation.wrong {
+    background: var(--o50);
+    border-left: 4px solid var(--o600);
+  }
+  .explanation .label {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 6px;
+  }
+  .explanation.correct .label { color: var(--g700); }
+  .explanation.wrong .label { color: var(--o600); }
+  .explanation p { margin: 0; color: var(--text); }
+  .explanation strong { color: var(--text); }
+
+  .next-btn {
+    align-self: flex-end;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--g600);
+    color: #fff;
+    opacity: 0.3;
+    pointer-events: none;
+    transition: 0.2s;
+  }
+  .next-btn.active { opacity: 1; pointer-events: auto; }
+  .next-btn:hover { background: var(--g700); }
+
+  .final-screen { display: none; text-align: center; animation: fadeIn 0.3s ease; }
+  .final-screen.active { display: flex; flex-direction: column; align-items: center; gap: 16px; padding-top: 10px; }
+  .final-icon { font-size: 40px; }
+  .final-title { font-size: 20px; font-weight: 700; color: var(--g800); }
+  .final-text { font-size: 14px; line-height: 1.5; color: var(--text); max-width: 500px; }
+  .final-text strong { color: var(--g700); }
+  .restart-btn {
+    padding: 12px 32px;
+    border: 2px solid var(--g600);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--g700);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+  }
+  .restart-btn:hover { background: var(--g50); }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 600px) { .wrap { padding: 16px; } .options { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h2>Проверка знаний: основы САК</h2>
+  <p class="intro">Оцените утверждения о системе автоматического контроля. Нажмите «Верно» или «Неверно», чтобы получить разбор.</p>
+
+  <div class="progress">
+    <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-txt" id="progTxt">Вопрос 1 из 5</div>
+  </div>
+
+  <div id="quizArea"></div>
+
+  <div class="final-screen" id="finalScreen">
+    <div class="final-icon" id="finalIcon"></div>
+    <div class="final-title" id="finalTitle">Тест завершен</div>
+    <div class="final-text" id="finalText"></div>
+    <button class="restart-btn" onclick="restartQuiz()">Пройти еще раз</button>
+  </div>
+</div>
+
+<script>
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
+  const questions = [
+    {
+      text: 'Система автоматического контроля только измеряет концентрацию загрязняющих веществ, но не считает их массу.',
+      isTrue: false,
+      correctExpl: 'Верно. САК не только измеряет концентрацию, но и автоматически считает массу выбросов и сбросов, а затем передает эти данные в государственный реестр объектов НВОС.',
+      wrongExpl: 'Неверно. САК автоматически измеряет выбросы и сбросы, считает их массу и передает данные в государственный реестр объектов НВОС. Подсчет массы – одна из ключевых функций системы.'
+    },
+    {
+      text: 'Систему автоматического контроля обязаны внедрять все промышленные предприятия страны без исключения.',
+      isTrue: false,
+      correctExpl: 'Верно. САК внедряют не на все предприятия. Она необходима на объектах с наибольшей нагрузкой на окружающую среду, по которым государству нужны точные данные о выбросах и сбросах.',
+      wrongExpl: 'Неверно. САК внедряют не на все предприятия. Она необходима на объектах с наибольшей нагрузкой на окружающую среду, особенно на предприятиях I категории и включенных в перечень квотируемых по проекту «Чистый воздух».'
+    },
+    {
+      text: 'Цель внедрения САК связана с федеральным проектом «Чистый воздух» национального проекта «Экология».',
+      isTrue: true,
+      correctExpl: 'Верно. Государство ставит задачу снизить выбросы опасных загрязняющих веществ в промышленных городах минимум на 20 процентов, а к 2030–2036 годам – вдвое. САК – один из инструментов для достижения этой цели.',
+      wrongExpl: 'Неверно. Цель внедрения САК напрямую связана с федеральным проектом «Чистый воздух» национального проекта «Экология». Задача – снизить выбросы в промышленных городах и улучшить качество жизни населения.'
+    },
+    {
+      text: 'Для предприятия САК нужна только для того, чтобы передавать данные государству. Никакой внутренней пользы она не несет.',
+      isTrue: false,
+      correctExpl: 'Верно. Помимо передачи данных в реестр, САК помогает предприятию управлять рисками и затратами: подтверждать выполнение КЭР, контролировать плату за НВОС и оценивать реальное влияние НДТ на выбросы.',
+      wrongExpl: 'Неверно. Предприятию САК нужна не только для отчетности. Система помогает управлять рисками и затратами: подтверждать выполнение КЭР, контролировать плату за НВОС и оценивать, как внедрение НДТ влияет на реальные выбросы, а не только на расчетные показатели.'
+    },
+    {
+      text: 'Росприроднадзор использует архив измерений САК при проверках и оценке выполнения условий КЭР и квот.',
+      isTrue: true,
+      correctExpl: 'Верно. Для надзорного органа САК – цифровой инструмент контроля. Инспектор принимает систему в эксплуатацию, контролирует передачу данных и опирается на архив измерений, в том числе для оценки длительности превышений.',
+      wrongExpl: 'Неверно. Росприроднадзор действительно использует архив измерений САК. Служба принимает систему в эксплуатацию, контролирует передачу данных и опирается на архив при проверках и оценке выполнения условий КЭР и квот.'
+    }
+  ];
+
+  let currentQ = 0;
+  let score = 0;
+
+  function renderQuiz() {
+    const area = document.getElementById('quizArea');
+    area.innerHTML = '';
+
+    questions.forEach((q, index) => {
+      const block = document.createElement('div');
+      block.className = 'question-block' + (index === currentQ ? ' active' : '');
+      block.id = 'q-' + index;
+
+      block.innerHTML =
+        '<div class="q-text">' + (index + 1) + '. ' + q.text + '</div>' +
+        '<div class="options">' +
+          '<button class="opt-btn" onclick="checkAnswer(' + index + ', true, this)">Верно</button>' +
+          '<button class="opt-btn" onclick="checkAnswer(' + index + ', false, this)">Неверно</button>' +
+        '</div>' +
+        '<div class="explanation" id="exp-' + index + '"></div>' +
+        '<button class="next-btn" id="next-' + index + '" onclick="nextQuestion()">Далее</button>';
+
+      area.appendChild(block);
+    });
+
+    updateProgress();
+    triggerResize();
+  }
+
+  function checkAnswer(qIndex, userAnswer, btnElement) {
+    var q = questions[qIndex];
+    var isCorrect = (userAnswer === q.isTrue);
+
+    if (isCorrect) score++;
+
+    var buttons = btnElement.parentElement.querySelectorAll('.opt-btn');
+    buttons.forEach(function(btn) { btn.classList.add('disabled'); });
+
+    if (isCorrect) {
+      btnElement.classList.add('selected-correct');
+    } else {
+      btnElement.classList.add('selected-wrong');
+      var correctBtn = Array.from(buttons).find(function(b) {
+        return (q.isTrue && b.textContent === 'Верно') || (!q.isTrue && b.textContent === 'Неверно');
+      });
+      if (correctBtn) correctBtn.classList.add('selected-correct');
+    }
+
+    var expEl = document.getElementById('exp-' + qIndex);
+    if (isCorrect) {
+      expEl.className = 'explanation show correct';
+      expEl.innerHTML = '<div class="label">Вы ответили правильно</div><p>' + q.correctExpl + '</p>';
+    } else {
+      expEl.className = 'explanation show wrong';
+      expEl.innerHTML = '<div class="label">Вы ответили неправильно</div><p>' + q.wrongExpl + '</p>';
+    }
+
+    document.getElementById('next-' + qIndex).classList.add('active');
+    triggerResize();
+  }
+
+  function nextQuestion() {
+    document.getElementById('q-' + currentQ).classList.remove('active');
+    currentQ++;
+
+    if (currentQ < questions.length) {
+      document.getElementById('q-' + currentQ).classList.add('active');
+      updateProgress();
+    } else {
+      showFinal();
+    }
+    triggerResize();
+  }
+
+  function updateProgress() {
+    var pct = (currentQ / questions.length) * 100;
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progTxt').textContent = 'Вопрос ' + (currentQ + 1) + ' из ' + questions.length;
+  }
+
+  function showFinal() {
+    document.getElementById('quizArea').style.display = 'none';
+    document.querySelector('.progress').style.display = 'none';
+    document.querySelector('.intro').style.display = 'none';
+
+    var finalScreen = document.getElementById('finalScreen');
+    finalScreen.classList.add('active');
+
+    var icon = '';
+    var title = '';
+    var msg = '';
+
+    if (score === questions.length) {
+      icon = '🎯';
+      title = 'Все верно';
+      msg = 'Вы четко понимаете назначение САК, ее пользу для предприятия и задачи надзорных органов. Можно переходить к следующему уроку.';
+    } else if (score >= Math.ceil(questions.length * 0.6)) {
+      icon = '👍';
+      title = 'Хороший результат';
+      msg = 'Основная логика вам понятна. Рекомендуем пересмотреть пояснения к вопросам с ошибками – там собраны ключевые факты о САК.';
+    } else {
+      icon = '📖';
+      title = 'Стоит повторить';
+      msg = 'Вернитесь к вводному материалу урока. Обратите внимание на то, что САК считает массу выбросов, нужна не всем предприятиям и полезна не только государству, но и самому бизнесу.';
+    }
+
+    document.getElementById('finalIcon').textContent = icon;
+    document.getElementById('finalTitle').textContent = title;
+    document.getElementById('finalText').innerHTML = '<p>Правильных ответов: <strong>' + score + ' из ' + questions.length + '</strong></p><p>' + msg + '</p>';
+    triggerResize();
+  }
+
+  function restartQuiz() {
+    currentQ = 0;
+    score = 0;
+    document.getElementById('quizArea').style.display = 'block';
+    document.querySelector('.progress').style.display = 'flex';
+    document.querySelector('.intro').style.display = 'block';
+    document.getElementById('finalScreen').classList.remove('active');
+    renderQuiz();
+  }
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+
+  window.addEventListener('load', function() {
+    renderQuiz();
+    triggerResize();
+  });
+</script>
+
+</body>
+</html>
