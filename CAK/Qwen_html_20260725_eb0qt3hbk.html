@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Что проверить на обследовании</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --card: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --o50: #fff7ed;
+    --o100: #ffedd5;
+    --o600: #ea580c;
+    --o800: #9a3412;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 650px;
+    height: auto;
+    min-height: 200px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+  h2 { font-size: 17px; font-weight: 700; margin-bottom: 4px; color: var(--g800); }
+  .intro { font-size: 13px; color: var(--text); line-height: 1.4; margin-bottom: 12px; }
+
+  .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .prog-bar { flex: 1; height: 5px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--g600); width: 0%; transition: width 0.4s; border-radius: 3px; }
+  .prog-txt { font-size: 11px; color: var(--muted); font-weight: 600; min-width: 60px; text-align: right; }
+
+  .situation {
+    background: var(--g50);
+    border-left: 3px solid var(--g600);
+    border-radius: 0 8px 8px 0;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    font-size: 13.5px;
+    line-height: 1.45;
+  }
+  .situation strong { color: var(--g800); }
+
+  .options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .opt-btn {
+    padding: 11px 14px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 13px;
+    line-height: 1.4;
+    text-align: left;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text);
+  }
+  .opt-btn:hover { border-color: var(--g600); background: var(--g50); }
+  .opt-btn.selected-correct { border-color: var(--g600); background: var(--g100); color: var(--g800); pointer-events: none; }
+  .opt-btn.selected-wrong { border-color: var(--o600); background: var(--o100); color: var(--o800); pointer-events: none; }
+  .opt-btn.disabled { pointer-events: none; opacity: 0.5; }
+
+  .feedback {
+    display: none;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct { background: var(--g50); border-left: 4px solid var(--g600); }
+  .feedback.wrong { background: var(--o50); border-left: 4px solid var(--o600); }
+  .feedback .label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; margin-bottom: 4px;
+  }
+  .feedback.correct .label { color: var(--g700); }
+  .feedback.wrong .label { color: var(--o600); }
+
+  .next-btn {
+    align-self: flex-end;
+    padding: 9px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--g600);
+    color: #fff;
+    opacity: 0.3;
+    pointer-events: none;
+    transition: 0.15s;
+  }
+  .next-btn.active { opacity: 1; pointer-events: auto; }
+  .next-btn:hover { background: var(--g700); }
+
+  .final-screen { display: none; text-align: center; padding-top: 10px; }
+  .final-screen.active { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .final-icon { font-size: 36px; }
+  .final-title { font-size: 18px; font-weight: 700; color: var(--g800); }
+  .final-text { font-size: 13px; line-height: 1.5; color: var(--text); max-width: 500px; }
+  .final-text strong { color: var(--g700); }
+  .restart-btn {
+    padding: 10px 28px;
+    border: 2px solid var(--g600);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--g700);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .restart-btn:hover { background: var(--g50); }
+
+  @media (max-width: 600px) { .wrap { padding: 14px; } }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h2>Что проверить на обследовании</h2>
+  <p class="intro">Вы выехали на площадку для предпроектного обследования. Прочитайте ситуацию и выберите правильное решение.</p>
+
+  <div class="progress">
+    <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-txt" id="progTxt">Ситуация 1 из 5</div>
+  </div>
+
+  <div id="quizArea"></div>
+
+  <div class="final-screen" id="finalScreen">
+    <div class="final-icon" id="finalIcon"></div>
+    <div class="final-title" id="finalTitle"></div>
+    <div class="final-text" id="finalText"></div>
+    <button class="restart-btn" onclick="restartQuiz()">Пройти еще раз</button>
+  </div>
+</div>
+
+<script>
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
+  const situations = [
+    {
+      title: 'Выбор места установки датчика',
+      text: 'Вы на площадке. Нужно определить, где именно в газоходе можно установить узел отбора проб, чтобы измерения были репрезентативными. На какой документ опереться в первую очередь?',
+      options: [
+        'На комплексное экологическое разрешение – там указаны все источники и нормативы',
+        'На ГОСТ Р ЕН 15259-2015 – он устанавливает требования к измерительным секциям и местам измерений',
+        'На данные инвентаризации выбросов – в них есть координаты всех труб',
+        'На проектную документацию объекта – там указаны все технологические схемы'
+      ],
+      correct: 1,
+      correctExpl: 'Верно. Для выбора мест установки средств измерений в газоходах применяют ГОСТ Р ЕН 15259-2015. Он устанавливает требования к измерительным секциям, прямым участкам и расстояниям до местных сопротивлений. КЭР и инвентаризация дают состав источников, но не геометрию измерительных сечений.',
+      wrongExpl: 'Неверно. КЭР, инвентаризация и проектная документация описывают источники и нормативы, но не определяют, где именно в газоходе можно поставить узел отбора проб. Для выбора измерительных сечений применяют ГОСТ Р ЕН 15259-2015 – он устанавливает требования к прямым участкам, расстояниям до местных сопротивлений и условиям репрезентативности измерений.'
+    },
+    {
+      title: 'Режимы работы источника',
+      text: 'Технолог сообщает, что в дни растопки котла концентрации сажи и газов превышают значения из КЭР в десятки раз. На какие данные опираться при расчете диапазона датчиков?',
+      options: [
+        'Только на КЭР – это нормативный документ, он приоритетнее фактических данных',
+        'На средние значения за год – они сглаживают пики и дают стабильную картину',
+        'На максимальные фактические концентрации с учетом пусковых и аварийных режимов',
+        'На данные предыдущего проекта САК на аналогичном объекте – они уже проверены'
+      ],
+      correct: 2,
+      correctExpl: 'Верно. КЭР содержит только нормативные значения. Если заложить диапазон «впритык» к КЭР, при первой же растопке датчики уйдут в насыщение и выйдут из строя. В расчетах нужно использовать максимальные фактические концентрации с учетом пусков и нештатных режимов – так снижается риск переделки проекта.',
+      wrongExpl: 'Неверно. КЭР содержит нормативные значения, но не отражает пусковые и аварийные режимы. Если заложить диапазон «впритык» к КЭР или по средним значениям, при первой же растопке датчики уйдут в насыщение. В расчетах нужно использовать максимальные фактические концентрации – так снижается риск переделки проекта и дополнительных затрат.'
+    },
+    {
+      title: 'Условия среды на площадке',
+      text: 'Источник расположен на открытой площадке. Зимой температура опускается до –35 °C, рядом работает дробилка – высокая запыленность. Что обязательно зафиксировать при обследовании?',
+      options: [
+        'Только температуру воздуха – этого достаточно для выбора оборудования',
+        'Температуру и влажность – остальные параметры учтет подрядчик при проектировании',
+        'Температуру, запыленность, риск обледенения, вибрации и коррозионную нагрузку',
+        'Только запыленность – она критичнее всего для измерительного узла'
+      ],
+      correct: 2,
+      correctExpl: 'Верно. Все условия среды фиксируют при обследовании и закладывают в ТЗ. Без учета запыленности узел отбора проб забьется, без обогрева – обледенеет, без защиты от вибраций – разгерметизируется. Эти ограничения потом становятся приложением к ТЗ и помогают аргументировать решения при согласовании проекта.',
+      wrongExpl: 'Неверно. При обследовании фиксируют полный набор условий среды: температуру, запыленность, влажность, риск обледенения, вибрации и коррозионную нагрузку. Каждое из этих условий влияет на выбор оборудования и защиту узла отбора проб. Если что-то упустить, доработка придет уже после монтажа и поднимет бюджет.'
+    },
+    {
+      title: 'Кого привлечь на обследование',
+      text: 'Вы эколог, выехали на площадку. Нужно подтвердить реальные режимы работы источника и оценить состояние площадок, лестниц и трасс для прокладки кабелей. Кого взять с собой?',
+      options: [
+        'Достаточно выехать одному – эколог собирает все данные по источникам',
+        'Технолога и инженера или энергетика – технолог подтвердит режимы, инженер оценит инфраструктуру',
+        'Только специалиста КИПиА – он знает, какие датчики ставить',
+        'Представителя подрядчика – он сам все осмотрит и предложит решения'
+      ],
+      correct: 1,
+      correctExpl: 'Верно. Реальные режимы работы источника подтверждает технолог – только он знает фактические циклы производства. Состояние площадок, лестниц, трасс и мест для шкафов оценивает инженер или энергетик. Эколог координирует работу и фиксирует результаты. КИПиА подключается позже, на этапе согласования точек установки.',
+      wrongExpl: 'Неверно. Эколог не может в одиночку подтвердить реальные режимы работы источника – это зона технолога. Он также не оценивает состояние инфраструктуры – это задача инженера или энергетика. Представителя подрядчика приглашают на обследование, но он не заменяет внутренние службы. Без команды проект тормозится на старте.'
+    },
+    {
+      title: 'Итоги обследования по источнику',
+      text: 'Вы обошли источник, осмотрели площадку, зафиксировали условия среды и режимы работы. Что должно быть в итоге по каждому источнику?',
+      options: [
+        'Служебная записка о старте проекта – этого достаточно для перехода к ТЗ',
+        'Карточка источника с фотофиксацией, черновик схемы размещения, замечания технолога и список ограничений для проектирования',
+        'Только фотоотчет – остальное подрядчик доработает при проектировании',
+        'Перечень источников и веществ из КЭР с пометками об условиях площадки'
+      ],
+      correct: 1,
+      correctExpl: 'Верно. По итогам обследования по каждому источнику составляют пакет: карточку источника с фотофиксацией, черновик схемы размещения элементов системы, замечания технолога и список ограничений для проектирования. Эти материалы становятся приложением к ТЗ и помогают аргументировать решения при согласовании проекта.',
+      wrongExpl: 'Неверно. Служебная записка – это этап инициации, а не обследования. Только фотоотчет или перечень из КЭР не дают подрядчику достаточно информации для проектирования. По итогам обследования по каждому источнику составляют пакет: карточку с фотофиксацией, черновик схемы, замечания технолога и список ограничений. Эти материалы становятся приложением к ТЗ.'
+    }
+  ];
+
+  let currentQ = 0;
+  let score = 0;
+
+  function renderQuiz() {
+    var area = document.getElementById('quizArea');
+    area.innerHTML = '';
+
+    situations.forEach(function(s, index) {
+      var block = document.createElement('div');
+      block.className = 'situation-block';
+      block.id = 's-' + index;
+      block.style.display = index === currentQ ? 'block' : 'none';
+
+      var html = '<div class="situation"><strong>' + s.title + '.</strong> ' + s.text + '</div>';
+      html += '<div class="options" id="opts-' + index + '">';
+      s.options.forEach(function(opt, i) {
+        html += '<button class="opt-btn" onclick="checkAnswer(' + index + ', ' + i + ', this)">' + opt + '</button>';
+      });
+      html += '</div>';
+      html += '<div class="feedback" id="fb-' + index + '"></div>';
+      html += '<button class="next-btn" id="next-' + index + '" onclick="nextSituation()">Далее</button>';
+
+      block.innerHTML = html;
+      area.appendChild(block);
+    });
+
+    updateProgress();
+    triggerResize();
+  }
+
+  function checkAnswer(qIndex, optIndex, btnEl) {
+    var s = situations[qIndex];
+    var isCorrect = optIndex === s.correct;
+    if (isCorrect) score++;
+
+    var buttons = document.querySelectorAll('#opts-' + qIndex + ' .opt-btn');
+    buttons.forEach(function(btn) { btn.classList.add('disabled'); });
+
+    if (isCorrect) {
+      btnEl.classList.add('selected-correct');
+    } else {
+      btnEl.classList.add('selected-wrong');
+      buttons[s.correct].classList.add('selected-correct');
+    }
+
+    var fb = document.getElementById('fb-' + qIndex);
+    if (isCorrect) {
+      fb.className = 'feedback show correct';
+      fb.innerHTML = '<div class="label">Вы ответили правильно</div><div>' + s.correctExpl + '</div>';
+    } else {
+      fb.className = 'feedback show wrong';
+      fb.innerHTML = '<div class="label">Вы ответили неправильно</div><div>' + s.wrongExpl + '</div>';
+    }
+
+    document.getElementById('next-' + qIndex).classList.add('active');
+    triggerResize();
+  }
+
+  function nextSituation() {
+    document.getElementById('s-' + currentQ).style.display = 'none';
+    currentQ++;
+
+    if (currentQ < situations.length) {
+      document.getElementById('s-' + currentQ).style.display = 'block';
+      updateProgress();
+    } else {
+      showFinal();
+    }
+    triggerResize();
+  }
+
+  function updateProgress() {
+    var pct = (currentQ / situations.length) * 100;
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progTxt').textContent = 'Ситуация ' + (currentQ + 1) + ' из ' + situations.length;
+  }
+
+  function showFinal() {
+    document.getElementById('quizArea').style.display = 'none';
+    document.querySelector('.progress').style.display = 'none';
+    document.querySelector('.intro').style.display = 'none';
+
+    var finalScreen = document.getElementById('finalScreen');
+    finalScreen.classList.add('active');
+
+    var icon = '', title = '', msg = '';
+    if (score === situations.length) {
+      icon = '🎯';
+      title = 'Все верно';
+      msg = 'Вы понимаете, что проверять на обследовании и на какие документы опираться. Можно переходить к разработке ТЗ.';
+    } else if (score >= Math.ceil(situations.length * 0.6)) {
+      icon = '👍';
+      title = 'Хороший результат';
+      msg = 'Основную логику обследования вы понимаете. Обратите внимание на пояснения к ситуациям с ошибками – там ключевые ссылки на нормативы и порядок работ.';
+    } else {
+      icon = '📖';
+      title = 'Стоит повторить';
+      msg = 'Вернитесь к материалу урока про этап 2. Обратите внимание на то, какие документы применяют для выбора мест установки, почему нельзя опираться только на КЭР и кто участвует в обследовании.';
+    }
+
+    document.getElementById('finalIcon').textContent = icon;
+    document.getElementById('finalTitle').textContent = title;
+    document.getElementById('finalText').innerHTML = '<p>Правильных ответов: <strong>' + score + ' из ' + situations.length + '</strong></p><p>' + msg + '</p>';
+    triggerResize();
+  }
+
+  function restartQuiz() {
+    currentQ = 0;
+    score = 0;
+    document.getElementById('quizArea').style.display = 'block';
+    document.querySelector('.progress').style.display = 'flex';
+    document.querySelector('.intro').style.display = 'block';
+    document.getElementById('finalScreen').classList.remove('active');
+    renderQuiz();
+  }
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+
+  window.addEventListener('load', function() {
+    renderQuiz();
+    triggerResize();
+  });
+</script>
+
+</body>
+</html>
