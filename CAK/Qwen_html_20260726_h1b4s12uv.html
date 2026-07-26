@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Проверка конфигурации САК</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --card: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --o50: #fff7ed;
+    --o100: #ffedd5;
+    --o600: #ea580c;
+    --o800: #9a3412;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 650px;
+    height: auto;
+    min-height: 200px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+  h2 { font-size: 16px; font-weight: 700; margin-bottom: 4px; color: var(--g800); }
+  .intro { font-size: 12px; color: var(--text); line-height: 1.4; margin-bottom: 10px; }
+
+  .context {
+    background: var(--g50);
+    border-left: 3px solid var(--g600);
+    border-radius: 0 6px 6px 0;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .pool {
+    background: #fafafa;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 10px;
+    margin-bottom: 12px;
+    min-height: 60px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .pool-label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .config-card {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.35;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    transition: all 0.15s;
+  }
+  .config-card:hover { border-color: var(--g600); }
+  .config-card.dragging {
+    opacity: 0.85;
+    border-style: dashed;
+    box-shadow: 0 8px 20px rgba(0,0,0,0.15);
+    z-index: 1000;
+    cursor: grabbing;
+  }
+  .config-card .label {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.3px;
+    color: var(--muted);
+    margin-bottom: 3px;
+  }
+  .config-card .value { color: var(--text); }
+  .config-card .value strong { color: var(--g800); }
+
+  .columns {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+  .column {
+    background: #fff;
+    border: 2px dashed var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    min-height: 100px;
+    display: flex;
+    flex-direction: column;
+    transition: all 0.15s;
+  }
+  .column.drag-over {
+    border-color: var(--g600);
+    background: var(--g50);
+    border-style: solid;
+  }
+  .column-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    text-align: center;
+    padding: 6px 4px;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 6px;
+    line-height: 1.3;
+  }
+  .column.correct .column-title { color: var(--g700); }
+  .column.wrong .column-title { color: var(--o600); }
+  .column-cards {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+  }
+
+  .column-cards .config-card {
+    font-size: 11px;
+    padding: 6px 8px;
+    cursor: pointer;
+  }
+  .column-cards .config-card.correct {
+    border-color: var(--g600);
+    background: var(--g100);
+  }
+  .column-cards .config-card.wrong {
+    border-color: var(--o600);
+    background: var(--o100);
+  }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    padding: 9px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.15s;
+    background: var(--g600);
+    color: #fff;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  .btn.active { opacity: 1; pointer-events: auto; }
+  .btn:hover { background: var(--g700); }
+  .btn-reset {
+    background: #fff;
+    color: var(--g700);
+    border: 2px solid var(--g600);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .btn-reset:hover { background: var(--g50); }
+
+  .feedback {
+    display: none;
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    margin-top: 10px;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct { background: var(--g50); border-left: 4px solid var(--g600); }
+  .feedback.wrong { background: var(--o50); border-left: 4px solid var(--o600); }
+  .feedback .label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; margin-bottom: 4px;
+  }
+  .feedback.correct .label { color: var(--g700); }
+  .feedback.wrong .label { color: var(--o600); }
+
+  @media (max-width: 600px) {
+    .wrap { padding: 12px; }
+    .columns { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h2>Проверка конфигурации САК</h2>
+  <p class="intro">Подрядчик прислал отчет о предварительной настройке. Перетащите параметры в нужную колонку.</p>
+
+  <div class="context">
+    <strong>Этап 5.</strong> Подрядчик собрал и протестировал систему у себя. Проверьте конфигурацию до монтажа.
+  </div>
+
+  <div class="pool" id="pool">
+    <div class="pool-label">Параметры конфигурации</div>
+  </div>
+
+  <div class="columns">
+    <div class="column" data-column="correct">
+      <div class="column-title">Соответствует нормативам</div>
+      <div class="column-cards"></div>
+    </div>
+    <div class="column" data-column="wrong">
+      <div class="column-title">Требует доработки</div>
+      <div class="column-cards"></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-reset" onclick="resetReview()">Сбросить</button>
+    <button class="btn" id="checkBtn" onclick="checkReview()">Проверить</button>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+</div>
+
+<script>
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
+  const configParams = [
+    {
+      id: 'p1',
+      label: 'Источники в системе',
+      value: 'Все 5 источников из ТЗ заведены в САК.',
+      isCorrect: true,
+      hint: 'Здесь ошибки нет. Все источники из ТЗ должны быть заведены в систему.'
+    },
+    {
+      id: 'p2',
+      label: 'Период усреднения (выбросы)',
+      value: 'Передача данных с периодом усреднения <strong>60 минут</strong>.',
+      isCorrect: false,
+      hint: 'По ПП РФ № 778 период усреднения для выбросов – <strong>30 минут</strong>. 60 минут не соответствуют нормативу.'
+    },
+    {
+      id: 'p3',
+      label: 'Период усреднения (сбросы)',
+      value: 'Передача данных с периодом усреднения <strong>3 часа</strong>.',
+      isCorrect: true,
+      hint: 'Здесь ошибки нет. По ПП РФ № 778 период усреднения для сбросов – 3 часа.'
+    },
+    {
+      id: 'p4',
+      label: 'Хранение данных',
+      value: 'Локальное хранение данных – <strong>3 месяца</strong>.',
+      isCorrect: false,
+      hint: 'По ПП РФ № 778 локальное хранение должно быть <strong>не менее 1 года</strong>. 3 месяца – нарушение.'
+    },
+    {
+      id: 'p5',
+      label: 'Резервирование питания',
+      value: 'Резервное питание не предусмотрено.',
+      isCorrect: false,
+      hint: 'По ПП РФ № 778 система должна работать <strong>1 сутки</strong> на автономном питании. Без резерва система остановится при отключении.'
+    },
+    {
+      id: 'p6',
+      label: 'Формат передачи данных',
+      value: 'Передача по приказу Росприроднадзора № 382.',
+      isCorrect: true,
+      hint: 'Здесь ошибки нет. Формат установлен приказом № 382.'
+    }
+  ];
+
+  let draggedEl = null;
+  let offsetX = 0, offsetY = 0;
+  let isChecked = false;
+
+  function initPool() {
+    const pool = document.getElementById('pool');
+    pool.innerHTML = '<div class="pool-label">Параметры конфигурации</div>';
+    
+    document.querySelectorAll('.column-cards').forEach(col => col.innerHTML = '');
+    
+    isChecked = false;
+    document.getElementById('checkBtn').classList.remove('active');
+    document.getElementById('feedback').classList.remove('show');
+
+    configParams.forEach(p => {
+      const el = document.createElement('div');
+      el.className = 'config-card';
+      el.dataset.id = p.id;
+      el.innerHTML = '<div class="label">' + p.label + '</div><div class="value">' + p.value + '</div>';
+      el.addEventListener('pointerdown', handlePointerDown);
+      pool.appendChild(el);
+    });
+
+    triggerResize();
+  }
+
+  function handlePointerDown(e) {
+    if (isChecked) return;
+    const card = e.target.closest('.config-card');
+    if (!card) return;
+    
+    e.preventDefault();
+    draggedEl = card;
+    const rect = card.getBoundingClientRect();
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
+    
+    draggedEl.style.position = 'fixed';
+    draggedEl.style.width = rect.width + 'px';
+    draggedEl.style.zIndex = 1000;
+    draggedEl.style.left = rect.left + 'px';
+    draggedEl.style.top = rect.top + 'px';
+    draggedEl.classList.add('dragging');
+    
+    document.addEventListener('pointermove', onPointerMove);
+    document.addEventListener('pointerup', onPointerUp);
+  }
+
+  function onPointerMove(e) {
+    if (!draggedEl) return;
+    draggedEl.style.left = (e.clientX - offsetX) + 'px';
+    draggedEl.style.top = (e.clientY - offsetY) + 'px';
+    
+    document.querySelectorAll('.column').forEach(col => {
+      const rect = col.getBoundingClientRect();
+      if (e.clientX >= rect.left && e.clientX <= rect.right && 
+          e.clientY >= rect.top && e.clientY <= rect.bottom) {
+        col.classList.add('drag-over');
+      } else {
+        col.classList.remove('drag-over');
+      }
+    });
+  }
+
+  function onPointerUp(e) {
+    document.removeEventListener('pointermove', onPointerMove);
+    document.removeEventListener('pointerup', onPointerUp);
+    document.querySelectorAll('.column').forEach(col => col.classList.remove('drag-over'));
+    
+    if (!draggedEl) return;
+    
+    draggedEl.style.display = 'none';
+    let elemBelow = document.elementFromPoint(e.clientX, e.clientY);
+    draggedEl.style.display = '';
+    
+    let placed = false;
+    if (elemBelow) {
+      const target = elemBelow.closest('.column');
+      if (target) {
+        target.querySelector('.column-cards').appendChild(draggedEl);
+        placed = true;
+      } else if (elemBelow.closest('.pool')) {
+        document.getElementById('pool').appendChild(draggedEl);
+        placed = true;
+      }
+    }
+    
+    if (!placed) {
+      document.getElementById('pool').appendChild(draggedEl);
+    }
+    
+    draggedEl.style.position = '';
+    draggedEl.style.width = '';
+    draggedEl.style.zIndex = '';
+    draggedEl.style.left = '';
+    draggedEl.style.top = '';
+    draggedEl.classList.remove('dragging');
+    
+    draggedEl = null;
+    updateCheckButton();
+    triggerResize();
+  }
+
+  function updateCheckButton() {
+    const poolCards = document.querySelectorAll('#pool .config-card').length;
+    const btn = document.getElementById('checkBtn');
+    if (poolCards === 0) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  }
+
+  function checkReview() {
+    const poolCards = document.querySelectorAll('#pool .config-card').length;
+    if (poolCards > 0) return;
+    
+    isChecked = true;
+    let correctCount = 0;
+    let wrongCount = 0;
+
+    document.querySelectorAll('.column').forEach(col => {
+      const columnType = col.dataset.column;
+      const cards = col.querySelectorAll('.config-card');
+      cards.forEach(card => {
+        const param = configParams.find(p => p.id === card.dataset.id);
+        if ((columnType === 'correct' && param.isCorrect) || (columnType === 'wrong' && !param.isCorrect)) {
+          card.classList.add('correct');
+          correctCount++;
+        } else {
+          card.classList.add('wrong');
+          wrongCount++;
+        }
+      });
+    });
+
+    const fb = document.getElementById('feedback');
+    if (wrongCount === 0) {
+      fb.className = 'feedback show correct';
+      fb.innerHTML = '<div class="label">Все параметры распределены верно</div><div>Вы правильно определили, какие параметры соответствуют нормативам, а какие требуют доработки. Такой подход защищает предприятие – ошибки на этапе 5 исправить дешевле, чем после монтажа.</div>';
+    } else {
+      fb.className = 'feedback show wrong';
+      fb.innerHTML = '<div class="label">Есть ошибки в распределении</div><div>Вы правильно распределили <strong>' + correctCount + ' из ' + configParams.length + '</strong> параметров. Обратите внимание на параметры, отмеченные красным – там несоответствия нормативам.</div>';
+    }
+
+    triggerResize();
+  }
+
+  function resetReview() {
+    initPool();
+  }
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+
+  window.addEventListener('load', function() {
+    initPool();
+    triggerResize();
+  });
+</script>
+
+</body>
+</html>
