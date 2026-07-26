@@ -1,0 +1,380 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Мифы и реальность этапа 7</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --o50: #fff7ed;
+    --o100: #ffedd5;
+    --o600: #ea580c;
+    --o800: #9a3412;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 650px;
+    height: auto;
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 18px;
+    border: 1px solid var(--border);
+  }
+  h2 { font-size: 17px; font-weight: 700; margin-bottom: 4px; color: var(--g800); }
+  .intro { font-size: 12.5px; color: var(--text); line-height: 1.4; margin-bottom: 10px; }
+  .intro strong { color: var(--g700); }
+
+  .context {
+    background: var(--g50);
+    border-left: 3px solid var(--g600);
+    border-radius: 0 6px 6px 0;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .prog-bar { flex: 1; height: 5px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--g600); width: 0%; transition: width 0.4s; border-radius: 3px; }
+  .prog-txt { font-size: 11px; color: var(--muted); font-weight: 600; min-width: 70px; text-align: right; }
+
+  .question-block { display: none; flex-direction: column; gap: 12px; animation: fadeIn 0.3s ease; }
+  .question-block.active { display: flex; }
+
+  .q-num {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--muted);
+    margin-bottom: 4px;
+  }
+
+  .q-text {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.45;
+    color: var(--text);
+    padding: 10px 12px;
+    background: #fafafa;
+    border-radius: 8px;
+    border-left: 3px solid var(--g600);
+  }
+
+  .options { display: flex; gap: 10px; }
+  .opt-btn {
+    flex: 1;
+    padding: 12px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 14px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+    text-align: center;
+  }
+  .opt-btn:hover { border-color: var(--g600); background: var(--g50); }
+  .opt-btn.selected-correct { border-color: var(--g600); background: var(--g100); color: var(--g800); pointer-events: none; }
+  .opt-btn.selected-wrong { border-color: var(--o600); background: var(--o100); color: var(--o800); pointer-events: none; }
+  .opt-btn.disabled { pointer-events: none; opacity: 0.5; }
+
+  .feedback {
+    display: none;
+    border-radius: 8px;
+    padding: 12px 14px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct { background: var(--g50); border-left: 4px solid var(--g600); }
+  .feedback.wrong { background: var(--o50); border-left: 4px solid var(--o600); }
+  .feedback .label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; margin-bottom: 5px;
+  }
+  .feedback.correct .label { color: var(--g700); }
+  .feedback.wrong .label { color: var(--o600); }
+  .feedback .norm { color: var(--g700); font-weight: 600; }
+
+  .next-btn {
+    align-self: flex-end;
+    padding: 9px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--g600);
+    color: #fff;
+    opacity: 0.3;
+    pointer-events: none;
+    transition: 0.15s;
+  }
+  .next-btn.active { opacity: 1; pointer-events: auto; }
+  .next-btn:hover { background: var(--g700); }
+
+  .final-screen { display: none; text-align: center; padding-top: 10px; }
+  .final-screen.active { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .final-icon { font-size: 36px; }
+  .final-title { font-size: 17px; font-weight: 700; color: var(--g800); }
+  .final-text { font-size: 12.5px; line-height: 1.5; color: var(--text); max-width: 500px; }
+  .final-text strong { color: var(--g700); }
+  .restart-btn {
+    padding: 10px 28px;
+    border: 2px solid var(--g600);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--g700);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .restart-btn:hover { background: var(--g50); }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 600px) { .wrap { padding: 14px; } .options { flex-direction: column; } }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h2>Мифы и реальность этапа 7</h2>
+  <p class="intro">На этапе 7 много неочевидных требований. Оцените утверждения о метрологической экспертизе и аттестации. Нажмите <strong>«Верно»</strong> или <strong>«Неверно»</strong>, чтобы получить разбор.</p>
+
+  <div class="context">
+    <strong>Этап 7. Метрологическая экспертиза и аттестация.</strong> Проверьте, насколько хорошо вы понимаете тонкости приемки САК.
+  </div>
+
+  <div class="progress">
+    <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-txt" id="progTxt">Вопрос 1 из 7</div>
+  </div>
+
+  <div id="quizArea"></div>
+
+  <div class="final-screen" id="finalScreen">
+    <div class="final-icon" id="finalIcon"></div>
+    <div class="final-title" id="finalTitle"></div>
+    <div class="final-text" id="finalText"></div>
+    <button class="restart-btn" onclick="restartQuiz()">Пройти еще раз</button>
+  </div>
+</div>
+
+<script>
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
+  const questions = [
+    {
+      text: 'Если у одного прибора нет действующего свидетельства о поверке, систему можно принять в эксплуатацию с условием поверки в течение месяца.',
+      isTrue: false,
+      correctExpl: 'Верно, что это неверно. Вопрос с поверкой надо закрыть до приемки. По <span class="norm">ПП РФ № 778, п. 7</span> автоматические средства измерения должны быть утвержденных типов и соответствовать требованиям законодательства об обеспечении единства измерений. Комиссия Росприроднадзора не примет систему с неподтвержденными приборами.',
+      wrongExpl: 'Неверно. Вопрос с поверкой надо закрыть до приемки. По <span class="norm">ПП РФ № 778, п. 7</span> автоматические средства измерения должны быть утвержденных типов и соответствовать требованиям законодательства об обеспечении единства измерений. Комиссия Росприроднадзора не примет систему с неподтвержденными приборами – отложить поверку «на потом» не получится.'
+    },
+    {
+      text: 'Если хотя бы один элемент САК распломбирован (например, для замены фильтра), система признается неработающей до восстановления пломбы.',
+      isTrue: true,
+      correctExpl: 'Верно. По <span class="norm">ПП РФ № 779, п. 27</span> в случае, если хотя бы один элемент системы автоматического контроля распломбирован, система признается неработающей. Распломбировка допускается только во время технического обслуживания, ремонта или поверки – и должна быть оформлена документально.',
+      wrongExpl: 'Неверно, что это не так. По <span class="norm">ПП РФ № 779, п. 27</span> в случае, если хотя бы один элемент системы автоматического контроля распломбирован, система признается неработающей. Распломбировка допускается только во время технического обслуживания, ремонта или поверки – и должна быть оформлена документально.'
+    },
+    {
+      text: 'Период усреднения результатов измерений для выбросов и сбросов одинаковый – 30 минут.',
+      isTrue: false,
+      correctExpl: 'Верно, что это неверно. По <span class="norm">ПП РФ № 778, п. 8</span> периоды разные: для выбросов в атмосферный воздух – 30 минут, для сбросов сточных вод – 3 часа. Если настроить оба на 30 минут, данные по сбросам будут отклонены реестром.',
+      wrongExpl: 'Неверно. По <span class="norm">ПП РФ № 778, п. 8</span> периоды разные: для выбросов в атмосферный воздух – 30 минут, для сбросов сточных вод – 3 часа. Это частая ошибка при настройке – если оба периода поставить на 30 минут, данные по сбросам будут отклонены реестром.'
+    },
+    {
+      text: 'Срок локального хранения данных на сервере предприятия и в государственном реестре одинаковый – не менее 1 года.',
+      isTrue: false,
+      correctExpl: 'Верно, что это неверно. Сроки разные. По <span class="norm">ПП РФ № 778</span> технические устройства предприятия хранят данные не менее 1 года, а программные средства реестра – не менее 7 лет. Это важно учитывать при планировании архива на стороне предприятия.',
+      wrongExpl: 'Неверно. Сроки разные. По <span class="norm">ПП РФ № 778</span> технические устройства предприятия хранят данные не менее 1 года, а программные средства реестра – не менее 7 лет. Это важно учитывать при планировании архива на стороне предприятия – нельзя ориентироваться только на срок хранения в реестре.'
+    },
+    {
+      text: 'Время полной остановки основного технологического оборудования не учитывается при расчете 28-дневного лимита перерывов в эксплуатации САК.',
+      isTrue: true,
+      correctExpl: 'Верно. По <span class="norm">ПП РФ № 779, п. 30</span> время полной остановки технологического оборудования не учитывается при исчислении срока перерывов в эксплуатации системы. Это логично: если оборудование стоит, САК тоже не работает, и эти дни не идут в лимит 28 календарных дней в год.',
+      wrongExpl: 'Неверно, что это не так. По <span class="norm">ПП РФ № 779, п. 30</span> время полной остановки технологического оборудования не учитывается при исчислении срока перерывов в эксплуатации системы. Это логично: если оборудование стоит, САК тоже не работает, и эти дни не идут в лимит 28 календарных дней в год.'
+    },
+    {
+      text: 'Приемку системы автоматического контроля предприятие может провести самостоятельно, без участия Росприроднадзора, если система прошла тестовую передачу данных.',
+      isTrue: false,
+      correctExpl: 'Верно, что это неверно. По <span class="norm">ПП РФ № 779, п. 25</span> система принимается в эксплуатацию непосредственно на объекте в присутствии представителей территориального органа Росприроднадзора. Самостоятельная приемка не имеет юридической силы, даже если тестовая передача прошла успешно.',
+      wrongExpl: 'Неверно. По <span class="norm">ПП РФ № 779, п. 25</span> система принимается в эксплуатацию непосредственно на объекте в присутствии представителей территориального органа Росприроднадзора. Самостоятельная приемка не имеет юридической силы, даже если тестовая передача прошла успешно – комиссия должна зафиксировать результат.'
+    },
+    {
+      text: 'Резервное электропитание должно обеспечивать работоспособность САК в течение 1 часа при сбоях в системе энергоснабжения.',
+      isTrue: false,
+      correctExpl: 'Верно, что это неверно. По <span class="norm">ПП РФ № 778, п. 8, подп. "г"</span> автоматические средства измерения должны сохранять работоспособность в течение 1 суток с переходом на автономное электропитание при сбоях в системе энергоснабжения, авариях и сбоях в технологическом процессе. Одного часа недостаточно.',
+      wrongExpl: 'Неверно. По <span class="norm">ПП РФ № 778, п. 8, подп. "г"</span> автоматические средства измерения должны сохранять работоспособность в течение 1 суток с переходом на автономное электропитание при сбоях в системе энергоснабжения, авариях и сбоях в технологическом процессе. Одного часа недостаточно – за сутки можно устранить большинство аварийных ситуаций.'
+    }
+  ];
+
+  let currentQ = 0;
+  let score = 0;
+
+  function renderQuiz() {
+    var area = document.getElementById('quizArea');
+    area.innerHTML = '';
+
+    questions.forEach(function(q, index) {
+      var block = document.createElement('div');
+      block.className = 'question-block' + (index === currentQ ? ' active' : '');
+      block.id = 'q-' + index;
+
+      block.innerHTML =
+        '<div class="q-num">Утверждение ' + (index + 1) + ' из ' + questions.length + '</div>' +
+        '<div class="q-text">' + q.text + '</div>' +
+        '<div class="options">' +
+          '<button class="opt-btn" onclick="checkAnswer(' + index + ', true, this)">Верно</button>' +
+          '<button class="opt-btn" onclick="checkAnswer(' + index + ', false, this)">Неверно</button>' +
+        '</div>' +
+        '<div class="feedback" id="exp-' + index + '"></div>' +
+        '<button class="next-btn" id="next-' + index + '" onclick="nextQuestion()">Далее</button>';
+
+      area.appendChild(block);
+    });
+
+    updateProgress();
+    triggerResize();
+  }
+
+  function checkAnswer(qIndex, userAnswer, btnElement) {
+    var q = questions[qIndex];
+    var isCorrect = (userAnswer === q.isTrue);
+
+    if (isCorrect) score++;
+
+    var buttons = btnElement.parentElement.querySelectorAll('.opt-btn');
+    buttons.forEach(function(btn) { btn.classList.add('disabled'); });
+
+    if (isCorrect) {
+      btnElement.classList.add('selected-correct');
+    } else {
+      btnElement.classList.add('selected-wrong');
+      var correctBtn = Array.from(buttons).find(function(b) {
+        return (q.isTrue && b.textContent === 'Верно') || (!q.isTrue && b.textContent === 'Неверно');
+      });
+      if (correctBtn) correctBtn.classList.add('selected-correct');
+    }
+
+    var expEl = document.getElementById('exp-' + qIndex);
+    if (isCorrect) {
+      expEl.className = 'feedback show correct';
+      expEl.innerHTML = '<div class="label">Вы ответили правильно</div><div>' + q.correctExpl + '</div>';
+    } else {
+      expEl.className = 'feedback show wrong';
+      expEl.innerHTML = '<div class="label">Вы ответили неправильно</div><div>' + q.wrongExpl + '</div>';
+    }
+
+    document.getElementById('next-' + qIndex).classList.add('active');
+    triggerResize();
+  }
+
+  function nextQuestion() {
+    document.getElementById('q-' + currentQ).classList.remove('active');
+    currentQ++;
+
+    if (currentQ < questions.length) {
+      document.getElementById('q-' + currentQ).classList.add('active');
+      updateProgress();
+    } else {
+      showFinal();
+    }
+    triggerResize();
+  }
+
+  function updateProgress() {
+    var pct = (currentQ / questions.length) * 100;
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progTxt').textContent = 'Вопрос ' + (currentQ + 1) + ' из ' + questions.length;
+  }
+
+  function showFinal() {
+    document.getElementById('quizArea').style.display = 'none';
+    document.querySelector('.progress').style.display = 'none';
+    document.querySelector('.intro').style.display = 'none';
+    document.querySelector('.context').style.display = 'none';
+
+    var finalScreen = document.getElementById('finalScreen');
+    finalScreen.classList.add('active');
+
+    var icon = '', title = '', msg = '';
+    if (score === questions.length) {
+      icon = '🎯';
+      title = 'Все верно';
+      msg = 'Вы отлично разбираетесь в тонкостях этапа 7. Знаете, где кроются типичные ошибки при приемке, и сможете защитить предприятие от предписаний.';
+    } else if (score >= 5) {
+      icon = '👍';
+      title = 'Хороший результат';
+      msg = 'Вы понимаете основную логику этапа 7. Обратите внимание на пояснения к вопросам с ошибками – там неочевидные нюансы нормативов.';
+    } else if (score >= 3) {
+      icon = '📖';
+      title = 'Стоит повторить';
+      msg = 'Вы уловили часть требований, но некоторые неочевидные моменты упустили. Вернитесь к материалу урока и обратите внимание на сроки хранения, периоды усреднения и условия приемки.';
+    } else {
+      icon = '️';
+      title = 'Нужно разобраться';
+      msg = 'Этап 7 содержит много тонкостей, которые влияют на результат приемки. Рекомендуем пройти урок заново и уделить особое внимание ПП РФ № 778 и № 779.';
+    }
+
+    document.getElementById('finalIcon').textContent = icon;
+    document.getElementById('finalTitle').textContent = title;
+    document.getElementById('finalText').innerHTML = '<p>Правильных ответов: <strong>' + score + ' из ' + questions.length + '</strong></p><p>' + msg + '</p>';
+    triggerResize();
+  }
+
+  function restartQuiz() {
+    currentQ = 0;
+    score = 0;
+    document.getElementById('quizArea').style.display = 'block';
+    document.querySelector('.progress').style.display = 'flex';
+    document.querySelector('.intro').style.display = 'block';
+    document.querySelector('.context').style.display = 'block';
+    document.getElementById('finalScreen').classList.remove('active');
+    renderQuiz();
+  }
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+
+  window.addEventListener('load', function() {
+    renderQuiz();
+    triggerResize();
+  });
+</script>
+
+</body>
+</html>
