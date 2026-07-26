@@ -1,0 +1,814 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Проверка проекта САК: 4 задания</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --card: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --o50: #fff7ed;
+    --o100: #ffedd5;
+    --o600: #ea580c;
+    --o800: #9a3412;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 650px;
+    height: auto;
+    min-height: 200px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+  h2 { font-size: 17px; font-weight: 700; margin-bottom: 4px; color: var(--g800); }
+  .intro { font-size: 13px; color: var(--text); line-height: 1.4; margin-bottom: 12px; }
+
+  .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
+  .prog-bar { flex: 1; height: 5px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--g600); width: 0%; transition: width 0.4s; border-radius: 3px; }
+  .prog-txt { font-size: 11px; color: var(--muted); font-weight: 600; min-width: 80px; text-align: right; }
+
+  .task { display: none; flex-direction: column; gap: 12px; animation: fadeIn 0.3s ease; }
+  .task.active { display: flex; }
+
+  .task-header {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+  .task-num {
+    width: 28px; height: 28px;
+    background: var(--g600);
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  .task-title { font-size: 14px; font-weight: 700; color: var(--g800); line-height: 1.3; }
+
+  .context {
+    background: var(--g50);
+    border-left: 3px solid var(--g600);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 12px;
+    font-size: 13px;
+    line-height: 1.45;
+  }
+  .context strong { color: var(--g800); }
+
+  .calc-card {
+    background: #fafafa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  .calc-row { display: flex; justify-content: space-between; padding: 4px 0; border-bottom: 1px dashed var(--border); }
+  .calc-row:last-child { border-bottom: none; }
+  .calc-row .label { color: var(--muted); }
+  .calc-row .value { font-weight: 600; color: var(--g800); }
+
+  .options { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .opt-btn {
+    padding: 11px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.15s;
+    color: var(--text);
+  }
+  .opt-btn:hover { border-color: var(--g600); background: var(--g50); }
+  .opt-btn.selected-correct { border-color: var(--g600); background: var(--g100); color: var(--g800); pointer-events: none; }
+  .opt-btn.selected-wrong { border-color: var(--o600); background: var(--o100); color: var(--o800); pointer-events: none; }
+  .opt-btn.disabled { pointer-events: none; opacity: 0.5; }
+
+  .field-group { display: flex; flex-direction: column; gap: 6px; }
+  .field-label {
+    font-size: 11px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; color: var(--muted);
+  }
+  .field-options { display: flex; flex-direction: column; gap: 6px; }
+  .field-opt {
+    padding: 9px 12px;
+    border: 2px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    font-size: 12.5px;
+    line-height: 1.4;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: left;
+  }
+  .field-opt:hover { border-color: var(--g600); background: var(--g50); }
+  .field-opt.selected { border-color: var(--g600); background: var(--g100); }
+  .field-opt.correct { border-color: var(--g600); background: var(--g100); pointer-events: none; }
+  .field-opt.wrong { border-color: var(--o600); background: var(--o100); pointer-events: none; }
+  .field-opt.disabled { pointer-events: none; opacity: 0.6; }
+
+  .traffic-row {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .traffic-text { font-size: 12.5px; line-height: 1.4; }
+  .traffic-text strong { color: var(--g800); }
+  .traffic-actions { display: flex; gap: 6px; }
+  .traffic-btn {
+    flex: 1;
+    padding: 7px 6px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .traffic-btn.accept:hover { border-color: var(--g600); background: var(--g50); }
+  .traffic-btn.reject:hover { border-color: var(--o600); background: var(--o50); }
+  .traffic-btn.clarify:hover { border-color: #3b82f6; background: #eff6ff; }
+  .traffic-btn.selected-accept { border-color: var(--g600); background: var(--g100); color: var(--g800); pointer-events: none; }
+  .traffic-btn.selected-reject { border-color: var(--o600); background: var(--o100); color: var(--o800); pointer-events: none; }
+  .traffic-btn.selected-clarify { border-color: #3b82f6; background: #dbeafe; color: #1e40af; pointer-events: none; }
+  .traffic-btn.correct { border-color: var(--g600); background: var(--g100); pointer-events: none; }
+  .traffic-btn.wrong { border-color: var(--o600); background: var(--o100); pointer-events: none; }
+  .traffic-btn.disabled { pointer-events: none; opacity: 0.5; }
+
+  .norm-row {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .norm-text { font-size: 12.5px; line-height: 1.4; }
+  .norm-text strong { color: var(--g800); }
+  .norm-options { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
+  .norm-btn {
+    padding: 7px 8px;
+    border: 1.5px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    font-size: 11px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+  }
+  .norm-btn:hover { border-color: var(--g600); background: var(--g50); }
+  .norm-btn.selected-correct { border-color: var(--g600); background: var(--g100); color: var(--g800); pointer-events: none; }
+  .norm-btn.selected-wrong { border-color: var(--o600); background: var(--o100); color: var(--o800); pointer-events: none; }
+  .norm-btn.correct { border-color: var(--g600); background: var(--g100); pointer-events: none; }
+  .norm-btn.disabled { pointer-events: none; opacity: 0.5; }
+
+  .feedback {
+    display: none;
+    border-radius: 8px;
+    padding: 11px 13px;
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct { background: var(--g50); border-left: 4px solid var(--g600); }
+  .feedback.wrong { background: var(--o50); border-left: 4px solid var(--o600); }
+  .feedback .label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; margin-bottom: 4px;
+  }
+  .feedback.correct .label { color: var(--g700); }
+  .feedback.wrong .label { color: var(--o600); }
+
+  .next-btn {
+    align-self: flex-end;
+    padding: 9px 20px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--g600);
+    color: #fff;
+    opacity: 0.3;
+    pointer-events: none;
+    transition: 0.15s;
+  }
+  .next-btn.active { opacity: 1; pointer-events: auto; }
+  .next-btn:hover { background: var(--g700); }
+
+  .final-screen { display: none; text-align: center; padding-top: 10px; }
+  .final-screen.active { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .final-icon { font-size: 36px; }
+  .final-title { font-size: 18px; font-weight: 700; color: var(--g800); }
+  .final-text { font-size: 13px; line-height: 1.5; color: var(--text); max-width: 500px; }
+  .final-text strong { color: var(--g700); }
+  .restart-btn {
+    padding: 10px 28px;
+    border: 2px solid var(--g600);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--g700);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .restart-btn:hover { background: var(--g50); }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 600px) {
+    .wrap { padding: 14px; }
+    .options { grid-template-columns: 1fr; }
+    .norm-options { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h2>Проверка проекта САК: 4 задания</h2>
+  <p class="intro">Подрядчик прислал проект на согласование. Пройдите 4 разных задания: посчитайте диапазон, соберите замечание, оцените пункты проекта и привяжите нарушения к нормативам.</p>
+
+  <div class="progress">
+    <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-txt" id="progTxt">Задание 1 из 4</div>
+  </div>
+
+  <!-- Задание 1: Калькулятор диапазона -->
+  <div class="task active" id="task1">
+    <div class="task-header">
+      <div class="task-num">1</div>
+      <div class="task-title">Посчитайте минимальный диапазон датчика</div>
+    </div>
+    <div class="context">
+      По источнику № 0012 «Сушильный барабан» норматив по КЭР для SO2 – <strong>1100 мг/м³</strong>. Подрядчик заложил в проект диапазон датчика <strong>0–1200 мг/м³</strong>.
+    </div>
+    <div class="calc-card">
+      <div class="calc-row"><span class="label">Норматив по КЭР (SO2):</span><span class="value">1100 мг/м³</span></div>
+      <div class="calc-row"><span class="label">Диапазон в проекте:</span><span class="value">0–1200 мг/м³</span></div>
+      <div class="calc-row"><span class="label">Принцип по ПП № 778:</span><span class="value">верхний предел ≥ 2,5 × КЭР</span></div>
+    </div>
+    <p style="font-size: 13px; font-weight: 600;">Какой минимальный верхний предел должен быть у датчика?</p>
+    <div class="options" id="opts1">
+      <button class="opt-btn" onclick="checkTask1(0, this)">1200 мг/м³</button>
+      <button class="opt-btn" onclick="checkTask1(1, this)">2200 мг/м³</button>
+      <button class="opt-btn" onclick="checkTask1(2, this)">2750 мг/м³</button>
+      <button class="opt-btn" onclick="checkTask1(3, this)">3000 мг/м³</button>
+    </div>
+    <div class="feedback" id="fb1"></div>
+    <button class="next-btn" id="next1" onclick="nextTask(1)">Далее</button>
+  </div>
+
+  <!-- Задание 2: Собери замечание -->
+  <div class="task" id="task2">
+    <div class="task-header">
+      <div class="task-num">2</div>
+      <div class="task-title">Соберите замечание подрядчику</div>
+    </div>
+    <div class="context">
+      По обследованию на источнике <strong>высокая запыленность</strong>. Подрядчик не заложил систему продувки и фильтр для измерительного узла. Сформулируйте замечание по трем полям.
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Что нарушено</div>
+      <div class="field-options" data-field="f1" data-correct="0">
+        <div class="field-opt" data-idx="0" onclick="selectField(this)">Условия площадки из обследования не учтены в проекте</div>
+        <div class="field-opt" data-idx="1" onclick="selectField(this)">Не обеспечена передача данных в реестр</div>
+        <div class="field-opt" data-idx="2" onclick="selectField(this)">Не соблюдена метрология средств измерений</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">На какой норматив ссылаться</div>
+      <div class="field-options" data-field="f2" data-correct="0">
+        <div class="field-opt" data-idx="0" onclick="selectField(this)">ГОСТ Р ЕН 15259-2015 (требования к измерительным секциям и условиям эксплуатации)</div>
+        <div class="field-opt" data-idx="1" onclick="selectField(this)">ПП РФ № 778 (требования к автоматическим средствам измерения)</div>
+        <div class="field-opt" data-idx="2" onclick="selectField(this)">Приказ Росприроднадзора № 382 (формат передачи данных)</div>
+      </div>
+    </div>
+
+    <div class="field-group">
+      <div class="field-label">Что доработать</div>
+      <div class="field-options" data-field="f3" data-correct="0">
+        <div class="field-opt" data-idx="0" onclick="selectField(this)">Добавить систему продувки и фильтр грубой очистки в узел отбора проб</div>
+        <div class="field-opt" data-idx="1" onclick="selectField(this)">Перенести точку измерения на другой газоход</div>
+        <div class="field-opt" data-idx="2" onclick="selectField(this)">Заменить датчик на прибор с другим диапазоном</div>
+      </div>
+    </div>
+
+    <button class="next-btn" id="next2" onclick="checkTask2()">Проверить замечание</button>
+    <div class="feedback" id="fb2"></div>
+    <button class="next-btn" id="next2b" onclick="nextTask(2)" style="display:none;">Далее</button>
+  </div>
+
+  <!-- Задание 3: Светофор -->
+  <div class="task" id="task3">
+    <div class="task-header">
+      <div class="task-num">3</div>
+      <div class="task-title">Оцените пункты проекта</div>
+    </div>
+    <div class="context">
+      Для каждого пункта выберите: <strong>«Принять»</strong> (соответствует нормативам), <strong>«Отклонить»</strong> (явное нарушение) или <strong>«Уточнить»</strong> (нужны дополнительные данные).
+    </div>
+
+    <div class="traffic-row" data-row="t1" data-correct="accept">
+      <div class="traffic-text"><strong>Период усреднения</strong> для выбросов в атмосферный воздух – 30 минут.</div>
+      <div class="traffic-actions">
+        <button class="traffic-btn accept" onclick="selectTraffic(this, 'accept')">Принять</button>
+        <button class="traffic-btn reject" onclick="selectTraffic(this, 'reject')">Отклонить</button>
+        <button class="traffic-btn clarify" onclick="selectTraffic(this, 'clarify')">Уточнить</button>
+      </div>
+    </div>
+
+    <div class="traffic-row" data-row="t2" data-correct="reject">
+      <div class="traffic-text"><strong>Локальное хранение данных</strong> на сервере предприятия – 3 месяца с возможностью выгрузки в архив.</div>
+      <div class="traffic-actions">
+        <button class="traffic-btn accept" onclick="selectTraffic(this, 'accept')">Принять</button>
+        <button class="traffic-btn reject" onclick="selectTraffic(this, 'reject')">Отклонить</button>
+        <button class="traffic-btn clarify" onclick="selectTraffic(this, 'clarify')">Уточнить</button>
+      </div>
+    </div>
+
+    <div class="traffic-row" data-row="t3" data-correct="reject">
+      <div class="traffic-text"><strong>Точка установки</strong> узла отбора проб – на расстоянии 0,5 диаметра газохода вниз по потоку от поворота.</div>
+      <div class="traffic-actions">
+        <button class="traffic-btn accept" onclick="selectTraffic(this, 'accept')">Принять</button>
+        <button class="traffic-btn reject" onclick="selectTraffic(this, 'reject')">Отклонить</button>
+        <button class="traffic-btn clarify" onclick="selectTraffic(this, 'clarify')">Уточнить</button>
+      </div>
+    </div>
+
+    <div class="traffic-row" data-row="t4" data-correct="accept">
+      <div class="traffic-text"><strong>Формат передачи данных</strong> в государственный реестр объектов НВОС – по приказу Росприроднадзора № 382.</div>
+      <div class="traffic-actions">
+        <button class="traffic-btn accept" onclick="selectTraffic(this, 'accept')">Принять</button>
+        <button class="traffic-btn reject" onclick="selectTraffic(this, 'reject')">Отклонить</button>
+        <button class="traffic-btn clarify" onclick="selectTraffic(this, 'clarify')">Уточнить</button>
+      </div>
+    </div>
+
+    <button class="next-btn" id="next3" onclick="checkTask3()">Проверить оценку</button>
+    <div class="feedback" id="fb3"></div>
+    <button class="next-btn" id="next3b" onclick="nextTask(3)" style="display:none;">Далее</button>
+  </div>
+
+  <!-- Задание 4: Найди норматив -->
+  <div class="task" id="task4">
+    <div class="task-header">
+      <div class="task-num">4</div>
+      <div class="task-title">Привяжите нарушение к нормативу</div>
+    </div>
+    <div class="context">
+      Для каждого нарушения из проекта выберите <strong>один нормативный документ</strong>, на который нужно сослаться в замечании.
+    </div>
+
+    <div class="norm-row" data-row="n1" data-correct="778">
+      <div class="norm-text"><strong>Нарушение 1.</strong> Диапазон датчика SO2 – 1200 мг/м³ при нормативе по КЭР 1100 мг/м³. Запаса практически нет.</div>
+      <div class="norm-options">
+        <button class="norm-btn" onclick="selectNorm(this, '778')">ПП РФ № 778</button>
+        <button class="norm-btn" onclick="selectNorm(this, '779')">ПП РФ № 779</button>
+        <button class="norm-btn" onclick="selectNorm(this, '15259')">ГОСТ Р ЕН 15259-2015</button>
+        <button class="norm-btn" onclick="selectNorm(this, '382')">Приказ № 382</button>
+      </div>
+    </div>
+
+    <div class="norm-row" data-row="n2" data-correct="779">
+      <div class="norm-text"><strong>Нарушение 2.</strong> Подрядчик исключил источник № 0015 из проекта по своим внутренним критериям, хотя он был в ТЗ.</div>
+      <div class="norm-options">
+        <button class="norm-btn" onclick="selectNorm(this, '778')">ПП РФ № 778</button>
+        <button class="norm-btn" onclick="selectNorm(this, '779')">ПП РФ № 779</button>
+        <button class="norm-btn" onclick="selectNorm(this, '15259')">ГОСТ Р ЕН 15259-2015</button>
+        <button class="norm-btn" onclick="selectNorm(this, '382')">Приказ № 382</button>
+      </div>
+    </div>
+
+    <div class="norm-row" data-row="n3" data-correct="15259">
+      <div class="norm-text"><strong>Нарушение 3.</strong> Точка установки узла отбора проб – в 0,5 диаметра от поворота, поток нестабилен.</div>
+      <div class="norm-options">
+        <button class="norm-btn" onclick="selectNorm(this, '778')">ПП РФ № 778</button>
+        <button class="norm-btn" onclick="selectNorm(this, '779')">ПП РФ № 779</button>
+        <button class="norm-btn" onclick="selectNorm(this, '15259')">ГОСТ Р ЕН 15259-2015</button>
+        <button class="norm-btn" onclick="selectNorm(this, '382')">Приказ № 382</button>
+      </div>
+    </div>
+
+    <div class="norm-row" data-row="n4" data-correct="382">
+      <div class="norm-text"><strong>Нарушение 4.</strong> Передача данных в реестр осуществляется в формате, не соответствующем XML-схеме.</div>
+      <div class="norm-options">
+        <button class="norm-btn" onclick="selectNorm(this, '778')">ПП РФ № 778</button>
+        <button class="norm-btn" onclick="selectNorm(this, '779')">ПП РФ № 779</button>
+        <button class="norm-btn" onclick="selectNorm(this, '15259')">ГОСТ Р ЕН 15259-2015</button>
+        <button class="norm-btn" onclick="selectNorm(this, '382')">Приказ № 382</button>
+      </div>
+    </div>
+
+    <button class="next-btn" id="next4" onclick="checkTask4()">Проверить привязку</button>
+    <div class="feedback" id="fb4"></div>
+    <button class="next-btn" id="next4b" onclick="nextTask(4)" style="display:none;">Показать итог</button>
+  </div>
+
+  <div class="final-screen" id="finalScreen">
+    <div class="final-icon" id="finalIcon"></div>
+    <div class="final-title" id="finalTitle"></div>
+    <div class="final-text" id="finalText"></div>
+    <button class="restart-btn" onclick="restartAll()">Пройти еще раз</button>
+  </div>
+</div>
+
+<script>
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
+  let currentTask = 1;
+  let scores = { t1: 0, t2: 0, t3: 0, t4: 0 };
+
+  // ===== Задание 1: Калькулятор =====
+  function checkTask1(optIdx, btnEl) {
+    var buttons = document.querySelectorAll('#opts1 .opt-btn');
+    buttons.forEach(function(b) { b.classList.add('disabled'); });
+
+    var fb = document.getElementById('fb1');
+    if (optIdx === 2) {
+      btnEl.classList.add('selected-correct');
+      scores.t1 = 1;
+      fb.className = 'feedback show correct';
+      fb.innerHTML = '<div class="label">Вы ответили правильно</div><div>По ПП РФ № 778 верхний предел измерения должен быть не менее 2,5-кратного значения показателя, установленного в КЭР. 1100 × 2,5 = 2750 мг/м³. Диапазон 1200 мг/м³ не обеспечивает запаса – при пусковых режимах датчик уйдет в насыщение.</div>';
+    } else {
+      btnEl.classList.add('selected-wrong');
+      buttons[2].classList.add('selected-correct');
+      fb.className = 'feedback show wrong';
+      fb.innerHTML = '<div class="label">Вы ответили неправильно</div><div>По ПП РФ № 778 верхний предел измерения должен быть не менее 2,5-кратного значения показателя, установленного в КЭР. 1100 × 2,5 = 2750 мг/м³. Вариант 1200 мг/м³ – это диапазон «впритык» к КЭР, при пусковых режимах датчик уйдет в насыщение. Варианты 2200 и 3000 не соответствуют принципу 2,5-кратного запаса.</div>';
+    }
+    document.getElementById('next1').classList.add('active');
+    triggerResize();
+  }
+
+  // ===== Задание 2: Собери замечание =====
+  function selectField(el) {
+    var parent = el.parentElement;
+    parent.querySelectorAll('.field-opt').forEach(function(o) { o.classList.remove('selected'); });
+    el.classList.add('selected');
+    checkTask2Availability();
+  }
+
+  function checkTask2Availability() {
+    var fields = document.querySelectorAll('#task2 .field-options');
+    var allSelected = true;
+    fields.forEach(function(f) {
+      if (!f.querySelector('.field-opt.selected')) {
+        allSelected = false;
+      }
+    });
+    var btn = document.getElementById('next2');
+    if (allSelected) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  }
+
+  function checkTask2() {
+    var fields = document.querySelectorAll('#task2 .field-options');
+    var allSelected = true;
+    var correctCount = 0;
+
+    fields.forEach(function(f) {
+      var selected = f.querySelector('.field-opt.selected');
+      if (!selected) { allSelected = false; return; }
+      var correctIdx = parseInt(f.dataset.correct);
+      var selectedIdx = parseInt(selected.dataset.idx);
+      if (selectedIdx === correctIdx) {
+        selected.classList.add('correct');
+        correctCount++;
+      } else {
+        selected.classList.add('wrong');
+        f.querySelectorAll('.field-opt')[correctIdx].classList.add('correct');
+      }
+      f.querySelectorAll('.field-opt').forEach(function(o) { o.classList.add('disabled'); });
+    });
+
+    if (!allSelected) {
+      alert('Выберите вариант в каждом поле');
+      return;
+    }
+
+    scores.t2 = correctCount === 3 ? 1 : 0;
+
+    var fb = document.getElementById('fb2');
+    if (correctCount === 3) {
+      fb.className = 'feedback show correct';
+      fb.innerHTML = '<div class="label">Замечание сформулировано верно</div><div>Вы правильно указали нарушение (условия площадки не учтены), сослались на ГОСТ Р ЕН 15259-2015 и потребовали конкретную доработку (система продувки и фильтр). Такое замечание подрядчик не сможет проигнорировать.</div>';
+    } else {
+      fb.className = 'feedback show wrong';
+      fb.innerHTML = '<div class="label">Замечание требует доработки</div><div>Правильная формулировка: нарушение – условия площадки из обследования не учтены; норматив – ГОСТ Р ЕН 15259-2015 (требования к измерительным секциям и условиям эксплуатации); доработка – добавить систему продувки и фильтр грубой очистки в узел отбора проб. Сильное замечание всегда содержит три элемента: что нарушено, на какой норматив ссылаться и что конкретно доработать.</div>';
+    }
+
+    document.getElementById('next2').style.display = 'none';
+    document.getElementById('next2b').style.display = 'inline-block';
+    document.getElementById('next2b').classList.add('active');
+    triggerResize();
+  }
+
+  // ===== Задание 3: Светофор =====
+  function selectTraffic(btn, value) {
+    var row = btn.closest('.traffic-row');
+    row.querySelectorAll('.traffic-btn').forEach(function(b) { b.classList.remove('selected-accept', 'selected-reject', 'selected-clarify'); });
+    btn.classList.add('selected-' + value);
+    checkTask3Availability();
+  }
+
+  function checkTask3Availability() {
+    var rows = document.querySelectorAll('#task3 .traffic-row');
+    var allSelected = true;
+    rows.forEach(function(row) {
+      if (!row.querySelector('.traffic-btn[class*="selected-"]')) {
+        allSelected = false;
+      }
+    });
+    var btn = document.getElementById('next3');
+    if (allSelected) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  }
+
+  function checkTask3() {
+    var rows = document.querySelectorAll('#task3 .traffic-row');
+    var allSelected = true;
+    var correctCount = 0;
+
+    rows.forEach(function(row) {
+      var selected = row.querySelector('.traffic-btn[class*="selected-"]');
+      if (!selected) { allSelected = false; return; }
+      var correctValue = row.dataset.correct;
+      var selectedValue = selected.classList.contains('selected-accept') ? 'accept' : (selected.classList.contains('selected-reject') ? 'reject' : 'clarify');
+
+      row.querySelectorAll('.traffic-btn').forEach(function(b) { b.classList.add('disabled'); });
+
+      if (selectedValue === correctValue) {
+        selected.classList.add('correct');
+        correctCount++;
+      } else {
+        selected.classList.add('wrong');
+        row.querySelectorAll('.traffic-btn').forEach(function(b) {
+          if (b.classList.contains(correctValue)) b.classList.add('correct');
+        });
+      }
+    });
+
+    if (!allSelected) {
+      alert('Оцените все пункты проекта');
+      return;
+    }
+
+    scores.t3 = correctCount === 4 ? 1 : 0;
+
+    var fb = document.getElementById('fb3');
+    if (correctCount === 4) {
+      fb.className = 'feedback show correct';
+      fb.innerHTML = '<div class="label">Все пункты оценены верно</div><div>Период усреднения 30 минут для выбросов и формат передачи по приказу № 382 – принять. Хранение данных 3 месяца (нужно не менее 1 года по ПП № 778) и точка установки в 0,5 диаметра от поворота (нарушение ГОСТ Р ЕН 15259-2015) – отклонить.</div>';
+    } else {
+      fb.className = 'feedback show wrong';
+      fb.innerHTML = '<div class="label">Не все пункты оценены верно</div><div>Период усреднения 30 минут для выбросов (ПП № 778) и формат передачи по приказу № 382 – принять. Хранение данных 3 месяца – отклонить, по ПП № 778 нужно не менее 1 года. Точка установки в 0,5 диаметра от поворота – отклонить, по ГОСТ Р ЕН 15259-2015 поток за поворотом еще не стабилизирован, измерения будут нерепрезентативными.</div>';
+    }
+
+    document.getElementById('next3').style.display = 'none';
+    document.getElementById('next3b').style.display = 'inline-block';
+    document.getElementById('next3b').classList.add('active');
+    triggerResize();
+  }
+
+  // ===== Задание 4: Найди норматив =====
+  function selectNorm(btn, value) {
+    var row = btn.closest('.norm-row');
+    row.querySelectorAll('.norm-btn').forEach(function(b) { b.classList.remove('selected-correct', 'selected-wrong'); });
+    btn.dataset.selected = value;
+    btn.classList.add('selected-wrong');
+    checkTask4Availability();
+  }
+
+  function checkTask4Availability() {
+    var rows = document.querySelectorAll('#task4 .norm-row');
+    var allSelected = true;
+    rows.forEach(function(row) {
+      if (!row.querySelector('.norm-btn[data-selected]')) {
+        allSelected = false;
+      }
+    });
+    var btn = document.getElementById('next4');
+    if (allSelected) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  }
+
+  function checkTask4() {
+    var rows = document.querySelectorAll('#task4 .norm-row');
+    var allSelected = true;
+    var correctCount = 0;
+
+    rows.forEach(function(row) {
+      var selected = row.querySelector('.norm-btn[data-selected]');
+      if (!selected) { allSelected = false; return; }
+      var correctValue = row.dataset.correct;
+      var selectedValue = selected.dataset.selected;
+
+      row.querySelectorAll('.norm-btn').forEach(function(b) { b.classList.add('disabled'); b.removeAttribute('data-selected'); });
+
+      if (selectedValue === correctValue) {
+        selected.classList.remove('selected-wrong');
+        selected.classList.add('selected-correct');
+        correctCount++;
+      } else {
+        row.querySelectorAll('.norm-btn').forEach(function(b) {
+          if (b.textContent.includes(correctValue === '778' ? '778' : correctValue === '779' ? '779' : correctValue === '15259' ? '15259' : '382')) {
+            b.classList.add('correct');
+          }
+        });
+      }
+    });
+
+    if (!allSelected) {
+      alert('Выберите норматив для каждого нарушения');
+      return;
+    }
+
+    scores.t4 = correctCount === 4 ? 1 : 0;
+
+    var fb = document.getElementById('fb4');
+    if (correctCount === 4) {
+      fb.className = 'feedback show correct';
+      fb.innerHTML = '<div class="label">Все нарушения привязаны к нормативам</div><div>Диапазон датчика – ПП РФ № 778 (принцип 2,5-кратного запаса). Исключение источника из программы – ПП РФ № 779 (состав источников определяет предприятие). Точка установки – ГОСТ Р ЕН 15259-2015 (требования к измерительным секциям). Формат передачи данных – приказ № 382.</div>';
+    } else {
+      fb.className = 'feedback show wrong';
+      fb.innerHTML = '<div class="label">Не все нарушения привязаны к нормативам</div><div>Диапазон датчика – ПП РФ № 778 (принцип 2,5-кратного запаса). Исключение источника из программы – ПП РФ № 779 (состав источников определяет предприятие). Точка установки – ГОСТ Р ЕН 15259-2015 (требования к измерительным секциям). Формат передачи данных – приказ № 382.</div>';
+    }
+
+    document.getElementById('next4').style.display = 'none';
+    document.getElementById('next4b').style.display = 'inline-block';
+    document.getElementById('next4b').classList.add('active');
+    triggerResize();
+  }
+
+  // ===== Навигация =====
+  function nextTask(fromTask) {
+    document.getElementById('task' + fromTask).classList.remove('active');
+    currentTask++;
+
+    if (currentTask <= 4) {
+      document.getElementById('task' + currentTask).classList.add('active');
+      updateProgress();
+    } else {
+      showFinal();
+    }
+    triggerResize();
+  }
+
+  function updateProgress() {
+    var pct = ((currentTask - 1) / 4) * 100;
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progTxt').textContent = 'Задание ' + currentTask + ' из 4';
+  }
+
+  function showFinal() {
+    document.querySelector('.progress').style.display = 'none';
+    document.querySelector('.intro').style.display = 'none';
+
+    var totalScore = scores.t1 + scores.t2 + scores.t3 + scores.t4;
+    var finalScreen = document.getElementById('finalScreen');
+    finalScreen.classList.add('active');
+
+    var icon = '', title = '', msg = '';
+    if (totalScore === 4) {
+      icon = '🎯';
+      title = 'Все задания выполнены верно';
+      msg = 'Вы умеете считать диапазоны по ПП № 778, формулировать замечания по структуре, оценивать пункты проекта и привязывать нарушения к нормативам. Можно переходить к монтажу.';
+    } else if (totalScore >= 2) {
+      icon = '👍';
+      title = 'Хороший результат';
+      msg = 'Основную логику проверки проекта вы понимаете. Обратите внимание на задания, где были ошибки – там ключевые ссылки на нормативы и порядок оформления замечаний.';
+    } else {
+      icon = '📖';
+      title = 'Стоит повторить';
+      msg = 'Вернитесь к материалу урока про этап 4. Обратите внимание на принцип 2,5-кратного запаса по ПП № 778, требования ГОСТ Р ЕН 15259-2015 к измерительным секциям и структуру сильного замечания подрядчику.';
+    }
+
+    document.getElementById('finalIcon').textContent = icon;
+    document.getElementById('finalTitle').textContent = title;
+    document.getElementById('finalText').innerHTML = '<p>Выполнено верно: <strong>' + totalScore + ' из 4 заданий</strong></p><p>' + msg + '</p>';
+    triggerResize();
+  }
+
+  function restartAll() {
+    currentTask = 1;
+    scores = { t1: 0, t2: 0, t3: 0, t4: 0 };
+    document.getElementById('finalScreen').classList.remove('active');
+    document.querySelector('.progress').style.display = 'flex';
+    document.querySelector('.intro').style.display = 'block';
+
+    for (var i = 1; i <= 4; i++) {
+      document.getElementById('task' + i).classList.remove('active');
+    }
+    document.getElementById('task1').classList.add('active');
+
+    // Сброс задания 1
+    document.querySelectorAll('#opts1 .opt-btn').forEach(function(b) {
+      b.classList.remove('selected-correct', 'selected-wrong', 'disabled');
+    });
+    document.getElementById('fb1').classList.remove('show');
+    document.getElementById('next1').classList.remove('active');
+
+    // Сброс задания 2
+    document.querySelectorAll('#task2 .field-opt').forEach(function(o) {
+      o.classList.remove('selected', 'correct', 'wrong', 'disabled');
+    });
+    document.getElementById('fb2').classList.remove('show');
+    document.getElementById('next2').style.display = 'inline-block';
+    document.getElementById('next2').classList.remove('active');
+    document.getElementById('next2b').style.display = 'none';
+
+    // Сброс задания 3
+    document.querySelectorAll('#task3 .traffic-btn').forEach(function(b) {
+      b.classList.remove('selected-accept', 'selected-reject', 'selected-clarify', 'correct', 'wrong', 'disabled');
+    });
+    document.getElementById('fb3').classList.remove('show');
+    document.getElementById('next3').style.display = 'inline-block';
+    document.getElementById('next3').classList.remove('active');
+    document.getElementById('next3b').style.display = 'none';
+
+    // Сброс задания 4
+    document.querySelectorAll('#task4 .norm-btn').forEach(function(b) {
+      b.classList.remove('selected-correct', 'selected-wrong', 'correct', 'disabled');
+      b.removeAttribute('data-selected');
+    });
+    document.getElementById('fb4').classList.remove('show');
+    document.getElementById('next4').style.display = 'inline-block';
+    document.getElementById('next4').classList.remove('active');
+    document.getElementById('next4b').style.display = 'none';
+
+    updateProgress();
+    triggerResize();
+  }
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+
+  window.addEventListener('load', function() {
+    updateProgress();
+    triggerResize();
+  });
+</script>
+
+</body>
+</html>
