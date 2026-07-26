@@ -1,0 +1,459 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Журнал учета простоев САК</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --o50: #fff7ed;
+    --o100: #ffedd5;
+    --o600: #ea580c;
+    --o800: #9a3412;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 650px;
+    height: auto;
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 18px;
+    border: 1px solid var(--border);
+  }
+  h2 { font-size: 17px; font-weight: 700; margin-bottom: 4px; color: var(--g800); }
+  .intro { font-size: 12.5px; color: var(--text); line-height: 1.4; margin-bottom: 10px; }
+  .intro strong { color: var(--g700); }
+
+  .context {
+    background: var(--g50);
+    border-left: 3px solid var(--g600);
+    border-radius: 0 6px 6px 0;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 12px; }
+  .prog-bar { flex: 1; height: 5px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--g600); width: 0%; transition: width 0.4s; border-radius: 3px; }
+  .prog-txt { font-size: 11px; color: var(--muted); font-weight: 600; min-width: 70px; text-align: right; }
+
+  .counter-box {
+    background: #fafafa;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    margin-bottom: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .counter-label { font-size: 12px; color: var(--muted); }
+  .counter-value { font-size: 16px; font-weight: 700; color: var(--g800); }
+  .counter-value.danger { color: var(--o600); }
+
+  .event-card {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 10px;
+    padding: 14px;
+    margin-bottom: 14px;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+  .event-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 8px;
+    gap: 10px;
+  }
+  .event-date {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--g700);
+    background: var(--g50);
+    padding: 3px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .event-days {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--o600);
+    background: var(--o50);
+    padding: 3px 8px;
+    border-radius: 4px;
+    flex-shrink: 0;
+  }
+  .event-text {
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: var(--text);
+  }
+  .event-text strong { color: var(--g800); }
+
+  .actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 12px;
+  }
+  .action-btn {
+    padding: 12px 10px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .action-btn.count:hover { border-color: var(--o600); background: var(--o50); }
+  .action-btn.no-count:hover { border-color: var(--g600); background: var(--g50); }
+
+  .action-btn.selected-count { border-color: var(--o600); background: var(--o100); color: var(--o800); pointer-events: none; }
+  .action-btn.selected-no-count { border-color: var(--g600); background: var(--g100); color: var(--g800); pointer-events: none; }
+
+  .action-btn.correct { border-color: var(--g600); background: var(--g100); pointer-events: none; }
+  .action-btn.wrong { border-color: var(--o600); background: var(--o100); pointer-events: none; opacity: 0.7; }
+  .action-btn.disabled { pointer-events: none; opacity: 0.5; }
+
+  .feedback {
+    display: none;
+    border-radius: 8px;
+    padding: 11px 13px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+    animation: fadeIn 0.3s ease;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct { background: var(--g50); border-left: 4px solid var(--g600); }
+  .feedback.wrong { background: var(--o50); border-left: 4px solid var(--o600); }
+  .feedback .label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; margin-bottom: 4px;
+  }
+  .feedback.correct .label { color: var(--g700); }
+  .feedback.wrong .label { color: var(--o600); }
+  .feedback .norm { color: var(--g700); font-weight: 600; }
+
+  .next-btn {
+    width: 100%;
+    padding: 11px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--g600);
+    color: #fff;
+    opacity: 0.3;
+    pointer-events: none;
+    transition: 0.15s;
+  }
+  .next-btn.active { opacity: 1; pointer-events: auto; }
+  .next-btn:hover { background: var(--g700); }
+
+  .final-screen { display: none; text-align: center; padding: 10px 0; animation: fadeIn 0.3s ease; }
+  .final-screen.active { display: flex; flex-direction: column; align-items: center; gap: 12px; }
+  .final-icon { font-size: 36px; }
+  .final-title { font-size: 17px; font-weight: 700; color: var(--g800); }
+  .final-text { font-size: 12.5px; line-height: 1.5; color: var(--text); max-width: 500px; }
+  .final-text strong { color: var(--g700); }
+  .restart-btn {
+    padding: 10px 28px;
+    border: 2px solid var(--g600);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--g700);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.15s;
+  }
+  .restart-btn:hover { background: var(--g50); }
+
+  @media (max-width: 600px) {
+    .wrap { padding: 14px; }
+    .actions { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h2>Журнал учета простоев САК</h2>
+  <p class="intro">Прошел год эксплуатации системы. Вы заполняете журнал учета простоев. Для каждого события выберите, <strong>учитывается ли оно при расчете лимита в 28 дней</strong>.</p>
+
+  <div class="context">
+    <strong>Этап 9 и эксплуатация.</strong> По пп. 29 ПП № 779 суммарная продолжительность перерывов в эксплуатации САК не должна превышать 28 календарных дней в год.
+  </div>
+
+  <div class="counter-box">
+    <div class="counter-label">Дней в лимите 28:</div>
+    <div class="counter-value" id="counterValue">0</div>
+  </div>
+
+  <div class="progress">
+    <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-txt" id="progTxt">Событие 1 из 6</div>
+  </div>
+
+  <div id="eventArea"></div>
+
+  <div class="feedback" id="feedback"></div>
+
+  <button class="next-btn" id="nextBtn" onclick="nextEvent()">Далее</button>
+
+  <div class="final-screen" id="finalScreen">
+    <div class="final-icon" id="finalIcon"></div>
+    <div class="final-title" id="finalTitle"></div>
+    <div class="final-text" id="finalText"></div>
+    <button class="restart-btn" onclick="restartLog()">Заполнить журнал заново</button>
+  </div>
+</div>
+
+<script>
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
+  const events = [
+    {
+      date: '12 марта',
+      days: 5,
+      text: 'Проведена плановая <strong>поверка автоматического средства измерения</strong> (газоанализатора SO2) метрологической службой.',
+      isCounted: true,
+      hint: '<strong>Идет в лимит.</strong> Поверка относится к перерывам, связанным с техническим обслуживанием и поверкой. Согласно <span class="norm">пп. 29 ПП № 779</span>, такие дни суммируются и не должны превышать 28 календарных дней в год.'
+    },
+    {
+      date: '15–28 апреля',
+      days: 14,
+      text: '<strong>Полная остановка основного технологического оборудования</strong> (котла) на плановый ремонт. САК не работала, так как нет выбросов.',
+      isCounted: false,
+      hint: '<strong>Не идет в лимит.</strong> Согласно <span class="norm">пп. 30 ПП № 779</span>, время полной остановки технологического оборудования не учитывается при исчислении срока перерывов в эксплуатации системы. Эти 14 дней вычеркиваем из расчета.'
+    },
+    {
+      date: '3 июня',
+      days: 1,
+      text: '<strong>Замена расходных материалов</strong> (фильтров и осушителя) в узле отбора проб специалистом КИПиА.',
+      isCounted: true,
+      hint: '<strong>Идет в лимит.</strong> Замена расходников – часть технического обслуживания. День простоя идет в общий счетчик 28 дней по <span class="norm">пп. 29 ПП № 779</span>. Именно поэтому ТО стараются совмещать с остановками основного оборудования.'
+    },
+    {
+      date: '10–12 августа',
+      days: 3,
+      text: '<strong>Аварийный ремонт блока питания</strong> САК после скачка напряжения. Система не передавала данные в реестр.',
+      isCounted: true,
+      hint: '<strong>Идет в лимит.</strong> Ремонт системы автоматического контроля относится к перерывам эксплуатации. Три дня добавляются в счетчик. Если бы это произошло во время остановки котла, дни бы не учитывались.'
+    },
+    {
+      date: '5–11 октября',
+      days: 7,
+      text: '<strong>Остановка сушильного барабана</strong> из-за отсутствия сырья на складе. Технологический процесс не велся.',
+      isCounted: false,
+      hint: '<strong>Не идет в лимит.</strong> Это классическая полная остановка основного технологического оборудования. Согласно <span class="norm">пп. 30 ПП № 779</span>, эти 7 дней не учитываются при расчете лимита, даже если САК физически была включена в режим ожидания.'
+    },
+    {
+      date: '20 ноября',
+      days: 2,
+      text: '<strong>Распломбировка измерительного канала</strong> для замены вышедшего из строя датчика. После замены узел опломбировали повторно.',
+      isCounted: true,
+      hint: '<strong>Идет в лимит.</strong> Любая распломбировка (кроме случаев, предусмотренных регламентом) делает систему неработающей (<span class="norm">пп. 27 ПП № 779</span>). Два дня ремонта и повторного пломбирования идут в счетчик 28 дней.'
+    }
+  ];
+
+  let currentIndex = 0;
+  let totalDaysCounted = 0;
+  let correctAnswers = 0;
+  let isChecked = false;
+
+  function renderEvent() {
+    const area = document.getElementById('eventArea');
+    area.innerHTML = '';
+    isChecked = false;
+    document.getElementById('nextBtn').classList.remove('active');
+    document.getElementById('feedback').classList.remove('show');
+    document.getElementById('finalScreen').classList.remove('active');
+
+    const ev = events[currentIndex];
+    const card = document.createElement('div');
+    card.className = 'event-card';
+    card.innerHTML =
+      '<div class="event-header">' +
+        '<div class="event-date">' + ev.date + '</div>' +
+        '<div class="event-days">' + ev.days + ' дн.</div>' +
+      '</div>' +
+      '<div class="event-text">' + ev.text + '</div>' +
+      '<div class="actions" id="actions" style="margin-top: 12px;">' +
+        '<button class="action-btn count" data-value="count" onclick="selectAnswer(this)">Идет в лимит 28 дней</button>' +
+        '<button class="action-btn no-count" data-value="no-count" onclick="selectAnswer(this)">Не идет в лимит</button>' +
+      '</div>';
+    area.appendChild(card);
+
+    updateProgress();
+    triggerResize();
+  }
+
+  function selectAnswer(btn) {
+    if (isChecked) return;
+    const value = btn.dataset.value;
+    const ev = events[currentIndex];
+    const isCorrect = (value === 'count' && ev.isCounted) || (value === 'no-count' && !ev.isCounted);
+
+    const actions = document.getElementById('actions');
+    actions.querySelectorAll('.action-btn').forEach(function(b) {
+      b.classList.add('disabled');
+    });
+
+    if (isCorrect) {
+      btn.classList.add('correct');
+      correctAnswers++;
+      if (ev.isCounted) {
+        totalDaysCounted += ev.days;
+        updateCounter();
+      }
+    } else {
+      btn.classList.add('wrong');
+      const correctBtn = value === 'count' ? actions.querySelector('.no-count') : actions.querySelector('.count');
+      correctBtn.classList.add('correct');
+      if (ev.isCounted) {
+        totalDaysCounted += ev.days;
+        updateCounter();
+      }
+    }
+
+    const fb = document.getElementById('feedback');
+    if (isCorrect) {
+      fb.className = 'feedback show correct';
+      fb.innerHTML = '<div class="label">Вы ответили правильно</div><div>' + ev.hint + '</div>';
+    } else {
+      var userLabel = value === 'count' ? 'Идет в лимит' : 'Не идет в лимит';
+      var correctLabel = ev.isCounted ? 'Идет в лимит' : 'Не идет в лимит';
+      fb.className = 'feedback show wrong';
+      fb.innerHTML = '<div class="label">Вы ответили неправильно</div><div>Вы выбрали «' + userLabel + '», правильно – «' + correctLabel + '». ' + ev.hint + '</div>';
+    }
+
+    isChecked = true;
+    document.getElementById('nextBtn').classList.add('active');
+    triggerResize();
+  }
+
+  function updateCounter() {
+    const el = document.getElementById('counterValue');
+    el.textContent = totalDaysCounted;
+    if (totalDaysCounted > 28) {
+      el.classList.add('danger');
+    } else {
+      el.classList.remove('danger');
+    }
+  }
+
+  function nextEvent() {
+    if (!isChecked) return;
+    currentIndex++;
+    if (currentIndex < events.length) {
+      renderEvent();
+    } else {
+      showFinal();
+    }
+    triggerResize();
+  }
+
+  function updateProgress() {
+    var pct = (currentIndex / events.length) * 100;
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progTxt').textContent = 'Событие ' + (currentIndex + 1) + ' из ' + events.length;
+  }
+
+  function showFinal() {
+    document.getElementById('eventArea').innerHTML = '';
+    document.getElementById('feedback').classList.remove('show');
+    document.getElementById('nextBtn').style.display = 'none';
+    document.querySelector('.progress').style.display = 'none';
+
+    var finalScreen = document.getElementById('finalScreen');
+    finalScreen.classList.add('active');
+
+    var icon = '', title = '', msg = '';
+    var isLimitBroken = totalDaysCounted > 28;
+
+    if (correctAnswers === events.length && !isLimitBroken) {
+      icon = '🎯';
+      title = 'Журнал заполнен верно';
+      msg = 'Вы правильно классифицировали все события. Итоговый счетчик: <strong>' + totalDaysCounted + ' из 28 дней</strong>. Лимит не превышен, система признается работающей. Можно спокойно проходить проверки Росприроднадзора.';
+    } else if (correctAnswers >= events.length - 1 && !isLimitBroken) {
+      icon = '👍';
+      title = 'Хороший результат';
+      msg = 'Вы допустили одну ошибку, но правильно посчитали итог. Счетчик: <strong>' + totalDaysCounted + ' из 28 дней</strong>. Лимит не превышен.';
+    } else if (isLimitBroken) {
+      icon = '⚠️';
+      title = 'Лимит превышен';
+      msg = 'Счетчик показал <strong>' + totalDaysCounted + ' дней</strong>. Это больше допустимых 28 дней. Согласно <span class="norm">пп. 29 ПП № 779</span>, при превышении лимита система признается неработающей, что грозит предписаниями и штрафами. В реальной работе такие простои нужно было совмещать с остановками основного оборудования.';
+    } else {
+      icon = '📖';
+      title = 'Стоит повторить';
+      msg = 'Вы правильно ответили на <strong>' + correctAnswers + ' из ' + events.length + '</strong> вопросов. Вернитесь к материалу урока и обратите внимание на разницу между остановкой самого оборудования и ремонтом САК.';
+    }
+
+    document.getElementById('finalIcon').textContent = icon;
+    document.getElementById('finalTitle').textContent = title;
+    document.getElementById('finalText').innerHTML = '<p>' + msg + '</p>';
+    triggerResize();
+  }
+
+  function restartLog() {
+    currentIndex = 0;
+    totalDaysCounted = 0;
+    correctAnswers = 0;
+    updateCounter();
+    document.getElementById('nextBtn').style.display = 'inline-block';
+    document.querySelector('.progress').style.display = 'flex';
+    renderEvent();
+  }
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+
+  window.addEventListener('load', function() {
+    renderEvent();
+    triggerResize();
+  });
+</script>
+
+</body>
+</html>
