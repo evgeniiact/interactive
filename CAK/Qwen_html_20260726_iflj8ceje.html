@@ -1,0 +1,525 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Распределение ролей на этапе 8</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --o50: #fff7ed;
+    --o100: #ffedd5;
+    --o600: #ea580c;
+    --o800: #9a3412;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 14px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 650px;
+    height: auto;
+    min-height: 200px;
+    background: var(--bg);
+    border-radius: var(--radius);
+    padding: 18px;
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+  h2 { font-size: 17px; font-weight: 700; margin-bottom: 4px; color: var(--g800); }
+  .intro { font-size: 12.5px; color: var(--text); line-height: 1.4; margin-bottom: 10px; }
+  .intro strong { color: var(--g700); }
+
+  .context {
+    background: var(--g50);
+    border-left: 3px solid var(--g600);
+    border-radius: 0 6px 6px 0;
+    padding: 8px 10px;
+    font-size: 12px;
+    line-height: 1.4;
+    margin-bottom: 12px;
+  }
+
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  @media (max-width: 500px) {
+    .grid { grid-template-columns: 1fr; }
+  }
+
+  .col-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    color: var(--muted);
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  /* Одинаковая высота карточек через min-height */
+  .card {
+    background: #fff;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.35;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    min-height: 85px;
+    display: flex;
+    align-items: center;
+    position: relative;
+  }
+  .card:hover { border-color: var(--g600); }
+  .card.selected { border-color: var(--g600); background: var(--g50); }
+  
+  .card.paired { 
+    border-color: var(--g700); 
+    background: var(--g50); 
+    cursor: pointer;
+  }
+  .card.paired::before {
+    content: attr(data-pair-num);
+    position: absolute;
+    top: -7px;
+    left: 10px;
+    background: var(--g700);
+    color: #fff;
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 6px;
+    border-radius: 8px;
+  }
+  
+  .card.correct { border-color: var(--g600); background: #dcfce7; }
+  .card.correct::after { content: ' ✓'; color: var(--g600); font-weight: 700; margin-left: auto; flex-shrink: 0; }
+  .card.wrong { border-color: var(--o600); background: var(--o100); }
+  .card.wrong::after { content: ' ✕'; color: var(--o600); font-weight: 700; margin-left: auto; flex-shrink: 0; }
+
+  .controls {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    padding-top: 12px;
+    border-top: 1px solid var(--border);
+  }
+  .btn {
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.15s;
+    background: var(--g600);
+    color: #fff;
+    opacity: 0.3;
+    pointer-events: none;
+  }
+  .btn.active { opacity: 1; pointer-events: auto; }
+  .btn:hover { background: var(--g700); }
+  .btn-reset {
+    background: #fff;
+    color: var(--g700);
+    border: 2px solid var(--g600);
+    opacity: 1;
+    pointer-events: auto;
+  }
+  .btn-reset:hover { background: var(--g50); }
+
+  .feedback {
+    display: none;
+    border-radius: 8px;
+    padding: 11px 13px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    margin-top: 12px;
+  }
+  .feedback.show { display: block; }
+  .feedback.correct { background: var(--g50); border-left: 4px solid var(--g600); }
+  .feedback.wrong { background: var(--o50); border-left: 4px solid var(--o600); }
+  .feedback .label {
+    font-size: 10px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; margin-bottom: 4px;
+  }
+  .feedback.correct .label { color: var(--g700); }
+  .feedback.wrong .label { color: var(--o600); }
+
+  /* Тултип при наведении */
+  .tooltip {
+    position: fixed;
+    background: #1e293b;
+    color: #fff;
+    padding: 10px 14px;
+    border-radius: 8px;
+    font-size: 12px;
+    line-height: 1.4;
+    max-width: 300px;
+    z-index: 10000;
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.15s;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.2);
+  }
+  .tooltip.show { opacity: 1; }
+  .tooltip::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    width: 8px;
+    height: 8px;
+    background: #1e293b;
+    transform: translateY(-50%) rotate(45deg);
+  }
+  .tooltip.left::before { right: -4px; }
+  .tooltip.right::before { left: -4px; }
+
+  @media (max-width: 600px) { .wrap { padding: 14px; } }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h2>Распределение ролей на этапе 8</h2>
+  <p class="intro">САК не работает сама по себе. За ней стоят люди и документы. <strong>Соедините карточки:</strong> выберите роль или документ слева, затем выберите соответствующую функцию справа. После проверки наведите курсор на карточку, чтобы увидеть комментарий.</p>
+
+  <div class="context">
+    <strong>Этап 8. Инструктаж персонала.</strong> Разработайте регламент и обучите тех, кто будет работать с системой.
+  </div>
+
+  <div class="grid">
+    <div>
+      <div class="col-title">Роль / Документ</div>
+      <div class="col" id="leftCol"></div>
+    </div>
+    <div>
+      <div class="col-title">Функция / Обязанность</div>
+      <div class="col" id="rightCol"></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn btn-reset" onclick="resetGame()">Сбросить</button>
+    <button class="btn" id="checkBtn" onclick="checkGame()">Проверить</button>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+</div>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
+  const leftItems = [
+    { id: 'l1', text: 'Эколог' },
+    { id: 'l2', text: 'Специалист КИПиА' },
+    { id: 'l3', text: 'Технолог' },
+    { id: 'l4', text: 'Внутренний регламент САК' },
+    { id: 'l5', text: 'Система САК (автоматика)' },
+    { id: 'l6', text: 'Природопользователь (Предприятие)' }
+  ];
+
+  const rightItems = [
+    { id: 'r1', text: 'Выгружает данные для 2-ТП и отслеживает аварийные сообщения на АРМ.', match: 'l1', comment: 'Эколог работает с АРМ эколога: выгружает данные для отчетности 2-ТП, видит аварийные сообщения и контролирует, чтобы система передавала данные в реестр без сбоев.' },
+    { id: 'r2', text: 'Проводит ТО, меняет фильтры и оформляет акты при распломбировке узлов.', match: 'l2', comment: 'Специалист КИПиА отвечает за техническое обслуживание: меняет фильтры, осушители, проводит поверку. Любая распломбировка оформляется актом – система в это время считается неработающей (п. 27 ПП № 779).' },
+    { id: 'r3', text: 'Фиксирует остановки основного оборудования, чтобы они не шли в лимит 28 дней.', match: 'l3', comment: 'Технолог фиксирует время и дату остановки и возобновления работы основного оборудования (п. 31 ПП № 779). Эти дни не идут в лимит 28 календарных дней перерывов эксплуатации САК (п. 30 ПП № 779).' },
+    { id: 'r4', text: 'Закрепляет порядок фиксации аварий, график ТО и сроки уведомлений надзора.', match: 'l4', comment: 'Внутренний регламент САК – ключевой документ этапа 8. В нем прописано, кто отвечает за ежедневный мониторинг, кто проводит ТО, как фиксировать аварии и в какие сроки уведомлять Росприроднадзор о длительных простоях.' },
+    { id: 'r5', text: 'Автоматически сохраняет результаты измерений и регистрирует время остановки при сбое.', match: 'l5', comment: 'Система САК сама регистрирует время и дату остановки и возобновления работы автоматических средств измерения и основного технологического оборудования (п. 31 ПП № 779). Данные сохраняются даже при сбоях в энергоснабжении.' },
+    { id: 'r6', text: 'Несет ответственность за работу системы и утверждает регламент эксплуатации.', match: 'l6', comment: 'Природопользователь (предприятие) несет ответственность за работу системы автоматического контроля, утверждает внутренний регламент эксплуатации и обеспечивает соблюдение лимита 28 дней перерывов в год (п. 29 ПП № 779).' }
+  ];
+
+  let pairs = {};
+  let selectedLeft = null;
+  let isChecked = false;
+
+  function shuffle(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function renderGrid() {
+    const leftCol = document.getElementById('leftCol');
+    const rightCol = document.getElementById('rightCol');
+    leftCol.innerHTML = '';
+    rightCol.innerHTML = '';
+    
+    const shuffledRight = shuffle(rightItems);
+
+    leftItems.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.dataset.id = item.id;
+      el.dataset.side = 'left';
+      el.textContent = item.text;
+      el.onclick = () => handleLeftClick(item.id);
+      leftCol.appendChild(el);
+    });
+
+    shuffledRight.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'card';
+      el.dataset.id = item.id;
+      el.dataset.side = 'right';
+      el.dataset.match = item.match;
+      el.textContent = item.text;
+      el.onclick = () => handleRightClick(item.id);
+      rightCol.appendChild(el);
+    });
+
+    updateUI();
+  }
+
+  function updateUI() {
+    const leftCards = document.querySelectorAll('#leftCol .card');
+    const rightCards = document.querySelectorAll('#rightCol .card');
+
+    leftCards.forEach(el => {
+      const id = el.dataset.id;
+      el.classList.remove('selected', 'paired', 'correct', 'wrong');
+      el.removeAttribute('data-pair-num');
+
+      if (pairs[id]) {
+        const pairNum = Object.keys(pairs).indexOf(id) + 1;
+        el.classList.add('paired');
+        el.dataset.pairNum = pairNum;
+      } else if (selectedLeft === id) {
+        el.classList.add('selected');
+      }
+    });
+
+    rightCards.forEach(el => {
+      const id = el.dataset.id;
+      el.classList.remove('selected', 'paired', 'correct', 'wrong');
+      el.removeAttribute('data-pair-num');
+
+      const leftId = Object.keys(pairs).find(key => pairs[key] === id);
+      if (leftId) {
+        const pairNum = Object.keys(pairs).indexOf(leftId) + 1;
+        el.classList.add('paired');
+        el.dataset.pairNum = pairNum;
+      }
+    });
+
+    updateCheckButton();
+    triggerResize();
+  }
+
+  function handleLeftClick(id) {
+    if (isChecked) return;
+    if (pairs[id]) {
+      delete pairs[id];
+      selectedLeft = null;
+    } else {
+      selectedLeft = (selectedLeft === id) ? null : id;
+    }
+    updateUI();
+  }
+
+  function handleRightClick(id) {
+    if (isChecked) return;
+    if (!selectedLeft) return;
+
+    const existingLeft = Object.keys(pairs).find(key => pairs[key] === id);
+    if (existingLeft) {
+      delete pairs[existingLeft];
+    }
+
+    pairs[selectedLeft] = id;
+    selectedLeft = null;
+    updateUI();
+  }
+
+  function updateCheckButton() {
+    const btn = document.getElementById('checkBtn');
+    if (Object.keys(pairs).length === 6) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  }
+
+  function checkGame() {
+    if (Object.keys(pairs).length !== 6) return;
+    isChecked = true;
+
+    let correctCount = 0;
+
+    document.querySelectorAll('.card').forEach(card => {
+      const id = card.dataset.id;
+      const side = card.dataset.side;
+      
+      if (side === 'left') {
+        const rightId = pairs[id];
+        const correctRight = rightItems.find(r => r.match === id).id;
+        if (rightId === correctRight) {
+          card.classList.add('correct');
+          correctCount++;
+        } else {
+          card.classList.add('wrong');
+        }
+      } else {
+        const leftId = Object.keys(pairs).find(key => pairs[key] === id);
+        const correctLeft = card.dataset.match;
+        if (leftId === correctLeft) {
+          card.classList.add('correct');
+        } else {
+          card.classList.add('wrong');
+        }
+      }
+    });
+
+    const fb = document.getElementById('feedback');
+    if (correctCount === 6) {
+      fb.className = 'feedback show correct';
+      fb.innerHTML = '<div class="label">Все пары собраны верно</div><div>Вы четко понимаете, кто за что отвечает при эксплуатации САК. Наведите курсор на любую карточку, чтобы увидеть комментарий с привязкой к нормативам.</div>';
+    } else {
+      fb.className = 'feedback show wrong';
+      fb.innerHTML = '<div class="label">Есть ошибки в распределении</div><div>Вы правильно соединили <strong>' + correctCount + ' из 6</strong> пар. Обратите внимание на карточки, отмеченные красным. Наведите курсор на любую карточку, чтобы увидеть комментарий.</div>';
+    }
+
+    setupTooltip();
+    triggerResize();
+  }
+
+  function setupTooltip() {
+    const tooltip = document.getElementById('tooltip');
+    const cards = document.querySelectorAll('.card.paired, .card.correct, .card.wrong');
+
+    cards.forEach(card => {
+      card.addEventListener('mouseenter', (e) => {
+        const id = card.dataset.id;
+        const side = card.dataset.side;
+        
+        let commentText = '';
+        if (side === 'left') {
+          const item = leftItems.find(i => i.id === id);
+          const rightId = pairs[id];
+          const rightItem = rightItems.find(r => r.id === rightId);
+          commentText = rightItem ? rightItem.comment : '';
+        } else {
+          const rightItem = rightItems.find(r => r.id === id);
+          commentText = rightItem ? rightItem.comment : '';
+        }
+
+        if (commentText) {
+          tooltip.textContent = commentText;
+          tooltip.classList.add('show');
+          positionTooltip(card, tooltip);
+        }
+      });
+
+      card.addEventListener('mousemove', (e) => {
+        if (tooltip.classList.contains('show')) {
+          positionTooltip(card, tooltip);
+        }
+      });
+
+      card.addEventListener('mouseleave', () => {
+        tooltip.classList.remove('show');
+      });
+    });
+  }
+
+  function positionTooltip(card, tooltip) {
+    const cardRect = card.getBoundingClientRect();
+    const tooltipRect = tooltip.getBoundingClientRect();
+    const side = card.dataset.side;
+
+    let top = cardRect.top + cardRect.height / 2 - tooltipRect.height / 2;
+    let left;
+
+    if (side === 'left') {
+      left = cardRect.right + 12;
+      tooltip.classList.remove('left');
+      tooltip.classList.add('right');
+      
+      if (left + tooltipRect.width > window.innerWidth - 20) {
+        left = cardRect.left - tooltipRect.width - 12;
+        tooltip.classList.remove('right');
+        tooltip.classList.add('left');
+      }
+    } else {
+      left = cardRect.left - tooltipRect.width - 12;
+      tooltip.classList.remove('right');
+      tooltip.classList.add('left');
+      
+      if (left < 20) {
+        left = cardRect.right + 12;
+        tooltip.classList.remove('left');
+        tooltip.classList.add('right');
+      }
+    }
+
+    if (top < 10) top = 10;
+    if (top + tooltipRect.height > window.innerHeight - 10) {
+      top = window.innerHeight - tooltipRect.height - 10;
+    }
+
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+  }
+
+  function resetGame() {
+    pairs = {};
+    selectedLeft = null;
+    isChecked = false;
+    document.getElementById('feedback').classList.remove('show');
+    document.getElementById('tooltip').classList.remove('show');
+    renderGrid();
+  }
+
+  const wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(() => { 
+      triggerResize(); 
+    }).observe(wrap);
+  }
+
+  window.addEventListener('load', () => {
+    renderGrid();
+    triggerResize();
+  });
+</script>
+
+</body>
+</html>
