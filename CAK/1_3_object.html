@@ -40,7 +40,6 @@
   .wrap {
     width: 100%;
     max-width: 650px;
-    /* height: auto — ключевое свойство для корректного уменьшения фрейма */
     height: auto;
     min-height: 400px;
     background: var(--card);
@@ -74,6 +73,7 @@
     border: 1px solid var(--g200);
     border-radius: 10px;
     padding: 14px;
+    display: block; /* Явное указание отображения */
   }
   .q-title { font-size: 14.5px; font-weight: 700; color: var(--g800); margin-bottom: 10px; line-height: 1.4; }
   .options { display: grid; gap: 6px; }
@@ -166,15 +166,6 @@
   .final-title { font-size: 17px; font-weight: 700; color: var(--g800); margin-bottom: 10px; }
   .final-text { font-size: 14px; line-height: 1.5; color: var(--text); margin-bottom: 12px; }
   .final-text strong { color: var(--g700); }
-  .final-box {
-    background: var(--g50);
-    border-left: 4px solid var(--g600);
-    border-radius: 8px;
-    padding: 12px;
-    margin-top: 12px;
-  }
-  .final-box h4 { font-size: 13px; font-weight: 700; color: var(--g800); margin-bottom: 6px; }
-  .final-box p { font-size: 13px; line-height: 1.5; color: var(--text); }
   
   .modal-overlay {
     position: fixed;
@@ -234,7 +225,7 @@
 
 <div class="wrap" id="wrap">
   <h2>Определите, нужна ли САК на источнике</h2>
-  <p class="intro"></p>
+  <p class="intro">Разберите три ситуации и проверьте объекты по алгоритму.</p>
 
   <div class="progress">
     <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
@@ -244,14 +235,10 @@
   <div id="caseArea"></div>
 
   <div class="final-screen" id="finalScreen">
-    <div class="final-title">Что вы должны запомнить</div>
+    <div class="final-title">Главное из тренажера</div>
     <div class="final-text">
-      <p>САК обязательна не для любого источника, а только при совпадении трех условий: установка подпадает под норматив, пороги по массе превышены, возможен ли автоматический контроль..</p>
+      <p>САК обязательна не для любого источника, а только при совпадении трех условий: установка подпадает под норматив, пороги по массе превышены, возможен автоматический контроль.</p>
       <p>Если объект подпадает под два норматива (I категория и квотирование), источник проверяется по обоим. Если условия выполняются для обоих, в программе САК фиксируют оба основания.</p>
-    </div>
-    <div class="final-box">
-      <h4></h4>
-      <p>Теперь вы умеете определять обязательность САК для конкретного источника по шагам алгоритма.</p>
     </div>
     <div class="ctrls">
       <button class="btn active" onclick="restart()">Пройти заново</button>
@@ -289,7 +276,6 @@
 </div>
 
 <script>
-  // Основная функция отправки новой высоты во внешний фрейм
   function triggerResize() {
     if (window.iFrameResize) {
       window.iFrameResize({ log: false, checkOrigin: false }, '*');
@@ -581,7 +567,6 @@
     }
   });
 
-  // Автоматическое отслеживание любых изменений размера контейнера
   const wrap = document.getElementById('wrap');
   if (wrap) {
     new ResizeObserver(() => { 
@@ -589,11 +574,22 @@
     }).observe(wrap);
   }
 
-  // Инициализация при полной загрузке страницы
-  window.addEventListener('load', () => {
+  // НАДЕЖНАЯ ИНИЦИАЛИЗАЦИЯ:
+  // Запускаем отрисовку немедленно, чтобы код работал даже при динамической 
+  // вставке через innerHTML в LMS-платформах, где событие 'load' уже могло пройти.
+  function initApp() {
     renderCase();
     triggerResize();
-  });
+  }
+  
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+  } else {
+    initApp();
+  }
+  
+  // Дополнительная страховка для стандартной загрузки
+  window.addEventListener('load', initApp);
 </script>
 
 </body>
