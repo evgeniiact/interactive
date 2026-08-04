@@ -1,0 +1,332 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тест: НООЛР и КЭР — новые правила 2026</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #fafafa;
+    color: #1a1a1a;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+  .container {
+    max-width: 780px;
+    margin: 0 auto;
+  }
+  h1 {
+    font-size: 26px;
+    font-weight: 600;
+    color: #0d5c5c;
+    margin-bottom: 8px;
+  }
+  .subtitle {
+    font-size: 14px;
+    color: #666;
+    margin-bottom: 32px;
+  }
+  .progress {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 28px;
+  }
+  .progress-dot {
+    flex: 1;
+    height: 4px;
+    background: #e0e0e0;
+    border-radius: 2px;
+    transition: background .3s;
+  }
+  .progress-dot.done { background: #0d5c5c; }
+  .progress-dot.current { background: #0d5c5c; opacity: .4; }
+
+  .card {
+    background: #fff;
+    border: 1px solid #cfcfcf;
+    border-radius: 6px;
+    padding: 32px;
+  }
+  .q-number {
+    font-size: 13px;
+    color: #0d5c5c;
+    font-weight: 600;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .q-text {
+    font-size: 18px;
+    line-height: 1.5;
+    margin-bottom: 24px;
+    font-weight: 500;
+  }
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .option {
+    background: #fff;
+    border: 1.5px solid #cfcfcf;
+    border-radius: 5px;
+    padding: 14px 16px;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1.45;
+    text-align: left;
+    transition: all .15s;
+    color: #1a1a1a;
+    font-family: inherit;
+  }
+  .option:hover:not(:disabled) {
+    border-color: #0d5c5c;
+    background: #f5fafa;
+  }
+  .option:disabled { cursor: default; }
+  .option.correct {
+    border-color: #0d5c5c;
+    background: #e6f2f2;
+    font-weight: 600;
+  }
+  .option.wrong {
+    border-color: #b34040;
+    background: #f8ecec;
+  }
+
+  .comment {
+    margin-top: 22px;
+    padding: 18px 20px;
+    border-left: 4px solid #0d5c5c;
+    background: #f5fafa;
+    border-radius: 0 5px 5px 0;
+    font-size: 15px;
+    line-height: 1.55;
+    display: none;
+  }
+  .comment.wrong-comment {
+    border-left-color: #b34040;
+    background: #f8ecec;
+  }
+  .comment .status {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 6px;
+    font-size: 16px;
+  }
+  .comment .status.ok { color: #0d5c5c; }
+  .comment .status.bad { color: #b34040; }
+
+  .next-btn {
+    display: none;
+    margin-top: 24px;
+    margin-left: auto;
+    background: #0d5c5c;
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background .15s;
+  }
+  .next-btn:hover { background: #094444; }
+
+  .result {
+    text-align: center;
+    padding: 48px 32px;
+  }
+  .result h2 {
+    font-size: 24px;
+    color: #0d5c5c;
+    margin-bottom: 12px;
+  }
+  .score {
+    font-size: 48px;
+    font-weight: 700;
+    color: #0d5c5c;
+    margin: 20px 0 8px;
+  }
+  .score-desc {
+    color: #666;
+    font-size: 15px;
+    margin-bottom: 28px;
+  }
+  .restart {
+    background: #fff;
+    border: 1.5px solid #0d5c5c;
+    color: #0d5c5c;
+    padding: 11px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .restart:hover { background: #f5fafa; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Тест: НООЛР и КЭР — новые правила 2026</h1>
+  <div class="subtitle">6 вопросов · один вариант ответа · сразу после выбора — разбор со ссылкой на НПА</div>
+  <div class="progress" id="progress"></div>
+
+  <div class="card" id="card">
+    <!-- контент вставляется скриптом -->
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "Вы объект I категории. Вам нужно разработать нормативы образования отходов для заявки на КЭР после 1 сентября 2026 года. Куда вы включаете нормативы и их обоснование?",
+    options: [
+      "В отдельный документ НООЛР и направляете на согласование в Росприроднадзор",
+      "В заявку на предоставление КЭР",
+      "В раздел VI ДВОС"
+    ],
+    correct: 1,
+    comment: "Нормативы образования отходов и лимиты на их размещение, а также их обоснование включают в заявку на предоставление КЭР. Отдельной процедуры согласования НООЛР больше нет. Пункт 5 Порядка, утвержденного Приказом Минприроды от 08.04.2026 № 194."
+  },
+  {
+    q: "Вы объект II категории без КЭР. Вы разработали НООЛР по приказу № 228. Что делать с расчетами дальше?",
+    options: [
+      "Направить на согласование в территориальный орган Росприроднадзора",
+      "Приложить к декларации о плате за НВОС",
+      "Утвердить подписью уполномоченного лица и использовать как базу для раздела VI ДВОС"
+    ],
+    correct: 2,
+    comment: "Объекты II категории без КЭР утверждают НООЛР подписью уполномоченного лица и используют расчеты как базу для заполнения раздела VI ДВОС. К самой декларации НООЛР не прикладывают. Пункт 12 Методических указаний, утвержденных Приказом Минприроды от 16.04.2026 № 228."
+  },
+  {
+    q: "У вас действует КЭР до 2030 года. Вместе с ним установлены лимиты на размещение отходов. В каком случае их нужно пересматривать?",
+    options: [
+      "Каждый год при подаче декларации о плате за НВОС",
+      "Только при пересмотре КЭР",
+      "Лимиты пересматривать не нужно, они бессрочные"
+    ],
+    correct: 1,
+    comment: "Лимиты на размещение отходов устанавливают на период действия КЭР. Внесение изменений в установленные лимиты осуществляют путем пересмотра КЭР. Пункты 6 и 7 Порядка, утвержденного Приказом Минприроды от 08.04.2026 № 194."
+  },
+  {
+    q: "Вы заполняете сводные данные по Приложению № 10 для объекта I категории. Что нужно указать в таблице?",
+    options: [
+      "Нормативы образования, максимальное годовое количество отходов и лимиты на размещение по годам",
+      "Только фактические массы размещенных отходов за отчетный год",
+      "Только данные о передаче отходов региональному оператору"
+    ],
+    correct: 0,
+    comment: "В Приложении № 10 указывают наименование вида отходов, код по ФККО, норматив образования с единицей измерения и величиной, максимальное годовое количество образования в тоннах, а также лимиты на размещение по годам — отдельно для передачи другим организациям и для размещения на собственных объектах. Приложение № 10 к Методическим указаниям, утвержденным Приказом Минприроды от 16.04.2026 № 228."
+  },
+  {
+    q: "Вы передаете ТКО региональному оператору. Нужно ли в НООЛР указывать номер объекта размещения отходов в ГРОРО и срок действия договора?",
+    options: [
+      "Да, обязательно для всех отходов",
+      "Нет, достаточно указать наименование отхода, код по ФККО, наименование и адрес оператора и реквизиты договора",
+      "Да, но только для отходов I класса опасности"
+    ],
+    correct: 1,
+    comment: "При передаче ТКО региональному оператору можно не указывать цель передачи, наименование и номер объекта в ГРОРО и срок действия договора. Достаточно указать наименование отхода, код по ФККО, наименование и адрес оператора и реквизиты договора. Подпункт 3 пункта 16 Методических указаний, утвержденных Приказом Минприроды от 16.04.2026 № 228."
+  },
+  {
+    q: "Ваша организация накапливает отходы, чтобы через полгода передать их на утилизацию. Включать ли эту массу в лимиты на размещение?",
+    options: [
+      "Да, все накопленные отходы входят в лимиты",
+      "Нет, отходы, накопленные для дальнейшей обработки, утилизации или обезвреживания, в лимиты не включают",
+      "Да, но только если отходы I–II класса опасности"
+    ],
+    correct: 1,
+    comment: "В лимиты на размещение отходов не включается масса отходов, накопление которых осуществляется в целях их дальнейшей реализации, обработки, утилизации или обезвреживания. Пункт 4 Порядка, утвержденного Приказом Минприроды от 08.04.2026 № 194."
+  }
+];
+
+let current = 0;
+let score = 0;
+const card = document.getElementById('card');
+const progress = document.getElementById('progress');
+
+function renderProgress() {
+  progress.innerHTML = '';
+  questions.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'progress-dot';
+    if (i < current) dot.classList.add('done');
+    else if (i === current) dot.classList.add('current');
+    progress.appendChild(dot);
+  });
+}
+
+function renderQuestion() {
+  renderProgress();
+  const q = questions[current];
+  card.innerHTML = `
+    <div class="q-number">Вопрос ${current + 1} из ${questions.length}</div>
+    <div class="q-text">${q.q}</div>
+    <div class="options" id="options">
+      ${q.options.map((opt, i) => `<button class="option" data-i="${i}">${opt}</button>`).join('')}
+    </div>
+    <div class="comment" id="comment"></div>
+    <button class="next-btn" id="next">${current === questions.length - 1 ? 'Завершить' : 'Следующий вопрос →'}</button>
+  `;
+
+  document.querySelectorAll('.option').forEach(btn => {
+    btn.addEventListener('click', () => handleAnswer(parseInt(btn.dataset.i)));
+  });
+  document.getElementById('next').addEventListener('click', () => {
+    current++;
+    if (current < questions.length) renderQuestion();
+    else renderResult();
+  });
+}
+
+function handleAnswer(i) {
+  const q = questions[current];
+  const correct = i === q.correct;
+  if (correct) score++;
+
+  document.querySelectorAll('.option').forEach((btn, idx) => {
+    btn.disabled = true;
+    if (idx === q.correct) btn.classList.add('correct');
+    else if (idx === i && !correct) btn.classList.add('wrong');
+  });
+
+  const comment = document.getElementById('comment');
+  comment.classList.add('show');
+  comment.style.display = 'block';
+  if (!correct) comment.classList.add('wrong-comment');
+  comment.innerHTML = `
+    <span class="status ${correct ? 'ok' : 'bad'}">${correct ? 'Верно' : 'Неверно'}</span>
+    ${q.comment}
+  `;
+  document.getElementById('next').style.display = 'inline-block';
+}
+
+function renderResult() {
+  renderProgress();
+  const msg = score === 6 ? 'Отличный результат — вы свободно ориентируетесь в новых правилах.'
+            : score >= 4 ? 'Хороший результат. Повторите вопросы с ошибками.'
+            : 'Рекомендуем еще раз изучить приказы № 194 и № 228.';
+  card.innerHTML = `
+    <div class="result">
+      <h2>Тест завершен</h2>
+      <div class="score">${score} / ${questions.length}</div>
+      <div class="score-desc">${msg}</div>
+      <button class="restart" onclick="restart()">Пройти заново</button>
+    </div>
+  `;
+}
+
+function restart() {
+  current = 0;
+  score = 0;
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
