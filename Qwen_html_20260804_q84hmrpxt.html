@@ -1,0 +1,182 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тренажер: декларация о плате за НВОС</title>
+<style>
+:root{
+  --ok:#1b7f3b; --ok-bg:#e9f4ec; --err:#b3261e; --err-bg:#fdecea;
+  --accent:#0b57d0;
+  --text:#1f2429; --muted:#5f6368; --border:#dfe2e6; --card:#fff; --bg:#f4f5f7;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--bg);color:var(--text);
+  font-family:"Segoe UI",Roboto,Arial,sans-serif;padding:14px 12px}
+.wrap{max-width:650px;margin:0 auto}
+.card{background:var(--card);border:1px solid #fff;outline:1px solid var(--border);
+  border-radius:12px;padding:16px 18px}
+.top{display:flex;justify-content:space-between;align-items:center;
+  font-size:12px;color:var(--muted);margin-bottom:7px}
+.bar{height:5px;background:#e8eaed;border-radius:99px;overflow:hidden;margin-bottom:14px}
+.fill{height:100%;width:0;background:var(--accent);transition:width .3s}
+.q{font-size:15.5px;font-weight:600;margin:0 0 12px;line-height:1.4}
+.opts{display:flex;flex-direction:column;gap:7px}
+.opt{display:flex;align-items:flex-start;gap:10px;text-align:left;width:100%;
+  background:#fafbfc;border:1px solid var(--border);border-radius:9px;
+  padding:9px 11px;font-size:14px;color:var(--text);cursor:pointer;
+  transition:border-color .15s,background .15s;line-height:1.4;font-family:inherit}
+.opt:hover:not(:disabled){border-color:var(--accent);background:#eef3fd}
+.opt:disabled{cursor:default}
+.opt .mark{flex:0 0 22px;height:22px;border-radius:50%;border:1px solid var(--border);
+  display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;
+  color:var(--muted);background:#fff;margin-top:1px}
+.opt.right{border-color:var(--ok);background:var(--ok-bg)}
+.opt.right .mark{border-color:var(--ok);background:var(--ok);color:#fff}
+.opt.wrong{border-color:var(--err);background:var(--err-bg)}
+.opt.wrong .mark{border-color:var(--err);background:var(--err);color:#fff}
+.fb{display:none;margin-top:10px;border-radius:9px;padding:9px 11px;font-size:13px;line-height:1.45}
+.fb.show{display:block}
+.fb.ok{background:var(--ok-bg);border:1px solid #c5e0cc;color:#15482b}
+.fb.err{background:var(--err-bg);border:1px solid #f0c8c2;color:#7a2b1e}
+.fb b{display:block;margin-bottom:2px;font-size:12px;text-transform:uppercase;letter-spacing:.3px}
+.next{margin-top:11px;width:100%;background:var(--accent);color:#fff;border:none;
+  border-radius:9px;padding:10px;font-size:14px;font-weight:600;cursor:pointer;
+  font-family:inherit;transition:background .15s}
+.next:hover{background:#166a42}
+.next.hidden{display:none}
+.result{text-align:center;padding:6px 0}
+.result .emoji{font-size:40px;line-height:1;margin-bottom:6px}
+.result .score{font-size:32px;font-weight:700;margin:4px 0 2px}
+.result .score small{font-size:17px;color:var(--muted);font-weight:500}
+.result p{color:var(--muted);font-size:14px;margin:6px 0 14px}
+.again{background:var(--accent);color:#fff;border:none;border-radius:9px;
+  padding:10px 26px;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.again:hover{background:#166a42}
+@media (max-width:520px){.card{padding:13px 14px}.q{font-size:14.5px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="card" id="box">
+    <div class="top"><span id="cnt">Вопрос 1 из 6</span><span id="pts">Верно: 0</span></div>
+    <div class="bar"><div class="fill" id="fill"></div></div>
+    <p class="q" id="q"></p>
+    <div class="opts" id="opts"></div>
+    <div class="fb" id="fb"></div>
+    <button class="next hidden" id="next">Далее →</button>
+  </div>
+</div>
+
+<script>
+const QUESTIONS=[
+{q:"Декларацию о плате за НВОС за 2026 год подают не позднее 10 марта 2027 года. 10 марта выпадает на субботу. Что делать?",
+ a:["Подать в следующий рабочий день — в понедельник","Подать заранее в пятницу","Подать всё равно в субботу","Подать в любой день до конца марта"],
+ c:0,
+ e:"Если последний день срока приходится на выходной или нерабочий праздничный день, срок переносится на следующий рабочий день."},
+{q:"Плата за размещение искусственных грунтов, признанных отходами, в новой форме отражается отдельно. Какая строка для этого появилась?",
+ a:["Строка 029","Строка 024","Строка 028","Строка 145"],
+ c:0,
+ e:"Добавлена строка 029 — «плата за размещение, в том числе складирование искусственных грунтов, признанных отходами»."},
+{q:"Вы сверяете строку 020 «Сумма платы, исчисленная без учета корректировки, всего». По какой формуле она считается в новой форме?",
+ a:["020 = 021 + 022 + 023 + 024 + 025 + 026 + 027 + 028 + 029","020 = 021 + 022 + 023 + 024 + 025","020 = 021 + 022 + 023 + 024 + 025 + 026 + 027 + 028","020 = 024 + 029"],
+ c:0,
+ e:"Общая сумма теперь складывается из девяти слагаемых — добавлено девятое по искусственным грунтам."},
+{q:"Организация за отчетный год не производила и не складировала искусственные грунты. Нужно ли ей заполнять Раздел 10?",
+ a:["Нет, если искусственных грунтов нет","Да, с нулями","Да, с пояснительной запиской","Только по запросу Росприроднадзора"],
+ c:0,
+ e:"Раздел 10 заполняют только те, у кого есть искусственные грунты, признанные отходами. Если их нет — раздел не заполняется."},
+{q:"У организации есть искусственные грунты, признанные отходами по п. 5 ст. 17.2 ФЗ № 89-ФЗ. Каков статус Раздела 10?",
+ a:["Заполнение обязательно","Заполнение по желанию","Только для объектов I категории","Заменяется отдельной декларацией"],
+ c:0,
+ e:"Если грунты признаны отходами, Раздел 10 обязателен — под них выделена собственная таблица с собственными графами."},
+{q:"Раньше искусственные грунты попадали в строку 024 вместе с остальными отходами производства. Что изменилось?",
+ a:["Их исключили из 024 и перенесли в отдельную строку 029","Они остались в 024 с пометкой","Их исключили из расчета совсем","Их перенесли в строку ТКО"],
+ c:0,
+ e:"Искусственные грунты исключены из строки 024. Плата за них переносится в отдельную строку 029."}
+];
+
+let cur=0, score=0, done=false;
+const box=document.getElementById('box'),
+      qEl=document.getElementById('q'), optsEl=document.getElementById('opts'),
+      fbEl=document.getElementById('fb'), nextBtn=document.getElementById('next'),
+      cntEl=document.getElementById('cnt'), ptsEl=document.getElementById('pts'),
+      fill=document.getElementById('fill');
+
+function render(){
+  done=false;
+  const q=QUESTIONS[cur];
+  cntEl.textContent=`Вопрос ${cur+1} из ${QUESTIONS.length}`;
+  fill.style.width=(cur/QUESTIONS.length*100)+'%';
+  qEl.textContent=q.q;
+  optsEl.innerHTML='';
+  fbEl.className='fb'; fbEl.innerHTML='';
+  nextBtn.classList.add('hidden');
+  q.a.forEach((text,i)=>{
+    const b=document.createElement('button');
+    b.className='opt';
+    b.innerHTML=`<span class="mark">${i+1}</span><span>${text}</span>`;
+    b.onclick=()=>answer(i,b);
+    optsEl.appendChild(b);
+  });
+  resize();
+}
+
+function answer(i,btn){
+  if(done) return;
+  done=true;
+  const q=QUESTIONS[cur];
+  const buttons=[...optsEl.children];
+  buttons.forEach(b=>b.disabled=true);
+  buttons[q.c].classList.add('right');
+  const fb=fbEl;
+  if(i===q.c){
+    score++;
+    fb.className='fb ok show';
+    fb.innerHTML=`<b>Верно</b>${q.e}`;
+  }else{
+    btn.classList.add('wrong');
+    fb.className='fb err show';
+    fb.innerHTML=`<b>Неверно</b>${q.e}`;
+  }
+  ptsEl.textContent=`Верно: ${score}`;
+  fill.style.width=((cur+1)/QUESTIONS.length*100)+'%';
+  nextBtn.textContent=(cur===QUESTIONS.length-1)?'К результатам':'Далее →';
+  nextBtn.classList.remove('hidden');
+  resize();
+}
+
+nextBtn.onclick=()=>{
+  if(cur<QUESTIONS.length-1){cur++;render();}
+  else showResult();
+};
+
+function showResult(){
+  const total=QUESTIONS.length;
+  let emoji,msg;
+  if(score===total){emoji='🏆';msg='Отлично! Вы готовы заполнять декларацию по новой форме.';}
+  else if(score>=total-2){emoji='👍';msg='Хороший результат. Пролистайте разборы ошибок и попробуйте ещё раз.';}
+  else{emoji='📖';msg='Стоит повторить урок: вернитесь к строке 029 и Разделу 10 и пройдите тренажёр заново.';}
+  box.innerHTML=`
+    <div class="result">
+      <div class="emoji">${emoji}</div>
+      <div class="score">${score} <small>/ ${total}</small></div>
+      <p>${msg}</p>
+      <button class="again" id="again">Пройти ещё раз</button>
+    </div>`;
+  document.getElementById('again').addEventListener('click',()=>{location.reload();});
+  resize();
+}
+
+/* ресайзер: фрейм подстраивается под высоту контента */
+function resize(){
+  const h=document.documentElement.scrollHeight;
+  try{window.parent.postMessage({type:'resize',height:h},'*');}catch(e){}
+}
+window.addEventListener('load',resize);
+if('ResizeObserver' in window){new ResizeObserver(resize).observe(document.body);}
+
+render();
+</script>
+</body>
+</html>
