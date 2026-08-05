@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тренажер: новая форма 4-ОС (Приказ Росстата № 382)</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; background: #fafafa; color: #1a1a1a; padding: 40px 20px; }
+  .container { max-width: 860px; margin: 0 auto; }
+  h1 { font-size: 25px; color: #0d5c5c; margin-bottom: 8px; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 28px; }
+  .progress { display: flex; gap: 6px; margin-bottom: 24px; }
+  .progress-dot { flex: 1; height: 4px; background: #e0e0e0; border-radius: 2px; transition: background .3s; }
+  .progress-dot.done { background: #0d5c5c; }
+  .progress-dot.current { background: #0d5c5c; opacity: .4; }
+  .card { background: #fff; border: 1px solid #cfcfcf; border-radius: 6px; padding: 30px; }
+  .q-number { font-size: 13px; color: #0d5c5c; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 12px; }
+  .q-text { font-size: 17px; line-height: 1.5; margin-bottom: 22px; font-weight: 500; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option, .col-btn {
+    background: #fff; border: 1.5px solid #cfcfcf; border-radius: 5px; padding: 13px 16px;
+    cursor: pointer; font-size: 15px; line-height: 1.45; text-align: left; transition: all .15s;
+    color: #1a1a1a; font-family: inherit;
+  }
+  .option:hover:not(:disabled), .col-btn:hover:not(:disabled) { border-color: #0d5c5c; background: #f5fafa; }
+  .option:disabled, .col-btn:disabled { cursor: default; }
+  .correct { border-color: #2e9e44 !important; background: #eaf6ec !important; font-weight: 600; }
+  .wrong { border-color: #b34040 !important; background: #f8ecec !important; }
+  .cols-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+  .col-btn { text-align: center; padding: 12px 10px; }
+  .col-btn .n { display: block; font-size: 17px; font-weight: 700; color: #0d5c5c; margin-bottom: 6px; }
+  .col-btn .lbl { display: block; font-size: 12.5px; line-height: 1.35; color: #333; }
+  .form-caption { font-size: 13px; color: #666; margin-bottom: 12px; font-style: italic; }
+  .comment {
+    margin-top: 22px; padding: 16px 20px; border-left: 4px solid #0d5c5c; background: #f5fafa;
+    border-radius: 0 5px 5px 0; font-size: 15px; line-height: 1.55; display: none;
+  }
+  .comment.wrong-comment { border-left-color: #b34040; background: #f8ecec; }
+  .comment .status { font-weight: 700; display: block; margin-bottom: 6px; font-size: 16px; }
+  .status.ok { color: #0d5c5c; } .status.bad { color: #b34040; }
+  .next-btn {
+    display: none; margin-top: 22px; margin-left: auto; background: #0d5c5c; color: #fff; border: none;
+    padding: 12px 28px; font-size: 15px; font-weight: 600; border-radius: 5px; cursor: pointer; font-family: inherit;
+  }
+  .next-btn:hover { background: #094444; }
+  .result { text-align: center; padding: 40px 20px; }
+  .result h2 { font-size: 24px; color: #0d5c5c; margin-bottom: 16px; }
+  .score { font-size: 48px; font-weight: 700; color: #0d5c5c; margin-bottom: 8px; }
+  .score-desc { color: #666; font-size: 15px; margin-bottom: 26px; }
+  .restart { background: #fff; border: 1.5px solid #0d5c5c; color: #0d5c5c; padding: 11px 24px; font-size: 15px; font-weight: 600; border-radius: 5px; cursor: pointer; font-family: inherit; }
+  .restart:hover { background: #f5fafa; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Тренажер: новая форма 4-ОС</h1>
+  <div class="subtitle">Приказ Росстата № 382 · 8 заданий · после каждого ответа — разбор</div>
+  <div class="progress" id="progress"></div>
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const tasks = [
+  { type: 'choice',
+    q: 'Росстат утвердил новую форму 4-ОС Приказом № 382. С какого момента действующая форма (Приказ № 346) и прежние указания утратят силу?',
+    options: ['С 25 января 2026 года', 'С января 2027 года', 'Начиная с отчета за I полугодие 2027 года'],
+    correct: 1,
+    comment: 'Действующая форма по Приказу № 346 и все предыдущие указания по заполнению утратят силу с января 2027 года. Новая форма утверждена Приказом Росстата № 382.' },
+
+  { type: 'choice',
+    q: 'Какую информацию исключили из обновленной формы 4-ОС?',
+    options: ['Затраты на капитальный ремонт основных фондов', 'Амортизационные отчисления на восстановление основных фондов по охране окружающей среды', 'Текущие (эксплуатационные) затраты за год'],
+    correct: 1,
+    comment: 'Из отчета 4-ОС исключили информацию об амортизационных отчислениях на восстановление основных фондов по охране окружающей среды — и в разделе «для собственных нужд», и в разделе «специализированные услуги».' },
+
+  { type: 'table',
+    q: 'Задание: кликните по графе, которую исключили из новой формы 4-ОС.',
+    caption: 'Старая форма, раздел «Для собственных нужд» (графы 3–10)',
+    cols: [
+      { n: 3,  lbl: 'Текущие затраты — всего' },
+      { n: 4,  lbl: 'из них за счет собственных средств' },
+      { n: 5,  lbl: 'Материальные затраты' },
+      { n: 6,  lbl: 'Оплата труда и отчисления' },
+      { n: 7,  lbl: 'Оплата услуг природоохранного назначения' },
+      { n: 8,  lbl: 'Капитальный ремонт основных фондов' },
+      { n: 9,  lbl: 'Выручка от продажи побочной продукции' },
+      { n: 10, lbl: 'Амортизационные отчисления на восстановление основных фондов', correct: true }
+    ],
+    comment: 'В разделе «для собственных нужд» исключили графу 10 «Амортизационные отчисления на восстановление основных фондов по охране окружающей среды». Нумерация граф 3–9 сохранилась.' },
+
+  { type: 'table',
+    q: 'Задание: кликните по графе, которую исключили из новой формы 4-ОС.',
+    caption: 'Старая форма, раздел «Специализированные природоохранные услуги» (графы 11–18)',
+    cols: [
+      { n: 11, lbl: 'Текущие затраты — всего' },
+      { n: 12, lbl: 'из них за счет собственных средств' },
+      { n: 13, lbl: 'Материальные затраты' },
+      { n: 14, lbl: 'Оплата труда и отчисления' },
+      { n: 15, lbl: 'Оплата услуг природоохранного назначения' },
+      { n: 16, lbl: 'Капитальный ремонт основных фондов' },
+      { n: 17, lbl: 'Выручка от продажи побочной продукции' },
+      { n: 18, lbl: 'Амортизационные отчисления на восстановление основных фондов', correct: true }
+    ],
+    comment: 'В разделе «специализированные услуги» исключили графу 18 об амортизационных отчислениях, а нумерация сдвинулась: старые графы 11–17 стали графами 10–16.' },
+
+  { type: 'choice',
+    q: 'Вы заполняете новый раздел «Для собственных нужд». Изменилась ли нумерация граф 3–9 по сравнению со старой формой?',
+    options: ['Да, все графы сдвинулись на одну', 'Нет, нумерация граф 3–9 сохранилась', 'Графы объединили попарно'],
+    correct: 1,
+    comment: 'В разделе «для собственных нужд» нумерация граф 3–9 не изменилась — просто убрали графу 10 об амортизационных отчислениях.' },
+
+  { type: 'choice',
+    q: 'В старой форме текущие затраты «всего» по специализированным природоохранным услугам были в графе 11. Какая графа в новой форме?',
+    options: ['Графа 10', 'Графа 11', 'Графа 12'],
+    correct: 0,
+    comment: 'В разделе «специализированные услуги» нумерация сдвинулась на одну позицию: старая графа 11 («всего») в новой форме стала графой 10.' },
+
+  { type: 'choice',
+    q: 'В старой форме выручка от продажи побочной продукции по специализированным услугам была в графе 17. Какая графа в новой форме?',
+    options: ['Графа 9', 'Графа 17', 'Графа 16'],
+    correct: 2,
+    comment: 'Старая графа 17 в разделе «специализированные услуги» стала графой 16. Не перепутайте с графой 9 — это выручка в разделе «для собственных нужд».' },
+
+  { type: 'choice',
+    q: 'Срок и место сдачи обновленной формы 4-ОС?',
+    options: ['Ежегодно не позднее 25 января года, следующего за отчетным, в территориальный орган Росстата по месту фактического осуществления деятельности', 'Ежегодно не позднее 1 февраля в центральный аппарат Росстата', 'Ежеквартально, не позднее 25 числа после отчетного периода'],
+    correct: 0,
+    comment: 'Сроки и место сдачи не изменились: ежегодно не позднее 25 января года, следующего за отчетным периодом, в территориальный орган Росстата по месту фактического осуществления деятельности.' }
+];
+
+let current = 0, score = 0;
+const card = document.getElementById('card');
+const progress = document.getElementById('progress');
+
+function renderProgress() {
+  progress.innerHTML = '';
+  tasks.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'progress-dot' + (i < current ? ' done' : i === current ? ' current' : '');
+    progress.appendChild(d);
+  });
+}
+
+function showComment(ok, text) {
+  const c = document.getElementById('comment');
+  c.style.display = 'block';
+  if (!ok) c.classList.add('wrong-comment');
+  c.innerHTML = '<span class="status ' + (ok ? 'ok' : 'bad') + '">' + (ok ? 'Верно' : 'Неверно') + '</span>' + text;
+  document.getElementById('next').style.display = 'inline-block';
+}
+
+function renderTask() {
+  renderProgress();
+  const t = tasks[current];
+  const isLast = current === tasks.length - 1;
+
+  if (t.type === 'choice') {
+    card.innerHTML =
+      '<div class="q-number">Задание ' + (current + 1) + ' из ' + tasks.length + '</div>' +
+      '<div class="q-text">' + t.q + '</div>' +
+      '<div class="options">' + t.options.map((o, i) => '<button class="option" data-i="' + i + '">' + o + '</button>').join('') + '</div>' +
+      '<div class="comment" id="comment"></div>' +
+      '<button class="next-btn" id="next">' + (isLast ? 'Завершить' : 'Следующее задание →') + '</button>';
+    document.querySelectorAll('.option').forEach(b => b.addEventListener('click', () => {
+      const i = +b.dataset.i, ok = i === t.correct;
+      if (ok) score++;
+      document.querySelectorAll('.option').forEach((x, xi) => {
+        x.disabled = true;
+        if (xi === t.correct) x.classList.add('correct');
+        else if (xi === i && !ok) x.classList.add('wrong');
+      });
+      showComment(ok, t.comment);
+    }));
+  } else {
+    card.innerHTML =
+      '<div class="q-number">Задание ' + (current + 1) + ' из ' + tasks.length + '</div>' +
+      '<div class="q-text">' + t.q + '</div>' +
+      '<div class="form-caption">' + t.caption + '</div>' +
+      '<div class="cols-grid">' + t.cols.map(c => '<button class="col-btn" data-n="' + c.n + '"><span class="n">гр. ' + c.n + '</span><span class="lbl">' + c.lbl + '</span></button>').join('') + '</div>' +
+      '<div class="comment" id="comment"></div>' +
+      '<button class="next-btn" id="next">' + (isLast ? 'Завершить' : 'Следующее задание →') + '</button>';
+    document.querySelectorAll('.col-btn').forEach(b => b.addEventListener('click', () => {
+      const col = t.cols.find(c => c.n === +b.dataset.n);
+      const ok = !!col.correct;
+      if (ok) score++;
+      document.querySelectorAll('.col-btn').forEach(x => {
+        x.disabled = true;
+        const xc = t.cols.find(c => c.n === +x.dataset.n);
+        if (xc.correct) x.classList.add('correct');
+        else if (x === b && !ok) x.classList.add('wrong');
+      });
+      showComment(ok, t.comment);
+    }));
+  }
+
+  document.getElementById('next').addEventListener('click', () => {
+    current++;
+    current < tasks.length ? renderTask() : renderResult();
+  });
+}
+
+function renderResult() {
+  renderProgress();
+  const msg = score === tasks.length ? 'Отлично! Вы не перепутаете старые и новые графы формы 4-ОС.'
+    : score >= 6 ? 'Хороший результат. Вернитесь к заданиям с ошибками и сравните формы еще раз.'
+    : 'Сравните старую и новую формы по рисункам 1 и 2 урока и пройдите тренажер еще раз.';
+  card.innerHTML =
+    '<div class="result"><h2>Тренажер пройден</h2><div class="score">' + score + ' / ' + tasks.length + '</div>' +
+    '<div class="score-desc">' + msg + '</div><button class="restart" onclick="location.reload()">Пройти заново</button></div>';
+}
+
+renderTask();
+</script>
+</body>
+</html>
