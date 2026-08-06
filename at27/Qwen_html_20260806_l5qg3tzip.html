@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тест: учет водопотребления по Приказу № 311</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #fafafa;
+    color: #1a1a1a;
+    padding: 40px 20px;
+    min-height: 100vh;
+  }
+  .container { max-width: 780px; margin: 0 auto; }
+  h1 { font-size: 26px; font-weight: 600; color: #0d5c5c; margin-bottom: 8px; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 32px; }
+  .progress { display: flex; gap: 6px; margin-bottom: 28px; }
+  .progress-dot { flex: 1; height: 4px; background: #e0e0e0; border-radius: 2px; transition: background .3s; }
+  .progress-dot.done { background: #0d5c5c; }
+  .progress-dot.current { background: #0d5c5c; opacity: .4; }
+  .card { background: #fff; border: 1px solid #cfcfcf; border-radius: 6px; padding: 32px; }
+  .q-number { font-size: 13px; color: #0d5c5c; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 12px; }
+  .q-text { font-size: 18px; line-height: 1.5; margin-bottom: 24px; font-weight: 500; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    background: #fff; border: 1.5px solid #cfcfcf; border-radius: 5px; padding: 14px 16px;
+    cursor: pointer; font-size: 15px; line-height: 1.45; text-align: left; transition: all .15s;
+    color: #1a1a1a; font-family: inherit;
+  }
+  .option:hover:not(:disabled) { border-color: #0d5c5c; background: #f5fafa; }
+  .option:disabled { cursor: default; }
+  .option.correct { border-color: #0d5c5c; background: #e6f2f2; font-weight: 600; }
+  .option.wrong { border-color: #b34040; background: #f8ecec; }
+  .comment {
+    margin-top: 22px; padding: 18px 20px; border-left: 4px solid #0d5c5c; background: #f5fafa;
+    border-radius: 0 5px 5px 0; font-size: 15px; line-height: 1.55; display: none;
+  }
+  .comment.wrong-comment { border-left-color: #b34040; background: #f8ecec; }
+  .comment .status { font-weight: 700; display: block; margin-bottom: 6px; font-size: 16px; }
+  .comment .status.ok { color: #0d5c5c; }
+  .comment .status.bad { color: #b34040; }
+  .next-btn {
+    display: none; margin-top: 24px; margin-left: auto; background: #0d5c5c; color: #fff; border: none;
+    padding: 12px 28px; font-size: 15px; font-weight: 600; border-radius: 5px; cursor: pointer;
+    font-family: inherit; transition: background .15s;
+  }
+  .next-btn:hover { background: #094444; }
+  .result { text-align: center; padding: 48px 32px; }
+  .result h2 { font-size: 24px; color: #0d5c5c; margin-bottom: 12px; }
+  .score { font-size: 48px; font-weight: 700; color: #0d5c5c; margin: 20px 0 8px; }
+  .score-desc { color: #666; font-size: 15px; margin-bottom: 28px; }
+  .restart {
+    background: #fff; border: 1.5px solid #0d5c5c; color: #0d5c5c; padding: 11px 24px;
+    font-size: 15px; font-weight: 600; border-radius: 5px; cursor: pointer; font-family: inherit;
+  }
+  .restart:hover { background: #f5fafa; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Тест: учет водопотребления по Приказу № 311</h1>
+  <div class="subtitle">5 вопросов · один вариант ответа · сразу после выбора – разбор со ссылкой на правило</div>
+  <div class="progress" id="progress"></div>
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "Вы ведете учет забора воды из реки вручную, без MES-системы. Как часто заполнять журнал учета водопотребления?",
+    options: ["Ежедневно", "Ежеквартально", "Раз в год"],
+    correct: 0,
+    ok: "Если ведете учет вручную, журналы заполняют ежедневно. Это требование нового Порядка по Приказу № 311.",
+    bad: "Если ведете учет вручную, журналы заполняют ежедневно. Ежеквартально подают только сведения во ФГИС «Экомониторинг»."
+  },
+  {
+    q: "У вас расходомеры работают в режиме реального времени и управляются MES-системой. Что делать с журналом учета?",
+    options: [
+      "Заполнять журнал ежедневно вручную",
+      "Выгрузить и подписать отчет из MES-системы за квартал",
+      "Журнал не нужен, учет не ведется"
+    ],
+    correct: 1,
+    ok: "Если расходомеры работают в режиме реального времени и управляются MES-системой, ежедневное заполнение журналов не требуется. Достаточно выгрузить и подписать отчет из системы за квартал.",
+    bad: "Если расходомеры работают в режиме реального времени и управляются MES-системой, ежедневное заполнение журналов не требуется. Достаточно выгрузить и подписать отчет из системы за квартал."
+  },
+  {
+    q: "Ваша компания берет воду из скважины. Нужно ли вести журнал учета по Приказу № 311?",
+    options: [
+      "Да, для всех источников водоснабжения",
+      "Нет, приказ распространяется только на поверхностные водные объекты",
+      "Да, но только для объектов I категории"
+    ],
+    correct: 1,
+    ok: "Приказ № 311 прямо указывает, что учет ведут только для поверхностных водных объектов. Данные по забору воды из скважин в журналы не вносят и в отчеты не включают.",
+    bad: "Приказ № 311 прямо указывает, что учет ведут только для поверхностных водных объектов. Данные по забору воды из скважин в журналы не вносят и в отчеты не включают."
+  },
+  {
+    q: "Кто должен определить лиц, ответственных за ведение журналов учета?",
+    options: [
+      "Главный эколог организации",
+      "Руководитель юридического лица",
+      "Территориальный орган Росприроднадзора"
+    ],
+    correct: 1,
+    ok: "Приказ № 311 прямо требует, чтобы руководитель определил лиц, уполномоченных вести журналы и подписывать данные (п. 12). Если ответственных не назначить приказом, по умолчанию за учет отвечает сам руководитель.",
+    bad: "Приказ № 311 прямо требует, чтобы руководитель определил лиц, уполномоченных вести журналы и подписывать данные (п. 12). Если ответственных не назначить приказом, по умолчанию за учет отвечает сам руководитель."
+  },
+  {
+    q: "С какой периодичностью подают сведения учета во ФГИС «Экомониторинг» с 1 сентября 2026 года?",
+    options: [
+      "Ежемесячно до 10 числа",
+      "Ежеквартально до 15 числа месяца, следующего за отчетным кварталом",
+      "Ежегодно до 1 марта"
+    ],
+    correct: 1,
+    ok: "Годовой сводный отчет во ФГИС «Экомониторинг» отменили. Теперь данные подают только ежеквартально до 15 числа месяца, следующего за отчетным кварталом.",
+    bad: "Годовой сводный отчет во ФГИС «Экомониторинг» отменили. Теперь данные подают только ежеквартально до 15 числа месяца, следующего за отчетным кварталом."
+  }
+];
+
+let current = 0;
+let score = 0;
+const card = document.getElementById('card');
+const progress = document.getElementById('progress');
+
+function renderProgress() {
+  progress.innerHTML = '';
+  questions.forEach((_, i) => {
+    const dot = document.createElement('div');
+    dot.className = 'progress-dot';
+    if (i < current) dot.classList.add('done');
+    else if (i === current) dot.classList.add('current');
+    progress.appendChild(dot);
+  });
+}
+
+function renderQuestion() {
+  renderProgress();
+  const q = questions[current];
+  card.innerHTML = `
+    <div class="q-number">Вопрос ${current + 1} из ${questions.length}</div>
+    <div class="q-text">${q.q}</div>
+    <div class="options" id="options">
+      ${q.options.map((opt, i) => `<button class="option" data-i="${i}">${opt}</button>`).join('')}
+    </div>
+    <div class="comment" id="comment"></div>
+    <button class="next-btn" id="next">${current === questions.length - 1 ? 'Завершить' : 'Следующий вопрос'}</button>
+  `;
+
+  document.querySelectorAll('.option').forEach(btn => {
+    btn.addEventListener('click', () => handleAnswer(parseInt(btn.dataset.i)));
+  });
+  document.getElementById('next').addEventListener('click', () => {
+    current++;
+    if (current < questions.length) renderQuestion();
+    else renderResult();
+  });
+}
+
+function handleAnswer(i) {
+  const q = questions[current];
+  const correct = i === q.correct;
+  if (correct) score++;
+
+  document.querySelectorAll('.option').forEach((btn, idx) => {
+    btn.disabled = true;
+    if (idx === q.correct) btn.classList.add('correct');
+    else if (idx === i && !correct) btn.classList.add('wrong');
+  });
+
+  const comment = document.getElementById('comment');
+  comment.style.display = 'block';
+  if (!correct) comment.classList.add('wrong-comment');
+  comment.innerHTML = `
+    <span class="status ${correct ? 'ok' : 'bad'}">${correct ? 'Верно' : 'Неверно'}</span>
+    ${correct ? q.ok : q.bad}
+  `;
+  document.getElementById('next').style.display = 'inline-block';
+}
+
+function renderResult() {
+  renderProgress();
+  const msg = score === 5 ? 'Отличный результат – вы уверенно применяете новые правила учета водопотребления.'
+            : score >= 4 ? 'Хороший результат. Повторите вопросы, в которых ошиблись.'
+            : 'Рекомендуем еще раз изучить Порядок по Приказу № 311 и пройти тест снова.';
+  card.innerHTML = `
+    <div class="result">
+      <h2>Тест завершен</h2>
+      <div class="score">${score} / ${questions.length}</div>
+      <div class="score-desc">${msg}</div>
+      <button class="restart" onclick="restart()">Пройти заново</button>
+    </div>
+  `;
+}
+
+function restart() {
+  current = 0;
+  score = 0;
+  renderQuestion();
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
