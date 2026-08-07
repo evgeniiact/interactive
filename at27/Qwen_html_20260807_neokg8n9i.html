@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тренажер: НМУ – новый порядок</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; background: #fafafa; color: #1a1a1a; padding: 40px 20px; }
+  .container { max-width: 780px; margin: 0 auto; }
+  h1 { font-size: 25px; font-weight: 600; color: #0d5c5c; margin-bottom: 8px; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 32px; }
+  .progress { display: flex; gap: 6px; margin-bottom: 28px; }
+  .progress-dot { flex: 1; height: 4px; background: #e0e0e0; border-radius: 2px; transition: background .3s; }
+  .progress-dot.done { background: #0d5c5c; }
+  .progress-dot.current { background: #0d5c5c; opacity: .4; }
+  .card { background: #fff; border: 1px solid #cfcfcf; border-radius: 6px; padding: 32px; }
+  .q-number { font-size: 13px; color: #0d5c5c; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 12px; }
+  .q-text { font-size: 17px; line-height: 1.5; margin-bottom: 24px; font-weight: 500; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    background: #fff; border: 1.5px solid #cfcfcf; border-radius: 5px; padding: 14px 16px;
+    cursor: pointer; font-size: 15px; line-height: 1.45; text-align: left; transition: all .15s;
+    color: #1a1a1a; font-family: inherit;
+  }
+  .option:hover:not(:disabled) { border-color: #0d5c5c; background: #f5fafa; }
+  .option:disabled { cursor: default; }
+  .option.correct { border-color: #0d5c5c; background: #e6f2f2; font-weight: 600; }
+  .option.wrong { border-color: #b34040; background: #f8ecec; }
+  .comment {
+    margin-top: 22px; padding: 18px 20px; border-left: 4px solid #0d5c5c; background: #f5fafa;
+    border-radius: 0 5px 5px 0; font-size: 15px; line-height: 1.55; display: none;
+  }
+  .comment.wrong-comment { border-left-color: #b34040; background: #f8ecec; }
+  .comment .status { font-weight: 700; display: block; margin-bottom: 6px; font-size: 16px; }
+  .status.ok { color: #0d5c5c; }
+  .status.bad { color: #b34040; }
+  .next-btn {
+    display: none; margin-top: 24px; margin-left: auto; background: #0d5c5c; color: #fff; border: none;
+    padding: 12px 28px; font-size: 15px; font-weight: 600; border-radius: 5px; cursor: pointer;
+    font-family: inherit; transition: background .15s;
+  }
+  .next-btn:hover { background: #094444; }
+  .result { text-align: center; padding: 48px 32px; }
+  .result h2 { font-size: 24px; color: #0d5c5c; margin-bottom: 12px; }
+  .score { font-size: 48px; font-weight: 700; color: #0d5c5c; margin: 20px 0 8px; }
+  .score-desc { color: #666; font-size: 15px; margin-bottom: 28px; }
+  .restart {
+    background: #fff; border: 1.5px solid #0d5c5c; color: #0d5c5c; padding: 11px 24px;
+    font-size: 15px; font-weight: 600; border-radius: 5px; cursor: pointer; font-family: inherit;
+  }
+  .restart:hover { background: #f5fafa; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Тренажер: НМУ – новый порядок</h1>
+  <div class="subtitle">6 вопросов · один вариант ответа · сразу после выбора – разбор со ссылкой на приказ</div>
+  <div class="progress" id="progress"></div>
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const questions = [
+  {
+    q: "Объект II категории, не коммунальный. По какому прогнозу НМУ он может работать?",
+    options: [
+      "Только по специализированному прогнозу",
+      "Может выбрать: общий или специализированный",
+      "Только по общему прогнозу"
+    ],
+    correct: 1,
+    ok: "Верно. Объекты II, III категории и коммунальные службы вправе выбрать вид прогноза – общий без степени или специализированный со степенью. Объекты I категории работают только по специализированному прогнозу (п. 3–10 ст. 19 Закона № 96-ФЗ, приказ № 652).",
+    bad: "Неверно. Объекты II, III категории и коммунальные службы вправе выбрать вид прогноза – общий без степени или специализированный со степенью. Объекты I категории работают только по специализированному прогнозу (п. 3–10 ст. 19 Закона № 96-ФЗ, приказ № 652)."
+  },
+  {
+    q: "План мероприятий подали на согласование. Сколько времени у регионального органа на рассмотрение?",
+    options: [
+      "Не более 15 рабочих дней",
+      "Не более 60 календарных дней",
+      "Срок не установлен"
+    ],
+    correct: 0,
+    ok: "Верно. По абзацу 2 пункта 7 Требований приказа № 662 план рассматривают 15 рабочих дней. В первой половине срока его могут вернуть на доработку – на нее отводят 22 рабочих дня.",
+    bad: "Неверно. По абзацу 2 пункта 7 Требований приказа № 662 план рассматривают 15 рабочих дней. В первой половине срока его могут вернуть на доработку – на нее отводят 22 рабочих дня."
+  },
+  {
+    q: "Госорган согласовал план. В какой срок предприятие должно его утвердить?",
+    options: [
+      "Не позднее 3 рабочих дней со дня получения согласования",
+      "Не позднее 22 рабочих дней",
+      "Срок не установлен"
+    ],
+    correct: 0,
+    ok: "Верно. Пункт 12 Требований приказа № 662 – план утверждают не позднее 3 рабочих дней со дня получения согласования.",
+    bad: "Неверно. Пункт 12 Требований приказа № 662 – план утверждают не позднее 3 рабочих дней со дня получения согласования."
+  },
+  {
+    q: "После корректировки инвентаризации совокупные выбросы объекта выросли на 12%. Нужно ли пересматривать план мероприятий?",
+    options: [
+      "Да, пересмотр нужен при росте совокупных выбросов на 10% и более",
+      "Нет, повод для пересмотра – изменение разовых выбросов более чем на 25%",
+      "Нет, план действует бессрочно"
+    ],
+    correct: 0,
+    ok: "Верно. Пункт 13 Требований приказа № 662 – план пересматривают, если совокупный объем выбросов вырос на 10% и более. Новый план разрабатывают не позднее 90 календарных дней со дня утверждения инвентаризации (п. 14).",
+    bad: "Неверно. Пункт 13 Требований приказа № 662 – план пересматривают, если совокупный объем выбросов вырос на 10% и более. Новый план разрабатывают не позднее 90 календарных дней со дня утверждения инвентаризации (п. 14)."
+  },
+  {
+    q: "Расчеты рассеивания показали, что превышений ПДК в периоды НМУ нет. Что делать с планом?",
+    options: [
+      "План вообще не разрабатывать",
+      "Отразить в плане, что мероприятия не нужны, приложить расчеты и согласовать",
+      "Разработать мероприятия на все источники на всякий случай"
+    ],
+    correct: 1,
+    ok: "Верно. Пункт 5 Требований приказа № 662 – информацию об отсутствии необходимости мероприятий отражают в плане с подтверждающими материалами, после чего план согласовывают и утверждают.",
+    bad: "Неверно. Пункт 5 Требований приказа № 662 – информацию об отсутствии необходимости мероприятий отражают в плане с подтверждающими материалами, после чего план согласовывают и утверждают."
+  },
+  {
+    q: "Объект I категории работает по специализированному прогнозу. Какова максимальная плата за прогноз в год?",
+    options: [
+      "Не более 365 179 рублей",
+      "Не более 100 000 рублей",
+      "Прогноз предоставляют бесплатно"
+    ],
+    correct: 0,
+    ok: "Верно. Пункт 8 порядка по приказу № 652 – размер платы согласуют, но он не может превышать 365 179 рублей в год. Прогноз готовят на период от 1 до 3 суток и предоставляют заказчику в течение часа.",
+    bad: "Неверно. Пункт 8 порядка по приказу № 652 – размер платы согласуют, но он не может превышать 365 179 рублей в год. Прогноз готовят на период от 1 до 3 суток и предоставляют заказчику в течение часа."
+  }
+];
+
+let current = 0, score = 0;
+const card = document.getElementById('card');
+const progress = document.getElementById('progress');
+
+function renderProgress() {
+  progress.innerHTML = '';
+  questions.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'progress-dot' + (i < current ? ' done' : i === current ? ' current' : '');
+    progress.appendChild(d);
+  });
+}
+
+function renderQuestion() {
+  renderProgress();
+  const q = questions[current];
+  card.innerHTML = `
+    <div class="q-number">Вопрос ${current + 1} из ${questions.length}</div>
+    <div class="q-text">${q.q}</div>
+    <div class="options">
+      ${q.options.map((o, i) => `<button class="option" data-i="${i}">${o}</button>`).join('')}
+    </div>
+    <div class="comment" id="comment"></div>
+    <button class="next-btn" id="next">${current === questions.length - 1 ? 'Завершить' : 'Следующий вопрос'}</button>
+  `;
+  document.querySelectorAll('.option').forEach(b => {
+    b.addEventListener('click', () => handleAnswer(+b.dataset.i));
+  });
+  document.getElementById('next').addEventListener('click', () => {
+    current++;
+    current < questions.length ? renderQuestion() : renderResult();
+  });
+}
+
+function handleAnswer(i) {
+  const q = questions[current];
+  const correct = i === q.correct;
+  if (correct) score++;
+  document.querySelectorAll('.option').forEach((b, idx) => {
+    b.disabled = true;
+    if (idx === q.correct) b.classList.add('correct');
+    else if (idx === i && !correct) b.classList.add('wrong');
+  });
+  const c = document.getElementById('comment');
+  c.style.display = 'block';
+  if (!correct) c.classList.add('wrong-comment');
+  c.innerHTML = `<span class="status ${correct ? 'ok' : 'bad'}">${correct ? 'Верно' : 'Неверно'}</span>${correct ? q.ok : q.bad}`;
+  document.getElementById('next').style.display = 'inline-block';
+}
+
+function renderResult() {
+  renderProgress();
+  const msg = score === 6 ? 'Отличный результат – вы готовы работать по новым правилам НМУ.'
+            : score >= 4 ? 'Хороший результат. Повторите вопросы, в которых ошиблись.'
+            : 'Рекомендуем еще раз изучить урок и пройти тренажер заново.';
+  card.innerHTML = `
+    <div class="result">
+      <h2>Тренажер пройден</h2>
+      <div class="score">${score} / ${questions.length}</div>
+      <div class="score-desc">${msg}</div>
+      <button class="restart" onclick="location.reload()">Пройти заново</button>
+    </div>
+  `;
+}
+
+renderQuestion();
+</script>
+</body>
+</html>
