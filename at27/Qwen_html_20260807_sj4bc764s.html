@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тренажер: отчетность по ОРВ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { font-family: Arial, Helvetica, sans-serif; background: #fafafa; color: #1a1a1a; padding: 40px 20px; }
+  .container { max-width: 780px; margin: 0 auto; }
+  h1 { font-size: 25px; font-weight: 600; color: #0d5c5c; margin-bottom: 8px; }
+  .subtitle { font-size: 14px; color: #666; margin-bottom: 32px; }
+  .card { background: #fff; border: 1px solid #cfcfcf; border-radius: 6px; padding: 32px; }
+  .q-number { font-size: 13px; color: #0d5c5c; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; margin-bottom: 12px; }
+  .q-text { font-size: 17px; line-height: 1.5; margin-bottom: 24px; font-weight: 500; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    background: #fff; border: 1.5px solid #cfcfcf; border-radius: 5px; padding: 14px 16px;
+    cursor: pointer; font-size: 15px; line-height: 1.45; text-align: left; transition: all .15s;
+    color: #1a1a1a; font-family: inherit;
+  }
+  .option:hover:not(:disabled) { border-color: #0d5c5c; background: #f5fafa; }
+  .option:disabled { cursor: default; }
+  .option.correct { border-color: #0d5c5c; background: #e6f2f2; font-weight: 600; }
+  .option.wrong { border-color: #b34040; background: #f8ecec; }
+  .comment {
+    margin-top: 22px; padding: 18px 20px; border-left: 4px solid #0d5c5c; background: #f5fafa;
+    border-radius: 0 5px 5px 0; font-size: 15px; line-height: 1.55; display: none;
+  }
+  .comment.wrong-comment { border-left-color: #b34040; background: #f8ecec; }
+  .comment .status { font-weight: 700; display: block; margin-bottom: 6px; font-size: 16px; }
+  .status.ok { color: #0d5c5c; }
+  .status.bad { color: #b34040; }
+  .next-btn {
+    display: none; margin-top: 24px; margin-left: auto; background: #0d5c5c; color: #fff; border: none;
+    padding: 12px 28px; font-size: 15px; font-weight: 600; border-radius: 5px; cursor: pointer;
+    font-family: inherit; transition: background .15s;
+  }
+  .next-btn:hover { background: #094444; }
+  .result { text-align: center; padding: 48px 32px; }
+  .result h2 { font-size: 24px; color: #0d5c5c; margin-bottom: 12px; }
+  .score { font-size: 48px; font-weight: 700; color: #0d5c5c; margin: 20px 0 8px; }
+  .score-desc { color: #666; font-size: 15px; margin-bottom: 28px; }
+  .restart {
+    background: #fff; border: 1.5px solid #0d5c5c; color: #0d5c5c; padding: 11px 24px;
+    font-size: 15px; font-weight: 600; border-radius: 5px; cursor: pointer; font-family: inherit;
+  }
+  .restart:hover { background: #f5fafa; }
+</style>
+</head>
+<body>
+<div class="container">
+  <h1>Тренажер: отчетность по ОРВ</h1>
+  <div class="subtitle">Одна ситуация – один вопрос – разбор со ссылкой на письмо Минприроды</div>
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const q = {
+  text: "На территории предприятия установлены сплит-системы в офисах и промышленные чиллеры на производстве. Все оборудование исправно работает и заправлено фреоном. Нужно ли включать объем этого фреона в ежегодный отчет об обращении с ОРВ?",
+  options: [
+    "А) Да, нужно указать весь объем фреона, находящегося в контурах оборудования, так как предприятие является его собственником.",
+    "Б) Нет, не нужно, так как это просто эксплуатация действующего оборудования.",
+    "В) Да, но только в том случае, если суммарный объем фреона в чиллерах превышает 10 кг."
+  ],
+  correct: 1,
+  ok: "Верно. Минприроды в Письме от 29.03.2022 № 20-47/10445 разъяснило: если вы просто эксплуатируете действующее оборудование (офисные кондиционеры, промышленные чиллеры, холодильные камеры), отчитываться за фреон внутри него не нужно. В отчет по форме из Постановления Правительства № 206 такие вещества не включаются.",
+  bad: "Неверно. Минприроды в Письме от 29.03.2022 № 20-47/10445 разъяснило: если вы просто эксплуатируете действующее оборудование, отчитываться за фреон внутри него не нужно. В отчет по форме из Постановления Правительства № 206 такие вещества не включаются. Отчет сдают только при обращении с ОРВ: производстве, использовании для заправки нового оборудования, хранении в баллонах, рекуперации, восстановлении, рециркуляции или уничтожении."
+};
+
+const card = document.getElementById('card');
+let answered = false;
+
+card.innerHTML = `
+  <div class="q-number">Ситуация</div>
+  <div class="q-text">${q.text}</div>
+  <div class="options">
+    ${q.options.map((o, i) => `<button class="option" data-i="${i}">${o}</button>`).join('')}
+  </div>
+  <div class="comment" id="comment"></div>
+  <button class="next-btn" id="next">Завершить</button>
+`;
+
+let score = 0;
+
+document.querySelectorAll('.option').forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (answered) return;
+    answered = true;
+    const i = +btn.dataset.i;
+    const correct = i === q.correct;
+    if (correct) score = 1;
+    document.querySelectorAll('.option').forEach((b, idx) => {
+      b.disabled = true;
+      if (idx === q.correct) b.classList.add('correct');
+      else if (idx === i && !correct) b.classList.add('wrong');
+    });
+    const c = document.getElementById('comment');
+    c.style.display = 'block';
+    if (!correct) c.classList.add('wrong-comment');
+    c.innerHTML = `<span class="status ${correct ? 'ok' : 'bad'}">${correct ? 'Верно' : 'Неверно'}</span>${correct ? q.ok : q.bad}`;
+    document.getElementById('next').style.display = 'inline-block';
+  });
+});
+
+document.getElementById('next').addEventListener('click', () => {
+  const msg = score === 1
+    ? 'Отлично! Вы правильно определили, что фреон в действующем оборудовании не попадает в отчет об ОРВ.'
+    : 'Вернитесь к разбору: фреон в действующем оборудовании не попадает в отчет об ОРВ. Отчет нужен только при обращении с веществом.';
+  card.innerHTML = `
+    <div class="result">
+      <h2>Тренажер пройден</h2>
+      <div class="score">${score} / 1</div>
+      <div class="score-desc">${msg}</div>
+      <button class="restart" onclick="location.reload()">Пройти заново</button>
+    </div>
+  `;
+});
+</script>
+</body>
+</html>
