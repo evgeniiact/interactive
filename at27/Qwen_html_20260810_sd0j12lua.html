@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тренажер: система квотирования ОРВ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: #fafafa; }
+  .wrap { width: 650px; padding: 16px 0 20px; margin: 0 auto; font-family: Arial, Helvetica, sans-serif; color: #1a1a1a; }
+  h1 { font-size: 18px; color: #0d5c5c; margin-bottom: 6px; }
+  .subtitle { font-size: 12.5px; color: #666; margin-bottom: 14px; line-height: 1.4; }
+  .board { display: flex; gap: 12px; align-items: stretch; }
+  .col { flex: 1; display: flex; flex-direction: column; gap: 10px; }
+  .colhead { font-size: 12px; font-weight: 700; color: #333; margin-bottom: 2px; }
+  .card {
+    position: relative; background: #fff; border: 1.5px solid #cfcfcf; border-radius: 6px;
+    padding: 10px 26px 10px 10px; cursor: pointer; display: flex; align-items: center; gap: 8px;
+    font-size: 12.5px; line-height: 1.35; transition: border-color .15s, background .15s;
+  }
+  .card:hover { border-color: #0d5c5c; }
+  .tag {
+    flex: 0 0 22px; height: 22px; display: inline-flex; align-items: center; justify-content: center;
+    border-radius: 4px; background: #eef5f5; color: #0d5c5c; font-weight: 700; font-size: 12px;
+  }
+  .card.selected { border-color: #0d5c5c; box-shadow: 0 0 0 2px rgba(13,92,92,.25); }
+  .card.paired { border-color: #8aa; background: #f7fbfb; }
+  .card.ok { border-color: #2e9e44; background: #eaf6ec; }
+  .card.bad { border-color: #b34040; background: #f8ecec; }
+  .pnum {
+    position: absolute; top: 5px; right: 6px; min-width: 16px; height: 16px; padding: 0 4px;
+    display: none; align-items: center; justify-content: center; border-radius: 8px;
+    background: #0d5c5c; color: #fff; font-size: 10px; font-weight: 700;
+  }
+  .card.paired .pnum, .card.ok .pnum, .card.bad .pnum { display: inline-flex; }
+  .card.ok .pnum { background: #2e9e44; }
+  .card.bad .pnum { background: #b34040; }
+  .actions { margin-top: 14px; display: flex; gap: 10px; align-items: center; min-height: 38px; }
+  .btn {
+    background: #fff; border: 1.5px solid #0d5c5c; color: #0d5c5c; padding: 9px 20px;
+    font-size: 13px; font-weight: 600; border-radius: 5px; cursor: pointer; font-family: inherit;
+  }
+  .btn:hover { background: #f5fafa; }
+  .btn.primary { background: #0d5c5c; color: #fff; }
+  .btn.primary:hover { background: #094444; }
+  #checkBtn { display: none; }
+  #status { font-size: 13px; margin-left: auto; }
+  #status.win { color: #2e9e44; font-weight: 700; }
+  #status.lose { color: #b34040; font-weight: 700; }
+  #tip {
+    position: fixed; z-index: 50; max-width: 300px; background: #1a1a1a; color: #fff;
+    border-radius: 6px; padding: 10px 12px; font-size: 12px; line-height: 1.45;
+    display: none; pointer-events: none; box-shadow: 0 4px 14px rgba(0,0,0,.25);
+    font-family: Arial, Helvetica, sans-serif;
+  }
+  #tip.ok { border-left: 4px solid #2e9e44; }
+  #tip.bad { border-left: 4px solid #b34040; }
+</style>
+</head>
+<body>
+<div class="wrap" id="wrap">
+  <h1>Тренажер: система квотирования ОРВ</h1>
+  <div class="subtitle">Соедините каждый нормативный акт с его ролью в системе квотирования ОРВ. Когда соедините все пары, нажмите «Проверить». После проверки наводите курсор на карточки, чтобы увидеть комментарий.</div>
+
+  <div class="board">
+    <div class="col">
+      <div class="colhead">Нормативные акты</div>
+      <div class="card" data-side="L" data-id="p206"><span class="tag">1</span><span class="txt">Постановление Правительства РФ № 206</span><span class="pnum"></span></div>
+      <div class="card" data-side="L" data-id="p485"><span class="tag">2</span><span class="txt">Приказ Минприроды России № 485</span><span class="pnum"></span></div>
+      <div class="card" data-side="L" data-id="p628"><span class="tag">3</span><span class="txt">Приказ Минприроды России № 628</span><span class="pnum"></span></div>
+      <div class="card" data-side="L" data-id="p3819"><span class="tag">4</span><span class="txt">Распоряжение Правительства РФ № 3819-р</span><span class="pnum"></span></div>
+    </div>
+    <div class="col">
+      <div class="colhead">Роль в системе квотирования</div>
+      <div class="card" data-side="R" data-id="A"><span class="tag">А</span><span class="txt">Устанавливает конкретные объемы производства, потребления и ввоза ОРВ на 2026 год</span><span class="pnum"></span></div>
+      <div class="card" data-side="R" data-id="B"><span class="tag">Б</span><span class="txt">Устанавливает базовые правила государственного регулирования обращения ОРВ</span><span class="pnum"></span></div>
+      <div class="card" data-side="R" data-id="C"><span class="tag">В</span><span class="txt">Вносит изменения в порядок расчета: закрепляет правило 80/20 и перераспределение остатков</span><span class="pnum"></span></div>
+      <div class="card" data-side="R" data-id="D"><span class="tag">Г</span><span class="txt">Определяет порядок ежегодного расчета допустимых объемов производства и потребления ОРВ</span><span class="pnum"></span></div>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="btn primary" id="checkBtn">Проверить</button>
+    <button class="btn" id="resetBtn">Начать заново</button>
+    <div id="status"></div>
+  </div>
+</div>
+<div id="tip"></div>
+
+<script>
+const ACTS = {
+  p206: { correct: 'B',
+    ok: 'Верно. Постановление № 206 устанавливает базовые правила государственного регулирования обращения ОРВ: перечень веществ, допустимые объемы потребления, производства и ввоза.',
+    bad: 'Неверно. Постановлению № 206 соответствует роль Б – базовые правила государственного регулирования обращения ОРВ.' },
+  p485: { correct: 'D',
+    ok: 'Верно. Приказ № 485 определяет порядок ежегодного расчета допустимых объемов производства и потребления ОРВ, за исключением веществ списка F.',
+    bad: 'Неверно. Приказу № 485 соответствует роль Г – порядок ежегодного расчета допустимых объемов производства и потребления ОРВ.' },
+  p628: { correct: 'C',
+    ok: 'Верно. Приказ № 628 вносит изменения в порядок расчета: закрепляет правило 80/20 и перераспределение остатков между ввозившими и не ввозившими ОРВ.',
+    bad: 'Неверно. Приказу № 628 соответствует роль В – изменения в порядок расчета: правило 80/20 и перераспределение остатков.' },
+  p3819: { correct: 'A',
+    ok: 'Верно. Распоряжение № 3819-р устанавливает конкретные объемы производства, потребления и ввоза ОРВ на 2026 год.',
+    bad: 'Неверно. Распоряжению № 3819-р соответствует роль А – конкретные объемы производства, потребления и ввоза ОРВ на 2026 год.' }
+};
+const ROLES = {
+  A: { letter: 'А', owner: 'p3819', explain: 'Роль А – устанавливать конкретные объемы производства, потребления и ввоза ОРВ на 2026 год – относится к распоряжению № 3819-р.' },
+  B: { letter: 'Б', owner: 'p206', explain: 'Роль Б – устанавливать базовые правила государственного регулирования обращения ОРВ – относится к постановлению № 206.' },
+  C: { letter: 'В', owner: 'p628', explain: 'Роль В – вносить изменения в порядок расчета (правило 80/20 и перераспределение остатков) – относится к приказу № 628.' },
+  D: { letter: 'Г', owner: 'p485', explain: 'Роль Г – определять порядок ежегодного расчета допустимых объемов производства и потребления ОРВ – относится к приказу № 485.' }
+};
+const TITLE = { p206: 'Постановление № 206', p485: 'Приказ № 485', p628: 'Приказ № 628', p3819: 'Распоряжение № 3819-р' };
+
+let sel = null, checked = false;
+const pairL = {}, pairR = {};
+const tip = document.getElementById('tip');
+const checkBtn = document.getElementById('checkBtn');
+const statusEl = document.getElementById('status');
+const cards = Array.from(document.querySelectorAll('.card'));
+
+function pairCount() { return Object.keys(pairL).length; }
+
+function refresh() {
+  cards.forEach(c => {
+    const side = c.dataset.side, id = c.dataset.id;
+    c.classList.remove('selected', 'paired', 'ok', 'bad');
+    const pn = c.querySelector('.pnum');
+    const rid = side === 'L' ? pairL[id] : id;
+    const lid = side === 'L' ? id : pairR[id];
+    if (lid !== undefined && pairL[lid] !== undefined) {
+      const n = Object.keys(pairL).indexOf(lid) + 1;
+      pn.textContent = n;
+      c.classList.add('paired');
+      if (checked) c.classList.add(pairL[lid] === ACTS[lid].correct ? 'ok' : 'bad');
+    }
+    if (side === 'L' && sel === id) c.classList.add('selected');
+  });
+  checkBtn.style.display = (!checked && pairCount() === 4) ? 'inline-block' : 'none';
+  fitFrame();
+}
+
+function unpair(lid) { const rid = pairL[lid]; delete pairL[lid]; delete pairR[rid]; }
+
+cards.forEach(c => {
+  c.addEventListener('click', () => {
+    if (checked) return;
+    const side = c.dataset.side, id = c.dataset.id;
+    if (side === 'L') {
+      if (pairL[id] !== undefined) { unpair(id); }
+      else sel = (sel === id ? null : id);
+    } else {
+      if (pairR[id] !== undefined) { unpair(pairR[id]); }
+      else if (sel) { pairL[sel] = id; pairR[id] = sel; sel = null; }
+    }
+    statusEl.textContent = ''; statusEl.className = '';
+    refresh();
+  });
+  c.addEventListener('mouseenter', () => showTip(c));
+  c.addEventListener('mousemove', moveTip);
+  c.addEventListener('mouseleave', () => { tip.style.display = 'none'; });
+});
+
+checkBtn.addEventListener('click', () => {
+  checked = true;
+  let good = 0;
+  for (const lid in pairL) if (pairL[lid] === ACTS[lid].correct) good++;
+  statusEl.textContent = good === 4 ? 'Отлично! Все пары верные.' : 'Верных пар: ' + good + ' из 4.';
+  statusEl.className = good === 4 ? 'win' : 'lose';
+  refresh();
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  for (const k in pairL) delete pairL[k];
+  for (const k in pairR) delete pairR[k];
+  sel = null; checked = false;
+  statusEl.textContent = ''; statusEl.className = '';
+  refresh();
+});
+
+function tipText(c) {
+  const side = c.dataset.side, id = c.dataset.id;
+  const lid = side === 'L' ? id : pairR[id];
+  if (lid === undefined || pairL[lid] === undefined) return null;
+  const rid = pairL[lid];
+  const correct = rid === ACTS[lid].correct;
+  if (side === 'L') {
+    let t = correct ? ACTS[lid].ok : ACTS[lid].bad;
+    if (!correct) t += ' Роль «' + ROLES[rid].letter + '», которую вы выбрали, относится к акту «' + TITLE[ROLES[rid].owner] + '».';
+    return { ok: correct, text: t };
+  }
+  let t = (correct ? 'Верно. ' : 'Неверно. ') + ROLES[id].explain;
+  if (!correct) t += ' Вы соединили ее с актом «' + TITLE[lid] + '».';
+  return { ok: correct, text: t };
+}
+
+function showTip(c) {
+  if (!checked) { tip.style.display = 'none'; return; }
+  const d = tipText(c);
+  if (!d) { tip.style.display = 'none'; return; }
+  tip.textContent = d.text;
+  tip.className = d.ok ? 'ok' : 'bad';
+  tip.style.display = 'block';
+}
+function moveTip(e) {
+  const pad = 12;
+  let x = e.clientX + pad, y = e.clientY + pad;
+  const r = tip.getBoundingClientRect();
+  if (x + r.width > window.innerWidth - 6) x = window.innerWidth - r.width - 6;
+  if (y + r.height > window.innerHeight - 6) y = e.clientY - r.height - pad;
+  tip.style.left = x + 'px'; tip.style.top = y + 'px';
+}
+
+// одинаковая высота карточек и столбцов
+function equalize() {
+  cards.forEach(c => c.style.height = 'auto');
+  const h = Math.max.apply(null, cards.map(c => c.scrollHeight));
+  cards.forEach(c => c.style.height = h + 'px');
+}
+
+// ресайзер внешнего фрейма под размер интерактива
+function fitFrame() {
+  const w = 650;
+  const h = document.getElementById('wrap').scrollHeight + 8;
+  try {
+    if (window.frameElement) {
+      window.frameElement.style.width = w + 'px';
+      window.frameElement.style.height = h + 'px';
+    }
+  } catch (e) {}
+  if (window.parent && window.parent !== window) {
+    window.parent.postMessage({ source: 'orv-match', type: 'resize', width: w, height: h }, '*');
+  }
+}
+
+window.addEventListener('resize', () => { equalize(); fitFrame(); });
+if (window.ResizeObserver) new ResizeObserver(() => fitFrame()).observe(document.getElementById('wrap'));
+
+equalize();
+refresh();
+</script>
+</body>
+</html>
