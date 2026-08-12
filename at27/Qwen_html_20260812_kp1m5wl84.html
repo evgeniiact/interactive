@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажер: изопрен в расчете НДВ</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;   /* убираем внутренний скролл */
+    min-height: 0;
+  }
+  body {
+    font-family: Arial, Helvetica, sans-serif;
+    background: #fafafa;
+    color: #1a1a1a;
+    padding: 24px 16px;
+  }
+  .container { max-width: 700px; margin: 0 auto; }
+  .card {
+    background: #fff;
+    border: 1px solid #cfcfcf;
+    border-radius: 6px;
+    padding: 28px;
+  }
+  .q-number {
+    font-size: 13px; color: #0d5c5c; font-weight: 600;
+    letter-spacing: .5px; text-transform: uppercase; margin-bottom: 12px;
+  }
+  .q-text { font-size: 17px; line-height: 1.5; margin-bottom: 22px; font-weight: 500; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .option {
+    background: #fff; border: 1.5px solid #cfcfcf; border-radius: 5px;
+    padding: 13px 16px; cursor: pointer; font-size: 15px; line-height: 1.45;
+    text-align: left; transition: all .15s; color: #1a1a1a; font-family: inherit;
+  }
+  .option:hover:not(:disabled) { border-color: #0d5c5c; background: #f5fafa; }
+  .option:disabled { cursor: default; }
+  .option.correct { border-color: #0d5c5c; background: #e6f2f2; font-weight: 600; }
+  .option.wrong { border-color: #b34040; background: #f8ecec; }
+  .comment {
+    margin-top: 20px; padding: 16px 18px; border-left: 4px solid #0d5c5c;
+    background: #f5fafa; border-radius: 0 5px 5px 0; font-size: 15px;
+    line-height: 1.55; display: none;
+  }
+  .comment.show { display: block; }
+  .comment.wrong-comment { border-left-color: #b34040; background: #f8ecec; }
+  .comment .status { font-weight: 700; display: block; margin-bottom: 6px; font-size: 16px; }
+  .status.ok { color: #0d5c5c; }
+  .status.bad { color: #b34040; }
+  .next-btn {
+    display: none; margin-top: 22px; margin-left: auto; background: #0d5c5c;
+    color: #fff; border: none; padding: 12px 28px; font-size: 15px;
+    font-weight: 600; border-radius: 5px; cursor: pointer; font-family: inherit;
+    transition: background .15s;
+  }
+  .next-btn:hover { background: #094444; }
+  .result { text-align: center; padding: 36px 20px; }
+  .result h2 { font-size: 22px; color: #0d5c5c; margin-bottom: 10px; }
+  .score { font-size: 44px; font-weight: 700; color: #0d5c5c; margin: 16px 0 6px; }
+  .score-desc { color: #555; font-size: 15px; line-height: 1.5; margin-bottom: 24px; }
+  .restart {
+    background: #fff; border: 1.5px solid #0d5c5c; color: #0d5c5c;
+    padding: 11px 24px; font-size: 15px; font-weight: 600; border-radius: 5px;
+    cursor: pointer; font-family: inherit;
+  }
+  .restart:hover { background: #f5fafa; }
+</style>
+</head>
+<body>
+<div class="container">
+  <div class="card" id="card"></div>
+</div>
+
+<script>
+const q = {
+  text: "Объект III категории использует расчет НДВ, подготовленный в 2024 году. В выбросах есть изопрен, но в расчете его нет. Что сделать экологу?",
+  options: [
+    "А. Не учитывать изопрен, потому что расчет утвердили до 2025 года.",
+    "Б. Проверить изопрен по перечню № 2909-р и учесть его при пересмотре или актуализации расчета и связанной документации.",
+    "В. Указать изопрен только в декларации о плате за НВОС."
+  ],
+  correct: 1,
+  ok: "Изопрен указан в пункте 85 раздела I перечня № 2909-р и входит в позиции, переходный период по которым заканчивается 1 января 2027 года. Поэтому вещество нужно учесть при пересмотре или актуализации расчета НДВ и связанной документации.",
+  bad: "Изопрен указан в пункте 85 раздела I перечня № 2909-р и входит в позиции, переходный период по которым заканчивается 1 января 2027 года. Поэтому вещество нужно учесть при пересмотре или актуализации расчета НДВ и связанной документации — игнорировать его или ограничиться только декларацией о плате за НВОС нельзя."
+};
+
+const card = document.getElementById('card');
+let answered = false;
+let score = 0;
+
+function renderQuiz() {
+  answered = false;
+  score = 0;
+  card.innerHTML = `
+    <div class="q-number">Ситуация</div>
+    <div class="q-text">${q.text}</div>
+    <div class="options">
+      ${q.options.map((o, i) => `<button class="option" data-i="${i}">${o}</button>`).join('')}
+    </div>
+    <div class="comment" id="comment"></div>
+    <button class="next-btn" id="next">Завершить</button>
+  `;
+
+  card.querySelectorAll('.option').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (answered) return;
+      answered = true;
+      const i = +btn.dataset.i;
+      const correct = i === q.correct;
+      if (correct) score = 1;
+      card.querySelectorAll('.option').forEach((b, idx) => {
+        b.disabled = true;
+        if (idx === q.correct) b.classList.add('correct');
+        else if (idx === i && !correct) b.classList.add('wrong');
+      });
+      const c = document.getElementById('comment');
+      c.classList.add('show');
+      if (!correct) c.classList.add('wrong-comment');
+      c.innerHTML = `<span class="status ${correct ? 'ok' : 'bad'}">${correct ? 'Верно' : 'Неверно'}</span>${correct ? q.ok : q.bad}`;
+      document.getElementById('next').style.display = 'inline-block';
+    });
+  });
+
+  document.getElementById('next').addEventListener('click', showFinal);
+}
+
+function showFinal() {
+  const msg = score === 1
+    ? 'Отлично! Вы знаете, что вещества из перечня № 2909-р нужно учитывать при актуализации расчета НДВ, даже если сам расчет подготовили раньше.'
+    : 'Вернитесь к уроку: изопрен входит в перечень № 2909-р, и его нужно учесть при пересмотре или актуализации расчета НДВ и связанной документации до конца переходного периода — 1 января 2027 года.';
+  card.innerHTML = `
+    <div class="result">
+      <h2>Тренажер пройден</h2>
+      <div class="score">${score} / 1</div>
+      <div class="score-desc">${msg}</div>
+      <button class="restart" id="restart">Пройти заново</button>
+    </div>
+  `;
+  document.getElementById('restart').addEventListener('click', renderQuiz);
+}
+
+renderQuiz();
+</script>
+
+<!-- РЕСАЙЗЕР: отправляет высоту контента родительской странице. Не менять и не удалять. -->
+<script>
+(function () {
+  var lastH = 0;
+  function sendSize() {
+    var h = Math.max(
+      document.body.scrollHeight, document.documentElement.scrollHeight,
+      document.body.offsetHeight, document.documentElement.offsetHeight
+    );
+    if (h === lastH) return;
+    lastH = h;
+    try { parent.postMessage({ type: 'resize', height: h }, '*'); } catch(e){}
+  }
+  window.addEventListener('load', sendSize);
+  if ('ResizeObserver' in window) new ResizeObserver(sendSize).observe(document.body);
+  if ('MutationObserver' in window) new MutationObserver(sendSize)
+    .observe(document.body, { childList: true, subtree: true, attributes: true });
+  if (!('ResizeObserver' in window)) setInterval(sendSize, 300);
+})();
+</script>
+
+</body>
+</html>
