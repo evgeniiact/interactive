@@ -4,70 +4,162 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Тренажер: изопрен в расчете НДВ</title>
-<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <style>
-  * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* ===== БАЗОВЫЕ СТИЛИ БЕЗ ВНУТРЕННЕЙ ПРОКРУТКИ ===== */
   html, body {
     margin: 0;
     padding: 0;
-    overflow: hidden;   /* убираем внутренний скролл */
-    min-height: 0;
+    overflow: hidden;      /* убираем внутренний скролл */
+    min-height: 0;         /* важно для корректной работы ResizeObserver */
   }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
   body {
     font-family: Arial, Helvetica, sans-serif;
     background: #fafafa;
     color: #1a1a1a;
     padding: 24px 16px;
   }
-  .container { max-width: 700px; margin: 0 auto; }
+
+  /* ===== КОНТЕЙНЕР ===== */
+  .container {
+    max-width: 700px;
+    margin: 0 auto;
+    /* БЕЗ height / max-height / min-height */
+    /* БЕЗ overflow: auto/scroll */
+  }
+
   .card {
     background: #fff;
     border: 1px solid #cfcfcf;
     border-radius: 6px;
     padding: 28px;
   }
+
   .q-number {
-    font-size: 13px; color: #0d5c5c; font-weight: 600;
-    letter-spacing: .5px; text-transform: uppercase; margin-bottom: 12px;
+    font-size: 13px;
+    color: #0d5c5c;
+    font-weight: 600;
+    letter-spacing: .5px;
+    text-transform: uppercase;
+    margin-bottom: 12px;
   }
-  .q-text { font-size: 17px; line-height: 1.5; margin-bottom: 22px; font-weight: 500; }
-  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .q-text {
+    font-size: 17px;
+    line-height: 1.5;
+    margin-bottom: 22px;
+    font-weight: 500;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+
   .option {
-    background: #fff; border: 1.5px solid #cfcfcf; border-radius: 5px;
-    padding: 13px 16px; cursor: pointer; font-size: 15px; line-height: 1.45;
-    text-align: left; transition: all .15s; color: #1a1a1a; font-family: inherit;
+    background: #fff;
+    border: 1.5px solid #cfcfcf;
+    border-radius: 5px;
+    padding: 13px 16px;
+    cursor: pointer;
+    font-size: 15px;
+    line-height: 1.45;
+    text-align: left;
+    transition: all .15s;
+    color: #1a1a1a;
+    font-family: inherit;
   }
-  .option:hover:not(:disabled) { border-color: #0d5c5c; background: #f5fafa; }
+
+  .option:hover:not(:disabled) {
+    border-color: #0d5c5c;
+    background: #f5fafa;
+  }
+
   .option:disabled { cursor: default; }
   .option.correct { border-color: #0d5c5c; background: #e6f2f2; font-weight: 600; }
   .option.wrong { border-color: #b34040; background: #f8ecec; }
+
   .comment {
-    margin-top: 20px; padding: 16px 18px; border-left: 4px solid #0d5c5c;
-    background: #f5fafa; border-radius: 0 5px 5px 0; font-size: 15px;
-    line-height: 1.55; display: none;
+    margin-top: 20px;
+    padding: 16px 18px;
+    border-left: 4px solid #0d5c5c;
+    background: #f5fafa;
+    border-radius: 0 5px 5px 0;
+    font-size: 15px;
+    line-height: 1.55;
+    display: none;
   }
+
   .comment.show { display: block; }
   .comment.wrong-comment { border-left-color: #b34040; background: #f8ecec; }
   .comment .status { font-weight: 700; display: block; margin-bottom: 6px; font-size: 16px; }
   .status.ok { color: #0d5c5c; }
   .status.bad { color: #b34040; }
+
   .next-btn {
-    display: none; margin-top: 22px; margin-left: auto; background: #0d5c5c;
-    color: #fff; border: none; padding: 12px 28px; font-size: 15px;
-    font-weight: 600; border-radius: 5px; cursor: pointer; font-family: inherit;
+    display: none;
+    margin-top: 22px;
+    margin-left: auto;
+    background: #0d5c5c;
+    color: #fff;
+    border: none;
+    padding: 12px 28px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
     transition: background .15s;
   }
+
   .next-btn:hover { background: #094444; }
-  .result { text-align: center; padding: 36px 20px; }
-  .result h2 { font-size: 22px; color: #0d5c5c; margin-bottom: 10px; }
-  .score { font-size: 44px; font-weight: 700; color: #0d5c5c; margin: 16px 0 6px; }
-  .score-desc { color: #555; font-size: 15px; line-height: 1.5; margin-bottom: 24px; }
-  .restart {
-    background: #fff; border: 1.5px solid #0d5c5c; color: #0d5c5c;
-    padding: 11px 24px; font-size: 15px; font-weight: 600; border-radius: 5px;
-    cursor: pointer; font-family: inherit;
+
+  .result {
+    text-align: center;
+    padding: 36px 20px;
   }
+
+  .result h2 {
+    font-size: 22px;
+    color: #0d5c5c;
+    margin-bottom: 10px;
+  }
+
+  .score {
+    font-size: 44px;
+    font-weight: 700;
+    color: #0d5c5c;
+    margin: 16px 0 6px;
+  }
+
+  .score-desc {
+    color: #555;
+    font-size: 15px;
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+
+  .restart {
+    background: #fff;
+    border: 1.5px solid #0d5c5c;
+    color: #0d5c5c;
+    padding: 11px 24px;
+    font-size: 15px;
+    font-weight: 600;
+    border-radius: 5px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+
   .restart:hover { background: #f5fafa; }
+
+  /* ===== АДАПТИВ ===== */
+  @media (max-width: 480px) {
+    .card { padding: 16px; }
+  }
 </style>
 </head>
 <body>
@@ -77,15 +169,15 @@
 
 <script>
 const q = {
-  text: "Объект III категории. НДВ 2024 года. В выбросах есть изопрен, но в расчете его нет. Что сделать экологу?",
+  text: "Объект III категории использует НДВ 2024 года. В выбросах есть изопрен, но в расчете его нет. Что сделать экологу?",
   options: [
     "А. Не учитывать изопрен, потому что расчет утвердили до 2025 года.",
     "Б. Проверить изопрен по перечню № 2909-р и учесть его при пересмотре или актуализации расчета и связанной документации.",
     "В. Указать изопрен только в декларации о плате за НВОС."
   ],
   correct: 1,
-  ok: "Изопрен указан в пункте 85 раздела I перечня № 2909-р и входит в позиции, переходный период по которым заканчивается 1 января 2027 года. Поэтому вещество нужно учесть при пересмотре или актуализации расчета НДВ и связанной документации.",
-  bad: "Изопрен указан в пункте 85 раздела I перечня № 2909-р и входит в позиции, переходный период по которым заканчивается 1 января 2027 года. Поэтому вещество нужно учесть при пересмотре или актуализации расчета НДВ и связанной документации — игнорировать его или ограничиться только декларацией о плате за НВОС нельзя."
+  ok: "Изопрен указан в пункте 85 раздела I перечня № 2909-р, переходный период по которым заканчивается 1 января 2027 года. Поэтому вещество нужно учесть в НДВ и связанной документации.",
+  bad: "Изопрен указан в пункте 85 раздела I перечня № 2909-р, переходный период по которым заканчивается 1 января 2027 года. Поэтому вещество нужно учесть в НДВ и связанной документации — игнорировать его или ограничиться только декларацией о плате за НВОС нельзя."
 };
 
 const card = document.getElementById('card');
@@ -146,7 +238,10 @@ function showFinal() {
 renderQuiz();
 </script>
 
-<!-- РЕСАЙЗЕР: отправляет высоту контента родительской странице. Не менять и не удалять. -->
+<!-- ============================================================
+     РЕСАЙЗЕР: отправляет высоту контента родительской странице.
+     Не менять и не удалять.
+     ============================================================ -->
 <script>
 (function () {
   var lastH = 0;
@@ -159,10 +254,14 @@ renderQuiz();
     lastH = h;
     try { parent.postMessage({ type: 'resize', height: h }, '*'); } catch(e){}
   }
+  // Запуск при загрузке
   window.addEventListener('load', sendSize);
+  // Слежение за изменениями размеров блока
   if ('ResizeObserver' in window) new ResizeObserver(sendSize).observe(document.body);
+  // Слежение за изменениями DOM (появление комментариев, смена вопросов, финальный экран)
   if ('MutationObserver' in window) new MutationObserver(sendSize)
     .observe(document.body, { childList: true, subtree: true, attributes: true });
+  // Фоллбэк для старых браузеров
   if (!('ResizeObserver' in window)) setInterval(sendSize, 300);
 })();
 </script>
