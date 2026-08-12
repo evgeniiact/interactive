@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Тренажер: отчетность по парниковым газам</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --card: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --o50: #fff7ed;
+    --o100: #ffedd5;
+    --o600: #ea580c;
+    --o800: #9a3412;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    margin: 0;
+    padding: 0;
+    overflow: hidden;
+    min-height: 0;
+  }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 650px;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+  h2 { font-size: 19px; font-weight: 700; margin-bottom: 6px; color: var(--g800); }
+  .intro { font-size: 14px; color: var(--text); line-height: 1.5; margin-bottom: 16px; }
+  .situation {
+    background: #f8fafc;
+    border-left: 4px solid var(--g600);
+    border-radius: 0 8px 8px 0;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.55;
+    margin-bottom: 18px;
+  }
+  .situation b { color: var(--g800); }
+  .q-text { font-size: 15px; font-weight: 600; line-height: 1.45; color: var(--text); margin-bottom: 14px; }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+    text-align: left;
+    line-height: 1.45;
+    font-family: inherit;
+  }
+  .opt-btn .mark {
+    flex: 0 0 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--muted);
+    background: #fff;
+    margin-top: 1px;
+  }
+  .opt-btn:hover:not(:disabled) { border-color: var(--g600); background: var(--g50); }
+  .opt-btn:hover:not(:disabled) .mark { border-color: var(--g600); color: var(--g600); }
+  .opt-btn.selected-correct { border-color: var(--g600); background: var(--g100); color: var(--g800); font-weight: 600; pointer-events: none; }
+  .opt-btn.selected-correct .mark { border-color: var(--g600); background: var(--g600); color: #fff; }
+  .opt-btn.selected-wrong { border-color: var(--o600); background: var(--o100); color: var(--o800); pointer-events: none; }
+  .opt-btn.selected-wrong .mark { border-color: var(--o600); background: var(--o600); color: #fff; }
+  .opt-btn.highlight-correct { border-color: var(--g600); background: var(--g50); }
+  .opt-btn.highlight-correct .mark { border-color: var(--g600); color: var(--g600); }
+  .opt-btn:disabled { cursor: default; }
+  .explanation {
+    display: none;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.55;
+    margin-top: 16px;
+    animation: fadeIn 0.3s ease;
+  }
+  .explanation.show { display: block; }
+  .explanation.correct { background: var(--g50); border-left: 4px solid var(--g600); }
+  .explanation.wrong { background: var(--o50); border-left: 4px solid var(--o600); }
+  .explanation .label {
+    font-size: 13px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.4px;
+    margin-bottom: 6px;
+  }
+  .explanation.correct .label { color: var(--g700); }
+  .explanation.wrong .label { color: var(--o600); }
+  .explanation p { margin: 0 0 8px; color: var(--text); }
+  .explanation p:last-child { margin-bottom: 0; }
+  .explanation ul { margin: 8px 0 0 18px; padding: 0; }
+  .explanation li { margin-bottom: 6px; }
+  .next-btn {
+    align-self: flex-end;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--g600);
+    color: #fff;
+    opacity: 0.3;
+    pointer-events: none;
+    transition: 0.2s;
+    margin-top: 18px;
+    font-family: inherit;
+  }
+  .next-btn.active { opacity: 1; pointer-events: auto; }
+  .next-btn:hover { background: var(--g700); }
+  .final-screen { display: none; text-align: center; animation: fadeIn 0.3s ease; }
+  .final-screen.active { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 16px 0; }
+  .final-icon { font-size: 44px; line-height: 1; }
+  .final-title { font-size: 20px; font-weight: 700; color: var(--g800); }
+  .final-text { font-size: 14px; line-height: 1.55; color: var(--text); max-width: 500px; }
+  .final-text strong { color: var(--g700); }
+  .restart-btn {
+    padding: 12px 32px;
+    border: 2px solid var(--g600);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--g700);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    font-family: inherit;
+    margin-top: 6px;
+  }
+  .restart-btn:hover { background: var(--g50); }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 600px) { .wrap { padding: 16px; } h2 { font-size: 17px; } }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h2>Отчетность по парниковым газам</h2>
+  <p class="intro">Разберем ситуацию: кто должен сдавать отчет в ГИС «Энергоэффективность» до 1 июля.</p>
+
+  <div id="quizArea">
+    <div class="situation">
+      <b>Ситуация.</b> Лесоперерабатывающий комбинат (объект НВОС II категории) имеет собственную угольную котельную и автопарк лесовозов. По результатам инвентаризации эколог получил следующие данные:
+      <br><br>
+      • Выбросы от стационарного сжигания угля в котельной: <b>35 000 тонн CO₂-экв.</b><br>
+      • Выбросы от сжигания дизельного топлива в лесовозах (транспорт): <b>18 000 тонн CO₂-экв.</b><br>
+      • Выбросы от сварочных постов (не ПГ): 2 тонны.
+    </div>
+
+    <div class="q-text">Должен ли комбинат сдавать отчет о выбросах парниковых газов в ГИС «Энергоэффективность» до 1 июля?</div>
+
+    <div class="options" id="options"></div>
+
+    <div class="explanation" id="explanation"></div>
+
+    <button class="next-btn" id="nextBtn">Завершить</button>
+  </div>
+
+  <div class="final-screen" id="finalScreen">
+    <div class="final-icon" id="finalIcon"></div>
+    <div class="final-title" id="finalTitle"></div>
+    <div class="final-text" id="finalText"></div>
+    <button class="restart-btn" id="restartBtn">Пройти еще раз</button>
+  </div>
+</div>
+
+<script>
+  const options = [
+    { letter: 'А', text: 'Нет, так как ни один из источников по отдельности не превышает порог в 50 000 тонн.' },
+    { letter: 'Б', text: 'Нет, так как транспорт не относится к объектам НВОС, а отчет сдают только по стационарным источникам.' },
+    { letter: 'В', text: 'Да, так как суммарный выброс по юридическому лицу составил 53 000 тонн CO₂-экв., и компания ведет деятельность из перечня ПП № 1580.' },
+    { letter: 'Г', text: 'Да, но только если комбинат планирует регистрировать климатический проект.' }
+  ];
+  const correctIndex = 2;
+
+  const correctExpl =
+    '<div class="label">Вы ответили правильно</div>' +
+    '<p>Порог в 50 000 тонн CO₂-экв. применяется к суммарному объему выбросов <b>в целом по юридическому лицу</b>, а не по каждому источнику в отдельности: 35 000 + 18 000 = 53 000 тонн.</p>' +
+    '<ul>' +
+    '<li>Сварочные посты выделяют загрязняющие вещества, но не парниковые газы, поэтому в расчет не берутся.</li>' +
+    '<li>Компания соответствует критериям Постановления № 1580: у нее есть объект НВОС II категории и она осуществляет сжигание топлива в двигателях транспортных средств. Отчет сдавать обязательно.</li>' +
+    '</ul>';
+
+  const wrongExpl =
+    '<div class="label">Вы ответили неправильно</div>' +
+    '<p>Порог в 50 000 тонн CO₂-экв. применяется к суммарному объему выбросов <b>в целом по юридическому лицу</b>, а не по каждому источнику в отдельности: 35 000 + 18 000 = 53 000 тонн.</p>' +
+    '<ul>' +
+    '<li>Сварочные посты выделяют загрязняющие вещества, но не парниковые газы, поэтому в расчет не берутся.</li>' +
+    '<li>Компания соответствует критериям Постановления № 1580: у нее есть объект НВОС II категории и она осуществляет сжигание топлива в двигателях транспортных средств. Отчет сдавать обязательно.</li>' +
+    '</ul>';
+
+  const optionsEl = document.getElementById('options');
+  const explEl = document.getElementById('explanation');
+  const nextBtn = document.getElementById('nextBtn');
+  const finalScreen = document.getElementById('finalScreen');
+  const quizArea = document.getElementById('quizArea');
+  const restartBtn = document.getElementById('restartBtn');
+  const intro = document.querySelector('.intro');
+
+  let answered = false;
+  let score = 0;
+
+  function renderOptions() {
+    optionsEl.innerHTML = '';
+    options.forEach((opt, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.innerHTML = '<span class="mark">' + opt.letter + '</span><span>' + opt.text + '</span>';
+      btn.addEventListener('click', function () { handleAnswer(i, btn); });
+      optionsEl.appendChild(btn);
+    });
+  }
+
+  function handleAnswer(i, btn) {
+    if (answered) return;
+    answered = true;
+
+    const buttons = optionsEl.querySelectorAll('.opt-btn');
+    buttons.forEach(b => b.disabled = true);
+
+    const isCorrect = (i === correctIndex);
+    if (isCorrect) {
+      score = 1;
+      btn.classList.add('selected-correct');
+    } else {
+      btn.classList.add('selected-wrong');
+      buttons[correctIndex].classList.add('highlight-correct');
+    }
+
+    explEl.className = 'explanation show ' + (isCorrect ? 'correct' : 'wrong');
+    explEl.innerHTML = isCorrect ? correctExpl : wrongExpl;
+    nextBtn.classList.add('active');
+  }
+
+  function showFinal() {
+    quizArea.style.display = 'none';
+    intro.style.display = 'none';
+    finalScreen.classList.add('active');
+
+    const icon = document.getElementById('finalIcon');
+    const title = document.getElementById('finalTitle');
+    const text = document.getElementById('finalText');
+
+    if (score === 1) {
+      icon.textContent = '🏆';
+      title.textContent = 'Отлично';
+      text.innerHTML = '<p>Правильных ответов: <strong>1 из 1</strong></p>' +
+        '<p>Вы верно понимаете, как считать порог по парниковым газам: суммарно по юридическому лицу, и знаете критерии Постановления № 1580.</p>';
+    } else {
+      icon.textContent = '📚';
+      title.textContent = 'Стоит повторить';
+      text.innerHTML = '<p>Правильных ответов: <strong>0 из 1</strong></p>' +
+        '<p>Вернитесь к пояснению: порог в 50 000 тонн CO₂-экв. применяется к суммарному объему выбросов по юридическому лицу в целом, а не по каждому источнику отдельно.</p>';
+    }
+  }
+
+  function restart() {
+    answered = false;
+    score = 0;
+    explEl.className = 'explanation';
+    explEl.innerHTML = '';
+    nextBtn.classList.remove('active');
+    quizArea.style.display = 'block';
+    intro.style.display = 'block';
+    finalScreen.classList.remove('active');
+    renderOptions();
+  }
+
+  nextBtn.addEventListener('click', showFinal);
+  restartBtn.addEventListener('click', restart);
+
+  renderOptions();
+</script>
+
+<!-- РЕСАЙЗЕР: отправляет высоту контента родительской странице. Не менять и не удалять. -->
+<script>
+(function () {
+  var lastH = 0;
+  function sendSize() {
+    var h = Math.max(
+      document.body.scrollHeight, document.documentElement.scrollHeight,
+      document.body.offsetHeight, document.documentElement.offsetHeight
+    );
+    if (h === lastH) return;
+    lastH = h;
+    try { parent.postMessage({ type: 'resize', height: h }, '*'); } catch(e){}
+  }
+  window.addEventListener('load', sendSize);
+  if ('ResizeObserver' in window) new ResizeObserver(sendSize).observe(document.body);
+  if ('MutationObserver' in window) new MutationObserver(sendSize)
+    .observe(document.body, { childList: true, subtree: true, attributes: true });
+  if (!('ResizeObserver' in window)) setInterval(sendSize, 300);
+})();
+</script>
+
+</body>
+</html>
