@@ -4,6 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Тренажер: отчетность по парниковым газам</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <style>
   :root {
     --bg: #ffffff;
@@ -24,11 +25,7 @@
     --shadow: 0 4px 12px rgba(0,0,0,0.05);
   }
   * { box-sizing: border-box; margin: 0; padding: 0; }
-  html, body {
-    margin: 0;
-    padding: 0;
-    min-height: 0;
-  }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
   body {
     font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
     background: var(--bg);
@@ -41,6 +38,7 @@
   .wrap {
     width: 100%;
     max-width: 650px;
+    height: auto;
     background: var(--card);
     border-radius: var(--radius);
     padding: 24px;
@@ -148,7 +146,7 @@
   .next-btn:hover { background: var(--g700); }
   .final-screen { display: none; text-align: center; animation: fadeIn 0.3s ease; }
   .final-screen.active { display: flex; flex-direction: column; align-items: center; gap: 14px; padding: 16px 0; }
-  .final-icon { font-size: 44px; line-height: 1; }
+  .final-icon { font-size: 40px; line-height: 1; }
   .final-title { font-size: 20px; font-weight: 700; color: var(--g800); }
   .final-text { font-size: 14px; line-height: 1.55; color: var(--text); max-width: 500px; }
   .final-text strong { color: var(--g700); }
@@ -174,7 +172,8 @@
 
 <div class="wrap" id="wrap">
   <h2>Отчетность по парниковым газам</h2>
- 
+  <p class="intro">Разберем ситуацию: кто должен сдавать отчет в ГИС «Энергоэффективность» до 1 июля.</p>
+
   <div id="quizArea">
     <div class="situation">
       <b>Ситуация.</b> Лесоперерабатывающий комбинат (объект НВОС II категории) имеет собственную угольную котельную и автопарк лесовозов. По результатам инвентаризации эколог получил следующие данные:
@@ -197,11 +196,17 @@
     <div class="final-icon" id="finalIcon"></div>
     <div class="final-title" id="finalTitle"></div>
     <div class="final-text" id="finalText"></div>
-    <button class="restart-btn" id="restartBtn">Пройти еще раз</button>
+    <button class="restart-btn" onclick="restartQuiz()">Пройти еще раз</button>
   </div>
 </div>
 
 <script>
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
   const options = [
     { letter: 'А', text: 'Нет, так как ни один из источников по отдельности не превышает порог в 50 000 тонн.' },
     { letter: 'Б', text: 'Нет, так как транспорт не относится к объектам НВОС, а отчет сдают только по стационарным источникам.' },
@@ -212,7 +217,7 @@
 
   const correctExpl =
     '<div class="label">Вы ответили правильно</div>' +
-    '<p>Порог в 50 000 тонн CO₂-экв. применяется к суммарному объему выбросов <b>в целом по юридическому лицу</b>, а не по каждому источнику в отдельности: 35 000 + 18 000 = 53 000 тонн.</p>' +
+    '<p>Порог в 50 000 тонн CO₂-экв. применяется к суммарному объему выбросов <strong>в целом по юридическому лицу</strong>, а не по каждому источнику в отдельности: 35 000 + 18 000 = 53 000 тонн.</p>' +
     '<ul>' +
     '<li>Сварочные посты выделяют загрязняющие вещества, но не парниковые газы, поэтому в расчет не берутся.</li>' +
     '<li>Компания соответствует критериям Постановления № 1580: у нее есть объект НВОС II категории и она осуществляет сжигание топлива в двигателях транспортных средств. Отчет сдавать обязательно.</li>' +
@@ -220,7 +225,7 @@
 
   const wrongExpl =
     '<div class="label">Вы ответили неправильно</div>' +
-    '<p>Порог в 50 000 тонн CO₂-экв. применяется к суммарному объему выбросов <b>в целом по юридическому лицу</b>, а не по каждому источнику в отдельности: 35 000 + 18 000 = 53 000 тонн.</p>' +
+    '<p>Порог в 50 000 тонн CO₂-экв. применяется к суммарному объему выбросов <strong>в целом по юридическому лицу</strong>, а не по каждому источнику в отдельности: 35 000 + 18 000 = 53 000 тонн.</p>' +
     '<ul>' +
     '<li>Сварочные посты выделяют загрязняющие вещества, но не парниковые газы, поэтому в расчет не берутся.</li>' +
     '<li>Компания соответствует критериям Постановления № 1580: у нее есть объект НВОС II категории и она осуществляет сжигание топлива в двигателях транспортных средств. Отчет сдавать обязательно.</li>' +
@@ -231,14 +236,14 @@
   const nextBtn = document.getElementById('nextBtn');
   const finalScreen = document.getElementById('finalScreen');
   const quizArea = document.getElementById('quizArea');
-  const restartBtn = document.getElementById('restartBtn');
   const intro = document.querySelector('.intro');
-  const wrap = document.getElementById('wrap');
 
   let answered = false;
   let score = 0;
 
   function renderOptions() {
+    answered = false;
+    score = 0;
     optionsEl.innerHTML = '';
     options.forEach((opt, i) => {
       const btn = document.createElement('button');
@@ -247,6 +252,10 @@
       btn.addEventListener('click', function () { handleAnswer(i, btn); });
       optionsEl.appendChild(btn);
     });
+    explEl.className = 'explanation';
+    explEl.innerHTML = '';
+    nextBtn.classList.remove('active');
+    triggerResize();
   }
 
   function handleAnswer(i, btn) {
@@ -268,6 +277,7 @@
     explEl.className = 'explanation show ' + (isCorrect ? 'correct' : 'wrong');
     explEl.innerHTML = isCorrect ? correctExpl : wrongExpl;
     nextBtn.classList.add('active');
+    triggerResize();
   }
 
   function showFinal() {
@@ -280,24 +290,20 @@
     const text = document.getElementById('finalText');
 
     if (score === 1) {
-      icon.textContent = '🏆';
-      title.textContent = 'Отлично';
+      icon.textContent = '';
+      title.textContent = 'Все верно';
       text.innerHTML = '<p>Правильных ответов: <strong>1 из 1</strong></p>' +
         '<p>Вы верно понимаете, как считать порог по парниковым газам: суммарно по юридическому лицу, и знаете критерии Постановления № 1580.</p>';
     } else {
-      icon.textContent = '📚';
+      icon.textContent = '';
       title.textContent = 'Стоит повторить';
       text.innerHTML = '<p>Правильных ответов: <strong>0 из 1</strong></p>' +
         '<p>Вернитесь к пояснению: порог в 50 000 тонн CO₂-экв. применяется к суммарному объему выбросов по юридическому лицу в целом, а не по каждому источнику отдельно.</p>';
     }
+    triggerResize();
   }
 
-  function restart() {
-    answered = false;
-    score = 0;
-    explEl.className = 'explanation';
-    explEl.innerHTML = '';
-    nextBtn.classList.remove('active');
+  function restartQuiz() {
     quizArea.style.display = 'block';
     intro.style.display = 'block';
     finalScreen.classList.remove('active');
@@ -305,27 +311,18 @@
   }
 
   nextBtn.addEventListener('click', showFinal);
-  restartBtn.addEventListener('click', restart);
 
-  renderOptions();
-</script>
-
-<!-- РЕСАЙЗЕР: отправляет высоту контента родительской странице. Не менять и не удалять. -->
-<script>
-(function () {
-  var lastH = 0;
-  function sendSize() {
-    var h = wrap.offsetHeight;
-    if (h === lastH) return;
-    lastH = h;
-    try { parent.postMessage({ type: 'resize', height: h + 32 }, '*'); } catch(e){}
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
   }
-  window.addEventListener('load', sendSize);
-  if ('ResizeObserver' in window) new ResizeObserver(sendSize).observe(wrap);
-  if ('MutationObserver' in window) new MutationObserver(sendSize)
-    .observe(wrap, { childList: true, subtree: true, attributes: true });
-  if (!('ResizeObserver' in window)) setInterval(sendSize, 300);
-})();
+
+  window.addEventListener('load', function() {
+    renderOptions();
+    triggerResize();
+  });
 </script>
 
 </body>
