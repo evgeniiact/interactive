@@ -27,7 +27,6 @@
   html, body {
     margin: 0;
     padding: 0;
-    overflow: hidden;
     min-height: 0;
   }
   body {
@@ -235,6 +234,7 @@
   const quizArea = document.getElementById('quizArea');
   const restartBtn = document.getElementById('restartBtn');
   const intro = document.querySelector('.intro');
+  const wrap = document.getElementById('wrap');
 
   let answered = false;
   let score = 0;
@@ -316,18 +316,15 @@
 (function () {
   var lastH = 0;
   function sendSize() {
-    var h = Math.max(
-      document.body.scrollHeight, document.documentElement.scrollHeight,
-      document.body.offsetHeight, document.documentElement.offsetHeight
-    );
+    var h = wrap.offsetHeight;
     if (h === lastH) return;
     lastH = h;
-    try { parent.postMessage({ type: 'resize', height: h }, '*'); } catch(e){}
+    try { parent.postMessage({ type: 'resize', height: h + 32 }, '*'); } catch(e){}
   }
   window.addEventListener('load', sendSize);
-  if ('ResizeObserver' in window) new ResizeObserver(sendSize).observe(document.body);
+  if ('ResizeObserver' in window) new ResizeObserver(sendSize).observe(wrap);
   if ('MutationObserver' in window) new MutationObserver(sendSize)
-    .observe(document.body, { childList: true, subtree: true, attributes: true });
+    .observe(wrap, { childList: true, subtree: true, attributes: true });
   if (!('ResizeObserver' in window)) setInterval(sendSize, 300);
 })();
 </script>
