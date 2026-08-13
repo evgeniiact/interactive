@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кейс: климатический проект ММК</title>
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+  :root {
+    --bg: #ffffff;
+    --card: #ffffff;
+    --g50: #f0fdf4;
+    --g100: #dcfce7;
+    --g600: #16a34a;
+    --g700: #15803d;
+    --g800: #166534;
+    --o50: #fff7ed;
+    --o100: #ffedd5;
+    --o600: #ea580c;
+    --o800: #9a3412;
+    --text: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { margin: 0; padding: 0; min-height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    padding: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: flex-start;
+  }
+  .wrap {
+    width: 100%;
+    max-width: 650px;
+    height: auto;
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 24px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+  }
+  .step-label {
+    font-size: 13px; color: var(--g600); font-weight: 700;
+    letter-spacing: .5px; text-transform: uppercase; margin-bottom: 10px;
+  }
+  .progress { display: flex; align-items: center; gap: 10px; margin-bottom: 20px; }
+  .prog-bar { flex: 1; height: 6px; background: #e2e8f0; border-radius: 3px; overflow: hidden; }
+  .prog-fill { height: 100%; background: var(--g600); width: 0%; transition: width 0.4s; border-radius: 3px; }
+  .prog-txt { font-size: 12px; color: var(--muted); font-weight: 600; min-width: 84px; text-align: right; }
+
+  .step { display: none; flex-direction: column; gap: 14px; animation: fadeIn 0.3s ease; }
+  .step.active { display: flex; }
+
+  .story-title { font-size: 19px; font-weight: 700; color: var(--g800); line-height: 1.3; }
+  .story-block {
+    background: #f8fafc;
+    border-left: 4px solid var(--g600);
+    border-radius: 0 8px 8px 0;
+    padding: 16px 18px;
+    font-size: 14px;
+    line-height: 1.6;
+  }
+  .story-block b { color: var(--g800); }
+  .story-block p { margin: 0 0 10px; }
+  .story-block p:last-child { margin-bottom: 0; }
+
+  .q-text { font-size: 15px; font-weight: 600; line-height: 1.45; color: var(--text); }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+  .opt-btn {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 14px;
+    border: 2px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    color: var(--text);
+    text-align: left;
+    line-height: 1.45;
+    font-family: inherit;
+  }
+  .opt-btn .mark {
+    flex: 0 0 26px; height: 26px; border-radius: 50%;
+    border: 1.5px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px; font-weight: 700; color: var(--muted); background: #fff;
+    margin-top: 1px;
+  }
+  .opt-btn:hover:not(:disabled) { border-color: var(--g600); background: var(--g50); }
+  .opt-btn:hover:not(:disabled) .mark { border-color: var(--g600); color: var(--g600); }
+  .opt-btn.selected-correct { border-color: var(--g600); background: var(--g100); color: var(--g800); font-weight: 600; pointer-events: none; }
+  .opt-btn.selected-correct .mark { border-color: var(--g600); background: var(--g600); color: #fff; }
+  .opt-btn.selected-wrong { border-color: var(--o600); background: var(--o100); color: var(--o800); pointer-events: none; }
+  .opt-btn.selected-wrong .mark { border-color: var(--o600); background: var(--o600); color: #fff; }
+  .opt-btn.highlight-correct { border-color: var(--g600); background: var(--g50); }
+  .opt-btn.highlight-correct .mark { border-color: var(--g600); color: var(--g600); }
+  .opt-btn:disabled { cursor: default; }
+
+  .explanation {
+    display: none;
+    border-radius: 8px;
+    padding: 14px 16px;
+    font-size: 14px;
+    line-height: 1.55;
+    animation: fadeIn 0.3s ease;
+  }
+  .explanation.show { display: block; }
+  .explanation.correct { background: var(--g50); border-left: 4px solid var(--g600); }
+  .explanation.wrong { background: var(--o50); border-left: 4px solid var(--o600); }
+  .explanation .label {
+    font-size: 13px; font-weight: 700; text-transform: uppercase;
+    letter-spacing: 0.4px; margin-bottom: 6px;
+  }
+  .explanation.correct .label { color: var(--g700); }
+  .explanation.wrong .label { color: var(--o600); }
+  .explanation p { margin: 0; color: var(--text); }
+
+  .next-btn {
+    align-self: flex-end;
+    padding: 10px 24px;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    background: var(--g600);
+    color: #fff;
+    opacity: 0.3;
+    pointer-events: none;
+    transition: 0.2s;
+    font-family: inherit;
+  }
+  .next-btn.active { opacity: 1; pointer-events: auto; }
+  .next-btn:hover { background: var(--g700); }
+
+  .final-screen { display: none; text-align: center; animation: fadeIn 0.3s ease; }
+  .final-screen.active { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 12px 0; }
+  .final-icon { font-size: 42px; line-height: 1; }
+  .final-title { font-size: 20px; font-weight: 700; color: var(--g800); }
+  .final-text { font-size: 14px; line-height: 1.55; color: var(--text); max-width: 500px; }
+  .final-text strong { color: var(--g700); }
+  .restart-btn {
+    padding: 12px 32px;
+    border: 2px solid var(--g600);
+    border-radius: 8px;
+    background: #fff;
+    color: var(--g700);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: 0.2s;
+    font-family: inherit;
+  }
+  .restart-btn:hover { background: var(--g50); }
+
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+  @media (max-width: 600px) { .wrap { padding: 16px; } .story-title { font-size: 17px; } }
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <div class="progress">
+    <div class="prog-bar"><div class="prog-fill" id="progFill"></div></div>
+    <div class="prog-txt" id="progTxt">Шаг 1 из 7</div>
+  </div>
+
+  <div id="stepsArea"></div>
+
+  <div class="final-screen" id="finalScreen">
+    <div class="final-icon" id="finalIcon"></div>
+    <div class="final-title" id="finalTitle"></div>
+    <div class="final-text" id="finalText"></div>
+    <button class="restart-btn" onclick="restartCase()">Пройти еще раз</button>
+  </div>
+</div>
+
+<script>
+  function triggerResize() {
+    if (window.iFrameResize) {
+      window.iFrameResize({ log: false, checkOrigin: false }, '*');
+    }
+  }
+
+  const steps = [
+    {
+      type: 'story',
+      label: 'Кейс',
+      title: 'Климатический проект ММК',
+      html: '<p><b>ПАО «Магнитогорский металлургический комбинат»</b> зарегистрировало климатический проект по утилизации тепла кокса на коксовой батарее № 12.</p>' +
+            '<p>Тепло от установки сухого тушения кокса направляют на турбогенераторы для выработки электроэнергии. Так комбинат снижает потребность в электроэнергии из внешней сети и сокращает выбросы парниковых газов.</p>' +
+            '<p>Период зачета климатического эффекта установлен с <b>1 января 2026 года по 31 декабря 2035 года</b>. За весь период проект может выпустить <b>11 074 929 углеродных единиц</b>.</p>'
+    },
+    {
+      type: 'story',
+      label: 'Разбор',
+      title: 'Как определили климатический эффект',
+      html: '<p>Проект заменяет часть электроэнергии, которую комбинат получил бы без использования тепла сухого тушения кокса. Эколог рассчитывает объем электроэнергии, произведенной турбогенераторами, и определяет сокращение выбросов по методологии проекта.</p>' +
+            '<p>Плановый климатический эффект за 10 лет составляет <b>11 074 929 тонн CO₂-эквивалента</b>. Поэтому проект может выпустить до 11 074 929 углеродных единиц. Фактическое количество единиц зависит от подтвержденного результата за каждый период реализации проекта.</p>'
+    },
+    {
+      type: 'question',
+      label: 'Задание 1',
+      text: 'За счет какого результата проект ММК может выпускать углеродные единицы?',
+      options: [
+        'За счет посадки леса на территории комбината',
+        'За счет сокращения выбросов при использовании вторичного тепла для генерации электроэнергии',
+        'За счет снижения количества отходов производства',
+        'За счет передачи тепла другой организации'
+      ],
+      correct: 1,
+      expl: 'Проект сокращает выбросы парниковых газов за счет повышения энергоэффективности. Тепло сухого тушения кокса используют для выработки электроэнергии. Это пример промышленного климатического проекта, а не проекта по увеличению поглощения углерода.'
+    },
+    {
+      type: 'question',
+      label: 'Задание 2',
+      text: 'Комбинат выпустил углеродные единицы и хочет продать их на рынке. Что нужно проверить до продажи?',
+      options: [
+        'Только наличие покупателя',
+        'Только цену углеродной единицы',
+        'Не направлена ли часть единиц на счет резервирования и не возникнет ли двойной учет климатического результата',
+        'Только объем произведенного кокса'
+      ],
+      correct: 2,
+      expl: 'Сначала нужно проверить правила применимой методологии. Если проект связан с риском высвобождения парниковых газов, часть единиц могут направить на счет резервирования. Также нельзя использовать один и тот же результат проекта для несовместимых целей. Например, одновременно заявить сокращение как собственный климатический результат и передать покупателю единицы на тот же объем.'
+    },
+    {
+      type: 'question',
+      label: 'Задание 3',
+      text: 'Предположим, что по методологии проекта 5 процентов выпущенных углеродных единиц зачислили на счет резервирования. Может ли ММК продать эти единицы?',
+      options: [
+        'Да, если цена единицы выросла',
+        'Да, если покупатель готов принять риск',
+        'Нет, единицы на счете резервирования нельзя отчуждать',
+        'Нет, но их можно перевести на обычный счет через год'
+      ],
+      correct: 2,
+      expl: 'Углеродные единицы на счете резервирования нельзя продать, передать, заложить, арестовать или обратить на них взыскание. Оператор реестра может списать их только на счет изъятия из обращения в установленном порядке.'
+    },
+    {
+      type: 'question',
+      label: 'Задание',
+      text: 'Почему ММК не сможет автоматически выпустить все 11 074 929 углеродных единиц в 2026 году?',
+      options: [
+        'Потому что углеродные единицы выпускают только после окончания зачетного периода',
+        'Потому что плановый объем рассчитан на 10 лет, а фактический результат нужно подтверждать за каждый период',
+        'Потому что промышленным предприятиям нельзя выпускать больше 1 млн углеродных единиц в год'
+      ],
+      correct: 1,
+      expl: 'Плановый климатический эффект 11 074 929 тонн CO₂-эквивалента рассчитан на весь период зачета — 10 лет, с 2026 по 2035 год. Углеродные единицы выпускают по фактическому подтвержденному результату за каждый период реализации проекта, а не авансом за весь срок.'
+    },
+    {
+      type: 'story',
+      label: 'Вывод',
+      title: 'Вывод',
+      html: '<p>Промышленное предприятие может реализовать климатический проект и выпускать углеродные единицы за счет подтвержденного сокращения выбросов. Для этого недостаточно внедрить энергоэффективное оборудование. Нужно подтвердить климатический эффект по методологии, пройти оценку проекта, зарегистрировать его в реестре и проверить правила обращения с выпущенными единицами.</p>'
+    }
+  ];
+
+  const totalQuestions = steps.filter(s => s.type === 'question').length;
+  let currentStep = 0;
+  let score = 0;
+  const answeredMap = {};
+
+  function renderSteps() {
+    const area = document.getElementById('stepsArea');
+    area.innerHTML = '';
+
+    steps.forEach((step, index) => {
+      const block = document.createElement('div');
+      block.className = 'step' + (index === currentStep ? ' active' : '');
+      block.id = 'step-' + index;
+
+      if (step.type === 'story') {
+        block.innerHTML =
+          '<div class="step-label">' + step.label + '</div>' +
+          '<div class="story-title">' + step.title + '</div>' +
+          '<div class="story-block">' + step.html + '</div>' +
+          '<button class="next-btn active" onclick="nextStep()">' + (index === steps.length - 1 ? 'Завершить' : 'Далее') + '</button>';
+      } else {
+        block.innerHTML =
+          '<div class="step-label">' + step.label + '</div>' +
+          '<div class="q-text">' + step.text + '</div>' +
+          '<div class="options">' +
+            step.options.map((opt, i) =>
+              '<button class="opt-btn" onclick="checkAnswer(' + index + ', ' + i + ', this)">' +
+              '<span class="mark">' + (i + 1) + '</span><span>' + opt + '</span></button>'
+            ).join('') +
+          '</div>' +
+          '<div class="explanation" id="exp-' + index + '"></div>' +
+          '<button class="next-btn" id="next-' + index + '" onclick="nextStep()">' + (index === steps.length - 1 ? 'Завершить' : 'Далее') + '</button>';
+      }
+
+      area.appendChild(block);
+    });
+
+    updateProgress();
+    triggerResize();
+  }
+
+  function checkAnswer(stepIndex, optIndex, btnElement) {
+    if (answeredMap[stepIndex]) return;
+    answeredMap[stepIndex] = true;
+
+    const step = steps[stepIndex];
+    const isCorrect = (optIndex === step.correct);
+    if (isCorrect) score++;
+
+    const buttons = btnElement.parentElement.querySelectorAll('.opt-btn');
+    buttons.forEach(btn => btn.disabled = true);
+
+    if (isCorrect) {
+      btnElement.classList.add('selected-correct');
+    } else {
+      btnElement.classList.add('selected-wrong');
+      buttons[step.correct].classList.add('highlight-correct');
+    }
+
+    const expEl = document.getElementById('exp-' + stepIndex);
+    expEl.className = 'explanation show ' + (isCorrect ? 'correct' : 'wrong');
+    expEl.innerHTML = '<div class="label">' + (isCorrect ? 'Верно' : 'Неверно') + '</div><p>' + step.expl + '</p>';
+
+    document.getElementById('next-' + stepIndex).classList.add('active');
+    triggerResize();
+  }
+
+  function nextStep() {
+    document.getElementById('step-' + currentStep).classList.remove('active');
+    currentStep++;
+
+    if (currentStep < steps.length) {
+      document.getElementById('step-' + currentStep).classList.add('active');
+      updateProgress();
+    } else {
+      showFinal();
+    }
+    triggerResize();
+  }
+
+  function updateProgress() {
+    const pct = (currentStep / steps.length) * 100;
+    document.getElementById('progFill').style.width = pct + '%';
+    document.getElementById('progTxt').textContent = 'Шаг ' + (currentStep + 1) + ' из ' + steps.length;
+  }
+
+  function showFinal() {
+    document.getElementById('stepsArea').style.display = 'none';
+    document.querySelector('.progress').style.display = 'none';
+
+    const finalScreen = document.getElementById('finalScreen');
+    finalScreen.classList.add('active');
+
+    let icon = '', title = '', msg = '';
+    if (score === totalQuestions) {
+      icon = '';
+      title = 'Все верно';
+      msg = 'Вы понимаете, как промышленное предприятие реализует климатический проект, за счет чего выпускает углеродные единицы и какие правила обращения с ними нужно соблюдать.';
+    } else if (score >= Math.ceil(totalQuestions * 0.6)) {
+      icon = '';
+      title = 'Хороший результат';
+      msg = 'Основная логика климатического проекта вам понятна. Рекомендуем пересмотреть пояснения к заданиям с ошибками — там собраны ключевые правила.';
+    } else {
+      icon = '';
+      title = 'Стоит повторить';
+      msg = 'Вернитесь к разбору кейса: обратите внимание, как подтверждают климатический эффект и какие ограничения действуют для единиц на счете резервирования.';
+    }
+
+    document.getElementById('finalIcon').textContent = icon;
+    document.getElementById('finalTitle').textContent = title;
+    document.getElementById('finalText').innerHTML =
+      '<p>Правильных ответов: <strong>' + score + ' из ' + totalQuestions + '</strong></p><p>' + msg + '</p>';
+    triggerResize();
+  }
+
+  function restartCase() {
+    currentStep = 0;
+    score = 0;
+    for (const key in answeredMap) delete answeredMap[key];
+    document.getElementById('stepsArea').style.display = 'block';
+    document.querySelector('.progress').style.display = 'flex';
+    document.getElementById('finalScreen').classList.remove('active');
+    renderSteps();
+  }
+
+  const wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+
+  window.addEventListener('load', function() {
+    renderSteps();
+    triggerResize();
+  });
+</script>
+
+</body>
+</html>
