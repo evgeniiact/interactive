@@ -1,0 +1,1038 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --o50: #fff7ed;
+  --o100: #ffedd5;
+  --o600: #ea580c;
+  --o800: #9a3412;
+  --r50: #fef2f2;
+  --r600: #dc2626;
+  --y50: #fefce8;
+  --y100: #fef9c3;
+  --y600: #ca8a04;
+  --y800: #854d0e;
+  --b50: #eff6ff;
+  --b100: #dbeafe;
+  --b600: #2563eb;
+  --b700: #1d4ed8;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  min-height: 300px;
+  padding: 24px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin: 0 auto;
+}
+
+.header-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 8px 0;
+}
+
+.header-instruction {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.prog-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.prog-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.prog-track {
+  flex: 1;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.prog-fill {
+  height: 100%;
+  background: var(--g600);
+  border-radius: 3px;
+  transition: width 0.4s;
+  width: 0%;
+}
+
+.prog-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--g700);
+  white-space: nowrap;
+}
+
+.document {
+  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 24px;
+  margin-bottom: 16px;
+}
+
+.doc-title {
+  font-size: 14px;
+  font-weight: 700;
+  text-align: center;
+  margin: 0 0 16px 0;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+}
+
+.doc-section {
+  margin-bottom: 12px;
+}
+
+.doc-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  margin-bottom: 2px;
+}
+
+.doc-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.doc-list {
+  margin: 4px 0;
+  padding-left: 20px;
+}
+
+.doc-list li {
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 4px;
+}
+
+.fragment {
+  cursor: pointer;
+  padding: 1px 3px;
+  border-radius: 3px;
+  transition: all 0.2s;
+  border-bottom: 1px dashed var(--b600);
+}
+
+.fragment:hover {
+  background: var(--b50);
+}
+
+.fragment.selected {
+  background: var(--b100);
+  border-bottom-color: var(--b700);
+  border-bottom-style: solid;
+}
+
+.fragment.resolved {
+  background: var(--g100);
+  border-bottom: none;
+  cursor: default;
+  color: var(--g800);
+}
+
+.fragment.resolved-photo {
+  background: var(--y100);
+  border-bottom: none;
+  cursor: default;
+  color: var(--y800);
+}
+
+.fragment.resolved-keep {
+  background: var(--g50);
+  border-bottom: none;
+  cursor: default;
+  color: var(--g700);
+}
+
+.fragment.resolved-deleted {
+  text-decoration: line-through;
+  color: var(--muted);
+  background: var(--r50);
+  border-bottom: none;
+  cursor: default;
+}
+
+.inline-menu {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+  animation: fadeIn 0.2s ease;
+}
+
+.inline-btn {
+  padding: 8px 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.inline-btn:hover {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.inline-btn .icon {
+  width: 18px;
+  height: 18px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 700;
+  color: #fff;
+  flex-shrink: 0;
+}
+
+.icon-delete { background: var(--r600); }
+.icon-replace { background: var(--g600); }
+.icon-keep { background: var(--muted); }
+.icon-check { background: var(--y600); }
+
+.explanation {
+  padding: 14px;
+  border-radius: 8px;
+  border-left: 4px solid var(--g600);
+  background: var(--g50);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  animation: fadeIn 0.3s ease;
+  display: none;
+}
+
+.explanation.visible {
+  display: block;
+}
+
+.explanation.wrong {
+  border-left-color: var(--o600);
+  background: var(--o50);
+}
+
+.explanation .label {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 6px;
+  color: var(--g700);
+}
+
+.explanation.wrong .label {
+  color: var(--o800);
+}
+
+.explanation .hint {
+  font-size: 13px;
+  color: var(--muted);
+  margin-top: 8px;
+  font-style: italic;
+}
+
+.final-screen {
+  text-align: center;
+  padding: 20px 0;
+  animation: fadeIn 0.3s ease;
+}
+
+.final-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--g100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 16px;
+}
+
+.final-icon svg {
+  width: 20px;
+  height: 20px;
+  color: var(--g600);
+}
+
+.final-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 8px 0;
+}
+
+.final-desc {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 auto 20px;
+  line-height: 1.5;
+}
+
+.safe-doc {
+  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 16px;
+  text-align: left;
+}
+
+.safe-doc-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--g700);
+  margin: 0 0 10px 0;
+}
+
+.safe-doc-content {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-line;
+}
+
+.expand-btn {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  width: 100%;
+  padding: 12px 16px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.expand-btn:hover {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.expand-btn .arrow {
+  transition: transform 0.3s;
+  color: var(--muted);
+}
+
+.expand-btn.open .arrow {
+  transform: rotate(180deg);
+}
+
+.expand-content {
+  display: none;
+  margin-bottom: 12px;
+  animation: fadeIn 0.3s ease;
+}
+
+.expand-content.open {
+  display: block;
+}
+
+.prompt-block {
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 10px;
+  text-align: left;
+}
+
+.prompt-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--g700);
+  margin: 0 0 8px 0;
+}
+
+.prompt-text {
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-line;
+  margin: 0 0 12px 0;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  border: 2px solid var(--g600);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--g700);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.copy-btn:hover {
+  background: var(--g100);
+}
+
+.copy-btn.copied {
+  background: var(--g600);
+  color: #fff;
+}
+
+.checklist {
+  background: #fafafa;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  text-align: left;
+}
+
+.checklist-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--text);
+  margin: 0 0 10px 0;
+}
+
+.checklist-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.checklist-list li {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  padding: 4px 0 4px 22px;
+  position: relative;
+}
+
+.checklist-list li:before {
+  content: '';
+  position: absolute;
+  left: 0;
+  top: 8px;
+  width: 14px;
+  height: 14px;
+  border: 2px solid var(--g600);
+  border-radius: 3px;
+  background: var(--g100);
+}
+
+.restart-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: 2px solid var(--g600);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--g700);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-top: 16px;
+}
+
+.restart-btn:hover {
+  background: var(--g50);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .wrap { padding: 16px; }
+  .document { padding: 16px; }
+  .inline-menu { flex-direction: column; }
+  .inline-btn { width: 100%; justify-content: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h1 class="header-title">Найдите риски перед загрузкой в ИИ</h1>
+  <p class="header-instruction">Вы хотите загрузить акт в ИИ, чтобы подготовить памятку для работников. Кликните по фрагменту и выберите действие. Найдите все сведения, которые нельзя передавать в публичный сервис без подготовки.</p>
+
+  <div class="prog-bar">
+    <span class="prog-label">Обработано:</span>
+    <div class="prog-track">
+      <div class="prog-fill" id="prog-fill"></div>
+    </div>
+    <span class="prog-count" id="prog-count">0 из 16</span>
+  </div>
+
+  <div class="document" id="document">
+    <h2 class="doc-title">Акт внутреннего обхода контейнерной площадки N 17</h2>
+
+    <div class="doc-section">
+      <div class="doc-label">Организация</div>
+      <div class="doc-text"><span class="fragment" data-id="1">АО "ПромСтройРесурс"</span></div>
+    </div>
+
+    <div class="doc-section">
+      <div class="doc-label">Адрес объекта</div>
+      <div class="doc-text"><span class="fragment" data-id="2">г. Невинномысск, ул. Промышленная, 14</span></div>
+    </div>
+
+    <div class="doc-section">
+      <div class="doc-label">Координаты площадки</div>
+      <div class="doc-text"><span class="fragment" data-id="3">44.6338, 41.9442</span></div>
+    </div>
+
+    <div class="doc-section">
+      <div class="doc-label">Дата обхода</div>
+      <div class="doc-text"><span class="fragment" data-id="11">18.08.2026</span></div>
+    </div>
+
+    <div class="doc-section">
+      <div class="doc-label">Проверяющий</div>
+      <div class="doc-text"><span class="fragment" data-id="4">Иванова Марина Сергеевна</span>, ведущий эколог</div>
+      <div class="doc-text">Телефон: <span class="fragment" data-id="5">+7 928 123-45-67</span></div>
+      <div class="doc-text">E-mail: <span class="fragment" data-id="6">m.ivanova@promstroyresurs.ru</span></div>
+    </div>
+
+    <div class="doc-section">
+      <div class="doc-label">Место проверки</div>
+      <div class="doc-text"><span class="fragment" data-id="7">Контейнерная площадка КП-04, участок механической обработки</span></div>
+    </div>
+
+    <div class="doc-section">
+      <div class="doc-label">Подрядчик по вывозу отходов</div>
+      <div class="doc-text"><span class="fragment" data-id="8">ООО "ЭкоТрансРегион"</span></div>
+      <div class="doc-text"><span class="fragment" data-id="9">Договор N 34-ОТ/2026 от 12.01.2026</span></div>
+    </div>
+
+    <div class="doc-section">
+      <div class="doc-label">Выявленные несоответствия</div>
+      <ol class="doc-list">
+        <li><span class="fragment" data-id="12">Контейнер для отходов IV класса опасности заполнен выше допустимого уровня.</span></li>
+        <li><span class="fragment" data-id="13">На одном контейнере отсутствует маркировка.</span></li>
+        <li><span class="fragment" data-id="14">На площадке находятся посторонние предметы.</span></li>
+        <li><span class="fragment" data-id="15">Крышка одного контейнера не закрыта.</span></li>
+      </ol>
+    </div>
+
+    <div class="doc-section">
+      <div class="doc-text"><span class="fragment" data-id="10">К акту приложены 4 фотографии площадки</span>.</div>
+    </div>
+
+    <div class="doc-section">
+      <div class="doc-label">Подпись проверяющего</div>
+      <div class="doc-text"><span class="fragment" data-id="16">Иванова М. С.</span></div>
+    </div>
+  </div>
+
+  <div class="explanation" id="explanation">
+    <div class="label" id="explanation-label"></div>
+    <div id="explanation-text"></div>
+    <div class="hint" id="explanation-hint"></div>
+  </div>
+
+  <div class="final-screen" id="final-screen" style="display: none;"></div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var fragments = {
+  '1': {
+    text: 'АО "ПромСтройРесурс"',
+    correctAction: 'replace',
+    safeText: 'Промышленное предприятие',
+    comment: 'Название организации может идентифицировать предприятие. Для памятки оно не нужно.'
+  },
+  '2': {
+    text: 'г. Невинномысск, ул. Промышленная, 14',
+    correctAction: 'replace',
+    safeText: 'Производственная площадка',
+    comment: 'Точный адрес помогает идентифицировать объект. Для подготовки памятки достаточно общего описания места.'
+  },
+  '3': {
+    text: '44.6338, 41.9442',
+    correctAction: 'delete',
+    safeText: '',
+    comment: 'Координаты не нужны для подготовки памятки. Они раскрывают точное расположение объекта.'
+  },
+  '4': {
+    text: 'Иванова Марина Сергеевна',
+    correctAction: 'replace',
+    safeText: 'Ведущий эколог',
+    comment: 'ФИО относится к персональным данным. Для задачи достаточно роли сотрудника.'
+  },
+  '5': {
+    text: '+7 928 123-45-67',
+    correctAction: 'delete',
+    safeText: '',
+    comment: 'Телефон относится к персональным данным и не нужен ИИ для подготовки памятки.'
+  },
+  '6': {
+    text: 'm.ivanova@promstroyresurs.ru',
+    correctAction: 'delete',
+    safeText: '',
+    comment: 'Электронная почта относится к персональным данным и не нужна для этой задачи.'
+  },
+  '7': {
+    text: 'Контейнерная площадка КП-04, участок механической обработки',
+    correctAction: 'replace',
+    safeText: 'Контейнерная площадка на производственном участке',
+    comment: 'Внутренний код и точная привязка к участку могут раскрыть структуру предприятия. Для памятки такая детализация не нужна.'
+  },
+  '8': {
+    text: 'ООО "ЭкоТрансРегион"',
+    correctAction: 'replace',
+    safeText: 'Подрядчик по вывозу отходов',
+    comment: 'Наименование контрагента может быть коммерчески чувствительной информацией. Для памятки оно не нужно.'
+  },
+  '9': {
+    text: 'Договор N 34-ОТ/2026 от 12.01.2026',
+    correctAction: 'delete',
+    safeText: '',
+    comment: 'Номер и дата договора не нужны для подготовки памятки. Не передавайте реквизиты договора в публичный сервис без разрешения компании.'
+  },
+  '10': {
+    text: 'К акту приложены 4 фотографии площадки',
+    correctAction: 'check',
+    safeText: 'Фотографии: проверить перед загрузкой отдельно',
+    comment: 'Фотографии могут содержать лица работников, номера техники, маркировку оборудования, адресные таблички, геометки и другие идентификаторы. Перед загрузкой проверьте изображение и метаданные файла.'
+  },
+  '11': {
+    text: '18.08.2026',
+    correctAction: 'delete',
+    safeText: '',
+    comment: 'Дата обхода не нужна для подготовки памятки. Она идентифицирует конкретное событие и в сочетании с другими данными может раскрыть информацию о предприятии.'
+  },
+  '12': {
+    text: 'Контейнер для отходов IV класса опасности заполнен выше допустимого уровня.',
+    correctAction: 'keep',
+    safeText: '',
+    comment: 'Эти сведения описывают проблему. Они нужны ИИ, чтобы подготовить памятку. Их можно оставить.'
+  },
+  '13': {
+    text: 'На одном контейнере отсутствует маркировка.',
+    correctAction: 'keep',
+    safeText: '',
+    comment: 'Эти сведения описывают проблему. Они нужны ИИ, чтобы подготовить памятку. Их можно оставить.'
+  },
+  '14': {
+    text: 'На площадке находятся посторонние предметы.',
+    correctAction: 'keep',
+    safeText: '',
+    comment: 'Эти сведения описывают проблему. Они нужны ИИ, чтобы подготовить памятку. Их можно оставить.'
+  },
+  '15': {
+    text: 'Крышка одного контейнера не закрыта.',
+    correctAction: 'keep',
+    safeText: '',
+    comment: 'Эти сведения описывают проблему. Они нужны ИИ, чтобы подготовить памятку. Их можно оставить.'
+  },
+  '16': {
+    text: 'Иванова М. С.',
+    correctAction: 'delete',
+    safeText: '',
+    comment: 'Подпись содержит персональные данные. Для памятки она не нужна.'
+  }
+};
+
+var totalFragments = 16;
+var resolvedFragments = 0;
+var currentFragmentId = null;
+
+function init() {
+  var fragmentEls = document.querySelectorAll('.fragment');
+  fragmentEls.forEach(function(el) {
+    el.addEventListener('click', function() {
+      var id = el.getAttribute('data-id');
+      if (el.classList.contains('resolved') || el.classList.contains('resolved-photo') ||
+          el.classList.contains('resolved-keep') || el.classList.contains('resolved-deleted')) return;
+      showInlineMenu(id, el);
+    });
+  });
+
+  triggerResize();
+}
+
+function showInlineMenu(id, el) {
+  hideInlineMenu();
+
+  currentFragmentId = id;
+  el.classList.add('selected');
+
+  var menu = document.createElement('div');
+  menu.className = 'inline-menu';
+  menu.id = 'inline-menu';
+  menu.innerHTML =
+    '<button class="inline-btn" data-action="delete"><span class="icon icon-delete">X</span> Удалить</button>' +
+    '<button class="inline-btn" data-action="replace"><span class="icon icon-replace">~</span> Заменить</button>' +
+    '<button class="inline-btn" data-action="keep"><span class="icon icon-keep">=</span> Оставить</button>' +
+    '<button class="inline-btn" data-action="check"><span class="icon icon-check">?</span> Проверить</button>';
+
+  el.parentNode.insertBefore(menu, el.nextSibling);
+
+  menu.querySelectorAll('.inline-btn').forEach(function(btn) {
+    btn.addEventListener('click', function(e) {
+      e.stopPropagation();
+      var action = btn.getAttribute('data-action');
+      handleAction(action, el);
+      hideInlineMenu();
+    });
+  });
+
+  triggerResize();
+}
+
+function hideInlineMenu() {
+  var menu = document.getElementById('inline-menu');
+  if (menu) menu.remove();
+
+  var prev = document.querySelector('.fragment.selected');
+  if (prev) prev.classList.remove('selected');
+
+  currentFragmentId = null;
+}
+
+function handleAction(action, el) {
+  var id = el.getAttribute('data-id');
+  var frag = fragments[id];
+  var explanation = document.getElementById('explanation');
+  var label = document.getElementById('explanation-label');
+  var text = document.getElementById('explanation-text');
+  var hint = document.getElementById('explanation-hint');
+
+  if (action === frag.correctAction) {
+    explanation.classList.remove('wrong');
+    explanation.classList.add('visible');
+    label.textContent = 'Верно';
+    text.textContent = frag.comment;
+    hint.textContent = '';
+
+    if (action === 'delete') {
+      el.textContent = '(удалено)';
+      el.classList.add('resolved-deleted');
+    } else if (action === 'replace') {
+      el.textContent = frag.safeText;
+      el.classList.add('resolved');
+    } else if (action === 'check') {
+      el.textContent = frag.safeText;
+      el.classList.add('resolved-photo');
+    } else if (action === 'keep') {
+      el.classList.add('resolved-keep');
+    }
+
+    el.classList.remove('selected');
+    el.style.cursor = 'default';
+
+    resolvedFragments++;
+    updateCounter();
+
+    if (resolvedFragments === totalFragments) {
+      setTimeout(showFinalScreen, 1000);
+    }
+
+    triggerResize();
+  } else {
+    explanation.classList.remove('visible');
+    void explanation.offsetWidth;
+    explanation.classList.add('visible', 'wrong');
+    label.textContent = 'Не совсем';
+
+    var wrongMsg = 'Это действие не подходит для данного фрагмента. Попробуйте выбрать другой вариант.';
+    if (action === 'keep' && frag.correctAction !== 'keep') {
+      wrongMsg = 'Этот фрагмент содержит сведения, которые не нужны для памятки. Выберите другое действие.';
+    } else if (action === 'delete' && frag.correctAction === 'replace') {
+      wrongMsg = 'Эту информацию лучше заменить на общее описание, а не удалять полностью.';
+    } else if (action === 'replace' && frag.correctAction === 'delete') {
+      wrongMsg = 'Эти данные не нужны для памятки. Их лучше удалить полностью.';
+    } else if (action === 'delete' && frag.correctAction === 'keep') {
+      wrongMsg = 'Эти сведения описывают проблему и нужны для памятки. Их можно оставить.';
+    } else if (action === 'keep' && frag.correctAction === 'delete') {
+      wrongMsg = 'Эти данные не нужны для памятки. Их лучше удалить.';
+    }
+
+    text.textContent = wrongMsg;
+    hint.textContent = 'Попробуйте выбрать другое действие для этого фрагмента.';
+
+    triggerResize();
+  }
+}
+
+function updateCounter() {
+  var fill = document.getElementById('prog-fill');
+  var count = document.getElementById('prog-count');
+  var percent = (resolvedFragments / totalFragments) * 100;
+  fill.style.width = percent + '%';
+  count.textContent = resolvedFragments + ' из ' + totalFragments;
+}
+
+function showFinalScreen() {
+  document.getElementById('document').style.display = 'none';
+  document.getElementById('explanation').style.display = 'none';
+  var finalScreen = document.getElementById('final-screen');
+  finalScreen.style.display = 'block';
+
+  var safeDocText = 'АКТ ВНУТРЕННЕГО ОБХОДА КОНТЕЙНЕРНОЙ ПЛОЩАДКИ\n\n' +
+    'Организация: Промышленное предприятие\n' +
+    'Место проверки: Контейнерная площадка на производственном участке\n\n' +
+    'Проверяющий: Ведущий эколог\n\n' +
+    'Выявленные несоответствия:\n' +
+    '1. Контейнер для отходов IV класса опасности заполнен выше допустимого уровня.\n' +
+    '2. На одном контейнере отсутствует маркировка.\n' +
+    '3. На площадке находятся посторонние предметы.\n' +
+    '4. Крышка одного контейнера не закрыта.\n\n' +
+    'Фотографии: проверить перед загрузкой отдельно.';
+
+  var promptText = 'Подготовьте памятку для работников производственного участка о порядке накопления отходов.\n\n' +
+    'Используйте только сведения из списка выявленных несоответствий.\n\n' +
+    'Сформулируйте 5 коротких правил в повелительном наклонении.\n\n' +
+    'Не ссылайтесь на нормативные документы. Не придумывайте требования, которых нет в исходных данных.\n\n' +
+    'Оформите результат как текст для плаката: заголовок и 5 правил.';
+
+  var checklistItems = [
+    'Удалил ФИО, контакты, подписи и другие персональные данные',
+    'Удалил или заменил название компании, адрес, координаты и внутренние коды',
+    'Удалил реквизиты договоров и сведения о контрагентах',
+    'Удалил даты конкретных событий',
+    'Оставил только данные, нужные для конкретной задачи',
+    'Проверил фотографии, скриншты и метаданные файлов',
+    'Убедился, что правила компании разрешают использовать выбранный ИИ-сервис',
+    'Проверю результат ИИ до использования в работе'
+  ];
+
+  var html = '';
+  html += '<div class="final-icon"><svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></div>';
+  html += '<h2 class="final-title">Документ подготовлен к загрузке</h2>';
+  html += '<p class="final-desc">Вы обработали все фрагменты. В документе больше нет персональных данных, точного адреса, координат, реквизитов договора, названия предприятия и подрядчика.</p>';
+
+  html += '<div class="safe-doc">';
+  html += '<div class="safe-doc-title">Безопасная версия документа</div>';
+  html += '<div class="safe-doc-content">' + safeDocText + '</div>';
+  html += '</div>';
+
+  html += '<button class="expand-btn" id="expand-prompt">';
+  html += '<span>Показать готовый промпт</span>';
+  html += '<span class="arrow"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+  html += '</button>';
+  html += '<div class="expand-content" id="prompt-content">';
+  html += '<div class="prompt-block">';
+  html += '<div class="prompt-label">Готовый промпт</div>';
+  html += '<div class="prompt-text">' + promptText + '</div>';
+  html += '<button class="copy-btn" id="copy-prompt-btn">';
+  html += '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 10H13.5C14.0523 10 14.5 9.55228 14.5 9V2.5C14.5 1.94772 14.0523 1.5 13.5 1.5H7C6.44772 1.5 6 1.94772 6 2.5V6M2.5 14.5H9C9.55228 14.5 10 14.0523 10 13.5V7C10 6.44772 9.55228 6 9 6H2.5C1.94772 6 1.5 6.44772 1.5 7V13.5C1.5 14.0523 1.94772 14.5 2.5 14.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+  html += '<span>Скопировать промпт</span>';
+  html += '</button>';
+  html += '</div>';
+  html += '</div>';
+
+  html += '<button class="expand-btn" id="expand-checklist">';
+  html += '<span>Показать чек-лист перед загрузкой</span>';
+  html += '<span class="arrow"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+  html += '</button>';
+  html += '<div class="expand-content" id="checklist-content">';
+  html += '<div class="checklist">';
+  html += '<div class="checklist-title">Чек-лист перед загрузкой в ИИ</div>';
+  html += '<ul class="checklist-list">';
+  checklistItems.forEach(function(item) {
+    html += '<li>' + item + '</li>';
+  });
+  html += '</ul>';
+  html += '</div>';
+  html += '</div>';
+
+  html += '<button class="restart-btn" id="restart-btn">Пройти еще раз</button>';
+
+  finalScreen.innerHTML = html;
+
+  document.getElementById('expand-prompt').addEventListener('click', function() {
+    this.classList.toggle('open');
+    document.getElementById('prompt-content').classList.toggle('open');
+    triggerResize();
+  });
+
+  document.getElementById('expand-checklist').addEventListener('click', function() {
+    this.classList.toggle('open');
+    document.getElementById('checklist-content').classList.toggle('open');
+    triggerResize();
+  });
+
+  document.getElementById('copy-prompt-btn').addEventListener('click', function() {
+    copyToClipboard(promptText, this);
+  });
+
+  document.getElementById('restart-btn').addEventListener('click', function() {
+    restart();
+  });
+
+  triggerResize();
+}
+
+function copyToClipboard(text, btn) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(function() {
+      showCopied(btn);
+    }).catch(function() {
+      fallbackCopy(text, btn);
+    });
+  } else {
+    fallbackCopy(text, btn);
+  }
+}
+
+function fallbackCopy(text, btn) {
+  var textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.top = '0';
+  textArea.style.left = '0';
+  textArea.style.width = '2em';
+  textArea.style.height = '2em';
+  textArea.style.padding = '0';
+  textArea.style.border = 'none';
+  textArea.style.outline = 'none';
+  textArea.style.boxShadow = 'none';
+  textArea.style.background = 'transparent';
+  textArea.style.opacity = '0';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+    showCopied(btn);
+  } catch (err) {
+    console.error('Copy failed', err);
+  }
+  document.body.removeChild(textArea);
+}
+
+function showCopied(btn) {
+  btn.classList.add('copied');
+  btn.querySelector('span').textContent = 'Скопировано';
+  setTimeout(function() {
+    btn.classList.remove('copied');
+    btn.querySelector('span').textContent = 'Скопировать промпт';
+  }, 2000);
+}
+
+function restart() {
+  resolvedFragments = 0;
+  currentFragmentId = null;
+  updateCounter();
+
+  var fragmentEls = document.querySelectorAll('.fragment');
+  fragmentEls.forEach(function(el) {
+    el.classList.remove('selected', 'resolved', 'resolved-photo', 'resolved-keep', 'resolved-deleted');
+    el.style.textDecoration = '';
+    el.style.color = '';
+    el.style.cursor = 'pointer';
+    el.style.borderBottom = '';
+  });
+
+  for (var id in fragments) {
+    var el = document.querySelector('.fragment[data-id="' + id + '"]');
+    if (el) {
+      el.textContent = fragments[id].text;
+    }
+  }
+
+  document.getElementById('explanation').classList.remove('visible', 'wrong');
+  document.getElementById('document').style.display = 'block';
+  document.getElementById('final-screen').style.display = 'none';
+
+  triggerResize();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  init();
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
