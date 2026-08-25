@@ -17,6 +17,10 @@
   --o100: #ffedd5;
   --o600: #ea580c;
   --o800: #9a3412;
+  --b50: #eff6ff;
+  --b100: #dbeafe;
+  --b600: #2563eb;
+  --b700: #1d4ed8;
   --text: #1e293b;
   --muted: #64748b;
   --border: #e2e8f0;
@@ -172,7 +176,7 @@ body {
   background: var(--g50);
   font-size: 14px;
   line-height: 1.5;
-  margin-bottom: 16px;
+  margin-bottom: 10px;
   animation: fadeIn 0.3s ease;
   display: none;
 }
@@ -197,6 +201,119 @@ body {
 
 .explanation.wrong .label {
   color: var(--o800);
+}
+
+.comment {
+  padding: 12px 14px;
+  border-radius: 8px;
+  border-left: 4px solid var(--b600);
+  background: var(--b50);
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  animation: fadeIn 0.3s ease;
+  display: none;
+}
+
+.comment.visible {
+  display: block;
+}
+
+.comment .label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+  color: var(--b700);
+}
+
+.prompt-toggle-btn {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: 2px solid var(--g600);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--g700);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  margin-bottom: 12px;
+}
+
+.prompt-toggle-btn.visible {
+  display: inline-flex;
+}
+
+.prompt-toggle-btn:hover {
+  background: var(--g50);
+}
+
+.prompt-block {
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: 8px;
+  padding: 16px;
+  margin-bottom: 12px;
+  animation: fadeIn 0.3s ease;
+  display: none;
+}
+
+.prompt-block.open {
+  display: block;
+}
+
+.prompt-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 6px 0;
+}
+
+.prompt-note {
+  font-size: 12px;
+  color: var(--muted);
+  margin: 0 0 10px 0;
+  line-height: 1.4;
+}
+
+.prompt-text {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-line;
+  margin: 0 0 12px 0;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 10px 16px;
+  border: 2px solid var(--g600);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--g700);
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.copy-btn:hover {
+  background: var(--g100);
+}
+
+.copy-btn.copied {
+  background: var(--g600);
+  color: #fff;
 }
 
 .next-btn {
@@ -333,10 +450,32 @@ body {
     <div class="situation" id="situation"></div>
     <div class="question">Как поступить с документом?</div>
     <div class="options" id="options"></div>
+
     <div class="explanation" id="explanation">
       <div class="label" id="explanation-label"></div>
       <div id="explanation-text"></div>
     </div>
+
+    <div class="comment" id="comment">
+      <div class="label">Комментарий</div>
+      <div id="comment-text"></div>
+    </div>
+
+    <button class="prompt-toggle-btn" id="prompt-toggle">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 2h8a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V3a1 1 0 0 1 1-1Zm1 3h6M5 7.5h6M5 10h4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Посмотреть пример промпта</span>
+    </button>
+
+    <div class="prompt-block" id="prompt-block">
+      <div class="prompt-title" id="prompt-title"></div>
+      <p class="prompt-note">Используйте шаблон только после проверки внутренних правил компании. Вставляйте в ИИ только обезличенные данные.</p>
+      <div class="prompt-text" id="prompt-text"></div>
+      <button class="copy-btn" id="copy-btn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 10H13.5C14.0523 10 14.5 9.55228 14.5 9V2.5C14.5 1.94772 14.0523 1.5 13.5 1.5H7C6.44772 1.5 6 1.94772 6 2.5V6M2.5 14.5H9C9.55228 14.5 10 14.0523 10 13.5V7C10 6.44772 9.55228 6 9 6H2.5C1.94772 6 1.5 6.44772 1.5 7V13.5C1.5 14.0523 1.94772 14.5 2.5 14.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Скопировать промпт</span>
+      </button>
+    </div>
+
     <button class="next-btn" id="next-btn">Далее</button>
   </div>
 
@@ -360,17 +499,26 @@ var questions = [
   {
     situation: 'Нужно подготовить шаблон письма в цех. Эколог запрашивает сведения об образовании отходов за квартал.',
     correct: 0,
-    explanation: 'Для шаблона достаточно цели письма и перечня данных, которые нужно запросить. ФИО адресатов, внутренние номера и реальные объемы отходов не нужны.'
+    explanation: 'Для шаблона достаточно цели письма и перечня данных, которые нужно запросить. ФИО адресатов, внутренние номера и реальные объемы отходов не нужны.',
+    comment: 'Описание задачи - безопасный маршрут. ИИ подготовит шаблон, а реальные данные вы подставите сами.',
+    promptTitle: 'Пример промпта: шаблон письма в цех',
+    promptText: 'Вы - помощник промышленного эколога по подготовке внутренних деловых писем.\n\nПредприятие собирает сведения об образовании и передаче отходов за [период].\n\nПодготовьте черновик письма начальнику [подразделение]. Запросите сведения об образовании и передаче отходов.\n\nУкажите, что нужно предоставить:\n- наименование отхода;\n- код ФККО;\n- количество и единицу измерения;\n- место накопления;\n- дату передачи;\n- сведения о подтверждающих документах при наличии.\n\nОформите результат в официально-деловом стиле. Укажите тему письма и основной текст. Объем - до 1500 знаков.\n\nНе используйте ФИО, номера договоров, внутренние коды и реальные производственные показатели. Не придумывайте сроки, факты и реквизиты. Если информации недостаточно, сначала перечислите вопросы для уточнения.'
   },
   {
     situation: 'Нужно составить план внутреннего аудита обращения с отходами. Есть перечень подразделений, этапов и видов документов для проверки.',
     correct: 1,
-    explanation: 'Для чернового плана достаточно этапов, предполагаемых ролей и видов документов. Не передавайте внутренние акты, журналы учета, договоры и результаты предыдущих проверок.'
+    explanation: 'Для чернового плана достаточно этапов, предполагаемых ролей и видов документов. Не передавайте внутренние акты, журналы учета, договоры и результаты предыдущих проверок.',
+    comment: 'Обезличенный фрагмент - безопасный маршрут. ИИ получит контекст, нужный для задачи, а внутренние документы останутся у вас.',
+    promptTitle: 'Пример промпта: план внутреннего аудита',
+    promptText: 'Вы - помощник промышленного эколога по планированию внутренних проверок.\n\nНужно подготовить черновой план внутреннего аудита обращения с отходами на промышленном предприятии.\n\nРазбейте аудит на этапы. Включите:\n- сбор и проверку документов;\n- проверку мест накопления отходов;\n- проверку маркировки и состояния тары;\n- сверку журналов учета;\n- проверку наличия договоров и подтверждающих документов;\n- фиксацию несоответствий;\n- подготовку корректирующих мероприятий.\n\nОформите результат в таблице с колонками: «Этап», «Действие», «Результат», «Предполагаемая роль исполнителя», «Что нужно уточнить».\n\nНе указывайте реальные названия подразделений, ФИО, номера договоров, координаты объектов и результаты предыдущих проверок. Не ссылайтесь на нормативные документы, если их текст не предоставлен. Не придумывайте сроки. Если данных недостаточно, сначала задайте уточняющие вопросы.'
   },
   {
     situation: 'Нужно проверить договор с подрядчиком по вывозу отходов. В документе есть реквизиты, цены, условия конфиденциальности и подписи сторон.',
     correct: 2,
-    explanation: 'В договоре могут быть персональные данные, договорные условия и коммерчески чувствительные сведения. ИИ можно использовать иначе: попросить составить общий чек-лист условий, которые стоит проверить в договоре с подрядчиком.'
+    explanation: 'В договоре могут быть персональные данные, договорные условия и коммерчески чувствительные сведения. ИИ можно использовать иначе: попросить составить общий чек-лист условий, которые стоит проверить в договоре с подрядчиком.',
+    comment: 'Стоп-сигнал - безопасный маршрут. Вместо договора передайте запрос на чек-лист и проверьте документ сами.',
+    promptTitle: 'Пример промпта: чек-лист проверки договора с подрядчиком',
+    promptText: 'Вы - помощник промышленного эколога по подготовке чек-листов.\n\nЭкологу нужно самостоятельно проверить договор с подрядчиком по вывозу отходов.\n\nСоставьте чек-лист условий, которые нужно проверить в договоре с подрядчиком по обращению с отходами.\n\nВключите вопросы по темам:\n- предмет договора;\n- виды отходов и коды ФККО;\n- лицензия подрядчика и разрешительные документы;\n- порядок передачи отходов;\n- сроки вывоза;\n- документы, подтверждающие передачу;\n- ответственность сторон;\n- срок действия договора;\n- порядок изменения и расторжения договора.\n\nОформите результат в таблице с колонками: «Что проверить», «Какие сведения найти в договоре», «Почему это важно экологу».\n\nНе приводите правовой вывод о конкретном договоре. Не придумывайте нормативные ссылки, реквизиты и условия, которых нет в исходных данных.'
   }
 ];
 
@@ -407,8 +555,12 @@ function renderQuestion() {
     optionsBox.appendChild(btn);
   });
 
-  var explanation = document.getElementById('explanation');
-  explanation.classList.remove('visible', 'wrong');
+  document.getElementById('explanation').classList.remove('visible', 'wrong');
+  document.getElementById('comment').classList.remove('visible');
+  document.getElementById('prompt-toggle').classList.remove('visible');
+  document.getElementById('prompt-block').classList.remove('open');
+  document.getElementById('prompt-title').textContent = q.promptTitle;
+  document.getElementById('prompt-text').textContent = q.promptText;
 
   var nextBtn = document.getElementById('next-btn');
   nextBtn.classList.remove('active');
@@ -457,6 +609,11 @@ function answer(idx) {
   }
 
   explanation.classList.add('visible');
+
+  document.getElementById('comment-text').textContent = q.comment;
+  document.getElementById('comment').classList.add('visible');
+
+  document.getElementById('prompt-toggle').classList.add('visible');
   document.getElementById('next-btn').classList.add('active');
 
   triggerResize();
@@ -471,7 +628,7 @@ function showFinal() {
 
   var desc = '';
   if (score === 3) {
-    desc = 'Вы верно разобрали все три ситуации. Сохраните это правило и применяйте перед каждой загрузкой.';
+    desc = 'Вы верно разобрали все три ситуации. Сохраните правила и примеры промптов - они пригодятся в работе.';
   } else if (score === 2) {
     desc = 'Вы справились с двумя ситуациями из трех. Перечитайте разборы и попробуйте еще раз.';
   } else {
@@ -512,15 +669,74 @@ function restart() {
   renderQuestion();
 }
 
+function copyToClipboard(text, btn) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(function() {
+      showCopied(btn);
+    }).catch(function() {
+      fallbackCopy(text, btn);
+    });
+  } else {
+    fallbackCopy(text, btn);
+  }
+}
+
+function fallbackCopy(text, btn) {
+  var textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.top = '0';
+  textArea.style.left = '0';
+  textArea.style.width = '2em';
+  textArea.style.height = '2em';
+  textArea.style.padding = '0';
+  textArea.style.border = 'none';
+  textArea.style.outline = 'none';
+  textArea.style.boxShadow = 'none';
+  textArea.style.background = 'transparent';
+  textArea.style.opacity = '0';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+    showCopied(btn);
+  } catch (err) {
+    console.error('Copy failed', err);
+  }
+  document.body.removeChild(textArea);
+}
+
+function showCopied(btn) {
+  btn.classList.add('copied');
+  btn.querySelector('span').textContent = 'Скопировано';
+  setTimeout(function() {
+    btn.classList.remove('copied');
+    btn.querySelector('span').textContent = 'Скопировать промпт';
+  }, 2000);
+  triggerResize();
+}
+
 document.getElementById('next-btn').addEventListener('click', function() {
   if (!answered) return;
-
   currentQ++;
   if (currentQ < questions.length) {
     renderQuestion();
   } else {
     showFinal();
   }
+});
+
+document.getElementById('prompt-toggle').addEventListener('click', function() {
+  var block = document.getElementById('prompt-block');
+  var isOpen = block.classList.contains('open');
+  block.classList.toggle('open');
+  this.querySelector('span').textContent = isOpen ? 'Посмотреть пример промпта' : 'Скрыть пример промпта';
+  triggerResize();
+});
+
+document.getElementById('copy-btn').addEventListener('click', function() {
+  copyToClipboard(questions[currentQ].promptText, this);
 });
 
 document.addEventListener('DOMContentLoaded', function() {
