@@ -1,34 +1,970 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <style>
-iframe.trainer-full {
-  position: fixed !important;
-  top: 0 !important;
-  left: 0 !important;
-  width: 100vw !important;
-  height: 100vh !important;
-  max-width: none !important;
-  max-height: none !important;
-  z-index: 2147483647 !important;
-  border: 0 !important;
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --o50: #fff7ed;
+  --o100: #ffedd5;
+  --o600: #ea580c;
+  --o800: #9a3412;
+  --b50: #eff6ff;
+  --b100: #dbeafe;
+  --b600: #2563eb;
+  --b700: #1d4ed8;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 820px;
+  min-height: 300px;
+  padding: 24px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin: 0 auto;
+  transition: max-width 0.3s ease;
+}
+
+.wrap.wide {
+  max-width: 1140px;
+}
+
+.toolbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 12px;
+  margin-bottom: 14px;
+}
+
+.header-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 6px 0;
+}
+
+.header-text {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0;
+  line-height: 1.5;
+}
+
+.expand-btn {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.expand-btn:hover {
+  border-color: var(--g600);
+  color: var(--g700);
+}
+
+.prog-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.prog-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.prog-track {
+  flex: 1;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.prog-fill {
+  height: 100%;
+  background: var(--g600);
+  border-radius: 3px;
+  transition: width 0.4s;
+  width: 0%;
+}
+
+.prog-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--g700);
+  white-space: nowrap;
+}
+
+.sim {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.chat-panel {
+  flex: 1 1 auto;
+  min-width: 0;
+  max-width: 100%;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.chat-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
+}
+
+.chat-head-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--g600);
+}
+
+.chat-head-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.chat-messages {
+  height: 420px;
+  width: 100%;
+  max-width: 100%;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 16px;
+  -webkit-overflow-scrolling: touch;
+}
+
+.chat-messages::-webkit-scrollbar { width: 6px; }
+.chat-messages::-webkit-scrollbar-track { background: transparent; }
+.chat-messages::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+.chat-empty {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-size: 13px;
+  color: var(--muted);
+  padding: 20px;
+  line-height: 1.5;
+}
+
+.msg {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  animation: fadeIn 0.3s ease;
+}
+
+.msg:last-child { margin-bottom: 0; }
+
+.msg.user { justify-content: flex-end; }
+
+.avatar {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--g600);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.bubble-wrap {
+  max-width: 88%;
+  min-width: 0;
+}
+
+.msg-name {
+  font-size: 11px;
+  color: var(--muted);
+  margin-bottom: 3px;
+}
+
+.msg.user .msg-name { text-align: right; }
+
+.bubble {
+  padding: 10px 12px;
+  border-radius: 10px;
+  font-size: 13px;
+  line-height: 1.5;
+  white-space: pre-line;
+  word-break: break-word;
+  max-width: 100%;
+}
+
+.bubble.rich {
+  white-space: normal;
+}
+
+.bubble.rich p {
+  margin: 0 0 8px 0;
+}
+
+.bubble.rich p:last-child {
+  margin-bottom: 0;
+}
+
+.msg.ai .bubble {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-top-left-radius: 4px;
+}
+
+.msg.user .bubble {
+  background: var(--g100);
+  border: 1px solid var(--g600);
+  color: var(--g800);
+  border-top-right-radius: 4px;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+  margin: 8px 0;
+}
+
+.bubble table {
+  min-width: 520px;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+}
+
+.bubble th, .bubble td {
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
   background: #fff;
 }
+
+.bubble th {
+  background: #f1f5f9;
+  font-weight: 600;
+}
+
+.ai-tip {
+  background: var(--b50);
+  border-left: 3px solid var(--b600);
+  border-radius: 6px;
+  padding: 8px 10px;
+  font-size: 12px;
+}
+
+.draft-tag {
+  display: inline-block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 999px;
+  margin-bottom: 6px;
+}
+
+.tag-1 { background: #f1f5f9; color: var(--muted); border: 1px solid var(--border); }
+.tag-2 { background: var(--o50); color: var(--o800); border: 1px solid var(--o100); }
+.tag-3 { background: var(--g100); color: var(--g800); border: 1px solid var(--g600); }
+
+.typing {
+  display: flex;
+  gap: 4px;
+  padding: 12px;
+}
+
+.typing span {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--muted);
+  animation: blink 1s infinite;
+}
+
+.typing span:nth-child(2) { animation-delay: 0.2s; }
+.typing span:nth-child(3) { animation-delay: 0.4s; }
+
+@keyframes blink {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+.side-panel {
+  width: 300px;
+  flex-shrink: 0;
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+}
+
+.wrap.wide .side-panel {
+  width: 340px;
+}
+
+.side-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 6px 0;
+}
+
+.side-text {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 12px 0;
+  line-height: 1.4;
+}
+
+.cl-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.cl-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+  padding: 10px 12px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 13px;
+  line-height: 1.4;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  font-family: inherit;
+}
+
+.cl-card:hover {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.cl-card.selected {
+  border-color: var(--g600);
+  background: var(--g100);
+  color: var(--g800);
+}
+
+.cl-box {
+  width: 16px;
+  height: 16px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.cl-card.selected .cl-box {
+  background: var(--g600);
+  border-color: var(--g600);
+}
+
+.cl-box svg { opacity: 0; }
+.cl-card.selected .cl-box svg { opacity: 1; }
+
+.comment-block {
+  padding: 12px;
+  border-radius: 8px;
+  border-left: 4px solid var(--o600);
+  background: var(--o50);
+  font-size: 13px;
+  line-height: 1.45;
+  margin-bottom: 12px;
+  animation: fadeIn 0.3s ease;
+  display: none;
+}
+
+.comment-block.visible { display: block; }
+
+.comment-block .label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 4px;
+  color: var(--o800);
+}
+
+.send-btn {
+  width: 100%;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--g600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+  margin-top: auto;
+}
+
+.send-btn:hover { background: var(--g700); }
+
+.start-block,
+.working-block,
+.final-block {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.start-block.hidden,
+.working-block.hidden,
+.final-block.hidden {
+  display: none;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 16px;
+  border: none;
+  border-radius: 8px;
+  background: var(--g600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+
+.copy-btn:hover { background: var(--g700); }
+
+.copy-btn.copied { background: var(--g800); }
+
+.restart-btn {
+  padding: 10px 16px;
+  border: 2px solid var(--g600);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--g700);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.restart-btn:hover { background: var(--g50); }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 700px) {
+  .wrap { padding: 16px; }
+  .side-panel { width: 270px; }
+}
+
+@media (max-width: 560px) {
+  .sim { flex-direction: column; }
+  .side-panel { width: 100%; }
+  .chat-messages { height: 340px; }
+  .bubble-wrap { max-width: 92%; }
+}
 </style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <div class="toolbar">
+    <div>
+      <h1 class="header-title">Доведите черновик до рабочего результата</h1>
+      <p class="header-text">Соберите первый запрос, получите черновик и уточняйте его в том же чате, пока письмо не станет рабочим.</p>
+    </div>
+    <button class="expand-btn" id="expand-btn">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M9 2h5v5M7 14H2V9M14 2l-5 5M2 14l5-5" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Развернуть</span>
+    </button>
+  </div>
+
+  <div class="prog-bar">
+    <span class="prog-label" id="prog-label">Шаг 1 из 3</span>
+    <div class="prog-track">
+      <div class="prog-fill" id="prog-fill"></div>
+    </div>
+    <span class="prog-count" id="prog-count">1/3</span>
+  </div>
+
+  <div class="sim">
+    <div class="chat-panel">
+      <div class="chat-head">
+        <span class="chat-head-dot"></span>
+        <span class="chat-head-title">Чат с ИИ-помощником</span>
+      </div>
+      <div class="chat-messages" id="chat"></div>
+    </div>
+
+    <div class="side-panel" id="side-panel">
+      <div class="start-block" id="start-block">
+        <div class="side-title">Тренажер</div>
+        <p class="side-text">Соберите первый запрос из карточек, затем уточняйте черновик, пока письмо не станет рабочим.</p>
+        <button class="send-btn" id="start-btn">Начать</button>
+      </div>
+
+      <div class="working-block hidden" id="working-block">
+        <div class="side-title" id="side-title">Соберите первый запрос</div>
+        <p class="side-text" id="side-text">Выберите, что включить в первый запрос, и отправьте его в чат.</p>
+        <div class="cl-cards" id="cards"></div>
+        <div class="comment-block" id="comment">
+          <div class="label" id="comment-label"></div>
+          <div id="comment-text"></div>
+        </div>
+        <button class="send-btn" id="send-btn">Отправить</button>
+      </div>
+
+      <div class="final-block hidden" id="final-block">
+        <div class="side-title">Почему это сработало</div>
+        <p class="side-text">Вы собрали первый запрос и уточняли черновик в том же чате. ИИ сохранял контекст и с каждым шагом готовил более полезный результат.</p>
+        <button class="copy-btn" id="copy-btn">
+          <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 10H13.5C14.0523 10 14.5 9.55228 14.5 9V2.5C14.5 1.94772 14.0523 1.5 13.5 1.5H7C6.44772 1.5 6 1.94772 6 2.5V6M2.5 14.5H9C9.55228 14.5 10 14.0523 10 13.5V7C10 6.44772 9.55228 6 9 6H2.5C1.94772 6 1.5 6.44772 1.5 7V13.5C1.5 14.0523 1.94772 14.5 2.5 14.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+          <span>Скопировать шаблон письма</span>
+        </button>
+        <button class="restart-btn" id="restart-btn">Пройти еще раз</button>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-window.addEventListener('message', function (e) {
-  var d = e.data;
-  if (!d || (d.type !== 'trainer-expand' && d.type !== 'trainer-collapse')) return;
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
 
-  var frame = null;
-  document.querySelectorAll('iframe').forEach(function (f) {
-    if (f.contentWindow === e.source) frame = f;
+var finalHtml =
+  '<p><strong>Тема: Запрос детализированных данных по автотранспорту за III квартал 2026 г. для расчета выбросов</strong></p>' +
+  '<p>Уважаемый(ая) [Имя Отчество руководителя],</p>' +
+  '<p>Для проведения помашинного расчета выбросов загрязняющих веществ в атмосферный воздух от мобильных источников за III квартал 2026 года прошу Вас предоставить сведения по автопарку предприятия согласно форме ниже. Данные необходимы для заполнения обязательной экологической отчетности и расчета платы за негативное воздействие на окружающую среду.</p>' +
+  '<p>Прошу заполнить таблицу и направить ее в обратном письме в формате Excel в срок до [Дата, например: 08.10.2026]:</p>' +
+  '<div class="table-wrap"><table>' +
+  '<thead><tr><th>N п/п</th><th>Марка, модель ТС</th><th>Гос. номер</th><th>Экокласс</th><th>Вид топлива</th><th>Расход топлива за III кв.</th><th>Пробег за III кв.</th></tr></thead>' +
+  '<tbody>' +
+  '<tr><td>1</td><td>Пример: КамАЗ-65115</td><td>А 000 АА 777</td><td>Евро-4</td><td>Дизельное топливо</td><td>1 250 л</td><td>3 800 км</td></tr>' +
+  '<tr><td>2</td><td>Пример: Lada Largus</td><td>В 111 ВВ 777</td><td>Евро-5</td><td>Бензин АИ-92</td><td>420 л</td><td>4 500 км</td></tr>' +
+  '</tbody></table></div>' +
+  '<p>Примечание: если по отдельным единицам спецтехники учет ведется в мото-часах, вместо пробега в крайнем правом столбце прошу указать фактическое время наработки в маш.-час.</p>' +
+  '<p>Заранее спасибо за содействие.<br>С уважением,<br>[Ваша должность]<br>[Ваше ФИО]<br>Внутренний телефон: [Номер]</p>' +
+  '<p class="ai-tip">Совет для расчета: попросите таблицу в формате Excel (.xlsx). Общий расход по типам топлива можно сложить формулой СУММ и сверить данные с бухгалтерией.</p>';
+
+var templateText = 'Кому: Начальнику транспортного отдела\nОт кого: Эколога / Специалиста по охране окружающей среды\nТема: Запрос детализированных данных по автотранспорту за III квартал 2026 г. для расчета выбросов\n\nУважаемый(ая) [Имя Отчество руководителя],\n\nДля проведения помашинного расчета выбросов загрязняющих веществ в атмосферный воздух от мобильных источников за III квартал 2026 года прошу Вас предоставить сведения по автопарку предприятия согласно форме ниже.\n\nДанные необходимы для заполнения обязательной экологической отчетности и расчета платы за негативное воздействие на окружающую среду.\n\nПрошу заполнить таблицу и направить ее в обратном письме в формате Excel в срок до [Дата, например: 08.10.2026]:\n\nN п/п | Марка, модель ТС | Гос. номер | Экокласс | Вид топлива | Расход топлива за III кв. | Пробег за III кв.\n1 | Пример: КамАЗ-65115 | А 000 АА 777 | Евро-4 | Дизельное топливо | 1 250 л | 3 800 км\n2 | Пример: Lada Largus | В 111 ВВ 777 | Евро-5 | Бензин АИ-92 | 420 л | 4 500 км\n\nПримечание: если по отдельным единицам спецтехники учет ведется в мото-часах, вместо пробега в крайнем правом столбце прошу указать фактическое время наработки в маш.-час.\n\nЗаранее спасибо за содействие.\n\nС уважением,\n[Ваша должность]\n[Ваше ФИО]\nВнутренний телефон: [Номер]\n\nСовет для расчета: попросите транспортный отдел прислать таблицу в формате Excel (.xlsx). Когда вы получите ответ, вы сможете автоматически сложить общий расход по типам топлива с помощью формулы СУММ, чтобы быстро сверить данные с бухгалтерией.';
+
+var stages = [
+  {
+    title: 'Соберите первый запрос',
+    text: 'Выберите, что включить в первый запрос, и отправьте его в чат.',
+    sendLabel: 'Отправить запрос',
+    cards: [
+      { id: 'c1', correct: true, text: 'Назвать задачу: подготовить черновик письма с запросом данных по транспорту', why: 'Задача - ядро промпта. Без нее ИИ не поймет, что нужно сделать.' },
+      { id: 'w1', correct: false, text: 'Вставить ФИО руководителя и внутренний телефон', risk: 'ФИО и телефон - персональные данные. Для черновика они не нужны, а в публичном сервисе создают риск утечки.' },
+      { id: 'c2', correct: true, text: 'Добавить контекст: данные нужны для расчета выбросов за III квартал 2026 года', why: 'Контекст объясняет ИИ, что происходит и зачем готовится письмо.' },
+      { id: 'c3', correct: true, text: 'Указать адресата: начальник транспортного отдела', why: 'Адресат определяет тон письма и уровень детализации.' },
+      { id: 'w2', correct: false, text: 'Приложить полный список машин с инвентарными номерами', risk: 'Список техники - внутренняя информация. Для первого запроса достаточно описания задачи, реальные данные не нужны.' }
+    ],
+    userMsg: 'Подготовь черновик письма начальнику транспортного отдела. Предприятие готовит расчет выбросов от автотранспорта за III квартал 2026 года. Запроси данные по машинам для расчета.',
+    aiMsg: 'Уважаемые коллеги!\n\nПросим предоставить информацию по машинам за III квартал 2026 года.\n\nС уважением, экологическая служба.',
+    aiTag: 1,
+    aiTagText: 'Размытый черновик'
+  },
+  {
+    title: 'Уточните запрос',
+    text: 'Черновик слишком общий. Выберите уточнения и отправьте их в том же чате.',
+    sendLabel: 'Отправить уточнение',
+    cards: [
+      { id: 'w3', correct: false, text: 'Начать заново в новом чате', risk: 'В новом чате ИИ потеряет контекст черновика. Задачу придется описывать с нуля. Полезнее уточнить в том же диалоге.' },
+      { id: 'c4', correct: true, text: 'Перечислить данные: марка и модель, госномер, вид топлива, пробег за квартал, расход топлива', why: 'Без перечня транспортный отдел ответит в свободной форме, и цифры придется собирать повторно.' },
+      { id: 'w4', correct: false, text: 'Попросить сделать письмо более вежливым', risk: 'Вежливость не добавляет данных. ИИ вернет тот же текст, только с более любезными словами.' },
+      { id: 'c5', correct: true, text: 'Добавить срок предоставления - до 8 октября', why: 'Без срока отдел может затянуть ответ и сорвать расчет платы за НВОС.' }
+    ],
+    userMsg: 'Уточняю письмо. Перечисли, какие данные предоставить: марка и модель, государственный регистрационный номер, вид топлива, пробег за квартал и расход топлива. Добавь срок - до 8 октября.',
+    aiMsg: 'Уважаемые коллеги!\n\nДля расчета выбросов от автотранспорта за III квартал 2026 года просим предоставить следующие данные по каждой машине:\n\nмарка и модель;\nгосударственный регистрационный номер;\nвид топлива;\nпробег за квартал;\nрасход топлива.\n\nПросим направить сведения до 8 октября.\n\nС уважением, экологическая служба.',
+    aiTag: 2,
+    aiTagText: 'Черновик улучшен'
+  },
+  {
+    title: 'Уточните запрос',
+    text: 'Письмо стало лучше, но еще не рабочее. Выберите последние уточнения.',
+    sendLabel: 'Отправить уточнение',
+    cards: [
+      { id: 'c6', correct: true, text: 'Добавить тему: "Данные по автотранспорту за III квартал 2026 г. для расчета выбросов"', why: 'С темой письмо не теряется в потоке и сразу понятно, о чем речь.' },
+      { id: 'w5', correct: false, text: 'Приложить список всех машин предприятия с инвентарными номерами', risk: 'Список техники с инвентарными номерами - внутренняя информация. Для шаблона письма достаточно запроса, а не приложения с реальными данными.' },
+      { id: 'c7', correct: true, text: 'Указать, что таблицу нужно прислать в формате Excel', why: 'В Excel расход по типам топлива суммируется формулой СУММ, данные легко сверить с бухгалтерией.' },
+      { id: 'w6', correct: false, text: 'Попросить сократить письмо вдвое', risk: 'Письмо и так короткое. Проблема не в длине, а в отсутствии темы и формата ответа.' }
+    ],
+    userMsg: 'Дополняю. Добавь тему "Запрос детализированных данных по автотранспорту за III квартал 2026 г. для расчета выбросов" и укажи, что таблицу нужно прислать в обратном письме в формате Excel.',
+    rich: true,
+    aiMsg: finalHtml,
+    aiTag: 3,
+    aiTagText: 'Рабочий шаблон'
+  }
+];
+
+var stage = 0;
+var selected = {};
+var started = false;
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, function(c) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
   });
-  if (!frame) return;
+}
 
-  if (d.type === 'trainer-expand') {
-    frame.classList.add('trainer-full');
-    frame.setAttribute('scrolling', 'yes');
+function setChatEmpty() {
+  document.getElementById('chat').innerHTML = '<div class="chat-empty">Диалог еще не начат.<br>Нажмите «Начать» и соберите первый запрос.</div>';
+}
+
+function addMsg(role, text, tag, tagText) {
+  var chat = document.getElementById('chat');
+  var empty = chat.querySelector('.chat-empty');
+  if (empty) empty.remove();
+
+  var msg = document.createElement('div');
+  msg.className = 'msg ' + role;
+
+  var html = '';
+  if (role === 'ai') {
+    html += '<div class="avatar">ИИ</div>';
+    html += '<div class="bubble-wrap">';
+    html += '<div class="msg-name">ИИ-помощник</div>';
+    if (tag) html += '<span class="draft-tag tag-' + tag + '">' + tagText + '</span>';
+    html += '<div class="bubble">' + escapeHtml(text) + '</div>';
+    html += '</div>';
   } else {
-    frame.classList.remove('trainer-full');
-    frame.setAttribute('scrolling', 'no');
+    html += '<div class="bubble-wrap">';
+    html += '<div class="msg-name">Вы</div>';
+    html += '<div class="bubble">' + escapeHtml(text) + '</div>';
+    html += '</div>';
+  }
+
+  msg.innerHTML = html;
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+  triggerResize();
+}
+
+function addRichMsg(htmlContent, tag, tagText) {
+  var chat = document.getElementById('chat');
+  var empty = chat.querySelector('.chat-empty');
+  if (empty) empty.remove();
+
+  var msg = document.createElement('div');
+  msg.className = 'msg ai';
+  msg.innerHTML = '<div class="avatar">ИИ</div><div class="bubble-wrap"><div class="msg-name">ИИ-помощник</div><span class="draft-tag tag-' + tag + '">' + tagText + '</span><div class="bubble rich">' + htmlContent + '</div></div>';
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+  triggerResize();
+}
+
+function addTyping() {
+  var chat = document.getElementById('chat');
+  var msg = document.createElement('div');
+  msg.className = 'msg ai';
+  msg.id = 'typing';
+  msg.innerHTML = '<div class="avatar">ИИ</div><div class="bubble-wrap"><div class="bubble typing"><span></span><span></span><span></span></div></div>';
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTyping() {
+  var t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+function renderCards() {
+  var box = document.getElementById('cards');
+  box.innerHTML = '';
+  selected = {};
+
+  document.getElementById('side-title').textContent = stages[stage].title;
+  document.getElementById('side-text').textContent = stages[stage].text;
+  document.getElementById('send-btn').textContent = stages[stage].sendLabel;
+
+  stages[stage].cards.forEach(function(card) {
+    var btn = document.createElement('button');
+    btn.className = 'cl-card';
+    btn.setAttribute('data-id', card.id);
+    btn.innerHTML = '<span class="cl-box"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M13.333 4L6 11.333L2.667 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>' + card.text + '</span>';
+    btn.addEventListener('click', function() {
+      btn.classList.toggle('selected');
+      if (selected[card.id]) {
+        delete selected[card.id];
+      } else {
+        selected[card.id] = true;
+      }
+      hideComment();
+    });
+    box.appendChild(btn);
+  });
+
+  hideComment();
+}
+
+function showComment(label, text) {
+  var block = document.getElementById('comment');
+  document.getElementById('comment-label').textContent = label;
+  document.getElementById('comment-text').textContent = text;
+  block.classList.add('visible');
+}
+
+function hideComment() {
+  document.getElementById('comment').classList.remove('visible');
+}
+
+function send() {
+  var cards = stages[stage].cards;
+  var chosen = Object.keys(selected);
+
+  if (chosen.length === 0) {
+    showComment('Выберите карточки', 'Отметьте хотя бы одну карточку и нажмите кнопку еще раз.');
+    return;
+  }
+
+  var wrongSel = [];
+  var missed = [];
+
+  cards.forEach(function(card) {
+    if (!card.correct && selected[card.id]) wrongSel.push(card);
+    if (card.correct && !selected[card.id]) missed.push(card);
+  });
+
+  if (wrongSel.length > 0) {
+    var riskText = wrongSel.map(function(c) { return c.risk; }).join(' ');
+    showComment('Риск', riskText + ' Снимите лишние карточки и отправьте снова.');
+    return;
+  }
+
+  if (missed.length > 0) {
+    var missText = missed.map(function(c) { return c.why; }).join(' ');
+    showComment('Недостаточно', 'Вы отметили не все нужные карточки. ' + missText);
+    return;
+  }
+
+  hideComment();
+  addMsg('user', stages[stage].userMsg);
+  addTyping();
+
+  var st = stages[stage];
+
+  setTimeout(function() {
+    removeTyping();
+    if (st.rich) {
+      addRichMsg(st.aiMsg, st.aiTag, st.aiTagText);
+    } else {
+      addMsg('ai', st.aiMsg, st.aiTag, st.aiTagText);
+    }
+
+    stage++;
+    updateProgress();
+
+    if (stage < stages.length) {
+      renderCards();
+    } else {
+      finish();
+    }
+  }, 800);
+}
+
+function updateProgress() {
+  var fill = document.getElementById('prog-fill');
+  var label = document.getElementById('prog-label');
+  var count = document.getElementById('prog-count');
+  var shown = Math.min(stage + 1, stages.length);
+
+  if (stage >= stages.length) {
+    fill.style.width = '100%';
+    label.textContent = 'Готово';
+    count.textContent = stages.length + '/' + stages.length;
+  } else {
+    fill.style.width = (stage / stages.length * 100) + '%';
+    label.textContent = 'Шаг ' + shown + ' из ' + stages.length;
+    count.textContent = shown + '/' + stages.length;
+  }
+}
+
+function finish() {
+  document.getElementById('working-block').classList.add('hidden');
+  document.getElementById('final-block').classList.remove('hidden');
+  triggerResize();
+}
+
+function start() {
+  started = true;
+  document.getElementById('start-block').classList.add('hidden');
+  document.getElementById('working-block').classList.remove('hidden');
+  renderCards();
+  updateProgress();
+  triggerResize();
+}
+
+function restart() {
+  stage = 0;
+  selected = {};
+  started = false;
+  setChatEmpty();
+  document.getElementById('final-block').classList.add('hidden');
+  document.getElementById('working-block').classList.add('hidden');
+  document.getElementById('start-block').classList.remove('hidden');
+  updateProgress();
+  triggerResize();
+}
+
+function copyToClipboard(text, btn) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(function() {
+      showCopied(btn);
+    }).catch(function() {
+      fallbackCopy(text, btn);
+    });
+  } else {
+    fallbackCopy(text, btn);
+  }
+}
+
+function fallbackCopy(text, btn) {
+  var textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.top = '0';
+  textArea.style.left = '0';
+  textArea.style.width = '2em';
+  textArea.style.height = '2em';
+  textArea.style.padding = '0';
+  textArea.style.border = 'none';
+  textArea.style.outline = 'none';
+  textArea.style.boxShadow = 'none';
+  textArea.style.background = 'transparent';
+  textArea.style.opacity = '0';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+    showCopied(btn);
+  } catch (err) {
+    console.error('Copy failed', err);
+  }
+  document.body.removeChild(textArea);
+}
+
+function showCopied(btn) {
+  btn.classList.add('copied');
+  btn.querySelector('span').textContent = 'Скопировано';
+  setTimeout(function() {
+    btn.classList.remove('copied');
+    btn.querySelector('span').textContent = 'Скопировать шаблон письма';
+  }, 2000);
+  triggerResize();
+}
+
+document.getElementById('start-btn').addEventListener('click', start);
+document.getElementById('send-btn').addEventListener('click', send);
+document.getElementById('restart-btn').addEventListener('click', restart);
+document.getElementById('copy-btn').addEventListener('click', function() {
+  copyToClipboard(templateText, this);
+});
+
+document.getElementById('expand-btn').addEventListener('click', function() {
+  var isWide = document.getElementById('wrap').classList.toggle('wide');
+  this.querySelector('span').textContent = isWide ? 'Свернуть' : 'Развернуть';
+
+  if (window.parent !== window) {
+    window.parent.postMessage({ type: isWide ? 'trainer-expand' : 'trainer-collapse' }, '*');
+  }
+
+  triggerResize();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  setChatEmpty();
+  updateProgress();
+  triggerResize();
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
   }
 });
 </script>
+
+</body>
+</html>
