@@ -553,4 +553,297 @@ var finalHtml =
   '<tr><td>2</td><td>Пример: Lada Largus</td><td>В 111 ВВ 777</td><td>Евро-5</td><td>Бензин АИ-92</td><td>420 л</td><td>4 500 км</td></tr>' +
   '</tbody></table></div>' +
   '<p>Примечание: если по отдельным единицам спецтехники учет ведется в мото-часах, вместо пробега в крайнем правом столбце прошу указать фактическое время наработки в маш.-час.</p>' +
-  '<p>Заранее
+  '<p>Заранее спасибо за содействие.<br>С уважением,<br>[Ваша должность]<br>[Ваше ФИО]<br>Внутренний телефон: [Номер]</p>' +
+  '<p class="ai-tip">Совет для расчета: попросите таблицу в формате Excel (.xlsx). Общий расход по типам топлива можно сложить формулой СУММ и сверить данные с бухгалтерией.</p>';
+
+var templateText = 'Кому: Начальнику транспортного отдела\nОт кого: Эколога / Специалиста по охране окружающей среды\nТема: Запрос детализированных данных по автотранспорту за III квартал 2026 г. для расчета выбросов\n\nУважаемый(ая) [Имя Отчество руководителя],\n\nДля проведения помашинного расчета выбросов загрязняющих веществ в атмосферный воздух от мобильных источников за III квартал 2026 года прошу Вас предоставить сведения по автопарку предприятия согласно форме ниже.\n\nДанные необходимы для заполнения обязательной экологической отчетности и расчета платы за негативное воздействие на окружающую среду.\n\nПрошу заполнить таблицу и направить ее в обратном письме в формате Excel в срок до [Дата, например: 08.10.2026]:\n\nN п/п | Марка, модель ТС | Гос. номер | Экокласс | Вид топлива | Расход топлива за III кв. | Пробег за III кв.\n1 | Пример: КамАЗ-65115 | А 000 АА 777 | Евро-4 | Дизельное топливо | 1 250 л | 3 800 км\n2 | Пример: Lada Largus | В 111 ВВ 777 | Евро-5 | Бензин АИ-92 | 420 л | 4 500 км\n\nПримечание: если по отдельным единицам спецтехники учет ведется в мото-часах, вместо пробега в крайнем правом столбце прошу указать фактическое время наработки в маш.-час.\n\nЗаранее спасибо за содействие.\n\nС уважением,\n[Ваша должность]\n[Ваше ФИО]\nВнутренний телефон: [Номер]\n\nСовет для расчета: попросите транспортный отдел прислать таблицу в формате Excel (.xlsx). Когда вы получите ответ, вы сможете автоматически сложить общий расход по типам топлива с помощью формулы СУММ, чтобы быстро сверить данные с бухгалтерией.';
+
+var stages = [
+  {
+    cards: [
+      { id: 'w1', correct: false, text: 'Вставить ФИО начальника транспортного отдела и его телефон', risk: 'ФИО и телефон - персональные данные. Они не нужны для черновика письма, а в публичном сервисе создают риск утечки.' },
+      { id: 'c1', correct: true, text: 'Перечислить данные: марка и модель, госномер, вид топлива, пробег за квартал, расход топлива', why: 'Без перечня транспортный отдел ответит в свободной форме, и цифры придется собирать повторно.' },
+      { id: 'w2', correct: false, text: 'Начать заново в новом чате', risk: 'В новом чате ИИ потеряет контекст черновика. Задачу придется описывать с нуля. Полезнее уточнить в том же диалоге.' },
+      { id: 'c2', correct: true, text: 'Добавить срок предоставления - до 8 октября', why: 'Без срока отдел может затянуть ответ и сорвать расчет платы за НВОС.' }
+    ],
+    userMsg: 'Уточняю письмо. Перечисли, какие данные предоставить: марка и модель, государственный регистрационный номер, вид топлива, пробег за квартал и расход топлива. Добавь срок - до 8 октября.',
+    aiMsg: 'Уважаемые коллеги!\n\nДля расчета выбросов от автотранспорта за III квартал 2026 года просим предоставить следующие данные по каждой машине:\n\nмарка и модель;\nгосударственный регистрационный номер;\nвид топлива;\nпробег за квартал;\nрасход топлива.\n\nПросим направить сведения до 8 октября.\n\nС уважением, экологическая служба.',
+    aiTag: 2,
+    aiTagText: 'Черновик улучшен'
+  },
+  {
+    cards: [
+      { id: 'c3', correct: true, text: 'Добавить тему: "Данные по автотранспорту за III квартал 2026 г. для расчета выбросов"', why: 'С темой письмо не теряется в потоке и сразу понятно, о чем речь.' },
+      { id: 'w3', correct: false, text: 'Приложить список всех машин предприятия с инвентарными номерами', risk: 'Список техники с инвентарными номерами - внутренняя информация. Для шаблона письма достаточно запроса, а не приложения с реальными данными.' },
+      { id: 'c4', correct: true, text: 'Указать, что таблицу нужно прислать в формате Excel', why: 'В Excel расход по типам топлива суммируется формулой СУММ, данные легко сверить с бухгалтерией.' },
+      { id: 'w4', correct: false, text: 'Попросить сделать письмо более вежливым', risk: 'Вежливость не добавляет данных. ИИ вернет тот же текст, только с более любезными словами.' }
+    ],
+    userMsg: 'Дополняю. Добавь тему "Запрос детализированных данных по автотранспорту за III квартал 2026 г. для расчета выбросов" и укажи, что таблицу нужно прислать в обратном письме в формате Excel.',
+    rich: true,
+    aiMsg: finalHtml,
+    aiTag: 3,
+    aiTagText: 'Рабочий шаблон'
+  }
+];
+
+var stage = 0;
+var selected = {};
+
+function escapeHtml(s) {
+  return s.replace(/[&<>"']/g, function(c) {
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c];
+  });
+}
+
+function addMsg(role, text, tag, tagText) {
+  var chat = document.getElementById('chat');
+  var msg = document.createElement('div');
+  msg.className = 'msg ' + role;
+
+  var html = '';
+  if (role === 'ai') {
+    html += '<div class="avatar">ИИ</div>';
+    html += '<div class="bubble-wrap">';
+    html += '<div class="msg-name">ИИ-помощник</div>';
+    if (tag) html += '<span class="draft-tag tag-' + tag + '">' + tagText + '</span>';
+    html += '<div class="bubble">' + escapeHtml(text) + '</div>';
+    html += '</div>';
+  } else {
+    html += '<div class="bubble-wrap">';
+    html += '<div class="msg-name">Вы</div>';
+    html += '<div class="bubble">' + escapeHtml(text) + '</div>';
+    html += '</div>';
+  }
+
+  msg.innerHTML = html;
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+  triggerResize();
+}
+
+function addRichMsg(htmlContent, tag, tagText) {
+  var chat = document.getElementById('chat');
+  var msg = document.createElement('div');
+  msg.className = 'msg ai';
+  msg.innerHTML = '<div class="avatar">ИИ</div><div class="bubble-wrap"><div class="msg-name">ИИ-помощник</div><span class="draft-tag tag-' + tag + '">' + tagText + '</span><div class="bubble rich">' + htmlContent + '</div></div>';
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+  triggerResize();
+}
+
+function addTyping() {
+  var chat = document.getElementById('chat');
+  var msg = document.createElement('div');
+  msg.className = 'msg ai';
+  msg.id = 'typing';
+  msg.innerHTML = '<div class="avatar">ИИ</div><div class="bubble-wrap"><div class="bubble typing"><span></span><span></span><span></span></div></div>';
+  chat.appendChild(msg);
+  chat.scrollTop = chat.scrollHeight;
+}
+
+function removeTyping() {
+  var t = document.getElementById('typing');
+  if (t) t.remove();
+}
+
+function initChat() {
+  document.getElementById('chat').innerHTML = '';
+  addMsg('user', initialUser);
+  addMsg('ai', initialAI, 1, 'Размытый черновик');
+}
+
+function renderCards() {
+  var box = document.getElementById('cards');
+  box.innerHTML = '';
+  selected = {};
+
+  stages[stage].cards.forEach(function(card) {
+    var btn = document.createElement('button');
+    btn.className = 'cl-card';
+    btn.setAttribute('data-id', card.id);
+    btn.innerHTML = '<span class="cl-box"><svg width="10" height="10" viewBox="0 0 16 16" fill="none"><path d="M13.333 4L6 11.333L2.667 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span><span>' + card.text + '</span>';
+    btn.addEventListener('click', function() {
+      btn.classList.toggle('selected');
+      if (selected[card.id]) {
+        delete selected[card.id];
+      } else {
+        selected[card.id] = true;
+      }
+      hideComment();
+    });
+    box.appendChild(btn);
+  });
+
+  hideComment();
+}
+
+function showComment(label, text) {
+  var block = document.getElementById('comment');
+  document.getElementById('comment-label').textContent = label;
+  document.getElementById('comment-text').textContent = text;
+  block.classList.add('visible');
+}
+
+function hideComment() {
+  document.getElementById('comment').classList.remove('visible');
+}
+
+function send() {
+  var cards = stages[stage].cards;
+  var chosen = Object.keys(selected);
+
+  if (chosen.length === 0) {
+    showComment('Выберите уточнения', 'Отметьте хотя бы одну карточку с уточнением и нажмите кнопку еще раз.');
+    return;
+  }
+
+  var wrongSel = [];
+  var missed = [];
+
+  cards.forEach(function(card) {
+    if (!card.correct && selected[card.id]) wrongSel.push(card);
+    if (card.correct && !selected[card.id]) missed.push(card);
+  });
+
+  if (wrongSel.length > 0) {
+    var riskText = wrongSel.map(function(c) { return c.risk; }).join(' ');
+    showComment('Риск', riskText + ' Снимите лишние карточки и отправьте снова.');
+    return;
+  }
+
+  if (missed.length > 0) {
+    var missText = missed.map(function(c) { return c.why; }).join(' ');
+    showComment('Недостаточно', 'Вы отметили не все полезные уточнения. ' + missText);
+    return;
+  }
+
+  hideComment();
+  addMsg('user', stages[stage].userMsg);
+  addTyping();
+
+  var st = stages[stage];
+
+  setTimeout(function() {
+    removeTyping();
+    if (st.rich) {
+      addRichMsg(st.aiMsg, st.aiTag, st.aiTagText);
+    } else {
+      addMsg('ai', st.aiMsg, st.aiTag, st.aiTagText);
+    }
+
+    stage++;
+    updateProgress();
+
+    if (stage < stages.length) {
+      document.getElementById('side-text').textContent = 'Письмо стало лучше, но еще не идеально. Выберите следующие уточнения.';
+      renderCards();
+    } else {
+      finish();
+    }
+  }, 800);
+}
+
+function updateProgress() {
+  var fill = document.getElementById('prog-fill');
+  var label = document.getElementById('prog-label');
+  var count = document.getElementById('prog-count');
+
+  if (stage >= stages.length) {
+    fill.style.width = '100%';
+    label.textContent = 'Готово';
+    count.textContent = '2/2';
+  } else {
+    fill.style.width = (stage / stages.length * 100) + '%';
+    label.textContent = 'Уточнение ' + (stage + 1) + ' из 2';
+    count.textContent = (stage + 1) + '/2';
+  }
+}
+
+function finish() {
+  document.getElementById('working-block').classList.add('hidden');
+  document.getElementById('final-block').classList.add('visible');
+  triggerResize();
+}
+
+function restart() {
+  stage = 0;
+  selected = {};
+  document.getElementById('working-block').classList.remove('hidden');
+  document.getElementById('final-block').classList.remove('visible');
+  document.getElementById('side-text').textContent = 'Выберите карточки с полезными уточнениями и отправьте их в чат.';
+  updateProgress();
+  initChat();
+  renderCards();
+  triggerResize();
+}
+
+function copyToClipboard(text, btn) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(function() {
+      showCopied(btn);
+    }).catch(function() {
+      fallbackCopy(text, btn);
+    });
+  } else {
+    fallbackCopy(text, btn);
+  }
+}
+
+function fallbackCopy(text, btn) {
+  var textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.top = '0';
+  textArea.style.left = '0';
+  textArea.style.width = '2em';
+  textArea.style.height = '2em';
+  textArea.style.padding = '0';
+  textArea.style.border = 'none';
+  textArea.style.outline = 'none';
+  textArea.style.boxShadow = 'none';
+  textArea.style.background = 'transparent';
+  textArea.style.opacity = '0';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+    showCopied(btn);
+  } catch (err) {
+    console.error('Copy failed', err);
+  }
+  document.body.removeChild(textArea);
+}
+
+function showCopied(btn) {
+  btn.classList.add('copied');
+  btn.querySelector('span').textContent = 'Скопировано';
+  setTimeout(function() {
+    btn.classList.remove('copied');
+    btn.querySelector('span').textContent = 'Скопировать шаблон письма';
+  }, 2000);
+  triggerResize();
+}
+
+document.getElementById('send-btn').addEventListener('click', send);
+document.getElementById('restart-btn').addEventListener('click', restart);
+document.getElementById('copy-btn').addEventListener('click', function() {
+  copyToClipboard(templateText, this);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  initChat();
+  renderCards();
+  updateProgress();
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
