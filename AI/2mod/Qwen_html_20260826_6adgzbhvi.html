@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --o50: #fff7ed;
+  --o100: #ffedd5;
+  --o600: #ea580c;
+  --o800: #9a3412;
+  --bl50: #eff6ff;
+  --bl100: #dbeafe;
+  --bl600: #2563eb;
+  --bl700: #1d4ed8;
+  --p50: #f5f3ff;
+  --p100: #ede9fe;
+  --p600: #7c3aed;
+  --p700: #6d28d9;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 720px;
+  min-height: 300px;
+  padding: 24px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin: 0 auto;
+}
+
+.header-text {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.formula {
+  display: flex;
+  align-items: stretch;
+  gap: 6px;
+  margin-bottom: 16px;
+}
+
+.f-card {
+  flex: 1;
+  min-width: 0;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 10px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  text-align: center;
+  transition: all 0.2s;
+  position: relative;
+  font-family: inherit;
+}
+
+.f-card:hover {
+  border-color: var(--muted);
+}
+
+.f-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.f-icon svg {
+  width: 22px;
+  height: 22px;
+}
+
+.f-card.blue .f-icon { color: var(--bl600); }
+.f-card.green .f-icon { color: var(--g600); }
+.f-card.orange .f-icon { color: var(--o600); }
+.f-card.purple .f-icon { color: var(--p600); }
+
+.f-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.f-question {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.3;
+}
+
+.f-hint {
+  font-size: 11px;
+  color: var(--muted);
+  line-height: 1.3;
+}
+
+.f-card.blue.active { border-color: var(--bl600); background: var(--bl50); }
+.f-card.green.active { border-color: var(--g600); background: var(--g50); }
+.f-card.orange.active { border-color: var(--o600); background: var(--o50); }
+.f-card.purple.active { border-color: var(--p600); background: var(--p50); }
+
+.f-check {
+  position: absolute;
+  top: 6px;
+  right: 6px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--g600);
+  display: none;
+  align-items: center;
+  justify-content: center;
+}
+
+.f-card.done .f-check {
+  display: flex;
+}
+
+.f-arrow {
+  display: flex;
+  align-items: center;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.detail {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 16px;
+  margin-bottom: 16px;
+  animation: fadeIn 0.3s ease;
+  display: none;
+}
+
+.detail.visible {
+  display: block;
+}
+
+.detail-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 10px 0;
+}
+
+.detail-text p {
+  font-size: 14px;
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+}
+
+.frag {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--g600);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.frag-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.frag-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-line;
+}
+
+.detail-tip {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.4;
+}
+
+.detail-tip strong {
+  color: var(--text);
+}
+
+.final-toggle {
+  display: none;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--g600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+  animation: fadeIn 0.3s ease;
+}
+
+.final-toggle.visible {
+  display: inline-flex;
+}
+
+.final-toggle:hover {
+  background: var(--g700);
+}
+
+.final {
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 12px;
+  animation: fadeIn 0.3s ease;
+  display: none;
+}
+
+.final.visible {
+  display: block;
+}
+
+.final-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 6px 0;
+}
+
+.final-text {
+  font-size: 14px;
+  color: var(--text);
+  margin: 0 0 12px 0;
+  line-height: 1.5;
+}
+
+.final-prompt {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-line;
+  margin-bottom: 10px;
+}
+
+.final-note {
+  font-size: 13px;
+  color: var(--muted);
+  line-height: 1.4;
+  margin-bottom: 12px;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  max-width: 260px;
+  padding: 10px 16px;
+  border: 2px solid var(--g600);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--g700);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.copy-btn:hover {
+  background: var(--g100);
+}
+
+.copy-btn.copied {
+  background: var(--g600);
+  color: #fff;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .wrap { padding: 16px; }
+  .formula { flex-direction: column; align-items: stretch; }
+  .f-arrow { justify-content: center; transform: rotate(90deg); height: 18px; }
+  .f-card { padding: 12px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <p class="header-text">Откройте четыре блока формулы и посмотрите, как они собираются в один рабочий промпт.</p>
+
+  <div class="formula" id="formula"></div>
+
+  <div class="detail" id="detail">
+    <div class="detail-title" id="detail-title"></div>
+    <div class="detail-text" id="detail-text"></div>
+    <div class="frag" id="frag">
+      <div class="frag-label">Фрагмент промпта</div>
+      <div class="frag-text" id="frag-text"></div>
+    </div>
+    <div class="detail-tip" id="detail-tip"></div>
+  </div>
+
+  <button class="final-toggle" id="final-toggle">
+    <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M8 3C4.5 3 1.8 5.5 1 8c.8 2.5 3.5 5 7 5s6.2-2.5 7-5c-.8-2.5-3.5-5-7-5Z" stroke="currentColor" stroke-width="1.5" stroke-linejoin="round"/><circle cx="8" cy="8" r="2.2" stroke="currentColor" stroke-width="1.5"/></svg>
+    <span>Посмотреть итоговый промпт</span>
+  </button>
+
+  <div class="final" id="final">
+    <div class="final-title">Рабочее задание собрано</div>
+    <p class="final-text">Теперь ИИ понимает, с какой позиции работать, что происходит, что нужно сделать и в каком виде вы ждете результат.</p>
+    <div class="final-prompt" id="final-prompt"></div>
+    <p class="final-note">В промпт добавлены два блока из урока про безопасные промпты: список запрашиваемых данных в задаче и ограничение по персональным данным в формате. Так письмо получается конкретным и безопасным.</p>
+    <button class="copy-btn" id="copy-btn">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 10H13.5C14.0523 10 14.5 9.55228 14.5 9V2.5C14.5 1.94772 14.0523 1.5 13.5 1.5H7C6.44772 1.5 6 1.94772 6 2.5V6M2.5 14.5H9C9.55228 14.5 10 14.0523 10 13.5V7C10 6.44772 9.55228 6 9 6H2.5C1.94772 6 1.5 6.44772 1.5 7V13.5C1.5 14.0523 1.94772 14.5 2.5 14.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      <span>Скопировать промпт</span>
+    </button>
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var icons = {
+  badge: '<svg viewBox="0 0 24 24" fill="none"><rect x="3" y="5" width="18" height="14" rx="2" stroke="currentColor" stroke-width="1.8"/><circle cx="8.5" cy="10.5" r="2" stroke="currentColor" stroke-width="1.8"/><path d="M6.5 15.5c.6-1.6 3.4-1.6 4 0" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><path d="M14 9.5h4M14 12.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>',
+  folder: '<svg viewBox="0 0 24 24" fill="none"><path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V7z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>',
+  check: '<svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="4" stroke="currentColor" stroke-width="1.8"/><path d="M8.5 12.5l2.5 2.5 5-5.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>',
+  table: '<svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h16M10 10v10" stroke="currentColor" stroke-width="1.8"/></svg>'
+};
+
+var arrowSvg = '<svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h10M9 4.5L12.5 8 9 11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+var cards = [
+  {
+    id: 'role',
+    color: 'blue',
+    colorVar: 'var(--bl600)',
+    icon: icons.badge,
+    title: 'Роль',
+    question: 'Кто ты в этой задаче?',
+    hint: 'Ты промышленный эколог',
+    blockTitle: 'Роль: кто ИИ в этой задаче',
+    text: [
+      'Роль задает ИИ профессиональную позицию. Она помогает выбрать лексику, уровень детализации и подход к задаче.',
+      'Для большинства задач этого курса используйте одну простую роль: «Ты промышленный эколог». Не назначайте ИИ инспектором, юристом или экспертом, который принимает решение за предприятие.'
+    ],
+    prompt: 'Ты промышленный эколог.',
+    tip: 'Роль помогает получить рабочий черновик, но не делает ИИ ответственным специалистом.'
+  },
+  {
+    id: 'context',
+    color: 'green',
+    colorVar: 'var(--g600)',
+    icon: icons.folder,
+    title: 'Контекст',
+    question: 'Что происходит?',
+    hint: 'Период, ситуация, исходные данные',
+    blockTitle: 'Контекст: что происходит',
+    text: [
+      'Контекст дает ИИ только те факты, без которых он не поймет задачу. Укажите период, адресата, цель письма, список нарушений или разрешенные исходные данные.',
+      'Не вставляйте в контекст весь рабочий документ. Для письма в цех достаточно объяснить, какие сведения нужно запросить и за какой период.'
+    ],
+    prompt: 'Контекст:\n[Предприятие собирает сведения об образовании и передаче отходов за III квартал.]',
+    tip: 'Оставляйте только безопасные данные, которые влияют на результат.'
+  },
+  {
+    id: 'task',
+    color: 'orange',
+    colorVar: 'var(--o600)',
+    icon: icons.check,
+    title: 'Задача',
+    question: 'Что нужно сделать?',
+    hint: 'Напиши, составь, выдели, оформи',
+    blockTitle: 'Задача: что нужно сделать',
+    text: [
+      'ИИ лучше работает с конкретным действием. Начинайте задачу с глагола: «напиши», «составь», «выдели», «сократи», «сравни» или «оформи».',
+      'Одна задача - один основной результат. Не просите в одном сообщении одновременно подготовить письмо, памятку и таблицу. Разделите работу на несколько запросов.'
+    ],
+    prompt: 'Задача:\n[Напиши черновик письма начальнику механического цеха. Запроси сведения об образовании и передаче отходов.]',
+    tip: 'Чем конкретнее действие, тем меньше ИИ будет угадывать.'
+  },
+  {
+    id: 'format',
+    color: 'purple',
+    colorVar: 'var(--p600)',
+    icon: icons.table,
+    title: 'Формат',
+    question: 'Как оформить ответ?',
+    hint: 'Письмо, таблица, чек-лист, план',
+    blockTitle: 'Формат: как должен выглядеть ответ',
+    text: [
+      'Формат помогает сразу получить результат, который можно доработать и использовать. Укажите вид документа, структуру, стиль, объем и ограничения.',
+      'Если формат не задан, ИИ может написать длинную статью вместо короткого письма или дать текст вместо таблицы.'
+    ],
+    prompt: 'Формат:\n[Укажи тему письма и основной текст. Используй официальный деловой стиль. Объем - до 1500 знаков.]',
+    tip: 'Формат экономит время на сокращении, перестройке и повторных запросах.'
+  }
+];
+
+var finalPrompt = 'Ты промышленный эколог.\n\nКонтекст:\n[Предприятие собирает сведения об образовании и передаче отходов за III квартал.]\n\nЗадача:\n[Напиши черновик письма начальнику механического цеха. Запроси сведения об образовании и передаче отходов.\nУкажи, что нужно предоставить:\n- наименование отхода;\n- код ФККО;\n- количество и единицу измерения;\n- место накопления;\n- дату передачи;\n- подтверждающие документы при наличии.]\n\nФормат:\n[Укажи тему письма и основной текст. Используй официальный деловой стиль. Объем - до 1500 знаков.\nНе используй ФИО, номера договоров, внутренние коды и реальные производственные показатели.]\n\nНе придумывай факты, сроки и реквизиты.\nЕсли данных недостаточно, сначала задай уточняющие вопросы.';
+
+var opened = {};
+var openedCount = 0;
+
+function buildFormula() {
+  var box = document.getElementById('formula');
+  var html = '';
+
+  cards.forEach(function(card, idx) {
+    html += '<button class="f-card ' + card.color + '" data-id="' + card.id + '" id="card-' + card.id + '">';
+    html += '<span class="f-check"><svg width="9" height="9" viewBox="0 0 16 16" fill="none"><path d="M13.333 4L6 11.333L2.667 8" stroke="#fff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"/></svg></span>';
+    html += '<span class="f-icon">' + card.icon + '</span>';
+    html += '<span class="f-title">' + card.title + '</span>';
+    html += '<span class="f-question">' + card.question + '</span>';
+    html += '<span class="f-hint">' + card.hint + '</span>';
+    html += '</button>';
+
+    if (idx < cards.length - 1) {
+      html += '<span class="f-arrow">' + arrowSvg + '</span>';
+    }
+  });
+
+  box.innerHTML = html;
+
+  box.querySelectorAll('.f-card').forEach(function(el) {
+    el.addEventListener('click', function() {
+      openCard(el.getAttribute('data-id'));
+    });
+  });
+}
+
+function openCard(id) {
+  var card = null;
+  cards.forEach(function(c) { if (c.id === id) card = c; });
+  if (!card) return;
+
+  document.querySelectorAll('.f-card').forEach(function(el) {
+    el.classList.remove('active');
+  });
+  var el = document.getElementById('card-' + id);
+  el.classList.add('active');
+
+  if (!opened[id]) {
+    opened[id] = true;
+    openedCount++;
+    el.classList.add('done');
+  }
+
+  var detail = document.getElementById('detail');
+  detail.classList.remove('visible');
+  void detail.offsetWidth;
+
+  document.getElementById('detail-title').textContent = card.blockTitle;
+
+  var textHtml = '';
+  card.text.forEach(function(p) {
+    textHtml += '<p>' + p + '</p>';
+  });
+  document.getElementById('detail-text').innerHTML = textHtml;
+
+  document.getElementById('frag').style.borderLeftColor = card.colorVar;
+  document.getElementById('frag-text').textContent = card.prompt;
+  document.getElementById('detail-tip').innerHTML = '<strong>Подсказка.</strong> ' + card.tip;
+
+  detail.classList.add('visible');
+
+  if (openedCount === cards.length) {
+    document.getElementById('final-prompt').textContent = finalPrompt;
+    document.getElementById('final-toggle').classList.add('visible');
+  }
+
+  triggerResize();
+}
+
+document.getElementById('final-toggle').addEventListener('click', function() {
+  var final = document.getElementById('final');
+  var isOpen = final.classList.contains('visible');
+  final.classList.toggle('visible');
+  this.querySelector('span').textContent = isOpen ? 'Посмотреть итоговый промпт' : 'Скрыть итоговый промпт';
+  triggerResize();
+});
+
+function copyToClipboard(text, btn) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(function() {
+      showCopied(btn);
+    }).catch(function() {
+      fallbackCopy(text, btn);
+    });
+  } else {
+    fallbackCopy(text, btn);
+  }
+}
+
+function fallbackCopy(text, btn) {
+  var textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.top = '0';
+  textArea.style.left = '0';
+  textArea.style.width = '2em';
+  textArea.style.height = '2em';
+  textArea.style.padding = '0';
+  textArea.style.border = 'none';
+  textArea.style.outline = 'none';
+  textArea.style.boxShadow = 'none';
+  textArea.style.background = 'transparent';
+  textArea.style.opacity = '0';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+    showCopied(btn);
+  } catch (err) {
+    console.error('Copy failed', err);
+  }
+  document.body.removeChild(textArea);
+}
+
+function showCopied(btn) {
+  btn.classList.add('copied');
+  btn.querySelector('span').textContent = 'Скопировано';
+  setTimeout(function() {
+    btn.classList.remove('copied');
+    btn.querySelector('span').textContent = 'Скопировать промпт';
+  }, 2000);
+  triggerResize();
+}
+
+document.getElementById('copy-btn').addEventListener('click', function() {
+  copyToClipboard(finalPrompt, this);
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  buildFormula();
+  triggerResize();
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
