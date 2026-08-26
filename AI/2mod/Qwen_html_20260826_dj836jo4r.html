@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --o50: #fff7ed;
+  --o600: #ea580c;
+  --o800: #9a3412;
+  --bl50: #eff6ff;
+  --bl100: #dbeafe;
+  --bl600: #2563eb;
+  --bl700: #1d4ed8;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 720px;
+  padding: 24px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin: 0 auto;
+}
+
+.steps {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.step {
+  flex: 1;
+  min-width: 0;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 12px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  transition: all 0.2s;
+  font-family: inherit;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.step:hover {
+  border-color: var(--muted);
+  background: #fafafa;
+}
+
+.step:focus {
+  outline: 2px solid var(--bl600);
+  outline-offset: 2px;
+}
+
+.step-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.step-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.step.blue.active {
+  border-color: var(--bl600);
+  background: var(--bl50);
+  color: var(--bl700);
+}
+
+.step.blue.active .step-icon {
+  background: var(--bl600);
+  color: #fff;
+}
+
+.step.orange.active {
+  border-color: var(--o600);
+  background: var(--o50);
+  color: var(--o800);
+}
+
+.step.orange.active .step-icon {
+  background: var(--o600);
+  color: #fff;
+}
+
+.step.green.active {
+  border-color: var(--g600);
+  background: var(--g50);
+  color: var(--g800);
+}
+
+.step.green.active .step-icon {
+  background: var(--g600);
+  color: #fff;
+}
+
+.arrow {
+  display: flex;
+  align-items: center;
+  color: #94a3b8;
+  flex-shrink: 0;
+}
+
+.detail {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 20px;
+  margin-bottom: 14px;
+  animation: fadeIn 0.3s ease;
+  display: none;
+}
+
+.detail.visible {
+  display: block;
+}
+
+.detail.blue { border-left: 4px solid var(--bl600); }
+.detail.orange { border-left: 4px solid var(--o600); }
+.detail.green { border-left: 4px solid var(--g600); }
+
+.detail-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 10px 0;
+}
+
+.detail-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  margin: 0 0 12px 0;
+}
+
+.detail-list {
+  margin: 8px 0 12px 0;
+  padding-left: 20px;
+}
+
+.detail-list li {
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 4px;
+  color: var(--text);
+}
+
+.detail-list li:last-child {
+  margin-bottom: 0;
+}
+
+.example {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  margin-bottom: 14px;
+}
+
+.example-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  margin: 0 0 6px 0;
+}
+
+.example-text {
+  font-size: 13px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-line;
+  margin: 0;
+}
+
+.tip {
+  padding: 12px 14px;
+  background: var(--bl50);
+  border-left: 3px solid var(--bl600);
+  border-radius: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.tip-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--bl700);
+  margin-bottom: 4px;
+}
+
+.tags {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin-top: 12px;
+  margin-bottom: 14px;
+}
+
+.tag {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+}
+
+.tag-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  color: var(--g700);
+  margin: 0 0 4px 0;
+}
+
+.tag-text {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--text);
+  margin: 0;
+}
+
+.service-hint {
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--muted);
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.service-hint-icon {
+  flex-shrink: 0;
+  color: var(--muted);
+  margin-top: 1px;
+}
+
+.service-hint-text {
+  flex: 1;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .wrap { padding: 16px; }
+  .steps {
+    flex-direction: column;
+    gap: 6px;
+  }
+  .step {
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+    gap: 12px;
+    padding: 14px;
+  }
+  .arrow {
+    justify-content: center;
+    transform: rotate(90deg);
+    height: 16px;
+  }
+  .tags { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+
+  <div class="steps" id="steps" role="tablist">
+    <button class="step blue" data-id="1" role="tab" aria-expanded="false" aria-controls="detail-1">
+      <span class="step-icon">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M2 4h12M2 8h12M2 12h8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+      </span>
+      <span>Дайте ИИ роль, контекст, задачу и формат</span>
+    </button>
+
+    <span class="arrow" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h10M9 4.5L12.5 8 9 11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+
+    <button class="step orange" data-id="2" role="tab" aria-expanded="false" aria-controls="detail-2">
+      <span class="step-icon">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M6.5 3.5 2 8l4.5 4.5M9.5 3.5 14 8l-4.5 4.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span>Проверьте первый черновик</span>
+    </button>
+
+    <span class="arrow" aria-hidden="true">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 8h10M9 4.5L12.5 8 9 11.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </span>
+
+    <button class="step green" data-id="3" role="tab" aria-expanded="false" aria-controls="detail-3">
+      <span class="step-icon">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M11 2.5 13.5 5 5.5 13H3v-2.5L11 2.5Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>
+      </span>
+      <span>Уточните, что нужно изменить</span>
+    </button>
+  </div>
+
+  <div class="detail blue" id="detail-1" role="tabpanel">
+    <h3 class="detail-title">Первый промпт - это черновик запроса</h3>
+    <p class="detail-text">Первый промпт не обязан сразу дать готовый документ. Его задача - получить полезный черновик.</p>
+    <p class="detail-text">Укажите ИИ:</p>
+    <ul class="detail-list">
+      <li>роль;</li>
+      <li>исходные данные;</li>
+      <li>конкретное действие;</li>
+      <li>формат результата.</li>
+    </ul>
+
+    <div class="example">
+      <p class="example-label">Пример</p>
+      <p class="example-text">«Ты промышленный эколог.
+
+Предприятие собирает сведения об образовании и передаче отходов за III квартал. Нужно запросить данные у механического цеха.
+
+Подготовь черновик письма начальнику механического цеха.
+
+Укажи тему письма и основной текст. Используй официальный деловой стиль. Не добавляй срок ответа».</p>
+    </div>
+
+    <div class="tip">
+      <div class="tip-label">Совет</div>
+      Не пытайтесь включить в первый запрос все возможные требования. Начните с данных, без которых ИИ не сможет выполнить задачу: объект, период, адресат, действие и формат.
+    </div>
+  </div>
+
+  <div class="detail orange" id="detail-2" role="tabpanel">
+    <h3 class="detail-title">Четыре пункта проверки черновика</h3>
+    <p class="detail-text">Сравните ответ ИИ с рабочей задачей. Проверьте четыре пункта:</p>
+    <ul class="detail-list">
+      <li>Все ли нужные сведения есть в тексте.</li>
+      <li>Не придумал ли ИИ факты, сроки, требования или нормативные ссылки.</li>
+      <li>Подходит ли объем и тон документа.</li>
+      <li>Удобно ли использовать результат в работе.</li>
+    </ul>
+
+    <div class="example">
+      <p class="example-label">Пример</p>
+      <p class="example-text">ИИ подготовил письмо в механический цех. В письме есть просьба предоставить сведения об отходах, но нет перечня данных. Текст слишком общий, а формулировка «в кратчайшие сроки» не нужна, потому что срок не указан в исходной задаче.</p>
+    </div>
+
+    <div class="tip">
+      <div class="tip-label">Совет</div>
+      Не оценивайте ответ фразой «нравится» или «не нравится». Назовите конкретный недостаток: нет перечня сведений, текст слишком длинный, стиль слишком формальный, сведения нужно оформить в таблице.
+    </div>
+  </div>
+
+  <div class="detail green" id="detail-3" role="tabpanel">
+    <h3 class="detail-title">Уточнение вместо нового промпта</h3>
+    <p class="detail-text">Не переписывайте весь промпт заново. Продолжайте работу в том же чате и отправьте короткое уточнение.</p>
+    <p class="detail-text">Уточнение должно называть конкретную правку.</p>
+
+    <div class="example">
+      <p class="example-label">Пример</p>
+      <p class="example-text">«Добавь перечень сведений: наименование отхода, код ФККО, количество, единица измерения, место накопления, дата передачи и подтверждающие документы при наличии. Сократи письмо до 1000 знаков. Убери вводные слова. Не указывай срок ответа».</p>
+    </div>
+
+    <div class="tags">
+      <div class="tag">
+        <p class="tag-title">Тон</p>
+        <p class="tag-text">«Сделай текст менее формальным и сохрани деловой стиль».</p>
+      </div>
+      <div class="tag">
+        <p class="tag-title">Объем</p>
+        <p class="tag-text">«Сократи текст в три раза. Оставь только главное».</p>
+      </div>
+      <div class="tag">
+        <p class="tag-title">Формат</p>
+        <p class="tag-text">«Оформи сведения в таблице со столбцами: отход, код ФККО, количество, единица измерения».</p>
+      </div>
+      <div class="tag">
+        <p class="tag-title">Самопроверка</p>
+        <p class="tag-text">«Проверь ответ. Найди три места, где данных недостаточно. Задай вопросы, а не придумывай значения».</p>
+      </div>
+    </div>
+
+    <div class="tip">
+      <div class="tip-label">Совет</div>
+      Добавьте в первый промпт фразу: «Если данных недостаточно, сначала задай уточняющие вопросы». Это снизит риск получить черновик с придуманными сроками, требованиями или сведениями.
+    </div>
+  </div>
+
+  <div class="service-hint">
+    <span class="service-hint-icon">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6.5" stroke="currentColor" stroke-width="1.5"/><path d="M8 5v3.5M8 10.5v.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+    </span>
+    <span class="service-hint-text">Если задача изменилась полностью, начните новый чат. Если нужно доработать тот же документ, продолжайте диалог в текущем чате.</span>
+  </div>
+
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var activeId = null;
+
+function init() {
+  var steps = document.querySelectorAll('.step');
+  steps.forEach(function(btn) {
+    btn.addEventListener('click', function() {
+      toggle(btn.getAttribute('data-id'));
+    });
+    btn.addEventListener('keydown', function(e) {
+      if (e.key === 'Enter' || e.key === ' ') {
+        e.preventDefault();
+        toggle(btn.getAttribute('data-id'));
+      }
+    });
+  });
+
+  triggerResize();
+}
+
+function toggle(id) {
+  var details = document.querySelectorAll('.detail');
+  var steps = document.querySelectorAll('.step');
+
+  if (activeId === id) {
+    // закрываем активную
+    details.forEach(function(d) { d.classList.remove('visible'); });
+    steps.forEach(function(s) {
+      s.classList.remove('active');
+      s.setAttribute('aria-expanded', 'false');
+    });
+    activeId = null;
+    triggerResize();
+    return;
+  }
+
+  // закрываем все
+  details.forEach(function(d) { d.classList.remove('visible'); });
+  steps.forEach(function(s) {
+    s.classList.remove('active');
+    s.setAttribute('aria-expanded', 'false');
+  });
+
+  // открываем нужную
+  var detail = document.getElementById('detail-' + id);
+  var step = document.querySelector('.step[data-id="' + id + '"]');
+  if (detail && step) {
+    detail.classList.add('visible');
+    step.classList.add('active');
+    step.setAttribute('aria-expanded', 'true');
+    activeId = id;
+  }
+
+  triggerResize();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  init();
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
