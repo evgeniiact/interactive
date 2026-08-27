@@ -1,0 +1,588 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --o50: #fff7ed;
+  --o100: #ffedd5;
+  --o600: #ea580c;
+  --o800: #9a3412;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  min-height: 300px;
+  padding: 24px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin: 0 auto;
+}
+
+.header-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 6px 0;
+}
+
+.header-text {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.prog-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.prog-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.prog-track {
+  flex: 1;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.prog-fill {
+  height: 100%;
+  background: var(--g600);
+  border-radius: 3px;
+  transition: width 0.4s;
+  width: 0%;
+}
+
+.prog-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--g700);
+  white-space: nowrap;
+}
+
+.question-block {
+  animation: fadeIn 0.3s ease;
+}
+
+.question {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 14px 0;
+  line-height: 1.5;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.opt-btn {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  line-height: 1.4;
+  font-family: inherit;
+}
+
+.opt-btn:hover:not(.disabled) {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.opt-btn.selected-correct {
+  border-color: var(--g600);
+  background: var(--g100);
+  color: var(--g800);
+  cursor: default;
+}
+
+.opt-btn.selected-wrong {
+  border-color: var(--o600);
+  background: var(--o100);
+  color: var(--o800);
+  cursor: default;
+}
+
+.opt-btn.disabled {
+  opacity: 0.5;
+  pointer-events: none;
+}
+
+.explanation {
+  padding: 14px;
+  border-radius: 8px;
+  border-left: 4px solid var(--g600);
+  background: var(--g50);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 12px;
+  animation: fadeIn 0.3s ease;
+  display: none;
+}
+
+.explanation.visible {
+  display: block;
+}
+
+.explanation.wrong {
+  border-left-color: var(--o600);
+  background: var(--o50);
+}
+
+.explanation .label {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 6px;
+  color: var(--g700);
+}
+
+.explanation.wrong .label {
+  color: var(--o800);
+}
+
+.prompt-box {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--g600);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  animation: fadeIn 0.3s ease;
+  display: none;
+}
+
+.prompt-box.visible {
+  display: block;
+}
+
+.prompt-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  margin-bottom: 6px;
+}
+
+.prompt-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.next-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: var(--g600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.next-btn.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.next-btn.active:hover {
+  background: var(--g700);
+}
+
+.final-screen {
+  text-align: center;
+  padding: 8px 0;
+  animation: fadeIn 0.3s ease;
+}
+
+.final-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--g100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+}
+
+.final-icon svg {
+  width: 20px;
+  height: 20px;
+  color: var(--g600);
+}
+
+.final-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 8px 0;
+}
+
+.final-desc {
+  font-size: 14px;
+  color: var(--text);
+  margin: 0 auto 10px;
+  line-height: 1.5;
+  max-width: 480px;
+}
+
+.final-score {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 auto 18px;
+  line-height: 1.5;
+  max-width: 480px;
+}
+
+.restart-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: 2px solid var(--g600);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--g700);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.restart-btn:hover {
+  background: var(--g50);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .wrap { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h1 class="header-title">Выберите результат разбора документа</h1>
+  <p class="header-text">Прочитайте ситуацию. Выберите результат, который нужно запросить у ИИ.</p>
+
+  <div class="prog-bar">
+    <span class="prog-label" id="prog-label">Ситуация 1 из 5</span>
+    <div class="prog-track">
+      <div class="prog-fill" id="prog-fill"></div>
+    </div>
+    <span class="prog-count" id="prog-count">1/5</span>
+  </div>
+
+  <div class="question-block" id="quiz">
+    <div class="question" id="q-text"></div>
+    <div class="options" id="options"></div>
+
+    <div class="explanation" id="explanation">
+      <div class="label" id="exp-label"></div>
+      <div id="exp-text"></div>
+    </div>
+
+    <div class="prompt-box" id="prompt-box">
+      <div class="prompt-label">Фраза для промпта</div>
+      <div class="prompt-text" id="prompt-text"></div>
+    </div>
+
+    <button class="next-btn" id="next-btn">Следующая ситуация</button>
+  </div>
+
+  <div class="final-screen" id="final" style="display: none;">
+    <div class="final-icon">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h2 class="final-title">Вы выбрали формат ответа под задачу</h2>
+    <p class="final-desc">ИИ не должен сам решать, что для вас главное в документе. Сначала определите рабочий результат. Затем укажите его в промпте: выжимка, вопросы, таблица требований, таблица изменений или перечень сведений.</p>
+    <p class="final-score" id="final-score"></p>
+    <button class="restart-btn" id="restart-btn">Пройти еще раз</button>
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var options = [
+  'Короткая выжимка',
+  'Список вопросов',
+  'Таблица требований, сроков и ответственных',
+  'Таблица изменений',
+  'Перечень сведений для запроса'
+];
+
+var situations = [
+  {
+    text: 'Вам прислали новую редакцию внутреннего регламента. Нужно за пять минут понять, что изменилось и какие действия могут потребоваться.',
+    correct: 0,
+    explain: 'Сначала нужно быстро сориентироваться в документе. Подойдет короткая выжимка с главными изменениями и действиями. Таблицу лучше делать, когда нужно распределять задачи и контролировать сроки.',
+    prompt: 'Подготовь выжимку из пяти пунктов. Укажи только изменения и действия, которые следуют из приведенного текста.',
+    wrong: {
+      1: 'Список вопросов нужен, когда данных не хватает и есть что уточнять. Здесь задача другая - быстро понять изменения в документе.',
+      2: 'Таблица требований нужна, чтобы распределить задачи и контролировать сроки. Для быстрой ориентировки за пять минут это избыточно.',
+      3: 'Таблица изменений подходит для сравнения двух редакций. Здесь одна новая редакция, и задача - быстро сориентироваться в ней.',
+      4: 'Перечень сведений нужен, чтобы запросить данные у подразделения. Здесь задача - понять документ, а не запросить данные.'
+    }
+  },
+  {
+    text: 'Перед совещанием по новому порядку учета отходов нужно понять, каких данных не хватает и что уточнить у руководителя, подрядчика или подразделений.',
+    correct: 1,
+    explain: 'В документе могут быть неясные условия, неизвестные сроки или сведения, которых нет в тексте. Не просите ИИ придумывать ответы. Пусть он составит список вопросов для проверки.',
+    prompt: 'Составь список вопросов, которые нужно уточнить до начала работы. Не отвечай на вопросы сам. Используй только приведенный текст.',
+    wrong: {
+      0: 'Выжимка перескажет главное из текста, но не покажет, чего не хватает. Задача - найти пробелы и уточнить их до совещания.',
+      2: 'Таблица требований подходит, когда в документе уже есть четкие требования. Здесь сначала нужно уточнить недостающие данные.',
+      3: 'Таблица изменений сравнивает две редакции. Здесь один документ, и задача - найти недостающие сведения.',
+      4: 'Перечень сведений - это запрос данных у подразделения. Здесь нужны вопросы для руководителя, подрядчика и подразделений, а не запрос данных.'
+    }
+  },
+  {
+    text: 'В новом регламенте указано, какие сведения должны прислать цеха. Нужно распределить действия, назначить ответственных и не пропустить сроки.',
+    correct: 2,
+    explain: 'Таблица помогает превратить текст документа в план действий. В ней видно, что нужно сделать, в какой срок, кто отвечает и что проверить перед завершением работы.',
+    prompt: 'Оформи требования в таблицу: требование, срок, ответственный, пункт документа, что проверить. Если срок или ответственный не указан, напиши "не указан в тексте".',
+    wrong: {
+      0: 'Выжимка покажет главное, но не распределит действия. Есть риск пропустить сроки и ответственных.',
+      1: 'Список вопросов нужен, когда данных не хватает. Здесь требования уже есть в документе - их нужно превратить в план.',
+      3: 'Таблица изменений сравнивает редакции. Здесь один документ, и задача - распределить действия и назначить ответственных.',
+      4: 'Перечень сведений нужен для запроса данных. Здесь данные уже в регламенте - их нужно превратить в требования со сроками.'
+    }
+  },
+  {
+    text: 'В отдел прислали старую и новую версии инструкции по обращению с отходами. Нужно показать руководителю, что изменилось в сроках, формах и требованиях.',
+    correct: 3,
+    explain: 'При сравнении редакций важны различия между одинаковыми разделами. Таблица покажет, что было, что стало и какие действия потребуются после изменения документа.',
+    prompt: 'Сравни два фрагмента. Оформи различия в таблицу: раздел, было, стало, что изменилось, что нужно проверить. Используй только приведенные тексты.',
+    wrong: {
+      0: 'Выжимка не покажет, что именно изменилось между версиями. Руководителю нужны различия в сроках, формах и требованиях.',
+      1: 'Список вопросов не показывает различия между редакциями. Задача - сравнить тексты, а не уточнять их.',
+      2: 'Таблица требований показывает требования одного документа. Для сравнения двух версий нужны колонки "было" и "стало".',
+      4: 'Перечень сведений нужен для запроса данных у подразделения. Здесь задача - показать руководителю различия версий.'
+    }
+  },
+  {
+    text: 'Нужно подготовить письмо начальнику механического цеха. В документе есть перечень сведений, которые цех должен направить для подготовки квартальной отчетности.',
+    correct: 4,
+    explain: 'Перед подготовкой письма нужно собрать полный список данных, которые должен предоставить цех. ИИ выделит их из документа, а затем на основе проверенного перечня можно подготовить письмо.',
+    prompt: 'Выдели из текста перечень сведений, которые нужно запросить у подразделения. Оформи их списком. Не добавляй данные, которых нет в тексте.',
+    wrong: {
+      0: 'Выжимка перескажет документ, но не даст готовый список для письма. Есть риск пропустить часть сведений.',
+      1: 'Список вопросов нужен, когда данных не хватает. Здесь сведения есть в документе - их нужно выделить для запроса.',
+      2: 'Таблица требований избыточна для письма. Достаточно списка сведений, которые должен прислать цех.',
+      3: 'Таблица изменений сравнивает редакции. Здесь один документ, и задача - собрать данные для письма.'
+    }
+  }
+];
+
+var currentQ = 0;
+var firstTry = 0;
+var wrongInCurrent = 0;
+var answered = false;
+
+function renderQuestion() {
+  answered = false;
+  wrongInCurrent = 0;
+
+  var s = situations[currentQ];
+
+  document.getElementById('q-text').textContent = s.text;
+  document.getElementById('prog-label').textContent = 'Ситуация ' + (currentQ + 1) + ' из 5';
+  document.getElementById('prog-count').textContent = (currentQ + 1) + '/5';
+  document.getElementById('prog-fill').style.width = (currentQ / situations.length * 100) + '%';
+
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+
+  options.forEach(function(opt, idx) {
+    var btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.addEventListener('click', function() {
+      choose(idx, btn);
+    });
+    box.appendChild(btn);
+  });
+
+  document.getElementById('explanation').classList.remove('visible', 'wrong');
+  document.getElementById('prompt-box').classList.remove('visible');
+
+  var nextBtn = document.getElementById('next-btn');
+  nextBtn.classList.remove('active');
+  nextBtn.textContent = currentQ === situations.length - 1 ? 'К результатам' : 'Следующая ситуация';
+
+  var quiz = document.getElementById('quiz');
+  quiz.style.animation = 'none';
+  void quiz.offsetWidth;
+  quiz.style.animation = '';
+
+  triggerResize();
+}
+
+function choose(idx, btn) {
+  if (answered) return;
+
+  var s = situations[currentQ];
+  var explanation = document.getElementById('explanation');
+  var label = document.getElementById('exp-label');
+  var text = document.getElementById('exp-text');
+
+  if (idx === s.correct) {
+    answered = true;
+    if (wrongInCurrent === 0) firstTry++;
+
+    var buttons = document.querySelectorAll('.opt-btn');
+    buttons.forEach(function(b, i) {
+      if (i === idx) {
+        b.classList.add('selected-correct');
+      } else {
+        b.classList.add('disabled');
+      }
+    });
+
+    explanation.classList.remove('wrong');
+    label.textContent = 'Верно';
+    text.textContent = s.explain;
+    explanation.classList.add('visible');
+
+    document.getElementById('prompt-text').textContent = s.prompt;
+    document.getElementById('prompt-box').classList.add('visible');
+
+    document.getElementById('next-btn').classList.add('active');
+    document.getElementById('prog-fill').style.width = ((currentQ + 1) / situations.length * 100) + '%';
+  } else {
+    wrongInCurrent++;
+    btn.classList.add('selected-wrong', 'disabled');
+
+    explanation.classList.add('wrong', 'visible');
+    label.textContent = 'Не подходит';
+    text.textContent = s.wrong[idx];
+  }
+
+  triggerResize();
+}
+
+function showFinal() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('prog-bar').style.display = 'none';
+
+  var scoreLine = 'С первого раза верно: ' + firstTry + ' из 5. ';
+  if (firstTry === 5) {
+    scoreLine += 'Вы решили все ситуации с первой попытки и готовы применять навык в работе.';
+  } else if (firstTry >= 3) {
+    scoreLine += 'Хороший результат. Перечитайте разборы ситуаций, где понадобилась вторая попытка.';
+  } else {
+    scoreLine += 'Стоит повторить материал урока и пройти тренажер еще раз.';
+  }
+  document.getElementById('final-score').textContent = scoreLine;
+
+  document.getElementById('final').style.display = 'block';
+  triggerResize();
+}
+
+function restart() {
+  currentQ = 0;
+  firstTry = 0;
+  wrongInCurrent = 0;
+  answered = false;
+
+  document.getElementById('final').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  document.getElementById('prog-bar').style.display = 'flex';
+
+  renderQuestion();
+}
+
+document.getElementById('next-btn').addEventListener('click', function() {
+  if (!answered) return;
+  currentQ++;
+  if (currentQ < situations.length) {
+    renderQuestion();
+  } else {
+    showFinal();
+  }
+});
+
+document.getElementById('restart-btn').addEventListener('click', restart);
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQuestion();
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
