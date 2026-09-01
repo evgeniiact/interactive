@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  padding: 8px;
+  margin: 0 auto;
+}
+
+.fcard {
+  width: 100%;
+  height: 420px;
+  perspective: 1200px;
+  cursor: pointer;
+  outline: none;
+}
+
+.fcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 18px 20px 44px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background: #fff;
+}
+
+.f-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.f-title .tdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--g600);
+  flex-shrink: 0;
+}
+
+.prompt-box {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-line;
+}
+
+.note {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+  margin: 10px 2px 0;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  max-width: 100%;
+  margin-top: 10px;
+}
+
+.table-wrap table {
+  min-width: 520px;
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11.5px;
+}
+
+.table-wrap th, .table-wrap td {
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+  background: #fff;
+}
+
+.table-wrap th {
+  background: var(--g50);
+  font-weight: 700;
+  color: var(--g800);
+}
+
+.table-wrap td {
+  color: var(--muted);
+}
+
+.flip-icon {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--muted);
+  display: flex;
+}
+
+.flip-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.dots {
+  position: absolute;
+  bottom: 17px;
+  right: 16px;
+  display: flex;
+  gap: 5px;
+}
+
+.pdot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  transition: background 0.3s;
+}
+
+.pdot.active {
+  background: var(--g600);
+}
+
+@media (max-width: 600px) {
+  .fcard { height: 560px; }
+  .face { padding: 16px 14px 44px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <div class="fcard" id="fcard" tabindex="0" role="button" aria-label="Карточка с тремя промптами: тезисный обзор, таблица, сравнение редакций">
+    <div class="fcard-inner" id="fcard-inner">
+      <div class="face" id="face"></div>
+      <div class="dots" id="dots"></div>
+      <span class="flip-icon">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M13 8a5 5 0 0 1-9 3M3 8a5 5 0 0 1 9-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 5.5V8H9.5M4 10.5V8h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </div>
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var faces = [
+  {
+    title: 'Тезисный обзор',
+    prompt: 'Ниже приведен фрагмент [название документа].\n\nПодготовь тезисный обзор из [пяти] пунктов. Укажи только действия, сроки, ответственных, условия и исключения, которые следуют из текста.\n\nИспользуй только сведения из приведенного фрагмента. Не добавляй требования, сроки, нормы и ответственных от себя. Если данных недостаточно, напиши, каких сведений не хватает.\n\n[Вставьте подготовленный фрагмент документа]',
+    note: 'Тезисный обзор не заменяет документ. Он показывает, где искать важные условия и какие вопросы задать до начала работы.',
+    table: null
+  },
+  {
+    title: 'Структурирование с помощью таблицы',
+    prompt: 'После обзора попросите ИИ оформить важные пункты в таблицу.\n\nНа основе приведенного фрагмента оформи таблицу со столбцами: «Действие», «Срок», «Ответственный», «Пункт документа», «Что проверить».\n\nДля каждой строки укажи номер пункта и короткую цитату из исходного текста. Если сведений нет, напиши «не указано в тексте».',
+    note: 'Столбец «Пункт документа» или «Цитата» помогает быстро найти основание для действия, если руководитель или подразделение задаст вопрос.',
+    table: null
+  },
+  {
+    title: 'Сравнение редакций',
+    prompt: 'Ниже приведены два фрагмента инструкции по обращению с отходами: старая и новая редакции.\n\nСравни тексты. Покажи только различия в требованиях, сроках, формах и ответственных.\n\nДля каждого различия укажи короткую цитату из старой и новой редакции. Не добавляй сведения, которых нет в текстах.\n\nОформи результат в таблице: «Раздел», «Было», «Стало», «Что изменилось», «Что проверить».\n\n[Вставьте старую редакцию]\n\n[Вставьте новую редакцию]',
+    note: null,
+    table: {
+      head: ['Раздел', 'Было', 'Стало', 'Что изменилось', 'Что проверить'],
+      row: ['[Пункт]', '[цитата из старой версии]', '[цитата из новой версии]', '[краткое изменение]', '[действие или вопрос]']
+    }
+  }
+];
+
+var current = 0;
+var animating = false;
+
+function renderFace(i) {
+  var f = faces[i];
+  var html = '<div class="f-title"><span class="tdot"></span>' + f.title + '</div>';
+  html += '<div class="prompt-box">' + f.prompt + '</div>';
+
+  if (f.table) {
+    html += '<div class="table-wrap"><table><thead><tr>';
+    f.table.head.forEach(function(h) { html += '<th>' + h + '</th>'; });
+    html += '</tr></thead><tbody><tr>';
+    f.table.row.forEach(function(c) { html += '<td>' + c + '</td>'; });
+    html += '</tr></tbody></table></div>';
+  }
+
+  if (f.note) {
+    html += '<div class="note">' + f.note + '</div>';
+  }
+
+  document.getElementById('face').innerHTML = html;
+
+  var dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  faces.forEach(function(_, idx) {
+    var d = document.createElement('span');
+    d.className = 'pdot' + (idx === i ? ' active' : '');
+    dots.appendChild(d);
+  });
+}
+
+function nextFace() {
+  if (animating) return;
+  animating = true;
+
+  var inner = document.getElementById('fcard-inner');
+  inner.style.transform = 'rotateY(90deg)';
+
+  setTimeout(function() {
+    current = (current + 1) % faces.length;
+    renderFace(current);
+
+    inner.style.transition = 'none';
+    inner.style.transform = 'rotateY(-90deg)';
+    void inner.offsetWidth;
+    inner.style.transition = '';
+    inner.style.transform = 'rotateY(0deg)';
+
+    setTimeout(function() {
+      animating = false;
+      triggerResize();
+    }, 320);
+  }, 320);
+}
+
+document.getElementById('fcard').addEventListener('click', nextFace);
+
+document.getElementById('fcard').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    nextFace();
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderFace(0);
+  triggerResize();
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
