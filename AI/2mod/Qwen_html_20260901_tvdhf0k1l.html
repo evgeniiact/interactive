@@ -1,0 +1,224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g700: #15803d;
+  --g800: #166534;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  padding: 8px;
+  margin: 0 auto;
+}
+
+.fcard {
+  width: 100%;
+  height: 400px;
+  perspective: 1200px;
+  cursor: pointer;
+  outline: none;
+}
+
+.fcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.fcard.flipped .fcard-inner {
+  transform: rotateY(180deg);
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 18px 20px 40px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.face.front {
+  background: #fff;
+}
+
+.face.back {
+  background: var(--g50);
+  border-color: var(--g100);
+  transform: rotateY(180deg);
+}
+
+.f-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.face.back .f-title {
+  color: var(--g800);
+}
+
+.f-title .dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--g600);
+  flex-shrink: 0;
+}
+
+.prompt-box {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 12.5px;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-line;
+}
+
+.face.front .prompt-box {
+  background: #f8fafc;
+}
+
+.note {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+  margin: 10px 2px 0;
+}
+
+.flip-icon {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--muted);
+  display: flex;
+}
+
+.flip-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+@media (max-width: 600px) {
+  .fcard { height: 520px; }
+  .face { padding: 16px 14px 40px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <div class="fcard" tabindex="0" role="button" aria-label="Карточка с промптами: тезисный обзор и структурирование таблицей">
+    <div class="fcard-inner">
+
+      <div class="face front">
+        <div class="f-title"><span class="dot"></span>Тезисный обзор</div>
+        <div class="prompt-box">Ниже приведен фрагмент [название документа].
+
+Подготовь тезисный обзор из [пяти] пунктов. Укажи только действия, сроки, ответственных, условия и исключения, которые следуют из текста.
+
+Используй только сведения из приведенного фрагмента. Не добавляй требования, сроки, нормы и ответственных от себя. Если данных недостаточно, напиши, каких сведений не хватает.
+
+[Вставьте подготовленный фрагмент документа]</div>
+        <div class="note">Тезисный обзор не заменяет документ. Он показывает, где искать важные условия и какие вопросы задать до начала работы.</div>
+        <span class="flip-icon">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M13 8a5 5 0 0 1-9 3M3 8a5 5 0 0 1 9-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 5.5V8H9.5M4 10.5V8h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
+
+      <div class="face back">
+        <div class="f-title"><span class="dot"></span>Структурирование с помощью таблицы</div>
+        <div class="prompt-box">После обзора попросите ИИ оформить важные пункты в таблицу.
+
+На основе приведенного фрагмента оформи таблицу со столбцами: «Действие», «Срок», «Ответственный», «Пункт документа», «Что проверить».
+
+Для каждой строки укажи номер пункта и короткую цитату из исходного текста. Если сведений нет, напиши «не указано в тексте».</div>
+        <div class="note">Столбец «Пункт документа» или «Цитата» помогает быстро найти основание для действия, если руководитель или подразделение задаст вопрос.</div>
+        <span class="flip-icon">
+          <svg viewBox="0 0 16 16" fill="none"><path d="M13 8a5 5 0 0 1-9 3M3 8a5 5 0 0 1 9-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 5.5V8H9.5M4 10.5V8h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </span>
+      </div>
+
+    </div>
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+function init() {
+  var card = document.querySelector('.fcard');
+
+  card.addEventListener('click', function() {
+    card.classList.toggle('flipped');
+    triggerResize();
+  });
+
+  card.addEventListener('keydown', function(e) {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      card.classList.toggle('flipped');
+      triggerResize();
+    }
+  });
+
+  triggerResize();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  init();
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
