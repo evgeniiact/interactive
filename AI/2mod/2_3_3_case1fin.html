@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  height: 700px;
+  padding: 8px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.fcard {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.f-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.f-title .tdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--g600);
+  flex-shrink: 0;
+}
+
+.intro-text {
+  font-size: 13.5px;
+  color: var(--text);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.prompt-box {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-line;
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.example-box {
+  background: #fff;
+  border: 1px dashed var(--g600);
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-line;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.example-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--g700);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.tab-btn {
+  flex: 1;
+  background: #fff;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  background: var(--g50);
+  border-color: var(--g600);
+}
+
+.tab-btn.active {
+  background: var(--g600);
+  color: #fff;
+  border-color: var(--g600);
+}
+
+@media (max-width: 600px) {
+  .wrap { height: 700px; }
+  .fcard { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <div class="fcard">
+    <div class="f-title"><span class="tdot"></span>Кейс 1. Запрос данных у подразделений</div>
+    
+    <div class="intro-text" id="introText">
+      Экологи ежемесячно собирают данные у цехов. Ручное написание писем повышает риск забыть срок или приложение. Используйте единый шаблон.
+    </div>
+
+    <div class="example-label" id="promptLabel">Промпт для ИИ: Запрос данных</div>
+    <div class="prompt-box" id="promptBox"></div>
+
+    <div class="example-label">Пример результата</div>
+    <div class="example-box" id="exampleBox"></div>
+
+    <div class="controls">
+      <button class="tab-btn active" onclick="setScenario(0)">Сценарий 1: Первичный запрос</button>
+      <button class="tab-btn" onclick="setScenario(1)">Сценарий 2: Напоминание о сроке</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+const scenarios = [
+  {
+    intro: 'Экологи ежемесячно собирают данные у цехов. Ручное написание писем повышает риск забыть срок или приложение. Используйте единый шаблон.',
+    label: 'Промпт для ИИ: Запрос данных',
+    prompt: 'Подготовь универсальный шаблон письма для запроса данных у подразделения.\n\nВ письме должны быть поля: [адресат], [цель], [период], [перечень сведений], [срок], [формат ответа], [приложение].\n\nИспользуй короткие предложения и деловой нейтральный тон.\n\nНе добавляй требования законодательства и сведения, которых нет в запросе.',
+    example: 'Тема: Запрос сведений за [период]\n\nКоллеги, добрый день.\n\nДля [цель] просим направить сведения за [период].\n\nПросим предоставить:\n- [перечень сведений];\n- [перечень сведений].\n\nПросим направить [формат ответа] до [срок].\n\nФорма для заполнения: [приложение].\n\nПросим подтвердить направление сведений ответным письмом.'
+  },
+  {
+    intro: 'Подразделение игнорирует дедлайн. Нужно напомнить о сроке без лишних извинений, но с сохранением делового тона.',
+    label: 'Промпт для ИИ: Напоминание о сроке',
+    prompt: 'Подготовь короткое письмо-напоминание подразделению о сроке предоставления сведений.\n\nИспользуй поля: [адресат], [название запроса], [исходный срок], [новый крайний срок].\n\nТон вежливый, но строгий. Без лишних извинений и оправданий.',
+    example: 'Тема: Напоминание о сроке по [название запроса]\n\nКоллеги, добрый день.\n\nНапоминаем о необходимости направить сведения по [название запроса].\n\nИсходный срок истек [исходный срок].\n\nПросим направить информацию в формате [формат ответа] не позднее [новый крайний срок].\n\nФорма для заполнения во вложении.'
+  }
+];
+
+function setScenario(index) {
+  const data = scenarios[index];
+  
+  document.getElementById('introText').textContent = data.intro;
+  document.getElementById('promptLabel').textContent = data.label;
+  document.getElementById('promptBox').textContent = data.prompt;
+  document.getElementById('exampleBox').textContent = data.example;
+
+  const buttons = document.querySelectorAll('.tab-btn');
+  buttons.forEach((btn, i) => {
+    if (i === index) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  triggerResize();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  setScenario(0);
+  
+  const wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>

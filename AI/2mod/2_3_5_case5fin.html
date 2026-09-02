@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  height: 700px;
+  padding: 8px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.fcard {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.f-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 12px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.f-title .tdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--g600);
+  flex-shrink: 0;
+}
+
+.intro-text {
+  font-size: 13.5px;
+  color: var(--text);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.prompt-box {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-line;
+  flex-grow: 1;
+  overflow-y: auto;
+  margin-bottom: 12px;
+}
+
+.example-box {
+  background: #fff;
+  border: 1px dashed var(--g600);
+  border-radius: 8px;
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  white-space: pre-line;
+  flex-grow: 1;
+  overflow-y: auto;
+}
+
+.example-label {
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--g700);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  letter-spacing: 0.5px;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+
+.tab-btn {
+  flex: 1;
+  background: #fff;
+  color: var(--text);
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover {
+  background: var(--g50);
+  border-color: var(--g600);
+}
+
+.tab-btn.active {
+  background: var(--g600);
+  color: #fff;
+  border-color: var(--g600);
+}
+
+@media (max-width: 600px) {
+  .wrap { height: 700px; }
+  .fcard { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <div class="fcard">
+    <div class="f-title"><span class="tdot"></span>Кейс 3. Служебная записка и акт из фрагментов</div>
+    
+    <div class="intro-text" id="introText">
+      Сведения разбросаны по журналу обхода, почте и таблицам. Руководителю нужен краткий структурированный черновик. Разметьте источники перед отправкой в ИИ.
+    </div>
+
+    <div class="example-label" id="promptLabel">Промпт для ИИ. Черновик служебной записки</div>
+    <div class="prompt-box" id="promptBox"></div>
+
+    <div class="example-label">Пример результата</div>
+    <div class="example-box" id="exampleBox"></div>
+
+    <div class="controls">
+      <button class="tab-btn active" onclick="setScenario(0)">Сценарий 1. Черновик служебной записки</button>
+      <button class="tab-btn" onclick="setScenario(1)">Сценарий 2. Акт о нарушении</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+const scenarios = [
+  {
+    intro: 'Сведения разбросаны по журналу обхода, почте и таблицам. Руководителю нужно структурированное письмо. Обезличьте документы перед отправкой в ИИ.',
+    label: 'Промпт для ИИ. Черновик служебной записки',
+    prompt: 'Ниже приведены материалы по одной рабочей ситуации.\n\nПодготовь черновик служебной записки для руководителя.\n\nИспользуй структуру.\n- Ситуация.\n- Подтвержденные факты.\n- Выполненные действия.\n- Вопрос для решения или согласования.\n\nИспользуй только сведения из материалов. Не добавляй причины, выводы и риски, которых нет в тексте.\n\n[Журнал обхода]. ...\n[Письмо подразделения]. ...',
+    example: 'Ситуация.\nНа контейнерной площадке номер [номер] выявлено переполнение контейнера для [вид отхода].\n\nПодтвержденные факты.\nФакт зафиксирован при обходе [дата].\n\nВыполненные действия.\nИнформация направлена в [подразделение].\n\nВопрос для решения.\nТребуется определить дальнейшие действия по устранению переполнения.'
+  },
+  {
+    intro: 'Тот же инцидент нужно оформить документально для привлечения виновных к ответственности. Эмоции и внутренние процессы здесь не нужны. Нужны факты и ссылки на локальные акты.',
+    label: 'Промпт для ИИ. Акт о нарушении',
+    prompt: 'Ниже приведены разрозненные материалы по инциденту.\n\nПодготовь проект акта о выявленном экологическом нарушении.\n\nУкажи дату, место, суть нарушения, ФИО виновных и ссылки на локальные нормативные акты предприятия, приложения и фотофиксацию.\n\nПиши сухим канцелярским языком. Не добавляй эмоций и оценок.\n\n[Материалы]. ...',
+    example: 'Акт номер [номер]\n\nДата. [дата].\nМесто. Контейнерная площадка номер [номер].\nСуть нарушения. Размещение отходов четвертого класса опасности вне установленной контейнерной площадки.\nВиновные лица. Начальник цеха [ФИО].\n\nНарушение выявлено в ходе производственного экологического контроля.\n\nПриложения и фотофиксация прилагаются.\nМатериалы переданы в службу управления персоналом для применения мер дисциплинарного взыскания.'
+  }
+];
+
+function setScenario(index) {
+  const data = scenarios[index];
+  
+  document.getElementById('introText').textContent = data.intro;
+  document.getElementById('promptLabel').textContent = data.label;
+  document.getElementById('promptBox').textContent = data.prompt;
+  document.getElementById('exampleBox').textContent = data.example;
+
+  const buttons = document.querySelectorAll('.tab-btn');
+  buttons.forEach((btn, i) => {
+    if (i === index) {
+      btn.classList.add('active');
+    } else {
+      btn.classList.remove('active');
+    }
+  });
+
+  triggerResize();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  setScenario(0);
+  
+  const wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
