@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 720px;
+  padding: 20px 16px;
+  background: var(--card, #fff);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin: 0 auto;
+}
+
+.carousel {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.nav-btn {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: #fff;
+  color: var(--muted);
+  cursor: pointer;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  border-color: var(--g600);
+  color: var(--g700);
+  background: var(--g50);
+}
+
+.nav-btn:active {
+  transform: scale(0.94);
+}
+
+.viewport {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  padding: 6px 0 10px;
+}
+
+.track {
+  display: flex;
+  gap: 16px;
+  transition: transform 0.45s ease;
+  will-change: transform;
+}
+
+.track.no-anim {
+  transition: none;
+}
+
+/* Ровно две карточки, вместе с зазором занимают всю ширину окна,
+   поэтому пара всегда стоит по центру без обрезанных краев */
+.fcard {
+  width: calc((100% - 16px) / 2);
+  height: 230px;
+  flex-shrink: 0;
+  perspective: 1200px;
+  cursor: pointer;
+  outline: none;
+}
+
+.fcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.6s;
+  transform-style: preserve-3d;
+}
+
+.fcard.flipped .fcard-inner {
+  transform: rotateY(180deg);
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 18px 16px 40px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.face.front {
+  background: #fff;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+}
+
+.face.back {
+  background: var(--g50);
+  border-color: var(--g100);
+  transform: rotateY(180deg);
+}
+
+.f-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  line-height: 1.35;
+  padding: 0 6px;
+}
+
+.f-hint {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 10px;
+}
+
+.flip-icon {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--muted);
+  display: flex;
+}
+
+.flip-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.b-text {
+  font-size: 12.5px;
+  line-height: 1.45;
+  color: var(--text);
+  margin: 0 0 12px 0;
+  flex: 1;
+}
+
+.module-tag {
+  margin-top: auto;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #fff;
+  border: 1px solid var(--g100);
+  border-radius: 999px;
+  padding: 5px 10px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--g700);
+  align-self: flex-start;
+}
+
+.module-tag svg {
+  width: 13px;
+  height: 13px;
+  flex-shrink: 0;
+}
+
+@media (max-width: 600px) {
+  .wrap { padding: 14px 10px; }
+  .fcard { width: 100%; height: 240px; }
+  .nav-btn { width: 34px; height: 34px; }
+  .carousel { gap: 6px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <div class="carousel">
+    <button class="nav-btn" id="prev-btn" aria-label="Предыдущая карточка">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 3L5 8l5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+
+    <div class="viewport" id="viewport">
+      <div class="track" id="track"></div>
+    </div>
+
+    <button class="nav-btn" id="next-btn" aria-label="Следующая карточка">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M6 3l5 5-5 5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var shield = '<svg viewBox="0 0 24 24" fill="none"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 9-4.5-.5-8-4-8-9V7l8-4Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/></svg>';
+var doc = '<svg viewBox="0 0 24 24" fill="none"><path d="M7 3h8l4 4v13a1 1 0 0 1-1 1H7a1 1 0 0 1-1-1V4a1 1 0 0 1 1-1Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 12h6M9 16h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>';
+var grid = '<svg viewBox="0 0 24 24" fill="none"><rect x="4" y="4" width="16" height="16" rx="2" stroke="currentColor" stroke-width="1.8"/><path d="M4 10h16M10 4v16" stroke="currentColor" stroke-width="1.8"/></svg>';
+var check = '<svg viewBox="0 0 24 24" fill="none"><path d="m5 12 4 4 10-10" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+var fIcon = '<svg viewBox="0 0 16 16" fill="none"><path d="M13 8a5 5 0 0 1-9 3M3 8a5 5 0 0 1 9-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 5.5V8H9.5M4 10.5V8h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>';
+
+var data = [
+  { t: 'Передавать данные без риска',
+    d: 'Вы научитесь отличать открытые данные от защищаемых. Обезличите документы и подберете безопасный сценарий для каждой задачи.',
+    m: 'База и безопасность', icon: shield },
+  { t: 'Ставить задачу так, чтобы ИИ понял',
+    d: 'Вы освоите формулу РКЗФ. Это роль, контекст, задача и формат ответа в одном запросе. Структурированный запрос дает черновик, который можно доработать.',
+    m: 'Тексты и документы', icon: doc },
+  { t: 'Выделять главное и писать черновики',
+    d: 'ИИ сделает выжимку из приказа и черновик письма подрядчику. Вы проверите факты, сроки и формулировки перед отправкой документа.',
+    m: 'Тексты и документы', icon: doc },
+  { t: 'Переводить требования в памятки',
+    d: 'Вы превратите сложные правила в понятные действия для работников склада, цеха и контейнерной площадки. Памятки, чек-листы и инструкции на простом языке.',
+    m: 'Визуал и структурирование', icon: grid },
+  { t: 'Собирать структуру презентаций',
+    d: 'ИИ предложит структуру презентации для руководителя и поможет сформулировать управленческие тезисы. Вы адаптируете смысл и акценты под свое предприятие.',
+    m: 'Визуал и структурирование', icon: grid },
+  { t: 'Проверять ИИ',
+    d: 'Вы научитесь распознавать галлюцинации и сверять источники, факты и логику.',
+    m: 'Контроль и внедрение', icon: check }
+];
+
+var K = 3;
+var N = data.length;
+var track = document.getElementById('track');
+var pos = K;
+var step = 0;
+
+function cardEl(id) {
+  var d = data[id];
+  var el = document.createElement('div');
+  el.className = 'fcard';
+  el.setAttribute('data-id', id);
+  el.innerHTML =
+    '<div class="fcard-inner">' +
+      '<div class="face front">' +
+        '<div class="f-title">' + d.t + '</div>' +
+        '<div class="f-hint">Нажмите, чтобы узнать подробности</div>' +
+        '<span class="flip-icon">' + fIcon + '</span>' +
+      '</div>' +
+      '<div class="face back">' +
+        '<div class="b-text">' + d.d + '</div>' +
+        '<div class="module-tag">' + d.icon + '<span>' + d.m + '</span></div>' +
+        '<span class="flip-icon">' + fIcon + '</span>' +
+      '</div>' +
+    '</div>';
+  return el;
+}
+
+function build() {
+  track.innerHTML = '';
+  for (var i = -K; i < N + K; i++) {
+    var id = ((i % N) + N) % N;
+    track.appendChild(cardEl(id));
+  }
+}
+
+function measure() {
+  var card = track.querySelector('.fcard');
+  var gap = parseFloat(getComputedStyle(track).gap) || 16;
+  step = card.offsetWidth + gap;
+}
+
+function jump() {
+  track.classList.add('no-anim');
+  track.style.transform = 'translateX(' + (-pos * step) + 'px)';
+  void track.offsetWidth;
+  track.classList.remove('no-anim');
+}
+
+function move() {
+  track.style.transform = 'translateX(' + (-pos * step) + 'px)';
+}
+
+function normalize() {
+  var changed = false;
+  while (pos > N - 1 + K) { pos -= N; changed = true; }
+  while (pos < K) { pos += N; changed = true; }
+  if (changed) jump();
+}
+
+track.addEventListener('transitionend', function(e) {
+  if (e.propertyName !== 'transform') return;
+  normalize();
+});
+
+document.getElementById('next-btn').addEventListener('click', function() {
+  pos++;
+  move();
+});
+
+document.getElementById('prev-btn').addEventListener('click', function() {
+  pos--;
+  move();
+});
+
+track.addEventListener('click', function(e) {
+  var card = e.target.closest('.fcard');
+  if (!card) return;
+  var id = card.getAttribute('data-id');
+  var flipped = !card.classList.contains('flipped');
+  track.querySelectorAll('.fcard[data-id="' + id + '"]').forEach(function(c) {
+    c.classList.toggle('flipped', flipped);
+  });
+});
+
+window.addEventListener('resize', function() {
+  measure();
+  jump();
+  triggerResize();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  build();
+  measure();
+  jump();
+  triggerResize();
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
