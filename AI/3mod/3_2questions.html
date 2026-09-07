@@ -305,7 +305,7 @@ body {
 
 <div class="wrap">
   <div class="quiz-content" id="quizContent">
-    <div class="progress" id="progress">Ситуация 1 из 2</div>
+    <div class="progress" id="progress">Ситуация 1/2</div>
     
     <div class="situation-text" id="situationText"></div>
     
@@ -325,7 +325,7 @@ body {
       <div class="feedback-text" id="feedbackText"></div>
     </div>
     
-    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Перейти к следующей ситуации</button>
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Следующая ситуация</button>
   </div>
   
   <div class="results" id="results">
@@ -339,26 +339,26 @@ body {
 <script>
 const questions = [
   {
-    situation: 'Вы готовите экологический инструктаж для новых сотрудников цеха. Решили использовать ИИ для ускорения работы и попросили его составить текст инструктажа по обращению с отходами.',
-    question: 'Как лучше использовать ИИ в этом случае?',
+    situation: 'Вы готовите плакат для цеха по правилам накопления и сортировки отходов. Решили использовать визуальную нейросеть, чтобы ускорить работу.',
+    question: 'Как получить лучший результат?',
     options: [
-      'Попросить ИИ сразу выдать готовый текст инструктажа и вставить его в программу обучения',
-      'Сгенерировать в ИИ структуру и ключевые тезисы, а затем адаптировать под специфику цеха и требования локальных актов',
-      'Загрузить в ИИ старые инструкции и попросить переписать их дословно'
+      'Попросить нейросеть выдать готовый плакат с текстом, цветами контейнеров и логотипом компании',
+      'Сгенерировать в нейросети визуальную концепцию и иллюстрации, а текст и логотип добавить в графическом редакторе',
+      'Загрузить чужой плакат и попросить нейросеть сделать его точную копию'
     ],
     correct: 1,
-    feedback: 'ИИ дает хорошую структуру и базовые тезисы, но не знает специфику вашего цеха и локальные требования предприятия. Эколог должен адаптировать материал под реальную практику. Иначе сотрудники получат общие фразы, которые не помогут в работе.'
+    feedback: 'Визуальные нейросети плохо работают с точным текстом и сложной версткой. Они часто искажают буквы и нарушают пропорции цветов маркировки. Лучше использовать их для генерации идей, фонов и иллюстраций. Текст, цвета контейнеров по ФККО и логотипы добавляйте в привычном графическом редакторе.'
   },
   {
-    situation: 'Нужно сделать плакат по правилам сортировки отходов для контейнерной площадки. Вы сгенерировали в визуальной нейросети картинку с контейнерами разных цветов и пиктограммами.',
-    question: 'Что нужно проверить перед печатью плаката?',
+    situation: 'Вы готовите презентацию по экологическому инструктажу для новых сотрудников. У вас есть обезличенные инструкции по обращению с отходами и охране труда. Вы загружаете их в нейросеть и просите собрать презентацию.',
+    question: 'Удачное ли это решение?',
     options: [
-      'Только читаемость текста и качество изображения',
-      'Соответствие цветов контейнеров классам отходов по ФККО и правильность пиктограмм',
-      'Ничего не нужно, нейросеть всегда рисует по актуальным нормативам'
+      'Нет, для презентации нужно заранее подготовить структуру и загрузить НПА',
+      'Да, обезличенные инструкции дадут нейросети контекст и помогут собрать презентацию по текущим правилам предприятия',
+      'Нет, презентацию по интруктажу можно сгенерировать без загрузки документов, т.к. инструкции универсальны'
     ],
     correct: 1,
-    feedback: 'Визуальные нейросети часто путают цвета маркировки отходов. Синий контейнер может оказаться для пищевых отходов вместо бумаги, а пиктограммы не соответствуют ГОСТ. Всегда сверяйте сгенерированные картинки с ФККО и локальными инструкциями перед печатью.'
+    feedback: 'Обезличенные инструкции без персональных данных и конфиденциальной информации — хороший источник контекста для нейросети. Они помогут собрать презентацию, которая соответствует реальным правилам предприятия. Всегда убирайте ФИО, название предприятия и контакты перед загрузкой.'
   }
 ];
 
@@ -370,7 +370,7 @@ let correctCount = 0;
 function renderQuestion() {
   const q = questions[currentQuestion];
   
-  document.getElementById('progress').textContent = `Ситуация ${currentQuestion + 1} из ${questions.length}`;
+  document.getElementById('progress').textContent = 'Ситуация ' + (currentQuestion + 1) + '/' + questions.length;
   document.getElementById('situationText').textContent = q.situation;
   document.getElementById('questionText').textContent = q.question;
   
@@ -381,10 +381,7 @@ function renderQuestion() {
     const div = document.createElement('div');
     div.className = 'answer-option';
     div.onclick = () => selectAnswer(index);
-    div.innerHTML = `
-      <div class="radio"></div>
-      <div class="answer-text">${option}</div>
-    `;
+    div.innerHTML = '<div class="radio"></div><div class="answer-text">' + option + '</div>';
     answersContainer.appendChild(div);
   });
   
@@ -445,7 +442,7 @@ function submitAnswer() {
     feedback.classList.remove('incorrect');
   } else {
     feedbackTitle.textContent = 'Не совсем так';
-    feedbackIcon.textContent = '✕';
+    feedbackIcon.textContent = '';
     feedback.classList.add('incorrect');
   }
   
@@ -454,21 +451,21 @@ function submitAnswer() {
   
   document.getElementById('submitBtn').disabled = true;
   
+  const nextBtn = document.getElementById('nextBtn');
   if (currentQuestion < questions.length - 1) {
-    document.getElementById('nextBtn').textContent = 'Перейти к следующей ситуации';
-    document.getElementById('nextBtn').classList.add('show');
+    nextBtn.textContent = 'Следующая ситуация';
+    nextBtn.onclick = nextQuestion;
   } else {
-    document.getElementById('nextBtn').textContent = 'Посмотреть результат';
-    document.getElementById('nextBtn').classList.add('show');
-    document.getElementById('nextBtn').onclick = showResults;
+    nextBtn.textContent = 'Завершить';
+    nextBtn.onclick = showResults;
   }
+  nextBtn.classList.add('show');
   
   triggerResize();
 }
 
 function nextQuestion() {
   currentQuestion++;
-  document.getElementById('nextBtn').onclick = nextQuestion;
   renderQuestion();
 }
 
@@ -478,9 +475,9 @@ function showResults() {
   
   const resultsText = document.getElementById('resultsText');
   if (correctCount === questions.length) {
-    resultsText.textContent = `Вы правильно разобрали все ${questions.length} ситуации. Вы понимаете, как использовать ИИ для подготовки инструктажей и плакатов без ошибок.`;
+    resultsText.textContent = 'Вы правильно разобрали все ' + questions.length + ' ситуации. Вы понимаете сильные и слабые стороны визуальных нейросетей.';
   } else {
-    resultsText.textContent = `Вы правильно разобрали ${correctCount} из ${questions.length} ситуаций. Повторите материал о проверке сгенерированных материалов перед использованием.`;
+    resultsText.textContent = 'Вы правильно разобрали ' + correctCount + ' из ' + questions.length + ' ситуаций. Повторите материал о возможностях и ограничениях генерации изображений.';
   }
   
   triggerResize();
@@ -494,7 +491,6 @@ function resetQuiz() {
   
   document.getElementById('quizContent').classList.remove('hidden');
   document.getElementById('results').classList.remove('show');
-  document.getElementById('nextBtn').onclick = nextQuestion;
   
   renderQuestion();
 }
