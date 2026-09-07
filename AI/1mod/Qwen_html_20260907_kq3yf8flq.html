@@ -1,0 +1,388 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --red: #ef4444;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.wrap {
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.question-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.answers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.answer-option {
+  position: relative;
+  padding: 16px 20px;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.answer-option:hover {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.answer-option.selected {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.answer-option.correct {
+  border-color: var(--g600);
+  background: var(--g100);
+}
+
+.answer-option.incorrect {
+  border-color: var(--red);
+  background: #fef2f2;
+}
+
+.answer-option.disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.answer-option.selected .radio {
+  border-color: var(--g600);
+}
+
+.answer-option.correct .radio {
+  border-color: var(--g600);
+  background: var(--g600);
+}
+
+.answer-option.correct .radio::after {
+  content: '✓';
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.answer-option.incorrect .radio {
+  border-color: var(--red);
+  background: var(--red);
+}
+
+.answer-option.incorrect .radio::after {
+  content: '';
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.answer-text {
+  font-size: 14px;
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.check-btn {
+  background: var(--g600);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.check-btn:hover {
+  background: var(--g700);
+}
+
+.check-btn:disabled {
+  background: var(--border);
+  cursor: not-allowed;
+}
+
+.retry-btn {
+  background: #fff;
+  color: var(--g700);
+  border: 1px solid var(--g600);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  display: none;
+}
+
+.retry-btn:hover {
+  background: var(--g50);
+}
+
+.retry-btn.show {
+  display: block;
+}
+
+.feedback {
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: var(--radius);
+  display: none;
+}
+
+.feedback.show {
+  display: block;
+}
+
+.feedback-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--g800);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feedback-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+@media (max-width: 600px) {
+  body { padding: 16px; }
+  .answer-option { padding: 14px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="question-text">
+    Прежде чем перейти к изучению новой функции, подумайте: в чем основное отличие поиска через ИИ-сервисы от поиска в обычных поисковиках?
+  </div>
+  
+  <div class="hint">Выберите один верный ответ</div>
+  
+  <div class="answers" id="answers">
+    <div class="answer-option" data-index="0" onclick="selectAnswer(0)">
+      <div class="radio"></div>
+      <div class="answer-text">У ИИ-сервисов есть доступ к большему количеству сайтов и баз данных</div>
+    </div>
+    
+    <div class="answer-option" data-index="1" onclick="selectAnswer(1)">
+      <div class="radio"></div>
+      <div class="answer-text">ИИ-сервис ищет не только по ключевым словам, но и по смыслу запроса</div>
+    </div>
+    
+    <div class="answer-option" data-index="2" onclick="selectAnswer(2)">
+      <div class="radio"></div>
+      <div class="answer-text">ИИ-сервисы находят информацию гораздо быстрее</div>
+    </div>
+  </div>
+  
+  <div class="buttons">
+    <button class="check-btn" id="checkBtn" onclick="checkAnswer()" disabled>Проверить ответ</button>
+    <button class="retry-btn" id="retryBtn" onclick="resetQuiz()">Пройти заново</button>
+  </div>
+  
+  <div class="feedback" id="feedback">
+    <div class="feedback-title">
+      <span id="feedbackIcon"></span>
+      <span id="feedbackTitleText"></span>
+    </div>
+    <div class="feedback-text" id="feedbackText"></div>
+  </div>
+</div>
+
+<script>
+let selectedAnswer = null;
+let checked = false;
+
+const correctAnswer = 1;
+const feedbackData = {
+  correct: {
+    title: 'Верно',
+    icon: '✓',
+    text: 'В отличие от обычного поисковика, который ищет по ключевым словам, ИИ способен понимать смысл вашего запроса в целом. Он анализирует данные и предоставляет наиболее релевантную информацию. Это значит, что вам не нужно самостоятельно пересматривать и сравнивать десятки сайтов или документов — ИИ сделает это за вас и выдаст готовый результат.'
+  },
+  incorrect: {
+    title: 'Не совсем так',
+    icon: '✕',
+    text: 'В отличие от обычного поисковика, который ищет по ключевым словам, ИИ способен понимать смысл вашего запроса в целом. Он анализирует данные и предоставляет наиболее релевантную информацию. Это значит, что вам не нужно самостоятельно пересматривать и сравнивать десятки сайтов или документов — ИИ сделает это за вас и выдаст готовый результат.'
+  }
+};
+
+function selectAnswer(index) {
+  if (checked) return;
+  
+  selectedAnswer = index;
+  
+  document.querySelectorAll('.answer-option').forEach((el, i) => {
+    if (i === index) {
+      el.classList.add('selected');
+    } else {
+      el.classList.remove('selected');
+    }
+  });
+  
+  document.getElementById('checkBtn').disabled = false;
+}
+
+function checkAnswer() {
+  if (selectedAnswer === null || checked) return;
+  
+  checked = true;
+  const isCorrect = selectedAnswer === correctAnswer;
+  
+  document.querySelectorAll('.answer-option').forEach((el, i) => {
+    el.classList.add('disabled');
+    if (i === correctAnswer) {
+      el.classList.add('correct');
+    } else if (i === selectedAnswer && !isCorrect) {
+      el.classList.add('incorrect');
+    }
+  });
+  
+  const feedback = document.getElementById('feedback');
+  const feedbackTitle = document.getElementById('feedbackTitleText');
+  const feedbackIcon = document.getElementById('feedbackIcon');
+  const feedbackText = document.getElementById('feedbackText');
+  const checkBtn = document.getElementById('checkBtn');
+  const retryBtn = document.getElementById('retryBtn');
+  
+  if (isCorrect) {
+    feedbackTitle.textContent = feedbackData.correct.title;
+    feedbackIcon.textContent = feedbackData.correct.icon;
+    feedbackText.textContent = feedbackData.correct.text;
+    feedback.style.background = 'var(--g50)';
+    feedback.style.borderColor = 'var(--g100)';
+  } else {
+    feedbackTitle.textContent = feedbackData.incorrect.title;
+    feedbackIcon.textContent = feedbackData.incorrect.icon;
+    feedbackText.textContent = feedbackData.incorrect.text;
+    feedback.style.background = '#fef2f2';
+    feedback.style.borderColor = '#fecaca';
+  }
+  
+  feedback.classList.add('show');
+  checkBtn.textContent = 'Ответ проверен';
+  checkBtn.disabled = true;
+  retryBtn.classList.add('show');
+  
+  triggerResize();
+}
+
+function resetQuiz() {
+  checked = false;
+  selectedAnswer = null;
+  
+  document.querySelectorAll('.answer-option').forEach(el => {
+    el.classList.remove('selected', 'correct', 'incorrect', 'disabled');
+  });
+  
+  document.getElementById('feedback').classList.remove('show');
+  
+  const checkBtn = document.getElementById('checkBtn');
+  checkBtn.textContent = 'Проверить ответ';
+  checkBtn.disabled = true;
+  
+  document.getElementById('retryBtn').classList.remove('show');
+  
+  triggerResize();
+}
+
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  triggerResize();
+  
+  const wrap = document.querySelector('.wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
