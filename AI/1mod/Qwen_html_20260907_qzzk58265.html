@@ -1,0 +1,515 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --red: #ef4444;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.wrap {
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.progress {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.situation-text {
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.question-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 12px;
+  line-height: 1.5;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.answers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.answer-option {
+  position: relative;
+  padding: 16px 20px;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.answer-option:hover {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.answer-option.selected {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.answer-option.correct {
+  border-color: var(--g600);
+  background: var(--g100);
+}
+
+.answer-option.incorrect {
+  border-color: var(--red);
+  background: #fef2f2;
+}
+
+.answer-option.disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.answer-option.selected .radio {
+  border-color: var(--g600);
+}
+
+.answer-option.correct .radio {
+  border-color: var(--g600);
+  background: var(--g600);
+}
+
+.answer-option.correct .radio::after {
+  content: '✓';
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.answer-option.incorrect .radio {
+  border-color: var(--red);
+  background: var(--red);
+}
+
+.answer-option.incorrect .radio::after {
+  content: '✕';
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.answer-text {
+  font-size: 14px;
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.submit-btn {
+  background: var(--g600);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.submit-btn:hover {
+  background: var(--g700);
+}
+
+.submit-btn:disabled {
+  background: var(--border);
+  cursor: not-allowed;
+}
+
+.feedback {
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: var(--radius);
+  display: none;
+}
+
+.feedback.show {
+  display: block;
+}
+
+.feedback.incorrect {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.feedback-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--g800);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feedback.incorrect .feedback-title {
+  color: var(--red);
+}
+
+.feedback-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+}
+
+.next-btn {
+  background: var(--g600);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+  margin-top: 16px;
+  display: none;
+}
+
+.next-btn:hover {
+  background: var(--g700);
+}
+
+.next-btn.show {
+  display: block;
+}
+
+.results {
+  display: none;
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.results.show {
+  display: block;
+}
+
+.results-icon {
+  font-size: 48px;
+  margin-bottom: 16px;
+}
+
+.results-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.results-text {
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.retry-btn {
+  background: #fff;
+  color: var(--g700);
+  border: 1px solid var(--g600);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.retry-btn:hover {
+  background: var(--g50);
+}
+
+.quiz-content {
+  display: block;
+}
+
+.quiz-content.hidden {
+  display: none;
+}
+
+@media (max-width: 600px) {
+  body { padding: 16px; }
+  .answer-option { padding: 14px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="quiz-content" id="quizContent">
+    <div class="progress" id="progress">Ситуация 1/2</div>
+    
+    <div class="situation-text" id="situationText"></div>
+    
+    <div class="question-text" id="questionText"></div>
+    
+    <div class="hint">Выберите один верный ответ</div>
+    
+    <div class="answers" id="answers"></div>
+    
+    <button class="submit-btn" id="submitBtn" onclick="submitAnswer()" disabled>Ответить</button>
+    
+    <div class="feedback" id="feedback">
+      <div class="feedback-title">
+        <span id="feedbackIcon"></span>
+        <span id="feedbackTitleText"></span>
+      </div>
+      <div class="feedback-text" id="feedbackText"></div>
+    </div>
+    
+    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Следующая ситуация</button>
+  </div>
+  
+  <div class="results" id="results">
+    <div class="results-icon">✓</div>
+    <div class="results-title">Ситуации разобраны</div>
+    <div class="results-text" id="resultsText"></div>
+    <button class="retry-btn" onclick="resetQuiz()">Пройти заново</button>
+  </div>
+</div>
+
+<script>
+const questions = [
+  {
+    situation: 'Нужно подготовить отчет по отходам. Вы загружаете в публичный ИИ-сервис внутреннюю таблицу с объемами образования отходов и названиями цехов, чтобы ускорить расчеты.',
+    question: 'Удачное ли это решение?',
+    options: [
+      'Да, ИИ быстро обработает таблицу и поможет свести данные',
+      'Нет, ИИ не справится с анализом больших массивов данных',
+      'Нет, в публичный ИИ нельзя загружать внутренние документы предприятия'
+    ],
+    correct: 2,
+    feedback: 'В публичные ИИ-сервисы нельзя загружать конфиденциальные данные. Таблицы по отходам и структура цехов составляют коммерческую тайну. Используйте только корпоративные защищенные инструменты или обрабатывайте данные локально.'
+  },
+  {
+    situation: 'Вы готовитесь к проверке и уточняете у ИИ-сервиса спорные требования к программе производственного экологического контроля. Сервис дает подробные ответы. Вы бегло сверяете их с законом и решаете не привлекать юриста.',
+    question: 'Так ли это?',
+    options: [
+      'Да, вы перепроверили ответ ИИ по оригинальному тексту закона',
+      'Нет, в узких юридических вопросах нужна консультация профильного эксперта'
+    ],
+    correct: 1,
+    feedback: 'ИИ может искажать смысл правовых норм. Беглой сверки недостаточно для сложных юридических вопросов. Перед проверками и принятием решений всегда привлекайте юриста или профильного эксперта.'
+  }
+];
+
+let currentQuestion = 0;
+let selectedAnswer = null;
+let answered = false;
+let correctCount = 0;
+
+function renderQuestion() {
+  const q = questions[currentQuestion];
+  
+  document.getElementById('progress').textContent = `Ситуация ${currentQuestion + 1}/${questions.length}`;
+  document.getElementById('situationText').textContent = q.situation;
+  document.getElementById('questionText').textContent = q.question;
+  
+  const answersContainer = document.getElementById('answers');
+  answersContainer.innerHTML = '';
+  
+  q.options.forEach((option, index) => {
+    const div = document.createElement('div');
+    div.className = 'answer-option';
+    div.onclick = () => selectAnswer(index);
+    div.innerHTML = `
+      <div class="radio"></div>
+      <div class="answer-text">${option}</div>
+    `;
+    answersContainer.appendChild(div);
+  });
+  
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('feedback').classList.remove('show', 'incorrect');
+  document.getElementById('nextBtn').classList.remove('show');
+  
+  selectedAnswer = null;
+  answered = false;
+  
+  triggerResize();
+}
+
+function selectAnswer(index) {
+  if (answered) return;
+  
+  selectedAnswer = index;
+  
+  document.querySelectorAll('.answer-option').forEach((el, i) => {
+    if (i === index) {
+      el.classList.add('selected');
+    } else {
+      el.classList.remove('selected');
+    }
+  });
+  
+  document.getElementById('submitBtn').disabled = false;
+}
+
+function submitAnswer() {
+  if (selectedAnswer === null || answered) return;
+  
+  answered = true;
+  const q = questions[currentQuestion];
+  const isCorrect = selectedAnswer === q.correct;
+  
+  if (isCorrect) {
+    correctCount++;
+  }
+  
+  document.querySelectorAll('.answer-option').forEach((el, i) => {
+    el.classList.add('disabled');
+    if (i === q.correct) {
+      el.classList.add('correct');
+    } else if (i === selectedAnswer && !isCorrect) {
+      el.classList.add('incorrect');
+    }
+  });
+  
+  const feedback = document.getElementById('feedback');
+  const feedbackTitle = document.getElementById('feedbackTitleText');
+  const feedbackIcon = document.getElementById('feedbackIcon');
+  const feedbackText = document.getElementById('feedbackText');
+  
+  if (isCorrect) {
+    feedbackTitle.textContent = 'Верно';
+    feedbackIcon.textContent = '✓';
+    feedback.classList.remove('incorrect');
+  } else {
+    feedbackTitle.textContent = 'Не совсем так';
+    feedbackIcon.textContent = '✕';
+    feedback.classList.add('incorrect');
+  }
+  
+  feedbackText.textContent = q.feedback;
+  feedback.classList.add('show');
+  
+  document.getElementById('submitBtn').disabled = true;
+  
+  if (currentQuestion < questions.length - 1) {
+    document.getElementById('nextBtn').classList.add('show');
+  } else {
+    setTimeout(showResults, 1500);
+  }
+  
+  triggerResize();
+}
+
+function nextQuestion() {
+  currentQuestion++;
+  renderQuestion();
+}
+
+function showResults() {
+  document.getElementById('quizContent').classList.add('hidden');
+  document.getElementById('results').classList.add('show');
+  
+  const resultsText = document.getElementById('resultsText');
+  if (correctCount === questions.length) {
+    resultsText.textContent = `Вы правильно разобрали все ${questions.length} ситуации. Вы понимаете границы применения ИИ-сервисов.`;
+  } else {
+    resultsText.textContent = `Вы правильно разобрали ${correctCount} из ${questions.length} ситуаций. Повторите материал о рисках работы с ИИ.`;
+  }
+  
+  triggerResize();
+}
+
+function resetQuiz() {
+  currentQuestion = 0;
+  selectedAnswer = null;
+  answered = false;
+  correctCount = 0;
+  
+  document.getElementById('quizContent').classList.remove('hidden');
+  document.getElementById('results').classList.remove('show');
+  
+  renderQuestion();
+}
+
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQuestion();
+  
+  const wrap = document.querySelector('.wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
