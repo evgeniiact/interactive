@@ -1,0 +1,339 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  padding: 8px;
+  margin: 0 auto;
+}
+
+.fcard {
+  width: 100%;
+  height: 620px;
+  perspective: 1200px;
+  cursor: pointer;
+  outline: none;
+}
+
+.fcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 18px 20px 44px;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  background: #fff;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.f-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 10px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.f-title .tdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--g600);
+  flex-shrink: 0;
+}
+
+.intro {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0 0 10px 0;
+}
+
+.section-label {
+  display: inline-block;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--g700);
+  background: var(--g100);
+  padding: 3px 8px;
+  border-radius: 4px;
+  margin: 10px 0 6px 0;
+}
+
+.template-box {
+  background: var(--g50);
+  border-left: 3px solid var(--g600);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--text);
+  white-space: pre-line;
+}
+
+.example-box {
+  background: #f8fafc;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  padding: 10px 12px;
+  font-size: 12px;
+  line-height: 1.55;
+  color: var(--muted);
+  white-space: pre-line;
+}
+
+.note {
+  font-size: 12px;
+  line-height: 1.45;
+  color: var(--muted);
+  margin: 10px 2px 0;
+  padding: 8px 10px;
+  background: #fffbeb;
+  border-radius: 6px;
+  border: 1px solid #fef3c7;
+}
+
+.flip-icon {
+  position: absolute;
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--muted);
+  display: flex;
+}
+
+.flip-icon svg {
+  width: 16px;
+  height: 16px;
+}
+
+.dots {
+  position: absolute;
+  bottom: 17px;
+  right: 16px;
+  display: flex;
+  gap: 5px;
+}
+
+.pdot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  transition: background 0.3s;
+}
+
+.pdot.active {
+  background: var(--g600);
+}
+
+@media (max-width: 600px) {
+  .fcard { height: 780px; }
+  .face { padding: 16px 14px 44px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <div class="fcard" id="fcard" tabindex="0" role="button" aria-label="Карточка с отличиями промптов для картинок и презентаций">
+    <div class="fcard-inner" id="fcard-inner">
+      <div class="face" id="face"></div>
+      <div class="dots" id="dots"></div>
+      <span class="flip-icon">
+        <svg viewBox="0 0 16 16" fill="none"><path d="M13 8a5 5 0 0 1-9 3M3 8a5 5 0 0 1 9-3" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/><path d="M12 5.5V8H9.5M4 10.5V8h2.5" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+    </div>
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var faces = [
+  {
+    title: 'Промпт для генерации изображений',
+    sections: [
+      {
+        type: 'intro',
+        text: 'Укажите объект и смысл. Задайте формат и стиль. Опишите композицию с местом для текста. Запретите добавлять текст логотипы и маркировку.'
+      },
+      {
+        type: 'label',
+        text: 'Шаблон запроса'
+      },
+      {
+        type: 'template',
+        text: 'Создай [формат изображения].\nИзобрази [объект] и передай [смысл].\nРезультат будет использоваться [где].\nСтиль [описание стиля].\nКомпозиция [размер фон место для текста].\nНе добавляй [ограничения].'
+      },
+      {
+        type: 'label',
+        text: 'Пример для эколога'
+      },
+      {
+        type: 'example',
+        text: 'Создай вертикальную иллюстрацию для плаката по сбору макулатуры в офисе.\nИзобрази чистую бумагу папку без надписей и нейтральный контейнер для вторсырья.\nСмысл бумагу собирают отдельно для переработки.\nРезультат будет использоваться как фон для плаката формата А4.\nСтиль плоская векторная графика минимализм зеленые и темно-серые акценты.\nКомпозиция вертикальный формат основной объект внизу свободная светлая область вверху для заголовка.\nНе добавляй текст логотипы названия компаний коды отходов и обязательную маркировку.'
+      }
+    ],
+    note: 'Чем точнее ограничения тем меньше нейросеть будет генерировать лишний визуальный шум.'
+  },
+  {
+    title: 'Промпт для создания презентации',
+    sections: [
+      {
+        type: 'intro',
+        text: 'Сервис готовит план текст слайдов и оформление за один запрос. Сначала задайте границы. Укажите аудиторию тему и цель. Приложите исходный документ. Установите ограничения на выдуманные факты.'
+      },
+      {
+        type: 'label',
+        text: 'Шаблон запроса'
+      },
+      {
+        type: 'template',
+        text: 'Подготовь презентацию для [аудитория].\nТема [тема].\nЦель [что должны понять или сделать участники].\nИспользуй только сведения из приложенного текста.\nСделай [количество] слайдов с одним тезисом на каждом.\nСтиль [описание стиля].\nНе добавляй [новые требования сроки ответственных и фактические схемы].'
+      },
+      {
+        type: 'label',
+        text: 'Пример для эколога'
+      },
+      {
+        type: 'example',
+        text: 'Подготовь презентацию для работников производственного участка.\nТема раздельное накопление отходов.\nЦель научить сотрудников правилам сортировки и действиям при переполнении контейнера.\nИспользуй только сведения из приложенного утвержденного порядка.\nСделай шесть слайдов с одним основным тезисом на каждом.\nСтиль светлый фон зеленые акценты нейтральные пиктограммы без текста.\nНе добавляй новые требования сроки ответственных названия предприятий и фактические схемы.'
+      }
+    ],
+    note: 'Всегда проверяйте сгенерированные слайды на соответствие реальным нормативным срокам и названиям документов.'
+  }
+];
+
+var current = 0;
+var animating = false;
+
+function renderFace(i) {
+  var f = faces[i];
+  var html = '<div class="f-title"><span class="tdot"></span>' + f.title + '</div>';
+
+  f.sections.forEach(function(s) {
+    if (s.type === 'intro') {
+      html += '<div class="intro">' + s.text + '</div>';
+    } else if (s.type === 'label') {
+      html += '<div class="section-label">' + s.text + '</div>';
+    } else if (s.type === 'template') {
+      html += '<div class="template-box">' + s.text + '</div>';
+    } else if (s.type === 'example') {
+      html += '<div class="example-box">' + s.text + '</div>';
+    }
+  });
+
+  if (f.note) {
+    html += '<div class="note">' + f.note + '</div>';
+  }
+
+  document.getElementById('face').innerHTML = html;
+
+  var dots = document.getElementById('dots');
+  dots.innerHTML = '';
+  faces.forEach(function(_, idx) {
+    var d = document.createElement('span');
+    d.className = 'pdot' + (idx === i ? ' active' : '');
+    dots.appendChild(d);
+  });
+}
+
+function nextFace() {
+  if (animating) return;
+  animating = true;
+
+  var inner = document.getElementById('fcard-inner');
+  inner.style.transform = 'rotateY(90deg)';
+
+  setTimeout(function() {
+    current = (current + 1) % faces.length;
+    renderFace(current);
+
+    inner.style.transition = 'none';
+    inner.style.transform = 'rotateY(-90deg)';
+    void inner.offsetWidth;
+    inner.style.transition = '';
+    inner.style.transform = 'rotateY(0deg)';
+
+    setTimeout(function() {
+      animating = false;
+      triggerResize();
+    }, 320);
+  }, 320);
+}
+
+document.getElementById('fcard').addEventListener('click', nextFace);
+
+document.getElementById('fcard').addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    nextFace();
+  }
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderFace(0);
+  triggerResize();
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
