@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  --g600: #16a34a;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.carousel {
+  position: relative;
+  width: 100%;
+  height: 120px;
+}
+
+.fcard {
+  width: 100%;
+  height: 100%;
+  perspective: 1200px;
+  cursor: pointer;
+  outline: none;
+}
+
+.fcard-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transition: transform 0.3s ease;
+  transform-style: preserve-3d;
+}
+
+.fcard.flipped .fcard-inner {
+  transform: rotateY(180deg);
+}
+
+.face {
+  position: absolute;
+  inset: 0;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 16px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  background: #fff;
+  -webkit-backface-visibility: hidden;
+  backface-visibility: hidden;
+}
+
+.face.back {
+  transform: rotateY(180deg);
+}
+
+.front-text {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+.back-text {
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--muted);
+}
+
+.nav-btn {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--muted);
+  transition: all 0.2s;
+  z-index: 10;
+}
+
+.nav-btn:hover {
+  border-color: var(--g600);
+  color: var(--g600);
+}
+
+.nav-btn.prev {
+  left: -40px;
+}
+
+.nav-btn.next {
+  right: -40px;
+}
+
+.dots {
+  position: absolute;
+  bottom: -24px;
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  gap: 6px;
+}
+
+.dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  cursor: pointer;
+  transition: background 0.3s;
+}
+
+.dot.active {
+  background: var(--g600);
+}
+
+@media (max-width: 600px) {
+  .carousel { height: 140px; }
+  .nav-btn.prev { left: -36px; }
+  .nav-btn.next { right: -36px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="carousel" id="carousel">
+    <button class="nav-btn prev" id="prevBtn" aria-label="Предыдущая карточка">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M10 12L6 8L10 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    
+    <div class="fcard" id="fcard" tabindex="0" role="button">
+      <div class="fcard-inner">
+        <div class="face front">
+          <div class="front-text" id="frontText"></div>
+        </div>
+        <div class="face back">
+          <div class="back-text" id="backText"></div>
+        </div>
+      </div>
+    </div>
+    
+    <button class="nav-btn next" id="nextBtn" aria-label="Следующая карточка">
+      <svg width="16" height="16" viewBox="0 0 16 16" fill="none">
+        <path d="M6 4L10 8L6 12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+    </button>
+    
+    <div class="dots" id="dots"></div>
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var cards = [
+  {
+    front: 'Белый фон и ровный свет',
+    back: 'Для инструкций запрашивайте изолированный белый фон и ровный свет. Это сохраняет краску принтера и делает плакат контрастным.'
+  },
+  {
+    front: 'Не пишите текст кириллицей',
+    back: 'Кириллица в промптах превращается в искажения. Генерируйте чистые емкости без надписей. ГОСТы и названия отходов добавляйте вручную в PowerPoint или графическом редакторе.'
+  },
+  {
+    front: 'Одна фракция - один объект',
+    back: 'Не перечисляйте все отходы через запятую. Создавайте модульную раскладку, где каждому типу мусора отведено свое место.'
+  },
+  {
+    front: 'Единый стиль иллюстрации',
+    back: 'Не смешивайте в одном запросе вектор и фотографию. Для инструкций работает чистая техническая 3D-иллюстрация.'
+  }
+];
+
+var current = 0;
+var fcard = document.getElementById('fcard');
+var frontText = document.getElementById('frontText');
+var backText = document.getElementById('backText');
+var dotsContainer = document.getElementById('dots');
+
+function renderCard(index) {
+  frontText.textContent = cards[index].front;
+  backText.textContent = cards[index].back;
+  
+  fcard.classList.remove('flipped');
+  
+  var dots = dotsContainer.querySelectorAll('.dot');
+  dots.forEach(function(dot, i) {
+    dot.classList.toggle('active', i === index);
+  });
+  
+  triggerResize();
+}
+
+function createDots() {
+  cards.forEach(function(_, i) {
+    var dot = document.createElement('div');
+    dot.className = 'dot' + (i === 0 ? ' active' : '');
+    dot.addEventListener('click', function(e) {
+      e.stopPropagation();
+      current = i;
+      renderCard(current);
+    });
+    dotsContainer.appendChild(dot);
+  });
+}
+
+function nextCard() {
+  current = (current + 1) % cards.length;
+  renderCard(current);
+}
+
+function prevCard() {
+  current = (current - 1 + cards.length) % cards.length;
+  renderCard(current);
+}
+
+fcard.addEventListener('click', function() {
+  this.classList.toggle('flipped');
+  triggerResize();
+});
+
+fcard.addEventListener('keydown', function(e) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    this.classList.toggle('flipped');
+    triggerResize();
+  }
+});
+
+document.getElementById('nextBtn').addEventListener('click', function(e) {
+  e.stopPropagation();
+  nextCard();
+});
+
+document.getElementById('prevBtn').addEventListener('click', function(e) {
+  e.stopPropagation();
+  prevCard();
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  createDots();
+  renderCard(0);
+  triggerResize();
+});
+</script>
+
+</body>
+</html>
