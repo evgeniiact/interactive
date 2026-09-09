@@ -30,7 +30,6 @@ body {
   color: var(--text);
   font-size: 14px;
   line-height: 1.5;
-  overflow: hidden;
 }
 
 .wrap {
@@ -41,13 +40,11 @@ body {
 .card-container {
   position: relative;
   width: 100%;
-  height: 480px;
   display: flex;
   flex-direction: column;
 }
 
 .step-card {
-  flex: 1;
   border-radius: var(--radius);
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
@@ -58,7 +55,6 @@ body {
   transform: translateX(20px);
   transition: all 0.3s ease;
   pointer-events: none;
-  overflow-y: auto;
   display: none;
 }
 
@@ -100,7 +96,74 @@ body {
   margin: 0 0 16px 0;
 }
 
-.block {
+.expand-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 18px;
+  border-radius: 8px;
+  border: 1px solid var(--g600);
+  background: var(--g50);
+  color: var(--g700);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin: 0 0 14px 0;
+}
+
+.expand-btn:hover {
+  background: var(--g100);
+}
+
+.expand-btn svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s;
+}
+
+.expand-btn.open svg {
+  transform: rotate(180deg);
+}
+
+.elements-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 14px 0;
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.4s ease, opacity 0.3s ease;
+  opacity: 0;
+}
+
+.elements-list.open {
+  max-height: 800px;
+  opacity: 1;
+}
+
+.element-item {
+  background: var(--g50);
+  border-left: 3px solid var(--g600);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+
+.element-label {
+  font-weight: 700;
+  color: var(--g700);
+  font-size: 13px;
+  margin: 0 0 4px 0;
+}
+
+.element-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0;
+}
+
+.prompt-box {
   background: var(--g50);
   border-left: 3px solid var(--g600);
   border-radius: 6px;
@@ -112,11 +175,33 @@ body {
   white-space: pre-line;
 }
 
-.block-title {
+.prompt-title {
   font-weight: 700;
   color: var(--g700);
   margin: 0 0 8px 0;
   font-size: 13px;
+}
+
+.illustration-wrap {
+  margin: 14px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #f8fafc;
+}
+
+.illustration-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.illustration-caption {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--muted);
+  background: #f8fafc;
+  border-top: 1px solid var(--border);
 }
 
 .note {
@@ -137,35 +222,6 @@ body {
   font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-}
-
-.table-wrap {
-  margin: 14px 0;
-  overflow-x: auto;
-}
-
-.table-wrap table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 12px;
-}
-
-.table-wrap th,
-.table-wrap td {
-  border: 1px solid var(--border);
-  padding: 8px 10px;
-  text-align: left;
-  vertical-align: top;
-}
-
-.table-wrap th {
-  background: var(--g50);
-  font-weight: 700;
-  color: var(--g700);
-}
-
-.table-wrap td {
-  color: var(--muted);
 }
 
 .nav-container {
@@ -219,7 +275,6 @@ body {
 }
 
 @media (max-width: 600px) {
-  .card-container { height: 520px; }
   .step-card { padding: 16px 18px; padding-bottom: 80px; }
 }
 </style>
@@ -232,56 +287,60 @@ body {
     <div class="step-card active" data-step="1">
       <div class="step-title">
         <span class="step-number">1</span>
-        Получите черновик текста
+        Соберите промпт
       </div>
       <div class="intro">
-        Скопируйте в текстовую нейросеть обезличенный фрагмент инструкции и используйте промпт.
+        Укажите в запросе шесть элементов.
       </div>
-      <div class="block">
-        <div class="block-title">Промпт для нейросети</div>
-Ты редактор памяток для работников производственного участка. На основе текста ниже подготовь памятку о накоплении промасленной ветоши.
-
-Цель: работник должен понять, куда складывать ветошь после работы и чего нельзя делать.
-
-Формат: заголовок и три коротких правила. Одно правило - одно действие. Используй глаголы в повелительном наклонении.
-
-Используй только сведения из исходного текста. Не добавляй нормативные требования, сроки, классы опасности, коды отходов, названия предприятий и контакты.
-
-Исходный текст:
-[вставьте обезличенный фрагмент инструкции]
-      </div>
-      <div class="note">
-        Текстовая нейросеть подготовит черновик. Она не создает готовый плакат и не заменяет проверку эколога.
+      <button class="expand-btn" id="expandBtn" aria-expanded="false">
+        <span>Раскрыть элементы промпта</span>
+        <svg viewBox="0 0 16 16" fill="none">
+          <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </button>
+      <div class="elements-list" id="elementsList">
+        <div class="element-item">
+          <div class="element-label">Что показать</div>
+          <div class="element-text">Работника в средствах индивидуальной защиты, ветошь и металлическую емкость.</div>
+        </div>
+        <div class="element-item">
+          <div class="element-label">Какую мысль передать</div>
+          <div class="element-text">Ветошь собирают отдельно в закрытую металлическую емкость.</div>
+        </div>
+        <div class="element-item">
+          <div class="element-label">Формат</div>
+          <div class="element-text">Вертикальная иллюстрация для памятки А4.</div>
+        </div>
+        <div class="element-item">
+          <div class="element-label">Стиль</div>
+          <div class="element-text">Техническая 3D-иллюстрация на светлом фоне.</div>
+        </div>
+        <div class="element-item">
+          <div class="element-label">Композиция</div>
+          <div class="element-text">Основные объекты внизу, сверху свободное место для заголовка и правил.</div>
+        </div>
+        <div class="element-item">
+          <div class="element-label">Ограничения</div>
+          <div class="element-text">Без текста, логотипов, кодов отходов, маркировки и данных предприятия.</div>
+        </div>
       </div>
     </div>
 
     <div class="step-card" data-step="2">
       <div class="step-title">
         <span class="step-number">2</span>
-        Проверьте текст
+        Скопируйте промпт
       </div>
       <div class="intro">
-        Для учебного примера нейросеть может подготовить такой вариант:
+        Готовый запрос для графической нейросети.
       </div>
-      <div class="block">
-        <div class="block-title">Пример черновика</div>
-Промасленная ветошь
-
-Складывайте ветошь в закрытую металлическую емкость.
-
-Не смешивайте ветошь с другими отходами.
-
-Не ставьте емкость рядом с источниками тепла и открытого огня.
-      </div>
-      <div class="intro">
-        Сравните каждую строку с исходной инструкцией. В шаблоне из Системы Экология предусмотрены раздельное накопление отхода, использование закрытой металлической емкости, а также запрет на размещение емкости рядом с источниками тепла, открытым огнем и под прямыми солнечными лучами.
-      </div>
-      <div class="intro">
-        Если правило отсутствует в исходном документе, удалите его. Если в документе есть важное условие, которого нет в черновике, добавьте его вручную.
+      <div class="prompt-box">
+        <div class="prompt-title">Промпт</div>
+Создай вертикальную иллюстрацию для памятки формата А4. Изобрази работника производственного участка в каске, перчатках и синей спецодежде. Работник кладет сложенную техническую ветошь с небольшими следами масла в металлическую емкость с плотно закрывающейся крышкой. Передай смысл: промасленную ветошь собирают отдельно в закрытую металлическую емкость. Стиль: чистая техническая 3D-иллюстрация, минимализм, белый фон, красные и темно-серые акценты, высокая четкость. Композиция: работник и емкость расположены в нижней части. В верхней части оставь широкое свободное поле для заголовка и трех правил. Не добавляй текст, цифры, логотипы, название предприятия, коды отходов и маркировку.
       </div>
       <div class="note">
-        <div class="note-label">Важно</div>
-        Саммаризация сокращает документ, но не проверяет требования предприятия. Нейросеть может пропустить условие, исказить формулировку или добавить правило от себя. За финальный текст памятки отвечает эколог.
+        <div class="note-label">Совет</div>
+        Сохраните промпт в отдельном файле. Когда обновите правила в памятке, замените только текст в PowerPoint, а иллюстрацию оставите без изменений.
       </div>
     </div>
 
@@ -296,33 +355,9 @@ body {
       <div class="intro">
         Сначала создайте в Nanobanana чистую иллюстрацию с ветошью, металлической емкостью с закрытой крышкой и свободным полем для текста. Затем добавьте в PowerPoint заголовок и три проверенных правила.
       </div>
-      <div class="table-wrap">
-        <table>
-          <thead>
-            <tr>
-              <th>Инструмент</th>
-              <th>Результат</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <td>Текстовая нейросеть</td>
-              <td>Черновик кратких правил по фрагменту инструкции</td>
-            </tr>
-            <tr>
-              <td>Эколог</td>
-              <td>Проверка и правка текста</td>
-            </tr>
-            <tr>
-              <td>Nanobanana</td>
-              <td>Иллюстрация без текста</td>
-            </tr>
-            <tr>
-              <td>PowerPoint</td>
-              <td>Памятка с проверенными надписями</td>
-            </tr>
-          </tbody>
-        </table>
+      <div class="illustration-wrap">
+        <img src="illustration.jpg" alt="Иллюстрация для памятки по обращению с промасленной ветошью">
+        <div class="illustration-caption">Иллюстрация, сгенерированная по промпту из шага 2</div>
       </div>
       <div class="note">
         <div class="note-label">Лайфхак</div>
@@ -350,6 +385,9 @@ function triggerResize() {
 
 var buttons = document.querySelectorAll('.nav-btn');
 var cards = document.querySelectorAll('.step-card');
+var expandBtn = document.getElementById('expandBtn');
+var elementsList = document.getElementById('elementsList');
+var expandBtnText = expandBtn.querySelector('span');
 
 function showStep(stepNumber) {
   cards.forEach(function(card) {
@@ -366,8 +404,38 @@ function showStep(stepNumber) {
     }
   });
 
-  triggerResize();
+  if (stepNumber !== 1) {
+    elementsList.classList.remove('open');
+    expandBtn.classList.remove('open');
+    expandBtn.setAttribute('aria-expanded', 'false');
+    expandBtnText.textContent = 'Раскрыть элементы промпта';
+  }
+
+  setTimeout(function() {
+    triggerResize();
+  }, 350);
 }
+
+expandBtn.addEventListener('click', function(e) {
+  e.stopPropagation();
+  var isOpen = elementsList.classList.contains('open');
+  
+  if (isOpen) {
+    elementsList.classList.remove('open');
+    expandBtn.classList.remove('open');
+    expandBtn.setAttribute('aria-expanded', 'false');
+    expandBtnText.textContent = 'Раскрыть элементы промпта';
+  } else {
+    elementsList.classList.add('open');
+    expandBtn.classList.add('open');
+    expandBtn.setAttribute('aria-expanded', 'true');
+    expandBtnText.textContent = 'Свернуть элементы';
+  }
+
+  setTimeout(function() {
+    triggerResize();
+  }, 400);
+});
 
 buttons.forEach(function(btn) {
   btn.addEventListener('click', function(e) {
