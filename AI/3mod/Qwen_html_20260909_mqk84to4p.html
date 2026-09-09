@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 10px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.05);
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --y50: #fffbeb;
+  --y100: #fef3c7;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 8px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+  overflow: hidden;
+}
+
+.wrap {
+  max-width: 590px;
+  margin: 0 auto;
+}
+
+.card-container {
+  position: relative;
+  width: 100%;
+  height: 480px;
+  display: flex;
+  flex-direction: column;
+}
+
+.step-card {
+  flex: 1;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 20px 24px;
+  padding-bottom: 80px;
+  background: #fff;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  overflow-y: auto;
+  display: none;
+}
+
+.step-card.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+  display: block;
+}
+
+.step-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--g600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.intro {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0 0 16px 0;
+}
+
+.element-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin: 0 0 14px 0;
+}
+
+.element-item {
+  background: var(--g50);
+  border-left: 3px solid var(--g600);
+  border-radius: 6px;
+  padding: 12px 14px;
+}
+
+.element-label {
+  font-weight: 700;
+  color: var(--g700);
+  font-size: 13px;
+  margin: 0 0 4px 0;
+}
+
+.element-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0;
+}
+
+.prompt-box {
+  background: var(--g50);
+  border-left: 3px solid var(--g600);
+  border-radius: 6px;
+  padding: 14px 16px;
+  margin: 0 0 14px 0;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-line;
+}
+
+.prompt-title {
+  font-weight: 700;
+  color: var(--g700);
+  margin: 0 0 8px 0;
+  font-size: 13px;
+}
+
+.note {
+  background: var(--y50);
+  border: 1px solid var(--y100);
+  border-radius: 6px;
+  padding: 12px 14px;
+  font-size: 12px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 14px 0 0 0;
+}
+
+.note-label {
+  font-weight: 700;
+  color: #b45309;
+  margin: 0 0 6px 0;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.nav-container {
+  position: relative;
+  height: 70px;
+  margin-top: -70px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 16px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 30%);
+  pointer-events: none;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+  background: #fff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  border-color: var(--g600);
+  color: var(--g600);
+}
+
+.nav-btn.active {
+  background: var(--g600);
+  border-color: var(--g600);
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .card-container { height: 520px; }
+  .step-card { padding: 16px 18px; padding-bottom: 80px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="card-container" id="cardContainer">
+    
+    <div class="step-card active" data-step="1">
+      <div class="step-title">
+        <span class="step-number">1</span>
+        Соберите промпт
+      </div>
+      <div class="intro">
+        Укажите в запросе шесть элементов.
+      </div>
+      <div class="element-list">
+        <div class="element-item">
+          <div class="element-label">Что показать</div>
+          <div class="element-text">Работника в средствах индивидуальной защиты, ветошь и металлическую емкость.</div>
+        </div>
+        <div class="element-item">
+          <div class="element-label">Какую мысль передать</div>
+          <div class="element-text">Ветошь собирают отдельно в закрытую металлическую емкость.</div>
+        </div>
+        <div class="element-item">
+          <div class="element-label">Формат</div>
+          <div class="element-text">Вертикальная иллюстрация для памятки А4.</div>
+        </div>
+        <div class="element-item">
+          <div class="element-label">Стиль</div>
+          <div class="element-text">Техническая 3D-иллюстрация на светлом фоне.</div>
+        </div>
+        <div class="element-item">
+          <div class="element-label">Композиция</div>
+          <div class="element-text">Основные объекты внизу, сверху свободное место для заголовка и правил.</div>
+        </div>
+        <div class="element-item">
+          <div class="element-label">Ограничения</div>
+          <div class="element-text">Без текста, логотипов, кодов отходов, маркировки и данных предприятия.</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="step-card" data-step="2">
+      <div class="step-title">
+        <span class="step-number">2</span>
+        Скопируйте промпт
+      </div>
+      <div class="intro">
+        Готовый запрос для графической нейросети.
+      </div>
+      <div class="prompt-box">
+        <div class="prompt-title">Промпт</div>
+Создай вертикальную иллюстрацию для памятки формата А4. Изобрази работника производственного участка в каске, перчатках и синей спецодежде. Работник кладет сложенную техническую ветошь с небольшими следами масла в металлическую емкость с плотно закрывающейся крышкой. Передай смысл: промасленную ветошь собирают отдельно в закрытую металлическую емкость. Стиль: чистая техническая 3D-иллюстрация, минимализм, белый фон, красные и темно-серые акценты, высокая четкость. Композиция: работник и емкость расположены в нижней части. В верхней части оставь широкое свободное поле для заголовка и трех правил. Не добавляй текст, цифры, логотипы, название предприятия, коды отходов и маркировку.
+      </div>
+      <div class="note">
+        <div class="note-label">Совет</div>
+        Сохраните промпт в отдельном файле. Когда обновите правила в памятке, замените только текст в PowerPoint, а иллюстрацию оставите без изменений.
+      </div>
+    </div>
+
+    <div class="nav-container">
+      <div class="nav-buttons">
+        <button class="nav-btn active" data-target="1" aria-label="Шаг 1">1</button>
+        <button class="nav-btn" data-target="2" aria-label="Шаг 2">2</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var buttons = document.querySelectorAll('.nav-btn');
+var cards = document.querySelectorAll('.step-card');
+
+function showStep(stepNumber) {
+  cards.forEach(function(card) {
+    card.classList.remove('active');
+    if (parseInt(card.dataset.step) === stepNumber) {
+      card.classList.add('active');
+    }
+  });
+
+  buttons.forEach(function(btn) {
+    btn.classList.remove('active');
+    if (parseInt(btn.dataset.target) === stepNumber) {
+      btn.classList.add('active');
+    }
+  });
+
+  triggerResize();
+}
+
+buttons.forEach(function(btn) {
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var step = parseInt(this.dataset.target);
+    showStep(step);
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  triggerResize();
+});
+</script>
+
+</body>
+</html>
