@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 10px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.05);
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --b50: #eff6ff;
+  --b100: #dbeafe;
+  --b600: #2563eb;
+  --y50: #fffbeb;
+  --y100: #fef3c7;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 8px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 590px;
+  margin: 0 auto;
+}
+
+.card-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.step-card {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 20px 24px;
+  padding-bottom: 80px;
+  background: #fff;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  display: none;
+}
+
+.step-card.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+  display: block;
+}
+
+.step-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--g600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.intro {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0 0 16px 0;
+}
+
+.table-wrap {
+  margin: 14px 0;
+  overflow-x: auto;
+}
+
+.table-wrap table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+  background: var(--g50);
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.table-wrap th {
+  background: var(--g100);
+  padding: 12px;
+  text-align: left;
+  font-weight: 700;
+  color: var(--g700);
+  border-bottom: 2px solid var(--g600);
+}
+
+.table-wrap td {
+  padding: 10px 12px;
+  border-bottom: 1px solid var(--border);
+  vertical-align: top;
+}
+
+.table-wrap tr:last-child td {
+  border-bottom: none;
+}
+
+.action-text {
+  font-weight: 700;
+  color: var(--g700);
+  display: block;
+  margin-bottom: 4px;
+}
+
+.detail-text {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.4;
+}
+
+.poster-wrap {
+  margin: 14px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #f8fafc;
+}
+
+.poster-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.poster-caption {
+  padding: 8px 12px;
+  font-size: 12px;
+  color: var(--muted);
+  background: #f8fafc;
+  border-top: 1px solid var(--border);
+}
+
+.tip-box {
+  background: var(--b50);
+  border-left: 3px solid var(--b600);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin: 14px 0;
+}
+
+.tip-title {
+  font-weight: 700;
+  color: var(--b600);
+  font-size: 13px;
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.tip-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0;
+}
+
+.warning-box {
+  background: var(--y50);
+  border-left: 3px solid #f59e0b;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin: 14px 0;
+}
+
+.warning-title {
+  font-weight: 700;
+  color: #b45309;
+  font-size: 13px;
+  margin: 0 0 6px 0;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.warning-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0;
+}
+
+.checklist {
+  margin: 14px 0;
+}
+
+.check-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 0 0 10px 0;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.check-mark {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--g600);
+  border-radius: 4px;
+  flex-shrink: 0;
+  margin-top: 2px;
+}
+
+.final-note {
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: 8px;
+  padding: 14px;
+  margin: 14px 0 0 0;
+}
+
+.final-note-title {
+  font-weight: 700;
+  color: var(--g700);
+  font-size: 14px;
+  margin: 0 0 8px 0;
+}
+
+.final-note-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0;
+}
+
+.nav-container {
+  position: relative;
+  height: 70px;
+  margin-top: -70px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 16px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 30%);
+  pointer-events: none;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+  background: #fff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  border-color: var(--g600);
+  color: var(--g600);
+}
+
+.nav-btn.active {
+  background: var(--g600);
+  border-color: var(--g600);
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .step-card { padding: 16px 18px; padding-bottom: 80px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="card-container" id="cardContainer">
+    
+    <div class="step-card active" data-step="1">
+      <div class="step-title">
+        <span class="step-number">1</span>
+        Подготовьте текст
+      </div>
+      <div class="intro">
+        Скопируйте текст в PowerPoint. Разместите каждый шаг в отдельном текстовом блоке.
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th colspan="2">ПРОМАСЛЕННАЯ ВЕТОШЬ</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>
+                <span class="action-text">1. СОБЕРИТЕ</span>
+                <span class="detail-text">Использованную ветошь</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="action-text">2. ПОМЕСТИТЕ</span>
+                <span class="detail-text">В металлическую емкость</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="action-text">3. ЗАКРОЙТЕ</span>
+                <span class="detail-text">Крышку до фиксации</span>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <span class="detail-text"><strong>Дополнительно:</strong> Не смешивайте ветошь с другими отходами. Не ставьте емкость рядом с источниками тепла и открытого огня.</span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="tip-box">
+        <div class="tip-title">Совет</div>
+        <div class="tip-text">Используйте один шрифт без засечек. Для заголовка выберите самый крупный размер. Действия выделите жирным или цветной плашкой.</div>
+      </div>
+    </div>
+
+    <div class="step-card" data-step="2">
+      <div class="step-title">
+        <span class="step-number">2</span>
+        Разместите текст на плакате
+      </div>
+      <div class="intro">
+        Готовый плакат с иллюстрацией и текстом.
+      </div>
+      <div class="poster-wrap">
+        <img src="poster.jpg" alt="Готовый плакат по обращению с промасленной ветошью">
+        <div class="poster-caption">Пример готовой памятки для производственного участка</div>
+      </div>
+      <div class="warning-box">
+        <div class="warning-title">Внимание</div>
+        <div class="warning-text">Не ставьте текст поверх лица работника, емкости или темных деталей картинки. Не уменьшайте шрифт, чтобы вместить длинную инструкцию.</div>
+      </div>
+      <div class="tip-box">
+        <div class="tip-title">Лайфхак</div>
+        <div class="tip-text">Сделайте текстовые блоки отдельными объектами. Тогда при обновлении внутренней инструкции вы измените только нужную строку, а не будете собирать памятку заново.</div>
+      </div>
+    </div>
+
+    <div class="step-card" data-step="3">
+      <div class="step-title">
+        <span class="step-number">3</span>
+        Проверьте и сохраните
+      </div>
+      <div class="intro">
+        Перед печатью или размещением проверьте плакат по чек-листу.
+      </div>
+      <div class="checklist">
+        <div class="check-item">
+          <div class="check-mark"></div>
+          <div>Все правила совпадают с действующей локальной инструкцией</div>
+        </div>
+        <div class="check-item">
+          <div class="check-mark"></div>
+          <div>Емкость, действия работника и порядок шагов на картинке не противоречат тексту</div>
+        </div>
+        <div class="check-item">
+          <div class="check-mark"></div>
+          <div>Нет случайных символов, неподтвержденных сроков, кодов и требований</div>
+        </div>
+        <div class="check-item">
+          <div class="check-mark"></div>
+          <div>Заголовок и все шаги читаются с расстояния</div>
+        </div>
+        <div class="check-item">
+          <div class="check-mark"></div>
+          <div>В макете нет внутренней информации, которую нельзя размещать на плакате</div>
+        </div>
+      </div>
+      <div class="final-note">
+        <div class="final-note-title">Итог</div>
+        <div class="final-note-text">Сохраните файл в редактируемом формате PowerPoint и в PDF для печати. После проверки у вас будет готовая учебная памятка и шаблон для других правил: разлива нефтепродуктов, накопления отходов, использования сорбента или передачи батареек.</div>
+      </div>
+    </div>
+
+    <div class="nav-container">
+      <div class="nav-buttons">
+        <button class="nav-btn active" data-target="1" aria-label="Шаг 1">1</button>
+        <button class="nav-btn" data-target="2" aria-label="Шаг 2">2</button>
+        <button class="nav-btn" data-target="3" aria-label="Шаг 3">3</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var buttons = document.querySelectorAll('.nav-btn');
+var cards = document.querySelectorAll('.step-card');
+
+function showStep(stepNumber) {
+  cards.forEach(function(card) {
+    card.classList.remove('active');
+    if (parseInt(card.dataset.step) === stepNumber) {
+      card.classList.add('active');
+    }
+  });
+
+  buttons.forEach(function(btn) {
+    btn.classList.remove('active');
+    if (parseInt(btn.dataset.target) === stepNumber) {
+      btn.classList.add('active');
+    }
+  });
+
+  setTimeout(function() {
+    triggerResize();
+  }, 350);
+}
+
+buttons.forEach(function(btn) {
+  btn.addEventListener('click', function(e) {
+    e.stopPropagation();
+    var step = parseInt(this.dataset.target);
+    showStep(step);
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  triggerResize();
+});
+</script>
+
+</body>
+</html>
