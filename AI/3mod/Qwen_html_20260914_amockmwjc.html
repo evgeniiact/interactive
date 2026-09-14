@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 10px;
+  --shadow: 0 2px 8px rgba(0,0,0,0.05);
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --y50: #fffbeb;
+  --y100: #fef3c7;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 8px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 590px;
+  margin: 0 auto;
+}
+
+.card-container {
+  position: relative;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.step-card {
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 20px 24px;
+  padding-bottom: 80px;
+  background: #fff;
+  opacity: 0;
+  transform: translateX(20px);
+  transition: all 0.3s ease;
+  pointer-events: none;
+  display: none;
+  position: relative;
+  overflow: hidden;
+}
+
+.step-card.active {
+  opacity: 1;
+  transform: translateX(0);
+  pointer-events: auto;
+  display: block;
+}
+
+.step-card.collapsed {
+  max-height: 315px;
+}
+
+.step-card.collapsed::after {
+  content: '';
+  position: absolute;
+  bottom: 70px;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+  pointer-events: none;
+}
+
+.step-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 16px 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.step-number {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--g600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.screenshot-wrap {
+  margin: 0 0 14px 0;
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  background: #f8fafc;
+}
+
+.screenshot-wrap img {
+  width: 100%;
+  height: auto;
+  display: block;
+}
+
+.caption {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0;
+}
+
+.warning-box {
+  background: var(--y50);
+  border-left: 3px solid #f59e0b;
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin: 14px 0 0 0;
+}
+
+.warning-title {
+  font-weight: 700;
+  color: #b45309;
+  font-size: 13px;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.warning-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0;
+}
+
+.tip-box {
+  background: var(--g50);
+  border-left: 3px solid var(--g600);
+  border-radius: 6px;
+  padding: 12px 14px;
+  margin: 14px 0 0 0;
+}
+
+.tip-title {
+  font-weight: 700;
+  color: var(--g700);
+  font-size: 13px;
+  margin: 0 0 6px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.tip-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0;
+}
+
+.expand-overlay {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: none;
+}
+
+.step-card.collapsed .expand-overlay {
+  display: block;
+}
+
+.expand-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--g600);
+  background: var(--g600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
+}
+
+.expand-btn:hover {
+  background: var(--g700);
+  border-color: var(--g700);
+}
+
+.expand-btn svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s;
+}
+
+.step-card.collapsed .expand-btn svg {
+  transform: rotate(180deg);
+}
+
+.collapse-link {
+  display: none;
+  text-align: center;
+  margin: 16px 0 0 0;
+}
+
+.step-card:not(.collapsed) .collapse-link {
+  display: block;
+}
+
+.collapse-link button {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 12px;
+  transition: color 0.2s;
+}
+
+.collapse-link button:hover {
+  color: var(--g600);
+}
+
+.nav-container {
+  position: relative;
+  height: 70px;
+  margin-top: -70px;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding-bottom: 16px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 30%);
+  pointer-events: none;
+}
+
+.nav-buttons {
+  display: flex;
+  gap: 8px;
+  pointer-events: auto;
+  background: #fff;
+  padding: 8px 16px;
+  border-radius: 20px;
+  border: 1px solid var(--border);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+}
+
+.nav-btn {
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  border: 1px solid var(--border);
+  background: #fff;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--muted);
+  transition: all 0.2s;
+}
+
+.nav-btn:hover {
+  border-color: var(--g600);
+  color: var(--g600);
+}
+
+.nav-btn.active {
+  background: var(--g600);
+  border-color: var(--g600);
+  color: #fff;
+}
+
+@media (max-width: 600px) {
+  .step-card { padding: 16px 18px; padding-bottom: 80px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="card-container" id="cardContainer">
+    
+    <div class="step-card active collapsed" data-step="1" id="card1">
+      <div class="step-title">
+        <span class="step-number">1</span>
+        Создайте презентацию
+      </div>
+      <div class="screenshot-wrap">
+        <img src="presentation1.jpg" alt="Главная страница Gamma с кнопкой создания новой презентации">
+      </div>
+      <div class="caption">
+        Откройте Gamma и выберите создание новой презентации. Выберите создание по тексту или документу. Для первого опыта используйте учебный текст, а не полный локальный регламент.
+      </div>
+      <div class="expand-overlay">
+        <button class="expand-btn" onclick="toggleExpand(1)">
+          <span>Показать полностью</span>
+          <svg viewBox="0 0 16 16" fill="none">
+            <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="collapse-link">
+        <button onclick="toggleExpand(1)">Свернуть</button>
+      </div>
+    </div>
+
+    <div class="step-card collapsed" data-step="2" id="card2">
+      <div class="step-title">
+        <span class="step-number">2</span>
+        Вставьте промпт
+      </div>
+      <div class="screenshot-wrap">
+        <img src="presentation2.jpg" alt="Поле ввода промпта в Gamma">
+      </div>
+      <div class="caption">
+        Вставьте промпт, план и исходные данные. Промпт задает структуру и стиль. План задает порядок слайдов. Исходный текст дает сервису проверенные факты. Не сокращайте промпт до одной темы.
+      </div>
+      <div class="expand-overlay">
+        <button class="expand-btn" onclick="toggleExpand(2)">
+          <span>Показать полностью</span>
+          <svg viewBox="0 0 16 16" fill="none">
+            <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="collapse-link">
+        <button onclick="toggleExpand(2)">Свернуть</button>
+      </div>
+    </div>
+
+    <div class="step-card" data-step="3" id="card3">
+      <div class="step-title">
+        <span class="step-number">3</span>
+        Добавьте изображения
+      </div>
+      <div class="screenshot-wrap">
+        <img src="presentation3.jpg" alt="Загрузка изображений в Gamma">
+      </div>
+      <div class="caption">
+        При необходимости загрузите фото контейнеров. Загружайте фото только при разрешении предприятия. Проверьте, чтобы на них не было лиц работников, QR-кодов, номеров, адресов, документов, закрытых схем и другой служебной информации. Если есть сомнения, добавьте реальные фото позже в PowerPoint.
+      </div>
+    </div>
+
+    <div class="step-card" data-step="4" id="card4">
+      <div class="step-title">
+        <span class="step-number">4</span>
+        Выберите оформление
+      </div>
+      <div class="screenshot-wrap">
+        <img src="presentation4.jpg" alt="Выбор шаблона оформления в Gamma">
+      </div>
+      <div class="caption">
+        Выберите простой контрастный шаблон. Для инструктажа подходит светлый фон, крупный темный текст и нейтральные пиктограммы. Не выбирайте пестрый фон, сложную анимацию и мелкий текст.
+      </div>
+    </div>
+
+    <div class="step-card collapsed" data-step="5" id="card5">
+      <div class="step-title">
+        <span class="step-number">5</span>
+        Проверьте черновик
+      </div>
+      <div class="screenshot-wrap">
+        <img src="presentation5.jpg" alt="Просмотр слайдов презентации в Gamma">
+      </div>
+      <div class="caption">
+        Сравните каждый слайд с планом. Удалите неподтвержденные правила, сроки и числа. Проверьте, не перепутал ли сервис стеклобой с упаковочными отходами и не добавил ли правила для ремонтной службы.
+      </div>
+      <div class="expand-overlay">
+        <button class="expand-btn" onclick="toggleExpand(5)">
+          <span>Показать полностью</span>
+          <svg viewBox="0 0 16 16" fill="none">
+            <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="collapse-link">
+        <button onclick="toggleExpand(5)">Свернуть</button>
+      </div>
+    </div>
+
+    <div class="step-card" data-step="6" id="card6">
+      <div class="step-title">
+        <span class="step-number">6</span>
+        Скачайте файл
+      </div>
+      <div class="screenshot-wrap">
+        <img src="presentation6.jpg" alt="Экспорт презентации в PowerPoint">
+      </div>
+      <div class="caption">
+        Скачайте презентацию в PowerPoint. Экспортируйте файл в PowerPoint, если функция доступна в вашем тарифе. Сохраните рядом промпт, исходный текст и план. Они понадобятся, когда правила или состав контейнеров изменятся.
+      </div>
+      <div class="tip-box">
+        <div class="tip-title">Лайфхак</div>
+        <div class="tip-text">Gamma экономит время на структуре и первичном оформлении. Не тратьте время на идеальную правку каждого элемента в сервисе. Скачайте черновик и внесите точные изменения в PowerPoint.</div>
+      </div>
+    </div>
+
+    <div class="nav-container">
+      <div class="nav-buttons">
+        <button class="nav-btn active" data-target="1" aria-label="Шаг 1" onclick="handleNavClick(1)">1</button>
+        <button class="nav-btn" data-target="2" aria-label="Шаг 2" onclick="handleNavClick(2)">2</button>
+        <button class="nav-btn" data-target="3" aria-label="Шаг 3" onclick="handleNavClick(3)">3</button>
+        <button class="nav-btn" data-target="4" aria-label="Шаг 4" onclick="handleNavClick(4)">4</button>
+        <button class="nav-btn" data-target="5" aria-label="Шаг 5" onclick="handleNavClick(5)">5</button>
+        <button class="nav-btn" data-target="6" aria-label="Шаг 6" onclick="handleNavClick(6)">6</button>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var buttons = document.querySelectorAll('.nav-btn');
+var cards = document.querySelectorAll('.step-card');
+var currentStep = 1;
+
+function showStep(stepNumber) {
+  cards.forEach(function(card) {
+    card.classList.remove('active');
+    if (parseInt(card.dataset.step) === stepNumber) {
+      card.classList.add('active');
+    }
+  });
+
+  buttons.forEach(function(btn) {
+    btn.classList.remove('active');
+    if (parseInt(btn.dataset.target) === stepNumber) {
+      btn.classList.add('active');
+    }
+  });
+
+  currentStep = stepNumber;
+
+  setTimeout(function() {
+    triggerResize();
+  }, 350);
+}
+
+function handleNavClick(stepNumber) {
+  if (stepNumber === currentStep) {
+    var card = document.getElementById('card' + stepNumber);
+    if (!card.classList.contains('collapsed')) {
+      card.classList.add('collapsed');
+      setTimeout(function() {
+        triggerResize();
+      }, 350);
+    }
+  } else {
+    showStep(stepNumber);
+  }
+}
+
+function toggleExpand(stepNumber) {
+  var card = document.getElementById('card' + stepNumber);
+  
+  if (card.classList.contains('collapsed')) {
+    card.classList.remove('collapsed');
+  } else {
+    card.classList.add('collapsed');
+  }
+  
+  setTimeout(function() {
+    triggerResize();
+  }, 350);
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  triggerResize();
+});
+</script>
+
+</body>
+</html>
