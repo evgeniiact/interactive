@@ -1,0 +1,587 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --o50: #fff7ed;
+  --o100: #ffedd5;
+  --o600: #ea580c;
+  --o800: #9a3412;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  min-height: 300px;
+  padding: 24px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin: 0 auto;
+}
+
+.header-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 6px 0;
+}
+
+.header-text {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.prog-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.prog-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.prog-track {
+  flex: 1;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.prog-fill {
+  height: 100%;
+  background: var(--g600);
+  border-radius: 3px;
+  transition: width 0.4s;
+  width: 0%;
+}
+
+.prog-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--g700);
+  white-space: nowrap;
+}
+
+.question-block {
+  animation: fadeIn 0.3s ease;
+}
+
+.question {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 14px 0;
+  line-height: 1.5;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.opt-btn {
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  text-align: left;
+  line-height: 1.4;
+  font-family: inherit;
+}
+
+.opt-btn:hover:not(.disabled) {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.opt-btn.selected-correct {
+  border-color: var(--g600);
+  background: var(--g100);
+  color: var(--g800);
+  font-weight: 600;
+  cursor: default;
+}
+
+.opt-btn.selected-wrong {
+  border-color: var(--o600);
+  background: var(--o100);
+  color: var(--o800);
+  cursor: default;
+}
+
+.opt-btn.reveal-correct {
+  border-color: var(--g600);
+  background: var(--g50);
+  color: var(--g800);
+  cursor: default;
+}
+
+.opt-btn.disabled {
+  opacity: 0.55;
+  pointer-events: none;
+}
+
+.explanation {
+  padding: 14px;
+  border-radius: 8px;
+  border-left: 4px solid var(--g600);
+  background: var(--g50);
+  font-size: 14px;
+  line-height: 1.5;
+  margin-bottom: 16px;
+  animation: fadeIn 0.3s ease;
+  display: none;
+}
+
+.explanation.visible {
+  display: block;
+}
+
+.explanation.wrong {
+  border-left-color: var(--o600);
+  background: var(--o50);
+}
+
+.explanation .label {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 6px;
+  color: var(--g700);
+}
+
+.explanation.wrong .label {
+  color: var(--o800);
+}
+
+.next-btn {
+  padding: 10px 24px;
+  border: none;
+  border-radius: 8px;
+  background: var(--g600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+  opacity: 0.3;
+  pointer-events: none;
+}
+
+.next-btn.active {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.next-btn.active:hover {
+  background: var(--g700);
+}
+
+.final-screen {
+  text-align: center;
+  padding: 8px 0;
+  animation: fadeIn 0.3s ease;
+}
+
+.final-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--g100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 14px;
+}
+
+.final-icon svg {
+  width: 20px;
+  height: 20px;
+  color: var(--g600);
+}
+
+.final-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 8px 0;
+}
+
+.final-desc {
+  font-size: 14px;
+  color: var(--text);
+  margin: 0 auto 18px;
+  line-height: 1.5;
+  max-width: 480px;
+}
+
+.check-box {
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin: 0 auto 20px;
+  max-width: 480px;
+  text-align: left;
+}
+
+.check-box-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--g700);
+  margin-bottom: 8px;
+}
+
+.check-box ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.check-box li {
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.check-box li:last-child {
+  margin-bottom: 0;
+}
+
+.restart-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 24px;
+  border: 2px solid var(--g600);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--g700);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.restart-btn:hover {
+  background: var(--g50);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .wrap { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h1 class="header-title">Проверьте презентацию</h1>
+  <p class="header-text">Перед вами черновик презентации для новых работников участка резки стекла, контроля качества и склада. Ответьте на 6 вопросов и найдите ошибки, которые нужно исправить перед инструктажем.</p>
+
+  <div class="prog-bar">
+    <span class="prog-label" id="prog-label">Вопрос 1 из 6</span>
+    <div class="prog-track">
+      <div class="prog-fill" id="prog-fill"></div>
+    </div>
+    <span class="prog-count" id="prog-count">1/6</span>
+  </div>
+
+  <div class="question-block" id="quiz">
+    <div class="question" id="q-text"></div>
+    <div class="options" id="options"></div>
+    <div class="explanation" id="explanation">
+      <div class="label" id="exp-label"></div>
+      <div id="exp-text"></div>
+    </div>
+    <button class="next-btn" id="next-btn">Далее</button>
+  </div>
+
+  <div class="final-screen" id="final" style="display: none;">
+    <div class="final-icon">
+      <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </div>
+    <h2 class="final-title" id="final-title"></h2>
+    <p class="final-desc" id="final-desc"></p>
+    <div class="check-box">
+      <div class="check-box-title">После проверки</div>
+      <ol>
+        <li>Сохраните рабочий файл PowerPoint для обновлений.</li>
+        <li>Создайте PDF-версию для показа на инструктаже.</li>
+        <li>Согласуйте презентацию с ответственным за охрану труда.</li>
+      </ol>
+    </div>
+    <button class="restart-btn" id="restart-btn">Пройти еще раз</button>
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var questions = [
+  {
+    q: 'На слайде о контейнерах для отходов Gamma использовала нейтральные пиктограммы. Что нужно сделать перед показом презентации работникам?',
+    options: [
+      'Оставить как есть - пиктограммы понятны и так',
+      'Нарисовать свои пиктограммы от руки',
+      'Заменить на реальные фото контейнеров вашего предприятия или добавить утвержденную маркировку',
+      'Убрать слайд с контейнерами совсем'
+    ],
+    correct: 2,
+    explain: 'Работник должен увидеть, куда складывать стеклобой, картон, пленку и бутылки именно на вашем предприятии. Нейтральные иконки не дают точного ориентира.'
+  },
+  {
+    q: 'Gamma написала в презентации правило: «Снимайте с бутылок крышки и этикетки». Что с этим делать?',
+    options: [
+      'Удалить, если такого правила нет в вашей локальной инструкции',
+      'Оставить - это правильное правило сортировки',
+      'Добавить в инструкцию это новое правило',
+      'Спросить у работников, как они привыкли'
+    ],
+    correct: 0,
+    explain: 'Сервис мог использовать общий шаблон сортировки. В презентации оставляйте только утвержденные действия: освободить бутылку от жидкости, смять и поместить в предназначенный контейнер.'
+  },
+  {
+    q: 'На слайде «Стеклобой» показан желтый контейнер с бумагой. В чем ошибка?',
+    options: [
+      'Желтый цвет - это правильно для стекла',
+      'Бумага тоже может быть в контейнере для стекла',
+      'Цвет контейнера не важен, главное - маркировка',
+      'Изображение не соответствует тексту - нужен серый металлический контейнер с маркировкой «Стеклобой»'
+    ],
+    correct: 3,
+    explain: 'Визуал должен подтверждать текст. Не используйте случайные иллюстрации, даже если они подходят по стилю.'
+  },
+  {
+    q: 'На слайде «Контейнер заполнен» написано: «Не оставляйте отходы рядом». Чего не хватает?',
+    options: [
+      'Фотографии заполненного контейнера',
+      'Следующего шага: «Сообщите мастеру участка или ответственному сотруднику»',
+      'Ничего не хватает - запрет понятен',
+      'Штрафа за нарушение'
+    ],
+    correct: 1,
+    explain: 'Работник должен понимать не только запрет, но и правильное действие. Всегда добавляйте следующий шаг.'
+  },
+  {
+    q: 'На слайде восемь пунктов мелким шрифтом. Как исправить?',
+    options: [
+      'Оставить как есть - вся информация важная',
+      'Увеличить шрифт, чтобы было читаемее',
+      'Оставить один главный тезис и до трех коротких пунктов, остальное перенести',
+      'Разбить на два слайда с теми же восемью пунктами'
+    ],
+    correct: 2,
+    explain: 'Презентация сопровождает объяснение, а не заменяет документ. Остальное перенесите на следующий слайд, в заметки ведущего или в локальную инструкцию.'
+  },
+  {
+    q: 'В черновике появились адрес предприятия, телефон, фамилия ответственного и номер внутренней инструкции. Что делать?',
+    options: [
+      'Удалить все служебные данные совсем',
+      'Оставить все данные - они полезные',
+      'Оставить только телефон и адрес',
+      'Удалить данные, если сервис добавил их сам, затем внести вручную только актуальные и согласованные сведения'
+    ],
+    correct: 3,
+    explain: 'Не оставляйте в файле шаблонные реквизиты или случайные контакты. Для рабочей версии презентации вносите только проверенные данные.'
+  }
+];
+
+var currentQ = 0;
+var score = 0;
+var answered = false;
+
+function renderQuestion() {
+  answered = false;
+
+  var q = questions[currentQ];
+
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('prog-label').textContent = 'Вопрос ' + (currentQ + 1) + ' из ' + questions.length;
+  document.getElementById('prog-count').textContent = (currentQ + 1) + '/' + questions.length;
+  document.getElementById('prog-fill').style.width = (currentQ / questions.length * 100) + '%';
+
+  var box = document.getElementById('options');
+  box.innerHTML = '';
+
+  q.options.forEach(function(opt, idx) {
+    var btn = document.createElement('button');
+    btn.className = 'opt-btn';
+    btn.textContent = opt;
+    btn.addEventListener('click', function() {
+      answer(idx, btn);
+    });
+    box.appendChild(btn);
+  });
+
+  document.getElementById('explanation').classList.remove('visible', 'wrong');
+
+  var nextBtn = document.getElementById('next-btn');
+  nextBtn.classList.remove('active');
+  nextBtn.textContent = currentQ === questions.length - 1 ? 'К результатам' : 'Далее';
+
+  var quiz = document.getElementById('quiz');
+  quiz.style.animation = 'none';
+  void quiz.offsetWidth;
+  quiz.style.animation = '';
+
+  triggerResize();
+}
+
+function answer(idx, btn) {
+  if (answered) return;
+  answered = true;
+
+  var q = questions[currentQ];
+  var buttons = document.querySelectorAll('.opt-btn');
+
+  buttons.forEach(function(b, i) {
+    if (i === q.correct) {
+      b.classList.add(i === idx ? 'selected-correct' : 'reveal-correct');
+    } else if (i === idx) {
+      b.classList.add('selected-wrong');
+    } else {
+      b.classList.add('disabled');
+    }
+  });
+
+  if (idx === q.correct) score++;
+
+  var explanation = document.getElementById('explanation');
+  var label = document.getElementById('exp-label');
+  var text = document.getElementById('exp-text');
+
+  if (idx === q.correct) {
+    label.textContent = 'Верно';
+    explanation.classList.remove('wrong');
+  } else {
+    label.textContent = 'Неверно';
+    explanation.classList.add('wrong');
+  }
+  text.textContent = q.explain;
+  explanation.classList.add('visible');
+
+  document.getElementById('next-btn').classList.add('active');
+  document.getElementById('prog-fill').style.width = ((currentQ + 1) / questions.length * 100) + '%';
+
+  triggerResize();
+}
+
+function showFinal() {
+  document.getElementById('quiz').style.display = 'none';
+  document.getElementById('prog-bar').style.display = 'none';
+
+  var title = document.getElementById('final-title');
+  var desc = document.getElementById('final-desc');
+
+  if (score === 6) {
+    title.textContent = 'Отлично';
+    desc.textContent = 'Вы нашли все ошибки. Теперь вы можете проверить любую презентацию перед инструктажем.';
+  } else if (score >= 4) {
+    title.textContent = 'Хорошо';
+    desc.textContent = 'Вы увидели основные проблемы. Обратите внимание на детали - служебные данные и соответствие визуала тексту.';
+  } else {
+    title.textContent = 'Стоит повторить';
+    desc.textContent = 'Пройдите урок еще раз. Запомните: презентация должна содержать только реальные данные вашего предприятия и утвержденные правила.';
+  }
+
+  document.getElementById('final').style.display = 'block';
+  triggerResize();
+}
+
+function restart() {
+  currentQ = 0;
+  score = 0;
+  answered = false;
+
+  document.getElementById('final').style.display = 'none';
+  document.getElementById('quiz').style.display = 'block';
+  document.getElementById('prog-bar').style.display = 'flex';
+
+  renderQuestion();
+}
+
+document.getElementById('next-btn').addEventListener('click', function() {
+  if (!answered) return;
+  currentQ++;
+  if (currentQ < questions.length) {
+    renderQuestion();
+  } else {
+    showFinal();
+  }
+});
+
+document.getElementById('restart-btn').addEventListener('click', restart);
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderQuestion();
+  triggerResize();
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
