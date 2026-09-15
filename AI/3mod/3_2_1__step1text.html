@@ -56,6 +56,8 @@ body {
   transition: all 0.3s ease;
   pointer-events: none;
   display: none;
+  position: relative;
+  overflow: hidden;
 }
 
 .step-card.active {
@@ -63,6 +65,21 @@ body {
   transform: translateX(0);
   pointer-events: auto;
   display: block;
+}
+
+.step-card.collapsed {
+  max-height: 315px;
+}
+
+.step-card.collapsed::after {
+  content: '';
+  position: absolute;
+  bottom: 70px;
+  left: 0;
+  right: 0;
+  height: 120px;
+  background: linear-gradient(to bottom, rgba(255,255,255,0) 0%, rgba(255,255,255,1) 100%);
+  pointer-events: none;
 }
 
 .step-title {
@@ -89,64 +106,20 @@ body {
   flex-shrink: 0;
 }
 
-.intro {
+.caption {
   font-size: 14px;
   line-height: 1.5;
   color: var(--text);
-  margin: 0 0 16px 0;
-}
-
-.expand-btn {
-  display: inline-flex;
-  align-items: center;
-  gap: 8px;
-  padding: 10px 18px;
-  border-radius: 8px;
-  border: 1px solid var(--g600);
-  background: var(--g50);
-  color: var(--g700);
-  font-size: 14px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s;
   margin: 0 0 14px 0;
 }
 
-.expand-btn:hover {
-  background: var(--g100);
-}
-
-.expand-btn svg {
-  width: 16px;
-  height: 16px;
-  transition: transform 0.3s;
-}
-
-.expand-btn.open svg {
-  transform: rotate(180deg);
-}
-
-.elements-list {
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-  margin: 0 0 14px 0;
-  max-height: 0;
-  overflow: hidden;
-  transition: max-height 0.4s ease, opacity 0.3s ease;
-  opacity: 0;
-}
-
-.elements-list.open {
-  max-height: 800px;
-  opacity: 1;
-}
-
+/* Стили для контента из исходного интерактива, адаптированные под новый дизайн */
 .element-item {
   background: var(--g50);
   border-left: 3px solid var(--g600);
   border-radius: 6px;
   padding: 12px 14px;
+  margin-bottom: 10px;
 }
 
 .element-label {
@@ -168,7 +141,7 @@ body {
   border-left: 3px solid var(--g600);
   border-radius: 6px;
   padding: 14px 16px;
-  margin: 0 0 14px 0;
+  margin: 14px 0;
   font-size: 13px;
   line-height: 1.6;
   color: var(--text);
@@ -180,28 +153,8 @@ body {
   color: var(--g700);
   margin: 0 0 8px 0;
   font-size: 13px;
-}
-
-.illustration-wrap {
-  margin: 14px 0;
-  border-radius: 8px;
-  overflow: hidden;
-  border: 1px solid var(--border);
-  background: #f8fafc;
-}
-
-.illustration-wrap img {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.illustration-caption {
-  padding: 8px 12px;
-  font-size: 12px;
-  color: var(--muted);
-  background: #f8fafc;
-  border-top: 1px solid var(--border);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .table-wrap {
@@ -212,7 +165,7 @@ body {
 .table-wrap table {
   width: 100%;
   border-collapse: collapse;
-  font-size: 12px;
+  font-size: 13px;
 }
 
 .table-wrap th,
@@ -229,30 +182,93 @@ body {
   color: var(--g700);
 }
 
-.table-wrap td {
-  color: var(--muted);
-}
-
 .note {
   background: var(--y50);
-  border: 1px solid var(--y100);
+  border-left: 3px solid #f59e0b;
   border-radius: 6px;
   padding: 12px 14px;
-  font-size: 12px;
-  line-height: 1.5;
-  color: var(--text);
   margin: 14px 0 0 0;
 }
 
 .note-label {
   font-weight: 700;
   color: #b45309;
+  font-size: 13px;
   margin: 0 0 6px 0;
-  font-size: 12px;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 
+/* Механика сворачивания и разворачивания */
+.expand-overlay {
+  position: absolute;
+  bottom: 80px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 10;
+  display: none;
+}
+
+.step-card.collapsed .expand-overlay {
+  display: block;
+}
+
+.expand-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--g600);
+  background: var(--g600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.3);
+}
+
+.expand-btn:hover {
+  background: var(--g700);
+  border-color: var(--g700);
+}
+
+.expand-btn svg {
+  width: 16px;
+  height: 16px;
+  transition: transform 0.3s;
+}
+
+.step-card.collapsed .expand-btn svg {
+  transform: rotate(180deg);
+}
+
+.collapse-link {
+  display: none;
+  text-align: center;
+  margin: 16px 0 0 0;
+}
+
+.step-card:not(.collapsed) .collapse-link {
+  display: block;
+}
+
+.collapse-link button {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 6px 12px;
+  transition: color 0.2s;
+}
+
+.collapse-link button:hover {
+  color: var(--g600);
+}
+
+/* Навигация */
 .nav-container {
   position: relative;
   height: 70px;
@@ -313,77 +329,97 @@ body {
 <div class="wrap">
   <div class="card-container" id="cardContainer">
     
-    <div class="step-card active" data-step="1">
+    <div class="step-card active collapsed" data-step="1" id="card1">
       <div class="step-title">
         <span class="step-number">1</span>
         Соберите промпт
       </div>
-      <div class="intro">
+      <div class="caption">
         Укажите в запросе шесть элементов.
       </div>
-      <button class="expand-btn" id="expandBtn" aria-expanded="false">
-        <span>Раскрыть элементы промпта</span>
-        <svg viewBox="0 0 16 16" fill="none">
-          <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </button>
-      <div class="elements-list" id="elementsList">
-        <div class="element-item">
-          <div class="element-label">Что показать</div>
-          <div class="element-text">Работника в средствах индивидуальной защиты, ветошь и металлическую емкость.</div>
-        </div>
-        <div class="element-item">
-          <div class="element-label">Какую мысль передать</div>
-          <div class="element-text">Ветошь собирают отдельно в закрытую металлическую емкость.</div>
-        </div>
-        <div class="element-item">
-          <div class="element-label">Формат</div>
-          <div class="element-text">Вертикальная иллюстрация для памятки А4.</div>
-        </div>
-        <div class="element-item">
-          <div class="element-label">Стиль</div>
-          <div class="element-text">Техническая 3D-иллюстрация на светлом фоне.</div>
-        </div>
-        <div class="element-item">
-          <div class="element-label">Композиция</div>
-          <div class="element-text">Основные объекты внизу, сверху свободное место для заголовка и правил.</div>
-        </div>
-        <div class="element-item">
-          <div class="element-label">Ограничения</div>
-          <div class="element-text">Без текста, логотипов, кодов отходов, маркировки и данных предприятия.</div>
-        </div>
+      
+      <div class="element-item">
+        <div class="element-label">Что показать</div>
+        <div class="element-text">Работника в средствах индивидуальной защиты, ветошь и металлическую емкость.</div>
+      </div>
+      <div class="element-item">
+        <div class="element-label">Какую мысль передать</div>
+        <div class="element-text">Ветошь собирают отдельно в закрытую металлическую емкость.</div>
+      </div>
+      <div class="element-item">
+        <div class="element-label">Формат</div>
+        <div class="element-text">Вертикальная иллюстрация для памятки А4.</div>
+      </div>
+      <div class="element-item">
+        <div class="element-label">Стиль</div>
+        <div class="element-text">Техническая 3D-иллюстрация на светлом фоне.</div>
+      </div>
+      <div class="element-item">
+        <div class="element-label">Композиция</div>
+        <div class="element-text">Основные объекты внизу, сверху свободное место для заголовка и правил.</div>
+      </div>
+      <div class="element-item">
+        <div class="element-label">Ограничения</div>
+        <div class="element-text">Без текста, логотипов, кодов отходов, маркировки и данных предприятия.</div>
+      </div>
+
+      <div class="expand-overlay">
+        <button class="expand-btn" onclick="toggleExpand(1)">
+          <span>Показать полностью</span>
+          <svg viewBox="0 0 16 16" fill="none">
+            <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="collapse-link">
+        <button onclick="toggleExpand(1)">Свернуть</button>
       </div>
     </div>
 
-    <div class="step-card" data-step="2">
+    <div class="step-card collapsed" data-step="2" id="card2">
       <div class="step-title">
         <span class="step-number">2</span>
         Скопируйте промпт
       </div>
-      <div class="intro">
+      <div class="caption">
         Готовый запрос для графической нейросети.
       </div>
+      
       <div class="prompt-box">
         <div class="prompt-title">Промпт</div>
 Создай вертикальную иллюстрацию для памятки формата А4. Изобрази работника производственного участка в каске, перчатках и синей спецодежде. Работник кладет сложенную техническую ветошь с небольшими следами масла в металлическую емкость с плотно закрывающейся крышкой. Передай смысл: промасленную ветошь собирают отдельно в закрытую металлическую емкость. Стиль: чистая техническая 3D-иллюстрация, минимализм, белый фон, красные и темно-серые акценты, высокая четкость. Композиция: работник и емкость расположены в нижней части. В верхней части оставь широкое свободное поле для заголовка и трех правил. Не добавляй текст, цифры, логотипы, название предприятия, коды отходов и маркировку.
       </div>
+      
       <div class="note">
         <div class="note-label">Совет</div>
         Сохраните промпт в базе промптов. Когда обновите правила в памятке, замените только текст, а иллюстрацию оставите без изменений.
       </div>
+
+      <div class="expand-overlay">
+        <button class="expand-btn" onclick="toggleExpand(2)">
+          <span>Показать полностью</span>
+          <svg viewBox="0 0 16 16" fill="none">
+            <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="collapse-link">
+        <button onclick="toggleExpand(2)">Свернуть</button>
+      </div>
     </div>
 
-    <div class="step-card" data-step="3">
+    <div class="step-card collapsed" data-step="3" id="card3">
       <div class="step-title">
         <span class="step-number">3</span>
         Сохраните текст для памятки
       </div>
-      <div class="intro">
+      <div class="caption">
         Проверенный текст не вставляйте в промпт для графической нейросети.
       </div>
-      <div class="intro">
+      <div class="caption">
         Сначала создайте чистую иллюстрацию с ветошью, металлической емкостью с закрытой крышкой и свободным полем для текста. Затем добавьте в PowerPoint заголовок и правила.
       </div>
+      
       <div class="table-wrap">
         <table>
           <thead>
@@ -412,17 +448,30 @@ body {
           </tbody>
         </table>
       </div>
+      
       <div class="note">
-        <div class="note-label">Лайфхак</div>
+        <div class="note-label">Совет</div>
         Сохраните обезличенный фрагмент инструкции, проверенный текст памятки и промпт для иллюстрации. Когда правила обновятся, замените текст, а визуальный шаблон сохраните.
+      </div>
+
+      <div class="expand-overlay">
+        <button class="expand-btn" onclick="toggleExpand(3)">
+          <span>Показать полностью</span>
+          <svg viewBox="0 0 16 16" fill="none">
+            <path d="M4 6L8 10L12 6" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </button>
+      </div>
+      <div class="collapse-link">
+        <button onclick="toggleExpand(3)">Свернуть</button>
       </div>
     </div>
 
     <div class="nav-container">
       <div class="nav-buttons">
-        <button class="nav-btn active" data-target="1" aria-label="Шаг 1">1</button>
-        <button class="nav-btn" data-target="2" aria-label="Шаг 2">2</button>
-        <button class="nav-btn" data-target="3" aria-label="Шаг 3">3</button>
+        <button class="nav-btn active" data-target="1" aria-label="Шаг 1" onclick="handleNavClick(1)">1</button>
+        <button class="nav-btn" data-target="2" aria-label="Шаг 2" onclick="handleNavClick(2)">2</button>
+        <button class="nav-btn" data-target="3" aria-label="Шаг 3" onclick="handleNavClick(3)">3</button>
       </div>
     </div>
 
@@ -438,9 +487,7 @@ function triggerResize() {
 
 var buttons = document.querySelectorAll('.nav-btn');
 var cards = document.querySelectorAll('.step-card');
-var expandBtn = document.getElementById('expandBtn');
-var elementsList = document.getElementById('elementsList');
-var expandBtnText = expandBtn.querySelector('span');
+var currentStep = 1;
 
 function showStep(stepNumber) {
   cards.forEach(function(card) {
@@ -457,46 +504,40 @@ function showStep(stepNumber) {
     }
   });
 
-  if (stepNumber !== 1) {
-    elementsList.classList.remove('open');
-    expandBtn.classList.remove('open');
-    expandBtn.setAttribute('aria-expanded', 'false');
-    expandBtnText.textContent = 'Раскрыть элементы промпта';
-  }
+  currentStep = stepNumber;
 
   setTimeout(function() {
     triggerResize();
   }, 350);
 }
 
-expandBtn.addEventListener('click', function(e) {
-  e.stopPropagation();
-  var isOpen = elementsList.classList.contains('open');
-  
-  if (isOpen) {
-    elementsList.classList.remove('open');
-    expandBtn.classList.remove('open');
-    expandBtn.setAttribute('aria-expanded', 'false');
-    expandBtnText.textContent = 'Раскрыть элементы промпта';
+function handleNavClick(stepNumber) {
+  if (stepNumber === currentStep) {
+    var card = document.getElementById('card' + stepNumber);
+    if (!card.classList.contains('collapsed')) {
+      card.classList.add('collapsed');
+      setTimeout(function() {
+        triggerResize();
+      }, 350);
+    }
   } else {
-    elementsList.classList.add('open');
-    expandBtn.classList.add('open');
-    expandBtn.setAttribute('aria-expanded', 'true');
-    expandBtnText.textContent = 'Свернуть элементы';
+    showStep(stepNumber);
   }
+}
 
+function toggleExpand(stepNumber) {
+  var card = document.getElementById('card' + stepNumber);
+  
+  if (card.classList.contains('collapsed')) {
+    card.classList.remove('collapsed');
+  } else {
+    card.classList.add('collapsed');
+  }
+  
   setTimeout(function() {
     triggerResize();
-  }, 400);
-});
-
-buttons.forEach(function(btn) {
-  btn.addEventListener('click', function(e) {
-    e.stopPropagation();
-    var step = parseInt(this.dataset.target);
-    showStep(step);
-  });
-});
+  }, 350);
+}
 
 document.addEventListener('DOMContentLoaded', function() {
   triggerResize();
