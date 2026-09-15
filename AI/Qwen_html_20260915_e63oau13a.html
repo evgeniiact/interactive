@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --o50: #fff7ed;
+  --o600: #ea580c;
+  --o800: #9a3412;
+  --bl50: #eff6ff;
+  --bl600: #2563eb;
+  --bl700: #1d4ed8;
+  --p50: #f5f3ff;
+  --p600: #7c3aed;
+  --p700: #6d28d9;
+  --t50: #ecfeff;
+  --t600: #0891b2;
+  --t700: #0e7490;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 720px;
+  padding: 20px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin: 0 auto;
+}
+
+.steps {
+  display: flex;
+  align-items: stretch;
+  gap: 10px;
+  margin-bottom: 0;
+  flex-wrap: wrap;
+}
+
+.step {
+  flex: 1;
+  min-width: 0;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 10px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  text-align: center;
+  transition: all 0.2s;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  line-height: 1.35;
+}
+
+.step:hover {
+  border-color: var(--muted);
+  background: #fafafa;
+}
+
+.step:focus {
+  outline: 2px solid var(--bl600);
+  outline-offset: 2px;
+}
+
+.step-icon {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #f1f5f9;
+  color: var(--muted);
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.step-icon svg {
+  width: 15px;
+  height: 15px;
+}
+
+.step.blue.active { border-color: var(--bl600); background: var(--bl50); color: var(--bl700); }
+.step.blue.active .step-icon { background: var(--bl600); color: #fff; }
+.step.green.active { border-color: var(--g600); background: var(--g50); color: var(--g800); }
+.step.green.active .step-icon { background: var(--g600); color: #fff; }
+.step.orange.active { border-color: var(--o600); background: var(--o50); color: var(--o800); }
+.step.orange.active .step-icon { background: var(--o600); color: #fff; }
+.step.purple.active { border-color: var(--p600); background: var(--p50); color: var(--p700); }
+.step.purple.active .step-icon { background: var(--p600); color: #fff; }
+.step.teal.active { border-color: var(--t600); background: var(--t50); color: var(--t700); }
+.step.teal.active .step-icon { background: var(--t600); color: #fff; }
+
+.detail {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--g600);
+  border-radius: 10px;
+  padding: 16px;
+  margin-top: 14px;
+  animation: fadeIn 0.3s ease;
+  display: none;
+}
+
+.detail.visible {
+  display: block;
+}
+
+.detail-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 8px 0;
+}
+
+.detail-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  margin: 0 0 12px 0;
+}
+
+.help-box {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 10px;
+}
+
+.help-box:last-child {
+  margin-bottom: 0;
+}
+
+.help-icon {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: var(--g100);
+  color: var(--g700);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.help-icon svg {
+  width: 14px;
+  height: 14px;
+}
+
+.help-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--g700);
+  margin-bottom: 3px;
+}
+
+.help-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.conclusion {
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-top: 16px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .wrap { padding: 14px; }
+  .steps { flex-direction: column; gap: 8px; }
+  .step {
+    flex-direction: row;
+    justify-content: flex-start;
+    text-align: left;
+    gap: 10px;
+    padding: 12px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+
+  <div class="steps" id="steps" role="tablist">
+    <button class="step blue" data-id="0" role="tab" aria-expanded="false">
+      <span class="step-icon">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><polyline points="14 2 14 8 20 8" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><line x1="9" y1="15" x2="15" y2="15" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/><circle cx="12" cy="12" r="0.5" fill="currentColor"/></svg>
+      </span>
+      <span>Чистый лист</span>
+    </button>
+
+    <button class="step green" data-id="1" role="tab" aria-expanded="false">
+      <span class="step-icon">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M9 18h6M10 21h4M12 3a6 6 0 0 1 6 6c0 2-1 3.4-2 4.5-.6.7-1 1.5-1 2.5h-6c0-1-.4-1.8-1-2.5C7 12.4 6 11 6 9a6 6 0 0 1 6-6Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span>Брейншторм</span>
+    </button>
+
+    <button class="step orange" data-id="2" role="tab" aria-expanded="false">
+      <span class="step-icon">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 2L2 7l10 5 10-5-10-5z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 17l10 5 10-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M2 12l10 5 10-5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span>Декомпозиция</span>
+    </button>
+
+    <button class="step purple" data-id="3" role="tab" aria-expanded="false">
+      <span class="step-icon">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M21 12a9 9 0 1 1-9-9c2.5 0 4.8 1 6.5 2.5" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 3v6h-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span>Итерации</span>
+    </button>
+
+    <button class="step teal" data-id="4" role="tab" aria-expanded="false">
+      <span class="step-icon">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M9 11l3 3L22 4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <span>Карта проверки</span>
+    </button>
+  </div>
+
+  <div class="detail" id="detail">
+    <div class="detail-title" id="detail-title"></div>
+    <div class="detail-text" id="detail-text"></div>
+    <div class="help-box">
+      <span class="help-icon">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <div>
+        <div class="help-label">Что попросить у ИИ</div>
+        <div class="help-text" id="prompt-text"></div>
+      </div>
+    </div>
+    <div class="help-box">
+      <span class="help-icon">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/><path d="M22 4L12 14.01l-3-3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </span>
+      <div>
+        <div class="help-label">Результат</div>
+        <div class="help-text" id="result-text"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="conclusion">
+    Один промпт дает черновик. Система приемов ведет задачу от идеи до проверенного результата.
+  </div>
+
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var cards = [
+  {
+    colorVar: 'var(--bl600)',
+    title: 'Чистый лист',
+    situation: 'Появилась новая задача, а плана еще нет. Предприятие хочет сбор батареек, но неясно, где поставить контейнер, кто отвечает и как работать с подрядчиком. Попросите ИИ не решение, а вопросы.',
+    prompt: 'Составь вопросы для запуска сбора батареек. Раздели по участникам: администрация, эколог, подрядчик, работники.',
+    result: 'Список вопросов и понятный следующий шаг.'
+  },
+  {
+    colorVar: 'var(--g600)',
+    title: 'Брейншторм',
+    situation: 'Цель понятна, нужно выбрать формат. Контейнер для батареек установлен. Осталось решить, как сообщить сотрудникам: через чат, объявление, подпись или слайд. Попросите ИИ варианты по критериям.',
+    prompt: 'Предложи пять вариантов сообщения о контейнере. Для каждого укажи формат: чат, объявление или подпись.',
+    result: 'Несколько вариантов и критерии выбора.'
+  },
+  {
+    colorVar: 'var(--o600)',
+    title: 'Декомпозиция',
+    situation: 'Задача зависит от нескольких шагов и участников. Нужно согласовать место, определить ответственных, наладить работу с подрядчиком и проверить готовность. Попросите ИИ разложить задачу на этапы.',
+    prompt: 'Разбей внедрение сбора батареек на этапы. Укажи результат, участников, задачи ИИ и задачи эколога.',
+    result: 'План с последовательностью и результатом каждого шага.'
+  },
+  {
+    colorVar: 'var(--p600)',
+    title: 'Итерации',
+    situation: 'Первый черновик есть, но не хватает конкретики. ИИ написал общее объявление без места установки и действий работника. Попросите ИИ доработать один параметр за раз.',
+    prompt: 'Доработай объявление. Добавь место, допустимые отходы, действия работника и контакты. До 350 знаков.',
+    result: 'Улучшенная версия для сравнения с черновиком.'
+  },
+  {
+    colorVar: 'var(--t600)',
+    title: 'Карта проверки',
+    situation: 'ИИ добавил факты, сроки, коды отходов или выводы о соответствии. Перед публикацией или отправкой документа такие фрагменты нужно проверить вручную. Попросите ИИ собрать список точек контроля.',
+    prompt: 'Выдели утверждения для ручной проверки. Укажи первоисточник и условия применимости.',
+    result: 'Таблица для проверки фактов и принятия решений.'
+  }
+];
+
+var activeId = null;
+
+function toggle(id) {
+  var steps = document.querySelectorAll('.step');
+  var detail = document.getElementById('detail');
+
+  if (activeId === id) {
+    steps.forEach(function(s) {
+      s.classList.remove('active');
+      s.setAttribute('aria-expanded', 'false');
+    });
+    detail.classList.remove('visible');
+    activeId = null;
+    triggerResize();
+    return;
+  }
+
+  steps.forEach(function(s) {
+    s.classList.remove('active');
+    s.setAttribute('aria-expanded', 'false');
+  });
+
+  var btn = document.querySelector('.step[data-id="' + id + '"]');
+  btn.classList.add('active');
+  btn.setAttribute('aria-expanded', 'true');
+
+  var c = cards[id];
+
+  detail.classList.remove('visible');
+  void detail.offsetWidth;
+
+  document.getElementById('detail-title').textContent = c.title;
+  document.getElementById('detail-text').textContent = c.situation;
+  document.getElementById('prompt-text').textContent = c.prompt;
+  document.getElementById('result-text').textContent = c.result;
+  detail.style.borderLeftColor = c.colorVar;
+
+  detail.classList.add('visible');
+  activeId = id;
+
+  triggerResize();
+}
+
+document.querySelectorAll('.step').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    toggle(btn.getAttribute('data-id'));
+  });
+});
+
+document.addEventListener('DOMContentLoaded', function() {
+  triggerResize();
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
