@@ -1,0 +1,768 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  --tip-bg: #eff6ff;
+  --tip-border: #bfdbfe;
+  --tip-text: #1e40af;
+  --correct-bg: #f0fdf4;
+  --correct-border: #86efac;
+  --correct-text: #166534;
+  --wrong-bg: #fef2f2;
+  --wrong-border: #fecaca;
+  --wrong-text: #991b1b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  height: 700px;
+  padding: 8px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.fcard {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.f-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.f-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.f-title .tdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--g600);
+  flex-shrink: 0;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover { color: var(--g700); }
+.tab-btn.active { color: var(--g700); border-bottom-color: var(--g600); }
+
+.tab-content {
+  display: none;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.tab-content.active { display: flex; flex-direction: column; }
+
+.prompt-box {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-line;
+  margin-bottom: 12px;
+}
+
+.copy-hint {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* Чат */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-bottom: 10px;
+}
+
+.message {
+  max-width: 85%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  align-self: flex-end;
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  color: var(--text);
+  border-bottom-right-radius: 2px;
+}
+
+.message.ai {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-bottom-left-radius: 2px;
+}
+
+.message-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  opacity: 0.7;
+  display: block;
+}
+
+.message.user .message-label { color: var(--g700); }
+.message.ai .message-label { color: var(--muted); }
+
+.question-purpose {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border);
+  font-style: italic;
+}
+
+/* Врезки */
+.callout {
+  align-self: stretch;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  font-size: 12px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.callout-tip {
+  background: var(--tip-bg);
+  border: 1px solid var(--tip-border);
+  color: var(--tip-text);
+}
+
+.callout-important {
+  background: #f0fdf4;
+  border: 1px solid var(--g100);
+  color: var(--g800);
+}
+
+.callout-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+/* Визуализация До/После */
+.comparison {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
+  margin: 8px 0;
+  font-size: 12px;
+}
+
+.comparison-item {
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.comparison-before { background: #fef2f2; border-color: #fecaca; }
+.comparison-after { background: #f0fdf4; border-color: var(--g100); }
+
+.comparison-label {
+  font-weight: 700;
+  margin-bottom: 4px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.comparison-before .comparison-label { color: #991b1b; }
+.comparison-after .comparison-label { color: var(--g700); }
+
+/* Блок итогов в чате */
+.summary-block {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px;
+  margin-top: 8px;
+  font-size: 13px;
+}
+
+.summary-title {
+  font-weight: 700;
+  color: var(--g700);
+  margin-bottom: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.summary-list {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 12px 0;
+}
+
+.summary-list li {
+  margin-bottom: 4px;
+  padding-left: 14px;
+  position: relative;
+}
+
+.summary-list li::before {
+  content: "-";
+  color: var(--g600);
+  position: absolute;
+  left: 0;
+  font-weight: bold;
+}
+
+.next-step {
+  background: var(--g100);
+  padding: 8px;
+  border-radius: 6px;
+  font-weight: 600;
+  color: var(--g800);
+  font-size: 12px;
+}
+
+/* Интерактивный выбор - усиленный */
+.choice-card {
+  align-self: stretch;
+  background: #fff;
+  border: 2px solid var(--g600);
+  border-radius: 8px;
+  padding: 14px;
+  animation: fadeIn 0.3s ease-out;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.1);
+}
+
+.choice-instruction {
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--g800);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.choice-instruction::before {
+  content: "✋";
+  font-size: 16px;
+}
+
+.choice-question {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.choice-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text);
+}
+
+.choice-btn:hover:not(:disabled) {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.choice-btn.correct {
+  background: var(--correct-bg);
+  border-color: var(--correct-border);
+  color: var(--correct-text);
+}
+
+.choice-btn.wrong {
+  background: var(--wrong-bg);
+  border-color: var(--wrong-border);
+  color: var(--wrong-text);
+  opacity: 0.7;
+}
+
+.choice-feedback {
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--tip-bg);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--tip-text);
+  display: none;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Кнопки управления диалогом */
+.dialog-controls {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.dialog-progress {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.action-btn {
+  background: var(--g600);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+  max-width: 300px;
+}
+
+.action-btn:hover { background: var(--g700); }
+.action-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+.footer-note {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.footer-icon { color: var(--g600); font-weight: bold; }
+
+@media (max-width: 600px) {
+  .wrap { height: 700px; }
+  .fcard { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <div class="fcard">
+    <div class="f-title"><span class="tdot"></span>Начните с вопросов</div>
+    <div class="f-subtitle">В административном корпусе хотят установить контейнер для использованных батареек. Готового плана нет. Сначала попросите ИИ провести короткое интервью.</div>
+
+    <div class="controls">
+      <button class="tab-btn active" onclick="switchTab('prompt')">Промпт</button>
+      <button class="tab-btn" onclick="switchTab('chat')">Диалог с ИИ</button>
+    </div>
+
+    <!-- Вкладка Промпт -->
+    <div id="prompt" class="tab-content active">
+      <div class="callout callout-tip">
+        <div class="callout-title">💡 Как работает прием</div>
+        Сначала ИИ собирает контекст: цель, участников и исходные условия. После этого он составляет первый план и показывает вопросы, которые нужно уточнить.
+      </div>
+      
+      <div class="prompt-box">Я работаю экологом на заводе.
+
+Нам нужно организовать сбор использованных батареек в административном корпусе. Четкого плана действий пока нет.
+
+Действуй как эксперт по промышленной экологии и проектный менеджер.
+
+Задай мне по одному три уточняющих вопроса, чтобы определить границы задачи.
+
+После моих ответов кратко собери:
+- что уже известно;
+- что нужно уточнить;
+- какой следующий шаг.
+
+Задавай вопросы строго по одному.</div>
+      <div class="copy-hint">Скопируйте этот текст в чат с ИИ</div>
+    </div>
+
+    <!-- Вкладка Чат -->
+    <div id="chat" class="tab-content">
+      <div class="chat-container" id="chatContainer">
+        <!-- Сюда динамически добавляются сообщения -->
+      </div>
+      
+      <div class="dialog-controls" id="dialogControls">
+        <span class="dialog-progress" id="dialogProgress">Шаг 1 из 11</span>
+        <button class="action-btn" id="startBtn" onclick="startDialog()">Открыть диалог</button>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <span class="footer-icon"></span>
+      <div>
+        <strong>Прием «Чистый лист»</strong> превращает идею в список известных условий и открытых вопросов.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+  document.getElementById(tabId).classList.add('active');
+  
+  const buttons = document.querySelectorAll('.tab-btn');
+  if (tabId === 'prompt') buttons[0].classList.add('active');
+  else buttons[1].classList.add('active');
+
+  triggerResize();
+}
+
+const steps = [
+  {
+    type: 'user',
+    text: `Я работаю экологом на заводе.
+
+Нам нужно организовать сбор использованных батареек в административном корпусе. Четкого плана действий пока нет.
+
+Действуй как эксперт по промышленной экологии и проектный менеджер.
+
+Задай мне по одному три уточняющих вопроса, чтобы определить границы задачи.
+
+После моих ответов кратко собери:
+- что уже известно;
+- что нужно уточнить;
+- какой следующий шаг.
+
+Задавай вопросы строго по одному.`
+  },
+  {
+    type: 'ai',
+    text: 'Кто будет пользоваться контейнером и какие батарейки планируете собирать?',
+    purpose: 'ИИ определяет масштаб задачи и тип отходов'
+  },
+  {
+    type: 'user',
+    text: 'Контейнер нужен для сотрудников административного корпуса. Их около 50. Планируем собирать только обычные бытовые батарейки.'
+  },
+  {
+    type: 'choice',
+    question: 'ИИ узнал аудиторию и тип батареек. Какой вопрос логично задать следующим?',
+    options: [
+      'Какой цвет сделать у таблички рядом с контейнером?',
+      'Что уже известно о порядке дальнейших действий после заполнения контейнера?',
+      'Сколько слайдов сделать для презентации проекта?'
+    ],
+    correctIndex: 1,
+    feedback: 'Верно. Этот вопрос помогает определить процесс, который нужно организовать после сбора. Дизайн таблички и презентация понадобятся позже, когда появятся основные условия проекта.'
+  },
+  {
+    type: 'ai',
+    text: 'Что уже известно о порядке дальнейших действий после заполнения контейнера?',
+    purpose: 'ИИ ищет процессные пробелы до того, как они станут проблемой'
+  },
+  {
+    type: 'user',
+    text: 'Порядок пока не определен. Нужно понять, как организовать передачу собранных батареек.'
+  },
+  {
+    type: 'ai',
+    text: 'Где планируете разместить контейнер и кто будет отвечать за его состояние?',
+    purpose: 'ИИ уточняет место и закрепляет ответственность'
+  },
+  {
+    type: 'user',
+    text: 'Планируем поставить один контейнер в фойе. За проект отвечаю я, эколог. Ответственного за состояние контейнера еще не назначили.'
+  },
+  {
+    type: 'callout-tip',
+    title: 'До и после',
+    comparison: {
+      before: 'Есть идея: установить контейнер для батареек',
+      after: 'Известны аудитория, место, тип батареек, ответственный и открытые вопросы'
+    }
+  },
+  {
+    type: 'ai-summary',
+    text: `
+      <div class="summary-block">
+        <div class="summary-title">Что уже известно</div>
+        <ul class="summary-list">
+          <li>Контейнер нужен для 50 сотрудников административного корпуса</li>
+          <li>Планируется один контейнер в фойе</li>
+          <li>Собираем только обычные бытовые батарейки</li>
+          <li>За проект отвечает эколог</li>
+        </ul>
+
+        <div class="summary-title">Что нужно уточнить</div>
+        <ul class="summary-list">
+          <li>Порядок передачи собранных батареек специализированной организации</li>
+          <li>Кто будет отвечать за ежедневное состояние контейнера</li>
+          <li>Бюджет и срок запуска проекта</li>
+          <li>Текст для информирования сотрудников</li>
+        </ul>
+
+        <div class="summary-title">Что можно сделать сейчас</div>
+        <ul class="summary-list">
+          <li>Подготовить первый план запуска</li>
+          <li>Составить список участников процесса</li>
+          <li>Собрать варианты текста для сотрудников</li>
+        </ul>
+
+        <div class="next-step">Следующий шаг: Разделить задачу на этапы и определить результат каждого этапа.</div>
+      </div>
+    `
+  },
+  {
+    type: 'callout-important',
+    title: 'Важно',
+    text: 'ИИ не выдал готовую инструкцию. Он собрал известные условия и показал вопросы для следующего этапа. Теперь вы видите полную картину задачи.'
+  }
+];
+
+let currentStep = 0;
+let dialogStarted = false;
+let choiceMade = false;
+
+function startDialog() {
+  dialogStarted = true;
+  document.getElementById('startBtn').textContent = 'Следующее сообщение';
+  document.getElementById('startBtn').onclick = nextStep;
+  renderStep();
+}
+
+function nextStep() {
+  if (choiceMade) {
+    choiceMade = false;
+    document.getElementById('startBtn').textContent = 'Следующее сообщение';
+  }
+  
+  currentStep++;
+  if (currentStep >= steps.length) {
+    document.getElementById('dialogControls').style.display = 'none';
+    return;
+  }
+  
+  // Обновляем текст кнопки перед рендером следующего шага
+  if (steps[currentStep].type === 'ai-summary') {
+    document.getElementById('startBtn').textContent = 'Показать итог';
+  } else if (steps[currentStep].type === 'choice') {
+    document.getElementById('startBtn').textContent = 'Продолжить диалог';
+    document.getElementById('startBtn').disabled = true;
+  }
+  
+  renderStep();
+}
+
+function handleChoice(selectedIndex, correctIndex, feedback) {
+  choiceMade = true;
+  const buttons = document.querySelectorAll('.choice-btn');
+  const feedbackEl = document.getElementById('choiceFeedback');
+  
+  buttons.forEach((btn, index) => {
+    btn.disabled = true;
+    if (index === correctIndex) {
+      btn.classList.add('correct');
+    } else if (index === selectedIndex && index !== correctIndex) {
+      btn.classList.add('wrong');
+    }
+  });
+  
+  feedbackEl.textContent = feedback;
+  feedbackEl.style.display = 'block';
+  
+  document.getElementById('startBtn').disabled = false;
+  document.getElementById('startBtn').textContent = 'Продолжить диалог';
+  
+  triggerResize();
+}
+
+function renderStep() {
+  const container = document.getElementById('chatContainer');
+  const step = steps[currentStep];
+  
+  document.getElementById('dialogProgress').textContent = 'Шаг ' + (currentStep + 1) + ' из ' + steps.length;
+
+  if (step.type === 'callout-tip') {
+    const calloutEl = document.createElement('div');
+    calloutEl.className = 'callout callout-tip';
+    calloutEl.innerHTML = `
+      <div class="callout-title">💡 ${step.title}</div>
+      <div class="comparison">
+        <div class="comparison-item comparison-before">
+          <div class="comparison-label">До диалога</div>
+          <div>${step.comparison.before}</div>
+        </div>
+        <div class="comparison-item comparison-after">
+          <div class="comparison-label">После диалога</div>
+          <div>${step.comparison.after}</div>
+        </div>
+      </div>
+    `;
+    container.appendChild(calloutEl);
+  }
+  else if (step.type === 'callout-important') {
+    const calloutEl = document.createElement('div');
+    calloutEl.className = 'callout callout-important';
+    calloutEl.innerHTML = `
+      <div class="callout-title"> ${step.title}</div>
+      <div>${step.text}</div>
+    `;
+    container.appendChild(calloutEl);
+  }
+  else if (step.type === 'choice') {
+    const choiceEl = document.createElement('div');
+    choiceEl.className = 'choice-card';
+    
+    let optionsHtml = '';
+    step.options.forEach((opt, idx) => {
+      optionsHtml += `<button class="choice-btn" onclick="handleChoice(${idx}, ${step.correctIndex}, '${step.feedback.replace(/'/g, "\\'")}')">${opt}</button>`;
+    });
+    
+    choiceEl.innerHTML = `
+      <div class="choice-instruction">Выберите вопрос, который задаст ИИ</div>
+      <div class="choice-question">${step.question}</div>
+      ${optionsHtml}
+      <div class="choice-feedback" id="choiceFeedback"></div>
+    `;
+    container.appendChild(choiceEl);
+  }
+  else if (step.type === 'user') {
+    const msgEl = document.createElement('div');
+    msgEl.className = 'message user';
+    msgEl.innerHTML = `<span class="message-label">Эколог</span>${step.text.replace(/\n/g, '<br>')}`;
+    container.appendChild(msgEl);
+  }
+  else if (step.type === 'ai') {
+    const msgEl = document.createElement('div');
+    msgEl.className = 'message ai';
+    let html = `<span class="message-label">ИИ</span>${step.text}`;
+    if (step.purpose) {
+      html += `<div class="question-purpose">Зачем этот вопрос: ${step.purpose}</div>`;
+    }
+    msgEl.innerHTML = html;
+    container.appendChild(msgEl);
+  }
+  else if (step.type === 'ai-summary') {
+    const msgEl = document.createElement('div');
+    msgEl.className = 'message ai';
+    msgEl.innerHTML = `<span class="message-label">ИИ</span>${step.text}`;
+    container.appendChild(msgEl);
+  }
+
+  container.scrollTop = container.scrollHeight;
+  triggerResize();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
