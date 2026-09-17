@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  --tip-bg: #eff6ff;
+  --tip-border: #bfdbfe;
+  --tip-text: #1e40af;
+  --correct-bg: #f0fdf4;
+  --correct-border: #86efac;
+  --correct-text: #166534;
+  --wrong-bg: #fef2f2;
+  --wrong-border: #fecaca;
+  --wrong-text: #991b1b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, "Segoe UI", sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  height: 700px;
+  padding: 8px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.fcard {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.f-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.f-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.f-title .tdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--g600);
+  flex-shrink: 0;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.tab-btn:hover { color: var(--g700); }
+.tab-btn.active { color: var(--g700); border-bottom-color: var(--g600); }
+
+.tab-content {
+  display: none;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.tab-content.active { display: flex; flex-direction: column; }
+
+.prompt-header {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--g800);
+  margin-bottom: 8px;
+  text-transform: uppercase;
+}
+
+.prompt-block {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-line;
+  margin-bottom: 8px;
+}
+
+.prompt-note {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  margin-bottom: 16px;
+}
+
+.callout {
+  align-self: stretch;
+  border-radius: 8px;
+  padding: 12px;
+  font-size: 12px;
+  line-height: 1.5;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.callout-tip {
+  background: var(--tip-bg);
+  border: 1px solid var(--tip-border);
+  color: var(--tip-text);
+  margin-bottom: 16px;
+}
+
+.callout-success {
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  color: var(--g800);
+  margin-top: 12px;
+}
+
+.callout-title {
+  font-weight: 700;
+  margin-bottom: 6px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  text-transform: uppercase;
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-bottom: 10px;
+}
+
+.message {
+  max-width: 90%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  align-self: flex-end;
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  color: var(--text);
+  border-bottom-right-radius: 2px;
+}
+
+.message.ai {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-bottom-left-radius: 2px;
+}
+
+.message-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  opacity: 0.7;
+  display: block;
+}
+
+.message.user .message-label { color: var(--g700); }
+.message.ai .message-label { color: var(--muted); }
+
+.step-purpose {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  font-style: italic;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.chat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  min-width: 600px;
+}
+
+.chat-table th, .chat-table td {
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.chat-table th {
+  background: var(--g50);
+  font-weight: 600;
+  color: var(--g800);
+  white-space: nowrap;
+}
+
+.choice-card {
+  align-self: stretch;
+  background: #fff;
+  border: 2px solid var(--g600);
+  border-radius: 8px;
+  padding: 14px;
+  animation: fadeIn 0.3s ease-out;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.1);
+}
+
+.choice-instruction {
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--g800);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.choice-instruction::before {
+  content: "✋";
+  font-size: 16px;
+}
+
+.choice-question {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.choice-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text);
+  line-height: 1.4;
+  font-family: inherit;
+}
+
+.choice-btn:hover:not(:disabled) {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.choice-btn.correct {
+  background: var(--correct-bg);
+  border-color: var(--correct-border);
+  color: var(--correct-text);
+  font-weight: 600;
+}
+
+.choice-btn.wrong {
+  background: var(--wrong-bg);
+  border-color: var(--wrong-border);
+  color: var(--wrong-text);
+  opacity: 0.8;
+}
+
+.choice-btn:disabled {
+  cursor: default;
+}
+
+.choice-feedback {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  display: none;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.choice-feedback.is-correct {
+  background: var(--correct-bg);
+  border: 1px solid var(--correct-border);
+  color: var(--correct-text);
+  display: block;
+}
+
+.choice-feedback.is-wrong {
+  background: var(--wrong-bg);
+  border: 1px solid var(--wrong-border);
+  color: var(--wrong-text);
+  display: block;
+}
+
+.dialog-controls {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.dialog-progress {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.action-btn {
+  background: var(--g600);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+  max-width: 300px;
+  font-family: inherit;
+}
+
+.action-btn:hover { background: var(--g700); }
+.action-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+.footer-note {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.footer-icon { color: var(--g600); font-weight: bold; }
+
+@media (max-width: 600px) {
+  .wrap { height: 700px; }
+  .fcard { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <div class="fcard">
+    <div class="f-title"><span class="tdot"></span>Проверьте порядок до запуска</div>
+    <div class="f-subtitle">Контейнер установлен в тестовом месте. Проверьте схему работы, документы и готовность к запуску.</div>
+
+    <div class="controls">
+      <button class="tab-btn active" onclick="switchTab('prompt')">Промпт</button>
+      <button class="tab-btn" onclick="switchTab('chat')">Диалог с ИИ</button>
+    </div>
+
+    <!-- Вкладка 1: Промпт -->
+    <div id="prompt" class="tab-content active">
+      <div class="prompt-block">Работаем с тем же проектом по сбору батареек.
+
+Контейнер установлен в тестовом месте в административном корпусе,
+но сбор для сотрудников еще не открыт.
+
+Перед запуском хочу проверить порядок:
+кто контролирует контейнер, как будет организована дальнейшая
+передача батареек и какие документы нужно подготовить.
+
+Составь карту проверки и рисков.
+Не давай готовый правовой вывод.
+Укажи, что проверить и где искать подтверждение.</div>
+      <div class="prompt-note">Продолжите тот же чат, в котором вели проект.</div>
+
+      <div class="callout callout-tip">
+        <div class="callout-title">💡 Как это работает</div>
+        ИИ помогает собрать вопросы и риски. Эколог подтверждает порядок по внутренним документам, договору, документам подрядчика и актуальным источникам.
+      </div>
+    </div>
+
+    <!-- Вкладка 2: Диалог с ИИ -->
+    <div id="chat" class="tab-content">
+      <div class="chat-container" id="chatContainer"></div>
+      
+      <div class="dialog-controls" id="dialogControls">
+        <span class="dialog-progress" id="dialogProgress">Нажмите «Открыть диалог»</span>
+        <button class="action-btn" id="startBtn">Открыть диалог</button>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <span class="footer-icon"></span>
+      <div>
+        <strong>Прием «Карта проверки и рисков»</strong> помогает подтвердить порядок до запуска и поддерживать его после запуска.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(el) { el.classList.remove('active'); });
+
+  document.getElementById(tabId).classList.add('active');
+  
+  var buttons = document.querySelectorAll('.tab-btn');
+  if (tabId === 'prompt') buttons[0].classList.add('active');
+  else buttons[1].classList.add('active');
+
+  triggerResize();
+}
+
+var steps = [
+  {
+    type: 'user',
+    text: 'Контейнер установлен в тестовом месте в административном корпусе, но сбор для сотрудников еще не открыт.\n\nПеред запуском хочу проверить порядок: кто контролирует контейнер, как будет организована дальнейшая передача батареек и какие документы нужно подготовить.\n\nСоставь карту проверки и рисков. Не давай готовый правовой вывод. Укажи, что проверить и где искать подтверждение.'
+  },
+  {
+    type: 'ai',
+    html: 'Чтобы составить карту проверки, сначала зафиксируйте, как будет организована работа.<br><br>Уточните:<br>- кто отвечает за состояние контейнера;<br>- какие батарейки будут принимать;<br>- кто организует дальнейшую передачу;<br>- какие документы уже есть;<br>- что нужно согласовать до открытия сбора.<br><br>Затем разделите вопросы на внутренний порядок, требования к обращению, документы подрядчика и готовность к проверке.<br><br><div class="table-wrapper"><table class="chat-table"><tr><th>Что проверить</th><th>Где искать подтверждение</th><th>Что сохранить</th><th>Риск, если не проверить</th><th>До какого этапа закрыть</th></tr><tr><td>Какие элементы принимают в контейнер</td><td>Согласованный внутренний документ, описание проекта, сверка конкретного вида отхода</td><td>Согласованный перечень принимаемых элементов и результат проверки</td><td>В контейнер будут попадать неподходящие предметы или правила для сотрудников будут противоречивыми</td><td>До открытия сбора</td></tr><tr><td>Место контейнера и порядок контроля</td><td>Осмотр места, рабочий план, согласование с администрацией и АХО</td><td>Подтверждение размещения, назначение ответственного, порядок сообщения о заполнении</td><td>Контейнер будет мешать проходу, останется без контроля или батарейки будут оставлять рядом</td><td>До открытия сбора</td></tr><tr><td>Схема дальнейшего обращения с батарейками</td><td>Актуальные источники, внутренний порядок, проект договора, документы подрядчика</td><td>Результат проверки, проект договора или согласованную схему дальнейших действий</td><td>Сбор начнется без понятного порядка дальнейшей передачи</td><td>До открытия сбора</td></tr><tr><td>Документы и действия подрядчика</td><td>Проект договора, документы подрядчика, сведения о его услугах</td><td>Документы подрядчика, договор или согласованные условия взаимодействия</td><td>Предприятие и подрядчик будут по-разному понимать, кто отвечает за контейнер и передачу батареек</td><td>До открытия сбора</td></tr><tr><td>Текст плаката и сообщения сотрудникам</td><td>Согласованный внутренний документ, итоговый файл плаката</td><td>Согласованный текст и итоговый вариант плаката</td><td>Сотрудники получат неверные действия или не поймут, куда обращаться</td><td>До открытия сбора</td></tr></table></div><div class="step-purpose">ИИ собрал маршрут проверки. Он не подтверждает требования, сроки и условия договора. Эколог открывает источники, сверяет условия и фиксирует подтвержденный результат.</div>'
+  },
+  {
+    type: 'choice',
+    question: 'Контейнер установлен в тестовом месте. Что нужно сделать до того, как открыть сбор для сотрудников?',
+    options: [
+      {
+        text: 'Разместить плакат и открыть сбор. Вопросы по передаче батареек можно решить, когда контейнер заполнится.',
+        isCorrect: false,
+        feedback: 'Неверно. Плакат не заменяет порядок работы. До открытия сбора нужно понять, кто контролирует контейнер и как организована дальнейшая передача батареек.'
+      },
+      {
+        text: 'Подтвердить порядок контроля, схему дальнейшего обращения, документы подрядчика и текст для сотрудников.',
+        isCorrect: true,
+        feedback: 'Верно. Сначала закройте вопросы, которые влияют на порядок работы и подтверждающие документы. Затем открывайте сбор.'
+      },
+      {
+        text: 'Купить второй контейнер, чтобы сотрудники видели, что проект уже запущен.',
+        isCorrect: false,
+        feedback: 'Неверно. Количество контейнеров не решает вопросы контроля, передачи батареек и документов.'
+      }
+    ]
+  },
+  {
+    type: 'user',
+    text: 'Проверю условия, зафиксирую порядок и только после этого открою сбор для сотрудников.'
+  },
+  {
+    type: 'ai',
+    html: 'После проверки перед запуском у вас должны быть:<br>- согласованное место контейнера;<br>- понятный ответственный за контроль;<br>- подтвержденная схема дальнейшего обращения;<br>- документы или согласованные условия работы с подрядчиком;<br>- плакат и сообщение с согласованными правилами.<br><br>После этого можно открыть сбор и перейти к сопровождению проекта.'
+  },
+  {
+    type: 'callout',
+    html: '<div class="callout callout-success"><div class="callout-title">🔄 Через месяц после запуска</div>Сбор открыли после того, как эколог подтвердил порядок. Теперь нужно проверить, как он работает на практике.</div>'
+  },
+  {
+    type: 'user',
+    text: 'Сбор работает месяц. Хочу проверить, как сотрудники пользуются контейнером, что в него попадает, как быстро он заполняется и работает ли сообщение о заполнении.\n\nСоставь короткий чеклист сопровождения проекта.'
+  },
+  {
+    type: 'ai',
+    html: '<div class="table-wrapper"><table class="chat-table"><tr><th>Что проверить</th><th>Какой риск снижает</th><th>Что сделать при проблеме</th></tr><tr><td>Как быстро заполняется контейнер</td><td>Контейнер переполняется или используется слишком редко</td><td>Изменить частоту контроля, формат контейнера, место или порядок дальнейших действий</td></tr><tr><td>Что сотрудники кладут в контейнер</td><td>В контейнер попадают неподходящие предметы</td><td>Доработать плакат, сообщение или провести короткое разъяснение</td></tr><tr><td>Как работает сообщение о заполнении</td><td>Эколог не получает информацию вовремя</td><td>Уточнить канал сообщения, назначить замену или изменить порядок контроля</td></tr><tr><td>Оформляются ли документы и записи по передаче</td><td>Нельзя подтвердить фактическое движение батареек</td><td>Проверить порядок учета, уточнить действия с подрядчиком и ответственными</td></tr></table></div>'
+  },
+  {
+    type: 'choice',
+    question: 'Через месяц эколог увидел, что рядом с контейнером регулярно оставляют неподходящие предметы. Что сделать?',
+    options: [
+      {
+        text: 'Оставить все как есть. Сотрудники привыкнут со временем.',
+        isCorrect: false,
+        feedback: 'Неверно. Проблема повторяется, значит текущая коммуникация или порядок не работают. Ее нужно разобрать и скорректировать.'
+      },
+      {
+        text: 'Доработать плакат и сообщение, объяснить порядок сотрудникам и при необходимости пересмотреть место или контроль.',
+        isCorrect: true,
+        feedback: 'Верно. Сначала устраните причину: уточните визуальные материалы, порядок контроля или условия размещения контейнера.'
+      },
+      {
+        text: 'Сразу убрать контейнер без анализа причины.',
+        isCorrect: false,
+        feedback: 'Неверно. Убирать контейнер без анализа причины преждевременно. Сначала проверьте, почему сотрудники используют его неправильно.'
+      }
+    ]
+  },
+  {
+    type: 'ai-final',
+    html: 'Карта проверки и рисков помогает вести проект до запуска и после него.<br><br>До открытия сбора она показывает, что нужно согласовать и подтвердить. После запуска - что наблюдать, где есть риск и какой прием использовать для корректировки.<br><br>Если появилась новая проблема, вернитесь к нужному приему: соберите условия через «Чистый лист», найдите варианты через «Брейншторм», обновите план через «Декомпозицию» или доработайте материалы через «Итерации».'
+  }
+];
+
+var currentStep = 0;
+var dialogStarted = false;
+var choiceMade = false;
+
+var startBtn = document.getElementById('startBtn');
+var dialogProgress = document.getElementById('dialogProgress');
+var chatContainer = document.getElementById('chatContainer');
+
+startBtn.addEventListener('click', function() {
+  if (!dialogStarted) {
+    dialogStarted = true;
+    startBtn.textContent = 'Следующее сообщение';
+    startBtn.addEventListener('click', handleNextStep);
+    renderStep();
+  }
+});
+
+function handleNextStep() {
+  if (choiceMade) {
+    choiceMade = false;
+    startBtn.textContent = 'Следующее сообщение';
+  }
+  
+  currentStep++;
+  
+  if (currentStep >= steps.length) {
+    document.getElementById('dialogControls').style.display = 'none';
+    return;
+  }
+  
+  if (steps[currentStep].type === 'choice') {
+    startBtn.textContent = 'Продолжить';
+    startBtn.disabled = true;
+  } else if (steps[currentStep].type === 'ai-final') {
+    setTimeout(function() {
+      document.getElementById('dialogControls').style.display = 'none';
+    }, 100);
+  }
+  
+  renderStep();
+}
+
+function handleChoice(selectedIndex, stepIndex, choiceCard) {
+  if (choiceMade) return;
+  
+  choiceMade = true;
+  var step = steps[stepIndex];
+  var selectedOption = step.options[selectedIndex];
+  
+  var buttons = choiceCard.querySelectorAll('.choice-btn');
+  var feedbackEl = choiceCard.querySelector('.choice-feedback');
+  
+  buttons.forEach(function(btn, index) {
+    btn.disabled = true;
+    var option = step.options[index];
+    
+    if (option.isCorrect) {
+      btn.classList.add('correct');
+    }
+    if (index === selectedIndex && !option.isCorrect) {
+      btn.classList.add('wrong');
+    }
+  });
+  
+  if (feedbackEl) {
+    feedbackEl.textContent = selectedOption.feedback;
+    if (selectedOption.isCorrect) {
+      feedbackEl.className = 'choice-feedback is-correct';
+    } else {
+      feedbackEl.className = 'choice-feedback is-wrong';
+    }
+  }
+  
+  startBtn.disabled = false;
+  startBtn.textContent = 'Продолжить';
+  
+  triggerResize();
+}
+
+function renderStep() {
+  var step = steps[currentStep];
+  
+  dialogProgress.textContent = 'Шаг ' + (currentStep + 1) + ' из ' + steps.length;
+
+  if (step.type === 'choice') {
+    var choiceEl = document.createElement('div');
+    choiceEl.className = 'choice-card';
+    
+    var optionsHtml = '';
+    step.options.forEach(function(opt, idx) {
+      optionsHtml += '<button class="choice-btn" data-idx="' + idx + '">' + opt.text + '</button>';
+    });
+    
+    choiceEl.innerHTML = '<div class="choice-instruction">Выберите действие эколога</div><div class="choice-question">' + step.question + '</div>' + optionsHtml + '<div class="choice-feedback"></div>';
+    chatContainer.appendChild(choiceEl);
+    
+    var btns = choiceEl.querySelectorAll('.choice-btn');
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var idx = parseInt(this.getAttribute('data-idx'));
+        handleChoice(idx, currentStep, choiceEl);
+      });
+    });
+  }
+  else if (step.type === 'user') {
+    var msgEl = document.createElement('div');
+    msgEl.className = 'message user';
+    msgEl.innerHTML = '<span class="message-label">Эколог</span>' + step.text.replace(/\n/g, '<br>');
+    chatContainer.appendChild(msgEl);
+  }
+  else if (step.type === 'ai' || step.type === 'ai-final') {
+    var msgEl = document.createElement('div');
+    msgEl.className = 'message ai';
+    msgEl.innerHTML = '<span class="message-label">ИИ</span>' + (step.html || step.text.replace(/\n/g, '<br>'));
+    chatContainer.appendChild(msgEl);
+  }
+  else if (step.type === 'callout') {
+    var calloutEl = document.createElement('div');
+    calloutEl.innerHTML = step.html;
+    chatContainer.appendChild(calloutEl);
+  }
+
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+  triggerResize();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
