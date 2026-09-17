@@ -1,0 +1,705 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  --tip-bg: #eff6ff;
+  --tip-border: #bfdbfe;
+  --tip-text: #1e40af;
+  --correct-bg: #f0fdf4;
+  --correct-border: #86efac;
+  --correct-text: #166534;
+  --wrong-bg: #fef2f2;
+  --wrong-border: #fecaca;
+  --wrong-text: #991b1b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  height: 700px;
+  padding: 8px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.fcard {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.f-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.f-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.f-title .tdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--g600);
+  flex-shrink: 0;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.tab-btn:hover { color: var(--g700); }
+.tab-btn.active { color: var(--g700); border-bottom-color: var(--g600); }
+
+.tab-content {
+  display: none;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.tab-content.active { display: flex; flex-direction: column; }
+
+.prompt-box {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-line;
+  margin-bottom: 8px;
+}
+
+.prompt-note {
+  font-size: 12px;
+  color: var(--muted);
+  font-style: italic;
+  margin-top: 4px;
+}
+
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-bottom: 10px;
+}
+
+.message {
+  max-width: 90%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  align-self: flex-end;
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  color: var(--text);
+  border-bottom-right-radius: 2px;
+}
+
+.message.ai {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-bottom-left-radius: 2px;
+}
+
+.message-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  opacity: 0.7;
+  display: block;
+}
+
+.message.user .message-label { color: var(--g700); }
+.message.ai .message-label { color: var(--muted); }
+
+.step-purpose {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px dashed var(--border);
+  font-style: italic;
+}
+
+.table-wrapper {
+  width: 100%;
+  overflow-x: auto;
+  margin-top: 8px;
+  border-radius: 6px;
+  border: 1px solid var(--border);
+}
+
+.chat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 11px;
+  min-width: 600px;
+}
+
+.chat-table th, .chat-table td {
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.chat-table th {
+  background: var(--g50);
+  font-weight: 600;
+  color: var(--g800);
+  white-space: nowrap;
+}
+
+.callout {
+  align-self: stretch;
+  border-radius: 8px;
+  padding: 12px;
+  margin-bottom: 12px;
+  font-size: 12px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.callout-tip {
+  background: var(--tip-bg);
+  border: 1px solid var(--tip-border);
+  color: var(--tip-text);
+}
+
+.callout-success {
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  color: var(--g800);
+}
+
+.callout-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+.choice-card {
+  align-self: stretch;
+  background: #fff;
+  border: 2px solid var(--g600);
+  border-radius: 8px;
+  padding: 14px;
+  animation: fadeIn 0.3s ease-out;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.1);
+}
+
+.choice-instruction {
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--g800);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.choice-instruction::before {
+  content: "✋";
+  font-size: 16px;
+}
+
+.choice-question {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.choice-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text);
+  line-height: 1.4;
+  font-family: inherit;
+}
+
+.choice-btn:hover:not(:disabled) {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.choice-btn.correct {
+  background: var(--correct-bg);
+  border-color: var(--correct-border);
+  color: var(--correct-text);
+  font-weight: 600;
+}
+
+.choice-btn.wrong {
+  background: var(--wrong-bg);
+  border-color: var(--wrong-border);
+  color: var(--wrong-text);
+  opacity: 0.8;
+}
+
+.choice-btn:disabled {
+  cursor: default;
+}
+
+.choice-feedback {
+  margin-top: 10px;
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  display: none;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.choice-feedback.is-correct {
+  background: var(--correct-bg);
+  border: 1px solid var(--correct-border);
+  color: var(--correct-text);
+  display: block;
+}
+
+.choice-feedback.is-wrong {
+  background: var(--wrong-bg);
+  border: 1px solid var(--wrong-border);
+  color: var(--wrong-text);
+  display: block;
+}
+
+.dialog-controls {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.dialog-progress {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.action-btn {
+  background: var(--g600);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+  max-width: 300px;
+  font-family: inherit;
+}
+
+.action-btn:hover { background: var(--g700); }
+.action-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+.footer-note {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.footer-icon { color: var(--g600); font-weight: bold; }
+
+@media (max-width: 600px) {
+  .wrap { height: 700px; }
+  .fcard { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <div class="fcard">
+    <div class="f-title"><span class="tdot"></span>Разложите задачу</div>
+    <div class="f-subtitle">Выбранный вариант нужно превратить в план. В плане должны быть этапы, результаты, участники и проверки до запуска.</div>
+
+    <div class="controls">
+      <button class="tab-btn active" onclick="switchTab('prompt')">Промпт</button>
+      <button class="tab-btn" onclick="switchTab('chat')">Диалог с ИИ</button>
+    </div>
+
+    <div id="prompt" class="tab-content active">
+      <div class="callout callout-tip">
+        <div class="callout-title">💡 Лайфхак</div>
+        Просите ИИ указывать результат каждого этапа и условия перехода к следующему. Тогда вы увидите не общий список дел, а рабочий план.
+      </div>
+      
+      <div class="prompt-box">Работаем с тем же проектом по сбору батареек.
+
+Для обсуждения с администрацией берем вариант:
+- закрывающийся контейнер у стойки администратора;
+- сотрудник АХО сообщает экологу о заполнении.
+
+Раздели запуск проекта на этапы.
+
+Для каждого этапа укажи:
+- результат этапа;
+- действия;
+- кого нужно подключить;
+- что нужно согласовать или проверить до перехода к следующему этапу.
+
+Учти, что до запуска нужно отдельно подтвердить:
+- возможность разместить контейнер в выбранном месте;
+- формат и размер контейнера;
+- порядок дальнейшего обращения с собранными батарейками;
+- документы и условия работы подрядчика.
+
+Я не знаком с требованиями к накоплению батареек.
+Для этапа проверки составь карту поиска:
+- какой вопрос проверить;
+- где искать информацию;
+- что именно найти;
+- от какого решения зависит ответ.
+
+Не утверждай, что требование действует, пока оно не проверено по актуальному первоисточнику.
+
+Не придумывай сроки, бюджет, требования законодательства и обязанности сотрудников, которых нет в исходных данных.
+
+Представь результат в таблице.</div>
+      <div class="prompt-note">Продолжите тот же чат, в котором собирали условия и сравнивали варианты.</div>
+    </div>
+
+    <div id="chat" class="tab-content">
+      <div class="chat-container" id="chatContainer"></div>
+      
+      <div class="dialog-controls" id="dialogControls">
+        <span class="dialog-progress" id="dialogProgress">Нажмите «Открыть диалог»</span>
+        <button class="action-btn" id="startBtn">Открыть диалог</button>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <span class="footer-icon"></span>
+      <div>
+        <strong>Прием «Декомпозиция»</strong> превращает выбранный вариант в рабочий план с этапами, результатами и точками контроля.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+  document.querySelectorAll('.tab-btn').forEach(function(el) { el.classList.remove('active'); });
+
+  document.getElementById(tabId).classList.add('active');
+  
+  var buttons = document.querySelectorAll('.tab-btn');
+  if (tabId === 'prompt') buttons[0].classList.add('active');
+  else buttons[1].classList.add('active');
+
+  triggerResize();
+}
+
+var steps = [
+  {
+    type: 'user',
+    text: 'Работаем с тем же проектом по сбору батареек.\n\nДля обсуждения с администрацией берем вариант: закрывающийся контейнер у стойки администратора. Сотрудник АХО сообщает экологу о заполнении.\n\nРаздели запуск проекта на этапы. Для каждого этапа укажи результат, действия, участников и то, что нужно согласовать или проверить до перехода дальше.\n\nУчти, что до запуска нужно проверить возможность размещения контейнера, формат и размер, порядок дальнейшего обращения с батарейками и документы подрядчика.'
+  },
+  {
+    type: 'ai',
+    html: '<div class="table-wrapper"><table class="chat-table"><tr><th>Этап</th><th>Результат</th><th>Что сделать</th></tr><tr><td>Согласовать место</td><td>Согласовано место и способ размещения контейнера</td><td>Осмотреть фойе, оценить проход, согласовать размещение с администрацией</td></tr><tr><td>Проверить дальнейшее обращение</td><td>Понятны вопросы для проверки до передачи батареек</td><td>Составить карту поиска по накоплению, передаче и документам подрядчика</td></tr><tr><td>Определить контейнер</td><td>Согласованы формат и размер контейнера</td><td>Сравнить варианты с учетом места и ожидаемого объема сбора</td></tr><tr><td>Закрепить контроль</td><td>Согласован порядок проверки контейнера</td><td>Определить, кто проверяет состояние, как сообщает экологу и кто заменяет ответственного</td></tr><tr><td>Подготовить место</td><td>Контейнер размещен в согласованном месте</td><td>Установить контейнер и подготовить согласованную информационную табличку</td></tr><tr><td>Информировать сотрудников</td><td>Подготовлено сообщение с согласованным порядком</td><td>Объяснить, куда приносить батарейки и к кому обращаться по вопросу</td></tr><tr><td>Запустить сбор</td><td>Порядок начал работать</td><td>Проверить готовность и собрать первые замечания</td></tr></table></div><div class="step-purpose">Зачем этот шаг: ИИ разбивает большую задачу на этапы. У каждого этапа есть конкретный результат.</div>'
+  },
+  {
+    type: 'choice',
+    question: 'Какое действие нужно выполнить до подготовки сообщения сотрудникам?',
+    options: [
+      {
+        text: 'Согласовать место, формат контейнера и порядок контроля.',
+        isCorrect: true,
+        feedback: 'Верно. Сотрудникам нужно сообщать уже согласованный порядок. Сначала определите место контейнера, его формат, ответственного и действия при заполнении.'
+      },
+      {
+        text: 'Выбрать цвет плаката и подготовить презентацию для руководителя.',
+        isCorrect: false,
+        feedback: 'Пока рано заниматься оформлением. Сначала согласуйте порядок работы. Иначе плакат и презентацию придется переделывать.'
+      },
+      {
+        text: 'Запустить сбор, а информацию сотрудникам подготовить после первого заполнения контейнера.',
+        isCorrect: false,
+        feedback: 'Неверно. Без сообщения сотрудники не поймут, куда сдавать батарейки и к кому обращаться. Информирование готовят до запуска, но после согласования порядка.'
+      }
+    ]
+  },
+  {
+    type: 'user',
+    text: 'Я раньше не работал со сбором батареек. Не знаю, какие требования к накоплению применять и на какие документы смотреть.\n\nПомоги составить карту проверки. Не делай окончательных выводов. Укажи, что и где проверить.'
+  },
+  {
+    type: 'ai',
+    html: '<div class="table-wrapper"><table class="chat-table"><tr><th>Вопрос</th><th>Где искать</th><th>Что найти</th><th>От какого решения зависит</th></tr><tr><td>Какие батарейки принимаем</td><td>Описание проекта, ФККО, документы на принимаемые элементы питания при наличии</td><td>Конкретный вид отхода и применимый код ФККО</td><td>Что включить в порядок сбора и какую схему передачи рассматривать</td></tr><tr><td>Какие операции выполняет предприятие</td><td>Описание проекта, внутренний порядок, проект договора</td><td>Только накопление и передача или другие операции</td><td>Какие требования и документы проверить</td></tr><tr><td>Как организовать накопление</td><td>Федеральный закон от 24.06.1998 № 89-ФЗ, приказ Минприроды России от 11.06.2021 № 399, внутренние документы предприятия</td><td>Требования, применимые к конкретной группе отходов, месту и сроку накопления</td><td>Формат контейнера, место установки и порядок контроля</td></tr><tr><td>Какие документы запросить у подрядчика</td><td>Проект договора, реестр лицензий Росприроднадзора, документы подрядчика</td><td>Лицензия на обращение с отходами I-IV классов, уставные документы</td><td>Возможность заключить договор и передать батарейки</td></tr><tr><td>Как оформить передачу</td><td>Внутренний порядок учета, договор, формы подрядчика</td><td>Учетные документы, акты приема-передачи, ответственных</td><td>Какие записи и документы подготовить до первой передачи</td></tr><tr><td>Нужна ли лицензия предприятию</td><td>Федеральный закон от 04.05.2011 № 99-ФЗ «О лицензировании», постановление Правительства РФ от 21.06.2022 № 1122</td><td>Подлежит ли деятельность лицензированию при накоплении отходов</td><td>Нужно ли получать лицензию или достаточно только накопления</td></tr><tr><td>Как вести учет батареек</td><td>Приказ Минприроды России от 25.07.2022 № 538, внутренние документы предприятия</td><td>Формы журналов учета, периодичность внесения записей</td><td>Какие журналы завести и кто их ведет</td></tr><tr><td>Какой класс опасности у батареек</td><td>ФККО, приказ Минприроды России от 04.12.2014 № 536</td><td>Класс опасности для конкретных видов батареек</td><td>Требования к накоплению и передаче</td></tr></table></div><div class="step-purpose">ИИ дает маршрут проверки. Нормы, сроки и применимость документов нужно подтвердить по актуальной редакции первоисточника. Откройте каждый документ в КонсультантПлюс или Гарант и сверьте редакцию на текущую дату.</div>'
+  },
+  {
+    type: 'choice',
+    question: 'Как использовать карту проверки, которую подготовил ИИ?',
+    options: [
+      {
+        text: 'Скопировать ее в приказ о запуске и считать требования подтвержденными.',
+        isCorrect: false,
+        feedback: 'Неверно. Карта проверки показывает направление поиска. Она не подтверждает требования и не заменяет проверку источников.'
+      },
+      {
+        text: 'Открыть указанные источники, проверить их применимость к проекту и зафиксировать выводы в рабочем плане.',
+        isCorrect: true,
+        feedback: 'Верно. ИИ помог не пропустить вопросы и источники. Теперь нужно проверить актуальность документов и применимость к вашей схеме работы.'
+      },
+      {
+        text: 'Сразу выбрать подрядчика, который первым предложит контейнер.',
+        isCorrect: false,
+        feedback: 'Неверно. Предложение контейнера не подтверждает, что подрядчик подходит для вашей схемы работы. Сначала проверьте документы, условия договора и операции подрядчика.'
+      }
+    ]
+  },
+  {
+    type: 'user',
+    text: 'Добавлю карту проверки в план. До установки контейнера нужно подтвердить место, формат, порядок контроля и схему дальнейшего обращения с батарейками.'
+  },
+  {
+    type: 'ai-summary',
+    html: '<div class="table-wrapper"><table class="chat-table"><tr><th>Что нужно сделать до запуска</th><th>Результат</th></tr><tr><td>Согласовать место и контейнер</td><td>Согласованы место, формат и способ размещения контейнера</td></tr><tr><td>Закрепить контроль</td><td>Определено, кто проверяет контейнер и как сообщает о заполнении</td></tr><tr><td>Проверить схему дальнейшего обращения</td><td>Проверены применимые документы, порядок передачи и документы подрядчика</td></tr><tr><td>Подготовить место и коммуникацию</td><td>Контейнер готов, сотрудники получают согласованную информацию</td></tr><tr><td>Провести финальную проверку</td><td>Перед запуском закрыты критичные вопросы</td></tr></table></div><div class="callout callout-success" style="margin-top: 12px;"><div class="callout-title">🚀 Следующий шаг</div>Подготовить сообщение для сотрудников и доработать его под нужный канал. Для этого используйте прием «Итерации».</div>'
+  }
+];
+
+var currentStep = 0;
+var dialogStarted = false;
+var choiceMade = false;
+
+var startBtn = document.getElementById('startBtn');
+var dialogProgress = document.getElementById('dialogProgress');
+var chatContainer = document.getElementById('chatContainer');
+
+startBtn.addEventListener('click', function() {
+  if (!dialogStarted) {
+    dialogStarted = true;
+    startBtn.textContent = 'Следующее сообщение';
+    startBtn.addEventListener('click', handleNextStep);
+    renderStep();
+  }
+});
+
+function handleNextStep() {
+  if (choiceMade) {
+    choiceMade = false;
+    startBtn.textContent = 'Следующее сообщение';
+  }
+  
+  currentStep++;
+  if (currentStep >= steps.length) {
+    document.getElementById('dialogControls').style.display = 'none';
+    return;
+  }
+  
+  if (steps[currentStep].type === 'ai-summary') {
+    startBtn.textContent = 'Показать итог';
+  } else if (steps[currentStep].type === 'choice') {
+    startBtn.textContent = 'Продолжить диалог';
+    startBtn.disabled = true;
+  }
+  
+  renderStep();
+}
+
+function handleChoice(selectedIndex, stepIndex, choiceCard) {
+  if (choiceMade) return;
+  
+  choiceMade = true;
+  var step = steps[stepIndex];
+  var selectedOption = step.options[selectedIndex];
+  
+  var buttons = choiceCard.querySelectorAll('.choice-btn');
+  var feedbackEl = choiceCard.querySelector('.choice-feedback');
+  
+  buttons.forEach(function(btn, index) {
+    btn.disabled = true;
+    var option = step.options[index];
+    
+    if (option.isCorrect) {
+      btn.classList.add('correct');
+    }
+    if (index === selectedIndex && !option.isCorrect) {
+      btn.classList.add('wrong');
+    }
+  });
+  
+  if (feedbackEl) {
+    feedbackEl.textContent = selectedOption.feedback;
+    if (selectedOption.isCorrect) {
+      feedbackEl.className = 'choice-feedback is-correct';
+    } else {
+      feedbackEl.className = 'choice-feedback is-wrong';
+    }
+  }
+  
+  startBtn.disabled = false;
+  startBtn.textContent = 'Продолжить диалог';
+  
+  triggerResize();
+}
+
+function renderStep() {
+  var step = steps[currentStep];
+  
+  dialogProgress.textContent = 'Шаг ' + (currentStep + 1) + ' из ' + steps.length;
+
+  if (step.type === 'choice') {
+    var choiceEl = document.createElement('div');
+    choiceEl.className = 'choice-card';
+    
+    var optionsHtml = '';
+    step.options.forEach(function(opt, idx) {
+      optionsHtml += '<button class="choice-btn" data-idx="' + idx + '">' + opt.text + '</button>';
+    });
+    
+    choiceEl.innerHTML = '<div class="choice-instruction">Выберите действие эколога</div><div class="choice-question">' + step.question + '</div>' + optionsHtml + '<div class="choice-feedback"></div>';
+    chatContainer.appendChild(choiceEl);
+    
+    var btns = choiceEl.querySelectorAll('.choice-btn');
+    btns.forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var idx = parseInt(this.getAttribute('data-idx'));
+        handleChoice(idx, currentStep, choiceEl);
+      });
+    });
+  }
+  else if (step.type === 'user') {
+    var msgEl = document.createElement('div');
+    msgEl.className = 'message user';
+    msgEl.innerHTML = '<span class="message-label">Эколог</span>' + step.text.replace(/\n/g, '<br>');
+    chatContainer.appendChild(msgEl);
+  }
+  else if (step.type === 'ai' || step.type === 'ai-summary') {
+    var msgEl = document.createElement('div');
+    msgEl.className = 'message ai';
+    msgEl.innerHTML = '<span class="message-label">ИИ</span>' + step.html;
+    chatContainer.appendChild(msgEl);
+  }
+
+  chatContainer.scrollTop = chatContainer.scrollHeight;
+  triggerResize();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
