@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+  --tip-bg: #eff6ff;
+  --tip-border: #bfdbfe;
+  --tip-text: #1e40af;
+  --correct-bg: #f0fdf4;
+  --correct-border: #86efac;
+  --correct-text: #166534;
+  --wrong-bg: #fef2f2;
+  --wrong-border: #fecaca;
+  --wrong-text: #991b1b;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  height: 700px;
+  padding: 8px;
+  margin: 0 auto;
+  position: relative;
+}
+
+.fcard {
+  width: 100%;
+  height: 100%;
+  background: #fff;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.f-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 4px 0;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.f-subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  line-height: 1.4;
+}
+
+.f-title .tdot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--g600);
+  flex-shrink: 0;
+}
+
+.controls {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 16px;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 12px;
+}
+
+.tab-btn {
+  flex: 1;
+  background: transparent;
+  color: var(--muted);
+  border: none;
+  border-bottom: 2px solid transparent;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tab-btn:hover { color: var(--g700); }
+.tab-btn.active { color: var(--g700); border-bottom-color: var(--g600); }
+
+.tab-content {
+  display: none;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-right: 4px;
+}
+
+.tab-content.active { display: flex; flex-direction: column; }
+
+.prompt-box {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-line;
+  margin-bottom: 12px;
+}
+
+.copy-hint {
+  font-size: 11px;
+  color: var(--muted);
+  text-align: right;
+  margin-top: 4px;
+}
+
+/* Чат */
+.chat-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  flex-grow: 1;
+  overflow-y: auto;
+  padding-bottom: 10px;
+}
+
+.message {
+  max-width: 90%;
+  padding: 10px 14px;
+  border-radius: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.message.user {
+  align-self: flex-end;
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  color: var(--text);
+  border-bottom-right-radius: 2px;
+}
+
+.message.ai {
+  align-self: flex-start;
+  background: #fff;
+  border: 1px solid var(--border);
+  color: var(--text);
+  border-bottom-left-radius: 2px;
+}
+
+.message-label {
+  font-size: 10px;
+  font-weight: 700;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+  opacity: 0.7;
+  display: block;
+}
+
+.message.user .message-label { color: var(--g700); }
+.message.ai .message-label { color: var(--muted); }
+
+.question-purpose {
+  font-size: 11px;
+  color: var(--muted);
+  margin-top: 6px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--border);
+  font-style: italic;
+}
+
+/* Таблицы внутри чата */
+.chat-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 12px;
+  margin-top: 8px;
+}
+
+.chat-table th, .chat-table td {
+  border: 1px solid var(--border);
+  padding: 6px 8px;
+  text-align: left;
+  vertical-align: top;
+}
+
+.chat-table th {
+  background: var(--g50);
+  font-weight: 600;
+  color: var(--g800);
+}
+
+/* Врезки */
+.callout {
+  align-self: stretch;
+  border-radius: 8px;
+  padding: 12px;
+  margin: 8px 0;
+  font-size: 12px;
+  animation: fadeIn 0.3s ease-out;
+}
+
+.callout-tip {
+  background: var(--tip-bg);
+  border: 1px solid var(--tip-border);
+  color: var(--tip-text);
+}
+
+.callout-important {
+  background: #f0fdf4;
+  border: 1px solid var(--g100);
+  color: var(--g800);
+}
+
+.callout-title {
+  font-weight: 700;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  text-transform: uppercase;
+}
+
+/* Интерактивный выбор */
+.choice-card {
+  align-self: stretch;
+  background: #fff;
+  border: 2px solid var(--g600);
+  border-radius: 8px;
+  padding: 14px;
+  animation: fadeIn 0.3s ease-out;
+  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.1);
+}
+
+.choice-instruction {
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: 6px;
+  padding: 10px;
+  margin-bottom: 12px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--g800);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.choice-instruction::before {
+  content: "✋";
+  font-size: 16px;
+}
+
+.choice-question {
+  font-size: 13px;
+  font-weight: 600;
+  margin-bottom: 10px;
+  color: var(--text);
+}
+
+.choice-btn {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 10px 12px;
+  margin-bottom: 8px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text);
+}
+
+.choice-btn:hover:not(:disabled) {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.choice-btn.correct {
+  background: var(--correct-bg);
+  border-color: var(--correct-border);
+  color: var(--correct-text);
+}
+
+.choice-btn.wrong {
+  background: var(--wrong-bg);
+  border-color: var(--wrong-border);
+  color: var(--wrong-text);
+  opacity: 0.7;
+}
+
+.choice-feedback {
+  margin-top: 10px;
+  padding: 10px;
+  background: var(--tip-bg);
+  border-radius: 6px;
+  font-size: 12px;
+  color: var(--tip-text);
+  display: none;
+  animation: fadeIn 0.3s ease-out;
+}
+
+/* Кнопки управления диалогом */
+.dialog-controls {
+  margin-top: auto;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+}
+
+.dialog-progress {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+}
+
+.action-btn {
+  background: var(--g600);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  padding: 10px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+  max-width: 300px;
+}
+
+.action-btn:hover { background: var(--g700); }
+.action-btn:disabled { background: #cbd5e1; cursor: not-allowed; }
+
+.footer-note {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+  font-size: 12px;
+  color: var(--muted);
+  display: flex;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.footer-icon { color: var(--g600); font-weight: bold; }
+
+@media (max-width: 600px) {
+  .wrap { height: 700px; }
+  .fcard { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <div class="fcard">
+    <div class="f-title"><span class="tdot"></span>Соберите варианты</div>
+    <div class="f-subtitle">На этапе «Чистый лист» мы определили границы задачи. Теперь попросим ИИ предложить варианты решений для обсуждения с администрацией.</div>
+
+    <div class="controls">
+      <button class="tab-btn active" onclick="switchTab('prompt')">Промпт</button>
+      <button class="tab-btn" onclick="switchTab('chat')">Диалог с ИИ</button>
+    </div>
+
+    <!-- Вкладка Промпт -->
+    <div id="prompt" class="tab-content active">
+      <div class="callout callout-tip">
+        <div class="callout-title">💡 Лайфхак</div>
+        Просите ИИ назвать не только варианты, но и вопросы для выбора. Тогда ответ станет основой для разговора с администрацией, а не набором общих советов.
+      </div>
+      
+      <div class="prompt-box">Работаем с тем же проектом по сбору батареек.
+
+Известно:
+- контейнер нужен для сотрудников административного корпуса, около 50 человек;
+- планируется принимать только обычные бытовые батарейки;
+- точной оценки объема сбора пока нет;
+- планируется один контейнер;
+- предполагаемое место - фойе у стойки администратора;
+- за проект отвечает эколог;
+- ответственный за ежедневный контроль пока не назначен;
+- договора с подрядчиком пока нет.
+
+Предложи варианты для обсуждения с администрацией.
+
+Сравни:
+- место размещения контейнера;
+- формат контейнера с учетом неизвестного объема сбора;
+- порядок контроля его состояния;
+- действия при заполнении.
+
+Для каждого варианта укажи:
+- преимущества;
+- ограничения;
+- что нужно уточнить перед выбором.
+
+Отдельно составь список вопросов, которые нельзя решать по общему ответу. Для каждого укажи, где его проверить: во внутренних документах, у администрации, в договоре, у подрядчика или в действующих нормативных актах.
+
+Представь результат в таблице.
+Не выбирай вариант вместо меня.</div>
+      <div class="copy-hint">Скопируйте этот текст в чат с ИИ</div>
+    </div>
+
+    <!-- Вкладка Чат -->
+    <div id="chat" class="tab-content">
+      <div class="chat-container" id="chatContainer">
+        <!-- Сюда динамически добавляются сообщения -->
+      </div>
+      
+      <div class="dialog-controls" id="dialogControls">
+        <span class="dialog-progress" id="dialogProgress">Нажмите «Показать первый вопрос ИИ»</span>
+        <button class="action-btn" id="startBtn" onclick="startDialog()">Показать первый вопрос ИИ</button>
+      </div>
+    </div>
+
+    <div class="footer-note">
+      <span class="footer-icon"></span>
+      <div>
+        <strong>Прием «Брейншторм»</strong> помогает выбрать организационный вариант и не принимать нормативные выводы ИИ без проверки.
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+function switchTab(tabId) {
+  document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelectorAll('.tab-btn').forEach(el => el.classList.remove('active'));
+
+  document.getElementById(tabId).classList.add('active');
+  
+  const buttons = document.querySelectorAll('.tab-btn');
+  if (tabId === 'prompt') buttons[0].classList.add('active');
+  else buttons[1].classList.add('active');
+
+  triggerResize();
+}
+
+const steps = [
+  {
+    type: 'user',
+    text: `Работаем с тем же проектом по сбору батареек.
+
+Контейнер нужен для 50 сотрудников административного корпуса. Планируется один контейнер. В фойе у стойки администратора есть свободное место. Будем принимать только обычные бытовые батарейки.
+
+За проект отвечаю я, эколог. Ответственный за ежедневный контроль, точный объем сбора и порядок дальнейшего обращения с батарейками пока не определены. Договора с подрядчиком нет.
+
+Предложи варианты для обсуждения: где разместить контейнер, какой формат выбрать, кто может контролировать его состояние и что делать при заполнении. Для каждого варианта укажи преимущества, ограничения и вопросы для выбора. Не выбирай вариант вместо меня.`
+  },
+  {
+    type: 'ai',
+    text: `<table class="chat-table">
+      <tr>
+        <th>Что выбрать</th>
+        <th>Вариант 1</th>
+        <th>Вариант 2</th>
+        <th>Что уточнить</th>
+      </tr>
+      <tr>
+        <td><b>Место</b></td>
+        <td>Фойе у входа</td>
+        <td>У стойки администратора</td>
+        <td>Где контейнер будет заметен и не помешает проходу</td>
+      </tr>
+      <tr>
+        <td><b>Формат</b></td>
+        <td>Закрывающийся бокс</td>
+        <td>Контейнер за стойкой администратора</td>
+        <td>Какой объем ожидается и кто будет иметь доступ</td>
+      </tr>
+      <tr>
+        <td><b>Контроль</b></td>
+        <td>Эколог проверяет по графику</td>
+        <td>Сотрудник АХО сообщает о заполнении</td>
+        <td>Кто регулярно находится рядом с контейнером</td>
+      </tr>
+      <tr>
+        <td><b>При заполнении</b></td>
+        <td>Сообщение экологу</td>
+        <td>Запись в журнале и сообщение экологу</td>
+        <td>Какой порядок удобен ответственному сотруднику</td>
+      </tr>
+    </table>`,
+    purpose: 'ИИ не дает один правильный вариант. Он показывает варианты и вопросы, от которых зависит выбор.'
+  },
+  {
+    type: 'choice',
+    question: 'Контейнер должен быть доступен сотрудникам. В фойе есть свободное место у стойки администратора. Сотрудник АХО ежедневно проходит через эту зону. Какой вариант стоит обсудить с администрацией первым?',
+    options: [
+      'Контейнер в закрытом помещении АХО. Сотрудники смогут приносить батарейки по предварительной договоренности.',
+      'Закрывающийся контейнер у стойки администратора. Сотрудник АХО ежедневно проходит через эту зону и может сообщать экологу о заполнении.',
+      'Контейнер в любом свободном коридоре. Ответственного можно назначить после запуска.'
+    ],
+    correctIndex: 1,
+    feedback: 'Верно. Этот вариант сочетает доступность для сотрудников и понятный контроль. Его еще нужно осмотреть на месте и согласовать с администрацией.'
+  },
+  {
+    type: 'user',
+    text: 'Для обсуждения берем вариант с закрывающимся контейнером у стойки администратора. Нужно уточнить размер контейнера, возможность размещения и порядок сообщения о заполнении.\n\nЕще вопрос. Какие-то лицензии получать надо? В каких объемах можно накапливать батарейки? Приведи нормативку.'
+  },
+  {
+    type: 'ai',
+    text: 'Чтобы определить требования, сначала зафиксируйте схему работы предприятия. Проверьте:\n- какой вид отхода и код ФККО применимы к собираемым батарейкам;\n- ограничится ли предприятие накоплением до передачи или будет выполнять другие операции;\n- требования к месту и сроку накопления;\n- порядок учета и подтверждающие документы;\n- какие операции выполняет подрядчик и какие документы он предоставляет.\n\nПо этим вопросам нужен отдельный поиск по действующим источникам и документам подрядчика. Не включайте предположения в план запуска.',
+    purpose: 'ИИ уточняет границы задачи, вместо того чтобы давать поспешное правовое заключение.'
+  },
+  {
+    type: 'choice',
+    question: 'ИИ подготовил список вопросов для проверки. Что экологу нужно сделать до перехода к плану запуска?',
+    options: [
+      'Попросить ИИ сразу написать приказ о запуске сбора батареек.',
+      'Зафиксировать вопросы по накоплению, подрядчику и документам в отдельной карте проверки, а организационный вариант обсудить с администрацией.',
+      'Выбрать контейнер и установить его, а проверку требований провести после первого вывоза.'
+    ],
+    correctIndex: 1,
+    feedback: 'Верно. Брейншторм дал не готовый порядок работы, а два результата: вариант для обсуждения и список вопросов, которые нужно проверить. Пока эти вопросы не закрыты, не стоит закреплять сроки и обязанности в плане.'
+  },
+  {
+    type: 'user',
+    text: 'Зафиксирую вопросы по накоплению, передаче и документам подрядчика отдельно. На встречу с администрацией вынесу вариант с закрывающимся контейнером у стойки администратора и порядок контроля со стороны сотрудника АХО.'
+  },
+  {
+    type: 'ai-summary',
+    text: `
+      <div class="summary-block">
+        <table class="chat-table">
+          <tr>
+            <th>Что получилось</th>
+            <th>Результат</th>
+          </tr>
+          <tr>
+            <td><b>Вариант для обсуждения</b></td>
+            <td>Закрывающийся контейнер у стойки администратора</td>
+          </tr>
+          <tr>
+            <td><b>Вариант контроля</b></td>
+            <td>Сотрудник АХО сообщает экологу о заполнении</td>
+          </tr>
+          <tr>
+            <td><b>Что обсудить с администрацией</b></td>
+            <td>Возможность размещения, размер и формат контейнера, порядок контроля</td>
+          </tr>
+          <tr>
+            <td><b>Что проверить отдельно</b></td>
+            <td>Вид отхода, требования к накоплению, порядок дальнейшего обращения, документы подрядчика</td>
+          </tr>
+        </table>
+        <div class="next-step" style="margin-top: 12px;">Следующий шаг: разделить выбранный вариант на этапы. В план включите не только установку контейнера и информирование сотрудников, но и согласования и проверки, которые нужны до запуска.</div>
+      </div>
+    `
+  },
+  {
+    type: 'callout-important',
+    title: 'Важно',
+    text: 'ИИ полезен для сбора вариантов и вопросов. Если ответ содержит правовые выводы, нормы, сроки или требования к подрядчику, не используйте их без проверки по первоисточнику.'
+  }
+];
+
+let currentStep = 0;
+let dialogStarted = false;
+let choiceMade = false;
+
+function startDialog() {
+  dialogStarted = true;
+  document.getElementById('startBtn').textContent = 'Следующее сообщение';
+  document.getElementById('startBtn').onclick = nextStep;
+  renderStep();
+}
+
+function nextStep() {
+  if (choiceMade) {
+    choiceMade = false;
+    document.getElementById('startBtn').textContent = 'Следующее сообщение';
+  }
+  
+  currentStep++;
+  if (currentStep >= steps.length) {
+    document.getElementById('dialogControls').style.display = 'none';
+    return;
+  }
+  
+  if (steps[currentStep].type === 'ai-summary') {
+    document.getElementById('startBtn').textContent = 'Показать итог';
+  } else if (steps[currentStep].type === 'choice') {
+    document.getElementById('startBtn').textContent = 'Продолжить диалог';
+    document.getElementById('startBtn').disabled = true;
+  }
+  
+  renderStep();
+}
+
+function handleChoice(selectedIndex, correctIndex, feedback) {
+  choiceMade = true;
+  const buttons = document.querySelectorAll('.choice-btn');
+  const feedbackEl = document.getElementById('choiceFeedback');
+  
+  buttons.forEach((btn, index) => {
+    btn.disabled = true;
+    if (index === correctIndex) {
+      btn.classList.add('correct');
+    } else if (index === selectedIndex && index !== correctIndex) {
+      btn.classList.add('wrong');
+    }
+  });
+  
+  feedbackEl.textContent = feedback;
+  feedbackEl.style.display = 'block';
+  
+  document.getElementById('startBtn').disabled = false;
+  document.getElementById('startBtn').textContent = 'Продолжить диалог';
+  
+  triggerResize();
+}
+
+function renderStep() {
+  const container = document.getElementById('chatContainer');
+  const step = steps[currentStep];
+  
+  document.getElementById('dialogProgress').textContent = 'Шаг ' + (currentStep + 1) + ' из ' + steps.length;
+
+  if (step.type === 'callout-important') {
+    const calloutEl = document.createElement('div');
+    calloutEl.className = 'callout callout-important';
+    calloutEl.innerHTML = `
+      <div class="callout-title">💡 ${step.title}</div>
+      <div>${step.text}</div>
+    `;
+    container.appendChild(calloutEl);
+  }
+  else if (step.type === 'choice') {
+    const choiceEl = document.createElement('div');
+    choiceEl.className = 'choice-card';
+    
+    let optionsHtml = '';
+    step.options.forEach((opt, idx) => {
+      optionsHtml += `<button class="choice-btn" onclick="handleChoice(${idx}, ${step.correctIndex}, '${step.feedback.replace(/'/g, "\\'")}')">${opt}</button>`;
+    });
+    
+    choiceEl.innerHTML = `
+      <div class="choice-instruction">Выберите действие эколога</div>
+      <div class="choice-question">${step.question}</div>
+      ${optionsHtml}
+      <div class="choice-feedback" id="choiceFeedback"></div>
+    `;
+    container.appendChild(choiceEl);
+  }
+  else if (step.type === 'user') {
+    const msgEl = document.createElement('div');
+    msgEl.className = 'message user';
+    msgEl.innerHTML = `<span class="message-label">Эколог</span>${step.text.replace(/\n/g, '<br>')}`;
+    container.appendChild(msgEl);
+  }
+  else if (step.type === 'ai') {
+    const msgEl = document.createElement('div');
+    msgEl.className = 'message ai';
+    let html = `<span class="message-label">ИИ</span>${step.text}`;
+    if (step.purpose) {
+      html += `<div class="question-purpose">Зачем этот шаг: ${step.purpose}</div>`;
+    }
+    msgEl.innerHTML = html;
+    container.appendChild(msgEl);
+  }
+  else if (step.type === 'ai-summary') {
+    const msgEl = document.createElement('div');
+    msgEl.className = 'message ai';
+    msgEl.innerHTML = `<span class="message-label">ИИ</span>${step.text}`;
+    container.appendChild(msgEl);
+  }
+
+  container.scrollTop = container.scrollHeight;
+  triggerResize();
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  const wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
