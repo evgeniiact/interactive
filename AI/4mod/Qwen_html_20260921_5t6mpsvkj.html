@@ -1,0 +1,428 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --red: #ef4444;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.wrap {
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.situation-label {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+}
+
+.situation-text {
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 20px;
+  line-height: 1.6;
+}
+
+.question-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 16px;
+  font-style: italic;
+}
+
+.answers {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.answer-option {
+  position: relative;
+  padding: 16px 20px;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+}
+
+.answer-option:hover {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.answer-option.selected {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.answer-option.correct {
+  border-color: var(--g600);
+  background: var(--g100);
+}
+
+.answer-option.incorrect {
+  border-color: var(--red);
+  background: #fef2f2;
+}
+
+.answer-option.disabled {
+  cursor: default;
+}
+
+.radio {
+  width: 20px;
+  height: 20px;
+  border: 2px solid var(--border);
+  border-radius: 50%;
+  flex-shrink: 0;
+  margin-top: 2px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+}
+
+.answer-option.selected .radio {
+  border-color: var(--g600);
+}
+
+.answer-option.correct .radio {
+  border-color: var(--g600);
+  background: var(--g600);
+}
+
+.answer-option.correct .radio::after {
+  content: '✓';
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.answer-option.incorrect .radio {
+  border-color: var(--red);
+  background: var(--red);
+}
+
+.answer-option.incorrect .radio::after {
+  content: '✕';
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.answer-text {
+  font-size: 14px;
+  line-height: 1.5;
+  flex-grow: 1;
+}
+
+.submit-btn {
+  background: var(--g600);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.submit-btn:hover {
+  background: var(--g700);
+}
+
+.submit-btn:disabled {
+  background: var(--border);
+  cursor: not-allowed;
+}
+
+.feedback {
+  margin-top: 20px;
+  padding: 20px;
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: var(--radius);
+  display: none;
+}
+
+.feedback.show {
+  display: block;
+}
+
+.feedback.incorrect {
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.feedback-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--g800);
+  margin-bottom: 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.feedback.incorrect .feedback-title {
+  color: var(--red);
+}
+
+.feedback-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 12px;
+}
+
+.correct-answer {
+  font-size: 13px;
+  color: var(--g700);
+  font-weight: 600;
+  padding-top: 12px;
+  border-top: 1px solid var(--g100);
+}
+
+.feedback.incorrect .correct-answer {
+  color: var(--g700);
+  border-top-color: #fecaca;
+}
+
+.retry-btn {
+  background: #fff;
+  color: var(--g700);
+  border: 1px solid var(--g600);
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+  margin-top: 12px;
+  display: none;
+}
+
+.retry-btn:hover {
+  background: var(--g50);
+}
+
+.retry-btn.show {
+  display: block;
+}
+
+@media (max-width: 600px) {
+  body { padding: 16px; }
+  .answer-option { padding: 14px 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="situation-label">Ситуация</div>
+  <div class="situation-text">
+    Вы хотите регулярно готовить запросы в цеха и сверять данные для отчетности.
+  </div>
+  
+  <div class="question-text">Как назвать проект в ИИ-сервисе?</div>
+  
+  <div class="hint">Выберите один верный ответ</div>
+  
+  <div class="answers" id="answers">
+    <div class="answer-option" data-index="0" onclick="selectAnswer(0)">
+      <div class="radio"></div>
+      <div class="answer-text">«Экология»</div>
+    </div>
+    
+    <div class="answer-option" data-index="1" onclick="selectAnswer(1)">
+      <div class="radio"></div>
+      <div class="answer-text">«Работа»</div>
+    </div>
+    
+    <div class="answer-option" data-index="2" onclick="selectAnswer(2)">
+      <div class="radio"></div>
+      <div class="answer-text">«Сбор данных для отчетности»</div>
+    </div>
+  </div>
+  
+  <button class="submit-btn" id="submitBtn" onclick="submitAnswer()" disabled>Ответить</button>
+  
+  <div class="feedback" id="feedback">
+    <div class="feedback-title">
+      <span id="feedbackIcon"></span>
+      <span id="feedbackTitleText"></span>
+    </div>
+    <div class="feedback-text" id="feedbackText"></div>
+    <div class="correct-answer" id="correctAnswer"></div>
+  </div>
+  
+  <button class="retry-btn" id="retryBtn" onclick="resetQuiz()">Пройти заново</button>
+</div>
+
+<script>
+const correctAnswer = 2;
+
+const comments = {
+  0: {
+    title: 'Не совсем так',
+    icon: '✕',
+    text: 'Название «Экология» слишком общее. Через месяц вы не поймете, что внутри проекта: паспорта отходов, отчеты 2-ТП, инструкции по охране труда или запросы в цеха. Придется открывать каждый чат и искать нужный шаблон.',
+    isCorrect: false
+  },
+  1: {
+    title: 'Не совсем так',
+    icon: '',
+    text: 'Название «Работа» не несет смысла. У вас в аккаунте может быть несколько проектов: работа с отходами, работа с выбросами, работа с документами. Название «Работа» не поможет быстро найти нужный шаблон и связанные чаты.',
+    isCorrect: false
+  },
+  2: {
+    title: 'Верно',
+    icon: '✓',
+    text: 'Название отражает цель проекта. Через месяц вы откроете его и сразу найдете шаблоны запросов в цеха, связанные чаты и историю сверки данных. Не придется искать нужный проект среди десятка других.',
+    isCorrect: true
+  }
+};
+
+let selectedAnswer = null;
+let answered = false;
+
+function selectAnswer(index) {
+  if (answered) return;
+  
+  selectedAnswer = index;
+  
+  document.querySelectorAll('.answer-option').forEach((el, i) => {
+    if (i === index) {
+      el.classList.add('selected');
+    } else {
+      el.classList.remove('selected');
+    }
+  });
+  
+  document.getElementById('submitBtn').disabled = false;
+}
+
+function submitAnswer() {
+  if (selectedAnswer === null || answered) return;
+  
+  answered = true;
+  const isCorrect = selectedAnswer === correctAnswer;
+  const comment = comments[selectedAnswer];
+  
+  document.querySelectorAll('.answer-option').forEach((el, i) => {
+    el.classList.add('disabled');
+    if (i === correctAnswer) {
+      el.classList.add('correct');
+    } else if (i === selectedAnswer && !isCorrect) {
+      el.classList.add('incorrect');
+    }
+  });
+  
+  const feedback = document.getElementById('feedback');
+  const feedbackTitle = document.getElementById('feedbackTitleText');
+  const feedbackIcon = document.getElementById('feedbackIcon');
+  const feedbackText = document.getElementById('feedbackText');
+  const correctAnswerText = document.getElementById('correctAnswer');
+  const retryBtn = document.getElementById('retryBtn');
+  
+  feedbackTitle.textContent = comment.title;
+  feedbackIcon.textContent = comment.icon;
+  feedbackText.textContent = comment.text;
+  
+  if (isCorrect) {
+    feedback.classList.remove('incorrect');
+    correctAnswerText.textContent = '';
+  } else {
+    feedback.classList.add('incorrect');
+    correctAnswerText.textContent = 'Правильный ответ: «Сбор данных для отчетности»';
+  }
+  
+  feedback.classList.add('show');
+  
+  document.getElementById('submitBtn').disabled = true;
+  retryBtn.classList.add('show');
+  
+  triggerResize();
+}
+
+function resetQuiz() {
+  answered = false;
+  selectedAnswer = null;
+  
+  document.querySelectorAll('.answer-option').forEach(el => {
+    el.classList.remove('selected', 'correct', 'incorrect', 'disabled');
+  });
+  
+  document.getElementById('feedback').classList.remove('show', 'incorrect');
+  document.getElementById('submitBtn').disabled = true;
+  document.getElementById('retryBtn').classList.remove('show');
+  
+  triggerResize();
+}
+
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  triggerResize();
+  
+  const wrap = document.querySelector('.wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
