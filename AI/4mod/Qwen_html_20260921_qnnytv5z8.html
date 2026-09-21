@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --o50: #fff7ed;
+  --o100: #ffedd5;
+  --o600: #ea580c;
+  --o800: #9a3412;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+/* Компактная карточка: высота равна контенту, без запасного места */
+.wrap {
+  max-width: 680px;
+  padding: 18px 20px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin: 0 auto;
+}
+
+.header-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 4px 0;
+}
+
+.header-text {
+  font-size: 13px;
+  color: var(--muted);
+  margin: 0 0 14px 0;
+  line-height: 1.45;
+}
+
+.situation {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+
+.situation-label {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--g700);
+  margin-bottom: 6px;
+}
+
+.situation p {
+  margin: 0 0 6px 0;
+  font-size: 13.5px;
+  line-height: 1.45;
+}
+
+.situation p:last-child { margin-bottom: 0; }
+
+.situation strong { color: var(--text); }
+
+.start-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--g600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+
+.start-btn:hover { background: var(--g700); }
+
+.options-block {
+  display: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.options-block.visible { display: block; }
+
+.question-line {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin: 0 0 10px 0;
+}
+
+.options {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.option {
+  display: block;
+  width: 100%;
+  padding: 12px 14px;
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  background: #fff;
+  text-align: left;
+  font-family: inherit;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--text);
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+}
+
+.option:hover:not(:disabled) {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.option:focus {
+  outline: 2px solid var(--g600);
+  outline-offset: 2px;
+}
+
+.option:disabled { cursor: default; }
+
+.option-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 6px;
+}
+
+.option-tag {
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  padding: 2px 8px;
+  border-radius: 4px;
+  background: #f1f5f9;
+  color: var(--muted);
+  flex-shrink: 0;
+}
+
+.option-title {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.option-prompt {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  font-size: 12px;
+  line-height: 1.45;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 8px 10px;
+  white-space: pre-line;
+  color: var(--text);
+}
+
+.option.correct {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.option.correct .option-tag {
+  background: var(--g100);
+  color: var(--g800);
+}
+
+.option.wrong {
+  border-color: var(--o600);
+  background: var(--o50);
+}
+
+.option.wrong .option-tag {
+  background: var(--o100);
+  color: var(--o800);
+}
+
+.option.dimmed { opacity: 0.55; }
+
+/* Комментарий только к выбранному ответу */
+.feedback {
+  display: none;
+  margin-top: 12px;
+  border-radius: 10px;
+  padding: 12px 14px;
+  border-left: 4px solid var(--g600);
+  background: var(--g50);
+  animation: fadeIn 0.3s ease;
+}
+
+.feedback.visible { display: block; }
+
+.feedback.wrong {
+  border-left-color: var(--o600);
+  background: var(--o50);
+}
+
+.feedback-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 6px;
+  color: var(--g800);
+}
+
+.feedback.wrong .feedback-label { color: var(--o800); }
+
+.feedback p {
+  margin: 0 0 6px 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.feedback p:last-child { margin-bottom: 0; }
+
+.conclusion {
+  display: none;
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--g600);
+  border-radius: 10px;
+  animation: fadeIn 0.3s ease;
+}
+
+.conclusion.visible { display: block; }
+
+.conclusion-title {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--g800);
+  margin-bottom: 6px;
+}
+
+.conclusion p {
+  margin: 0 0 5px 0;
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.conclusion p:last-child { margin-bottom: 0; }
+
+.restart-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 9px 20px;
+  border: 2px solid var(--g600);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--g700);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  animation: fadeIn 0.3s ease;
+}
+
+.restart-btn.visible { display: inline-flex; }
+
+.restart-btn:hover { background: var(--g50); }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .wrap { padding: 14px; }
+  .option-prompt { font-size: 11.5px; padding: 7px 9px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h1 class="header-title">Менеджмент рабочих веток</h1>
+  <p class="header-text">Прочитайте ситуацию. Затем выберите действие, которое поможет быстро продолжить работу и сохранить контекст.</p>
+
+  <div class="situation">
+    <div class="situation-label">Ситуация</div>
+    <p>Руководитель подразделения просит скорректировать текст регулярной памятки для сотрудников по правилам сбора материалов.</p>
+    <p>Ранее вы уже согласовали в отдельном чате структуру памятки и лаконичный тон. В проекте <strong>«Памятки и инструктажи»</strong> хранятся шаблон памятки, мастер-промпт и другие рабочие материалы.</p>
+  </div>
+
+  <button class="start-btn" id="start-btn">Показать варианты действия</button>
+
+  <div class="options-block" id="options-block">
+    <div class="question-line">Какое действие выбрать?</div>
+    <div class="options">
+      <button class="option" data-choice="A" aria-pressed="false">
+        <div class="option-header">
+          <span class="option-tag">Вариант А</span>
+          <span class="option-title">Открыть новый чат</span>
+        </div>
+        <div class="option-prompt">Напиши памятку про сбор материалов.</div>
+      </button>
+
+      <button class="option" data-choice="B" aria-pressed="false">
+        <div class="option-header">
+          <span class="option-tag">Вариант Б</span>
+          <span class="option-title">Вернуться в чат, где согласовали памятку</span>
+        </div>
+        <div class="option-prompt">Скорректируй текст памятки под сбор материалов.
+
+Сохрани согласованную структуру и лаконичный тон.
+Если для правки не хватает исходных данных, сначала перечисли вопросы для уточнения.
+Не добавляй требования, сроки и обязанности, которых нет в исходных материалах.</div>
+      </button>
+    </div>
+  </div>
+
+  <div class="feedback" id="feedback">
+    <div class="feedback-label" id="feedback-label"></div>
+    <div id="feedback-text"></div>
+  </div>
+
+  <div class="conclusion" id="conclusion">
+    <div class="conclusion-title">Главное правило</div>
+    <p><strong>Продолжайте существующий чат</strong>, если дорабатываете тот же документ или развиваете ранее согласованное решение.</p>
+    <p><strong>Создавайте новый чат внутри проекта</strong>, если задача новая, но ей нужны те же шаблоны, инструкции и материалы.</p>
+  </div>
+
+  <button class="restart-btn" id="restart-btn">Пройти заново</button>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var feedbackData = {
+  A: {
+    correct: false,
+    label: 'Вариант А. Нерационально',
+    paragraphs: [
+      'В новом чате нет истории согласования этой памятки. Придется снова объяснять структуру, тон, ограничения и порядок проверки сведений.',
+      'Для этой задачи вернитесь в чат, где ранее согласовали структуру и тон памятки. Это вариант Б.',
+      'Новый чат используйте, когда начинаете новую самостоятельную задачу. Например, когда готовите памятку по теме, для которой раньше не было согласованного текста.'
+    ]
+  },
+  B: {
+    correct: true,
+    label: 'Вариант Б. Правильно',
+    paragraphs: [
+      'Вы продолжаете конкретную рабочую ветку. В чате уже есть история правок, согласованные формулировки и решения по структуре текста.',
+      'Проект помогает быстро найти нужный чат и дает доступ к общим инструкциям и материалам. Проектные инструкции действуют во всех чатах проекта, а файлы и источники работают как общий контекст.'
+    ]
+  }
+};
+
+var answered = false;
+
+function choose(choice) {
+  if (answered) return;
+  answered = true;
+
+  var data = feedbackData[choice];
+
+  var buttons = document.querySelectorAll('.option');
+  buttons.forEach(function(btn) {
+    var c = btn.getAttribute('data-choice');
+    btn.disabled = true;
+    btn.setAttribute('aria-pressed', c === choice ? 'true' : 'false');
+
+    if (c === choice) {
+      btn.classList.add(data.correct ? 'correct' : 'wrong');
+    } else {
+      btn.classList.add(data.correct ? 'dimmed' : 'correct');
+    }
+  });
+
+  var feedback = document.getElementById('feedback');
+  feedback.classList.remove('wrong');
+  if (!data.correct) feedback.classList.add('wrong');
+
+  document.getElementById('feedback-label').textContent = data.label;
+
+  var textHtml = '';
+  data.paragraphs.forEach(function(p) {
+    textHtml += '<p>' + p + '</p>';
+  });
+  document.getElementById('feedback-text').innerHTML = textHtml;
+  feedback.classList.add('visible');
+
+  document.getElementById('conclusion').classList.add('visible');
+  document.getElementById('restart-btn').classList.add('visible');
+
+  triggerResize();
+}
+
+function restart() {
+  answered = false;
+
+  var buttons = document.querySelectorAll('.option');
+  buttons.forEach(function(btn) {
+    btn.disabled = false;
+    btn.setAttribute('aria-pressed', 'false');
+    btn.classList.remove('correct', 'wrong', 'dimmed');
+  });
+
+  document.getElementById('options-block').classList.remove('visible');
+  document.getElementById('feedback').classList.remove('visible', 'wrong');
+  document.getElementById('conclusion').classList.remove('visible');
+  document.getElementById('restart-btn').classList.remove('visible');
+  document.getElementById('start-btn').style.display = '';
+
+  triggerResize();
+}
+
+document.getElementById('start-btn').addEventListener('click', function() {
+  this.style.display = 'none';
+  document.getElementById('options-block').classList.add('visible');
+  triggerResize();
+});
+
+document.querySelectorAll('.option').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    choose(btn.getAttribute('data-choice'));
+  });
+});
+
+document.getElementById('restart-btn').addEventListener('click', restart);
+
+document.addEventListener('DOMContentLoaded', function() {
+  triggerResize();
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
