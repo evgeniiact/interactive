@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --o50: #fff7ed;
+  --o100: #ffedd5;
+  --o600: #ea580c;
+  --o800: #9a3412;
+  --bl50: #eff6ff;
+  --bl100: #dbeafe;
+  --bl600: #2563eb;
+  --bl700: #1d4ed8;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  min-height: 300px;
+  padding: 24px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin: 0 auto;
+}
+
+.header-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 6px 0;
+}
+
+.header-text {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 16px 0;
+  line-height: 1.5;
+}
+
+.prog-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.prog-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+.prog-track {
+  flex: 1;
+  height: 6px;
+  background: #e2e8f0;
+  border-radius: 3px;
+  overflow: hidden;
+}
+
+.prog-fill {
+  height: 100%;
+  background: var(--g600);
+  border-radius: 3px;
+  transition: width 0.4s;
+  width: 0%;
+}
+
+.prog-count {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--g700);
+  white-space: nowrap;
+}
+
+.zones {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+
+.zone {
+  flex: 1;
+  min-width: 0;
+  border: 2px dashed var(--border);
+  border-radius: 10px;
+  padding: 12px;
+  min-height: 170px;
+  background: #fafafa;
+  transition: all 0.2s;
+}
+
+.zone-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 10px;
+}
+
+.zone.chat .zone-title { color: var(--bl700); }
+.zone.master .zone-title { color: var(--g700); }
+
+.zone-title svg {
+  width: 15px;
+  height: 15px;
+  flex-shrink: 0;
+}
+
+.zone.chat.hover {
+  border-color: var(--bl600);
+  background: var(--bl50);
+}
+
+.zone.master.hover {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.zone.wrong-flash {
+  border-color: var(--o600);
+  background: var(--o50);
+}
+
+.placed {
+  font-size: 12px;
+  line-height: 1.4;
+  color: var(--text);
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 6px;
+  padding: 7px 9px;
+  margin-bottom: 6px;
+  animation: fadeIn 0.3s ease;
+}
+
+.zone.chat .placed { border-left: 3px solid var(--bl600); }
+.zone.master .placed { border-left: 3px solid var(--g600); }
+
+.deck-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--muted);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.drag-card {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  background: #fff;
+  box-shadow: var(--shadow);
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.45;
+  color: var(--text);
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  animation: fadeIn 0.3s ease;
+}
+
+.drag-card:active { cursor: grabbing; }
+
+.drag-card.dimmed { opacity: 0.35; }
+
+.drag-card.gone {
+  opacity: 0;
+  transform: scale(0.95);
+  transition: all 0.3s;
+}
+
+.drag-hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-top: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.ghost {
+  position: fixed;
+  z-index: 999;
+  pointer-events: none;
+  opacity: 0.95;
+  transform: rotate(2deg) scale(1.02);
+  box-shadow: 0 12px 28px rgba(0,0,0,0.18);
+  margin: 0;
+}
+
+.explanation {
+  margin-top: 14px;
+  padding: 14px;
+  border-radius: 8px;
+  border-left: 4px solid var(--g600);
+  background: var(--g50);
+  font-size: 14px;
+  line-height: 1.5;
+  animation: fadeIn 0.3s ease;
+  display: none;
+}
+
+.explanation.visible { display: block; }
+
+.explanation.wrong {
+  border-left-color: var(--o600);
+  background: var(--o50);
+}
+
+.explanation .label {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 6px;
+  color: var(--g700);
+}
+
+.explanation.wrong .label { color: var(--o800); }
+
+.to-final-btn {
+  display: none;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 16px auto 0;
+  padding: 12px 24px;
+  border: none;
+  border-radius: 8px;
+  background: var(--g600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+  animation: fadeIn 0.3s ease;
+}
+
+.to-final-btn.visible { display: inline-flex; }
+
+.to-final-btn:hover { background: var(--g700); }
+
+.final-screen {
+  animation: fadeIn 0.3s ease;
+  display: none;
+}
+
+.final-screen.visible { display: block; }
+
+.final-score {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.final-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background: var(--g100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto 12px;
+}
+
+.final-icon svg {
+  width: 20px;
+  height: 20px;
+  color: var(--g600);
+}
+
+.final-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 6px 0;
+}
+
+.final-desc {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 auto;
+  line-height: 1.5;
+  max-width: 480px;
+}
+
+.rule-box {
+  border-radius: 10px;
+  padding: 14px 16px;
+  margin-bottom: 12px;
+}
+
+.rule-box.chat {
+  background: var(--bl50);
+  border: 1px solid var(--bl100);
+  border-left: 4px solid var(--bl600);
+}
+
+.rule-box.master {
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-left: 4px solid var(--g600);
+}
+
+.rule-box h3 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.rule-box.chat h3 { color: var(--bl700); }
+.rule-box.master h3 { color: var(--g800); }
+
+.rule-box ul {
+  margin: 0;
+  padding-left: 18px;
+}
+
+.rule-box li {
+  font-size: 13px;
+  line-height: 1.5;
+  margin-bottom: 6px;
+}
+
+.rule-box li:last-child { margin-bottom: 0; }
+
+.rule-main {
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--g600);
+  border-radius: 8px;
+  padding: 12px 14px;
+  margin-bottom: 16px;
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+.rule-main strong { color: var(--g800); }
+
+.final-btns {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+.copy-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  background: var(--g600);
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+
+.copy-btn:hover { background: var(--g700); }
+
+.copy-btn.copied { background: var(--g800); }
+
+.restart-btn {
+  padding: 10px 20px;
+  border: 2px solid var(--g600);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--g700);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+}
+
+.restart-btn:hover { background: var(--g50); }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .wrap { padding: 16px; }
+  .zones { flex-direction: column; }
+  .zone { min-height: 120px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h1 class="header-title">Где хранить постоянные правила</h1>
+  <p class="header-text">Определите, какие правила нужны почти в каждом чате. Сохраните их в инструкциях аккаунта. Правила для одной рабочей задачи оставляйте в мастер-промпте чата.</p>
+
+  <div class="prog-bar">
+    <span class="prog-label" id="prog-label">Карточка 1 из 9</span>
+    <div class="prog-track">
+      <div class="prog-fill" id="prog-fill"></div>
+    </div>
+    <span class="prog-count" id="prog-count">0/9</span>
+  </div>
+
+  <div class="zones" id="zones">
+    <div class="zone chat" id="zone-chat">
+      <div class="zone-title">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M21 12a8 8 0 0 1-8 8H4l2.2-2.6A8 8 0 1 1 21 12Z" stroke="currentColor" stroke-width="1.8" stroke-linejoin="round"/><path d="M9 10.5h6M9 13.5h4" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/></svg>
+        Мастер-промпт для чата
+      </div>
+      <div class="zone-items" id="chat-items"></div>
+    </div>
+
+    <div class="zone master" id="zone-master">
+      <div class="zone-title">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Z" stroke="currentColor" stroke-width="1.8"/><path d="M19.4 15a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.09A1.7 1.7 0 0 0 8.98 19.4a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H3a2 2 0 1 1 0-4h.09A1.7 1.7 0 0 0 4.6 8.98a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0-.34 1.87v.01c.27.62.88 1.03 1.56 1.03H21a2 2 0 1 1 0 4h-.09c-.68 0-1.29.4-1.56 1.03Z" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        Инструкция для аккаунта
+      </div>
+      <div class="zone-items" id="master-items"></div>
+    </div>
+  </div>
+
+  <div id="deck-area">
+    <div class="deck-label">
+      <svg width="14" height="14" viewBox="0 0 16 16" fill="none"><path d="M3 5h10M4 8h8M5 11h6" stroke="currentColor" stroke-width="1.6" stroke-linecap="round"/></svg>
+      Барабан карточек
+    </div>
+    <div id="deck"></div>
+    <div class="drag-hint">
+      <svg width="13" height="13" viewBox="0 0 16 16" fill="none"><path d="M8 2v8M5 7l3 3 3-3M2 13h12" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      Зажмите карточку и перетащите в один из блоков выше
+    </div>
+    <div class="explanation" id="explanation">
+      <div class="label" id="exp-label"></div>
+      <div id="exp-text"></div>
+    </div>
+  </div>
+
+  <button class="to-final-btn" id="to-final-btn">Разбор и правила</button>
+
+  <div class="final-screen" id="final-screen">
+    <div class="final-score">
+      <div class="final-icon">
+        <svg viewBox="0 0 24 24" fill="none"><path d="M20 6L9 17l-5-5" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+      </div>
+      <h2 class="final-title" id="final-title"></h2>
+      <p class="final-desc" id="final-desc"></p>
+    </div>
+
+    <div class="rule-box master">
+      <h3>В инструкцию для аккаунта - глобальные правила</h3>
+      <ul>
+        <li>Профессия и общий контекст: кто вы и в какой сфере работаете. Подходит всем чатам.</li>
+        <li>Стиль и тон общения: деловой, партнерский, без поучений. Задается один раз.</li>
+        <li>Профессиональная терминология: используй профессиональную лексику, но расшифровывай термины при первом упоминании, если материал не для экологов.</li>
+        <li>Безопасность: запрет на реальные ФИО, реквизиты, координаты объектов. Использование заглушек.</li>
+        <li>Запрет на выдумку: не придумывать номера нормативных актов, сроки и штрафы.</li>
+      </ul>
+    </div>
+
+    <div class="rule-box chat">
+      <h3>В мастер-промпт - правила для конкретного чата</h3>
+      <ul>
+        <li>Узкая роль нейросети: помощник по письмам, редактор памяток, аналитик рисков.</li>
+        <li>Алгоритм ответа: структура из трех шагов, порядок выдачи информации.</li>
+        <li>Формат результата: таблица, список, черновик письма - меняется от задачи к задаче.</li>
+        <li>Специфические ограничения: запрет предлагать закупки, не расширять тему диалога.</li>
+        <li>Контекст работы: период, площадка, направление - актуальны только для этого чата.</li>
+      </ul>
+    </div>
+
+    <div class="rule-main"><strong>Главное правило.</strong> Проверьте каждый блок вопросом: это правило работает во всех новых чатах? Да - в инструкцию для аккаунта. Нет - в мастер-промпт для чата. Если требования аккаунта и чата различаются, проверьте, не противоречат ли они друг другу. В новом чате укажите правила конкретной задачи.</div>
+
+    <div class="final-btns">
+      <button class="copy-btn" id="copy-btn">
+        <svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 10H13.5C14.0523 10 14.5 9.55228 14.5 9V2.5C14.5 1.94772 14.0523 1.5 13.5 1.5H7C6.44772 1.5 6 1.94772 6 2.5V6M2.5 14.5H9C9.55228 14.5 10 14.0523 10 13.5V7C10 6.44772 9.55228 6 9 6H2.5C1.94772 6 1.5 6.44772 1.5 7V13.5C1.5 14.0523 1.94772 14.5 2.5 14.5Z" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        <span>Скопировать инструкцию для аккаунта</span>
+      </button>
+      <button class="restart-btn" id="restart-btn">Пройти еще раз</button>
+    </div>
+  </div>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+var cards = [
+  {
+    zone: 'master',
+    text: 'Я - промышленный эколог на производственном предприятии. Работаю с отходами, выбросами, сбросами и экологической отчетностью.',
+    why: 'Профессия и сфера работы не меняются от чата к чату. Это базовый контекст, который подходит всем новым диалогам.',
+    wrong: 'Контекст профессии работает во всех чатах. В мастер-промпте его придется повторять в каждом новом диалоге.'
+  },
+  {
+    zone: 'chat',
+    text: 'Ты - помощник по подготовке черновиков писем в подразделения предприятия.',
+    why: 'Узкая роль нужна только для этого чата. В следующем диалоге ИИ может быть редактором памяток или аналитиком рисков.',
+    wrong: 'Это узкая роль для конкретной задачи. В глобальной инструкции она будет мешать: ИИ станет писать письма вместо таблиц или анализов.'
+  },
+  {
+    zone: 'master',
+    text: 'Отвечай мне в деловом партнерском стиле. Избегай поучений и директивных фраз в комментариях.',
+    why: 'Стиль общения со специалистом задается один раз и подходит всем чатам. Это глобальное правило тона.',
+    wrong: 'Стиль общения со специалистом не меняется от задачи к задаче. Его место - в глобальных настройках аккаунта.'
+  },
+  {
+    zone: 'chat',
+    text: 'Отвечай в три шага: суть вопроса, нормативная опора со статьями и пунктами, риски и смежные отделы.',
+    why: 'Структура ответа зависит от типа задачи. В чате с расчетами нужен другой алгоритм, чем в чате с анализом договора.',
+    wrong: 'Алгоритм ответа подбирается под тип задачи. В глобальной инструкции он будет навязывать эту структуру всем чатам, даже там, где она не нужна.'
+  },
+  {
+    zone: 'master',
+    text: 'Используй профессиональную лексику. Если материал предназначен не для экологов, расшифровывай термины при первом упоминании.',
+    why: 'Правило работы с терминологией зависит от аудитории. Это базовая настройка стиля, которая работает во всех чатах, чтобы вы не объясняли одно и то же каждый раз.',
+    wrong: 'Это базовое правило коммуникации. Если поместить его в чат, придется каждый раз напоминать нейросети, для кого она пишет текст.'
+  },
+  {
+    zone: 'chat',
+    text: 'Оформляй результат в таблице с колонками: требование, срок, ответственный, пункт документа, что проверить.',
+    why: 'Формат результата зависит от задачи. В одном чате нужна таблица требований, в другом - черновик письма, в третьем - список вопросов.',
+    wrong: 'Формат таблицы подходит только этой задаче. В глобальной инструкции ИИ будет делать таблицы во всех чатах, даже когда нужен текст.'
+  },
+  {
+    zone: 'master',
+    text: 'Не используй в ответах реальные названия предприятий, ФИО сотрудников и реквизиты договоров. Применяй заглушки [Наименование], [ФИО].',
+    why: 'Правило безопасности работает во всех чатах независимо от задачи. Его нельзя забывать ни в одном диалоге.',
+    wrong: 'Безопасность - постоянное правило. Оно должно защищать данные во всех новых чатах, а не только в одном.'
+  },
+  {
+    zone: 'chat',
+    text: 'Не предлагай решения по закупке оборудования и изменениям технологических процессов без моего отдельного запроса.',
+    why: 'Это ограничение для конкретной задачи в этом чате. В другом диалоге про аудит или отчетность такое ограничение не нужно.',
+    wrong: 'Это специфическое ограничение для конкретного чата. В глобальной инструкции оно будет запрещать предложения по оборудованию даже там, где они нужны.'
+  },
+  {
+    zone: 'master',
+    text: 'Не придумывай номера нормативных актов, сроки и штрафы. Если сомневаешься, предлагай проверить в справочно-правовой системе.',
+    why: 'Запрет на выдумку фактов работает во всех экологических чатах. Это глобальное правило безопасности ответов.',
+    wrong: 'Это постоянное ограничение на качество ответов. Его место - в глобальной инструкции, чтобы ИИ не выдумывал нормы ни в одном чате.'
+  }
+];
+
+var masterPrompt = 'Я - промышленный эколог на производственном предприятии. Работаю с отходами, выбросами, сбросами и экологической отчетностью.\n\nОтвечай мне в деловом партнерском стиле. Избегай поучений и директивных фраз в комментариях.\n\nИспользуй профессиональную лексику. Если материал предназначен не для экологов, расшифровывай термины при первом упоминании.\n\nНе используй в ответах реальные названия предприятий, ФИО сотрудников и реквизиты договоров. Применяй заглушки [Наименование], [ФИО].\n\nНе придумывай номера нормативных актов, сроки и штрафы. Если сомневаешься в актуальности данных, предлагай проверить в справочно-правовой системе.';
+
+var idx = 0;
+var processed = 0;
+var firstTry = 0;
+var hadWrong = false;
+var dragging = false;
+
+function renderCard() {
+  var deck = document.getElementById('deck');
+  deck.innerHTML = '';
+
+  if (idx >= cards.length) return;
+
+  var card = document.createElement('div');
+  card.className = 'drag-card';
+  card.textContent = cards[idx].text;
+  card.addEventListener('pointerdown', onDown);
+  deck.appendChild(card);
+
+  document.getElementById('prog-label').textContent = 'Карточка ' + (idx + 1) + ' из ' + cards.length;
+  triggerResize();
+}
+
+function onDown(e) {
+  if (dragging) return;
+  e.preventDefault();
+  dragging = true;
+
+  var card = e.currentTarget;
+  var rect = card.getBoundingClientRect();
+
+  var ghost = card.cloneNode(true);
+  ghost.className = 'drag-card ghost';
+  ghost.style.width = rect.width + 'px';
+  document.body.appendChild(ghost);
+
+  var offX = e.clientX - rect.left;
+  var offY = e.clientY - rect.top;
+
+  function move(ev) {
+    ghost.style.left = (ev.clientX - offX) + 'px';
+    ghost.style.top = (ev.clientY - offY) + 'px';
+    highlightZone(ev.clientX, ev.clientY);
+  }
+
+  function up(ev) {
+    window.removeEventListener('pointermove', move);
+    window.removeEventListener('pointerup', up);
+    window.removeEventListener('pointercancel', up);
+    ghost.remove();
+    clearHover();
+    dragging = false;
+
+    var z = zoneAt(ev.clientX, ev.clientY);
+    if (z) {
+      answer(z, card);
+    }
+  }
+
+  move(e);
+  window.addEventListener('pointermove', move);
+  window.addEventListener('pointerup', up);
+  window.addEventListener('pointercancel', up);
+}
+
+function zoneAt(x, y) {
+  var zones = [document.getElementById('zone-master'), document.getElementById('zone-chat')];
+  for (var i = 0; i < zones.length; i++) {
+    var r = zones[i].getBoundingClientRect();
+    if (x >= r.left && x <= r.right && y >= r.top && y <= r.bottom) {
+      return zones[i].id === 'zone-master' ? 'master' : 'chat';
+    }
+  }
+  return null;
+}
+
+function highlightZone(x, y) {
+  clearHover();
+  var z = zoneAt(x, y);
+  if (z) {
+    document.getElementById('zone-' + z).classList.add('hover');
+  }
+}
+
+function clearHover() {
+  document.getElementById('zone-master').classList.remove('hover');
+  document.getElementById('zone-chat').classList.remove('hover');
+}
+
+function answer(zone, card) {
+  var data = cards[idx];
+  var explanation = document.getElementById('explanation');
+  var label = document.getElementById('exp-label');
+  var text = document.getElementById('exp-text');
+
+  if (zone === data.zone) {
+    if (!hadWrong) firstTry++;
+    processed++;
+
+    var items = document.getElementById(zone === 'master' ? 'master-items' : 'chat-items');
+    var placed = document.createElement('div');
+    placed.className = 'placed';
+    placed.textContent = data.text;
+    items.appendChild(placed);
+
+    explanation.classList.remove('wrong');
+    label.textContent = 'Верно';
+    text.textContent = data.why;
+    explanation.classList.add('visible');
+
+    card.classList.add('gone');
+    idx++;
+    hadWrong = false;
+
+    document.getElementById('prog-count').textContent = processed + '/' + cards.length;
+    document.getElementById('prog-fill').style.width = (processed / cards.length * 100) + '%';
+
+    if (idx >= cards.length) {
+      setTimeout(function() {
+        document.getElementById('to-final-btn').classList.add('visible');
+        triggerResize();
+      }, 400);
+    } else {
+      setTimeout(renderCard, 500);
+    }
+  } else {
+    hadWrong = true;
+
+    var wrongZone = document.getElementById('zone-' + zone);
+    wrongZone.classList.add('wrong-flash');
+    setTimeout(function() {
+      wrongZone.classList.remove('wrong-flash');
+    }, 600);
+
+    explanation.classList.add('wrong', 'visible');
+    label.textContent = 'Не совсем';
+    text.textContent = data.wrong;
+  }
+
+  triggerResize();
+}
+
+function showFinal() {
+  document.getElementById('zones').style.display = 'none';
+  document.getElementById('deck-area').style.display = 'none';
+  document.getElementById('to-final-btn').classList.remove('visible');
+
+  var title = document.getElementById('final-title');
+  var desc = document.getElementById('final-desc');
+
+  if (firstTry === cards.length) {
+    title.textContent = 'Все верно';
+    desc.textContent = 'Вы с первого раза отделили глобальные правила от локальных. Это главный навык настройки аккаунта и чатов.';
+  } else if (firstTry >= 6) {
+    title.textContent = 'Хороший результат';
+    desc.textContent = 'Вы разделили инструкции по уровню. Ниже - правила, по которым стоит проверить блоки, где понадобилась вторая попытка.';
+  } else {
+    title.textContent = 'Стоит повторить';
+    desc.textContent = 'Ниже - правила разделения. Неизменные правила остаются в инструкции для аккаунта, правила для задачи уходят в мастер-промпт чата. Пройдите тренажер еще раз.';
+  }
+
+  document.getElementById('final-screen').classList.add('visible');
+  triggerResize();
+}
+
+function restart() {
+  idx = 0;
+  processed = 0;
+  firstTry = 0;
+  hadWrong = false;
+
+  document.getElementById('master-items').innerHTML = '';
+  document.getElementById('chat-items').innerHTML = '';
+  document.getElementById('explanation').classList.remove('visible', 'wrong');
+  document.getElementById('final-screen').classList.remove('visible');
+  document.getElementById('to-final-btn').classList.remove('visible');
+  document.getElementById('zones').style.display = 'flex';
+  document.getElementById('deck-area').style.display = 'block';
+
+  document.getElementById('prog-count').textContent = '0/' + cards.length;
+  document.getElementById('prog-fill').style.width = '0%';
+
+  renderCard();
+  triggerResize();
+}
+
+function copyToClipboard(text, btn) {
+  if (navigator.clipboard && window.isSecureContext) {
+    navigator.clipboard.writeText(text).then(function() {
+      showCopied(btn);
+    }).catch(function() {
+      fallbackCopy(text, btn);
+    });
+  } else {
+    fallbackCopy(text, btn);
+  }
+}
+
+function fallbackCopy(text, btn) {
+  var textArea = document.createElement('textarea');
+  textArea.value = text;
+  textArea.style.position = 'fixed';
+  textArea.style.top = '0';
+  textArea.style.left = '0';
+  textArea.style.width = '2em';
+  textArea.style.height = '2em';
+  textArea.style.padding = '0';
+  textArea.style.border = 'none';
+  textArea.style.outline = 'none';
+  textArea.style.boxShadow = 'none';
+  textArea.style.background = 'transparent';
+  textArea.style.opacity = '0';
+  document.body.appendChild(textArea);
+  textArea.focus();
+  textArea.select();
+  try {
+    document.execCommand('copy');
+    showCopied(btn);
+  } catch (err) {
+    console.error('Copy failed', err);
+  }
+  document.body.removeChild(textArea);
+}
+
+function showCopied(btn) {
+  btn.classList.add('copied');
+  btn.querySelector('span').textContent = 'Скопировано';
+  setTimeout(function() {
+    btn.classList.remove('copied');
+    btn.querySelector('span').textContent = 'Скопировать инструкцию для аккаунта';
+  }, 2000);
+  triggerResize();
+}
+
+document.getElementById('to-final-btn').addEventListener('click', showFinal);
+
+document.getElementById('copy-btn').addEventListener('click', function() {
+  copyToClipboard(masterPrompt, this);
+});
+
+document.getElementById('restart-btn').addEventListener('click', restart);
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderCard();
+  triggerResize();
+
+  var wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
