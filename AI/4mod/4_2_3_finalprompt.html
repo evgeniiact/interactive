@@ -55,40 +55,16 @@ body {
 .intro-text {
   font-size: 14px;
   color: var(--text);
-  margin-bottom: 12px;
+  margin-bottom: 8px;
   line-height: 1.6;
 }
 
-.instruction-box {
-  background: var(--g50);
-  border: 1px solid var(--g100);
-  border-radius: var(--radius);
-  padding: 14px 16px;
-  margin-bottom: 16px;
-}
-
-.instruction-title {
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--g800);
-  margin: 0 0 8px 0;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-}
-
-.instruction-text {
-  font-size: 13px;
-  color: var(--text);
-  margin: 0 0 8px 0;
-  line-height: 1.5;
-}
-
 .instruction-list {
-  margin: 0;
+  margin: 0 0 16px 0;
   padding-left: 20px;
-  font-size: 13px;
+  font-size: 14px;
   color: var(--text);
-  line-height: 1.5;
+  line-height: 1.6;
 }
 
 .instruction-list li { margin-bottom: 4px; }
@@ -356,6 +332,11 @@ body {
   flex-shrink: 0;
 }
 
+.feedback-icon.correct {
+  background: var(--g100);
+  color: var(--g700);
+}
+
 .feedback-icon.incorrect {
   background: #fee2e2;
   color: #ef4444;
@@ -521,12 +502,13 @@ body {
     
     <p class="intro-text">
       Нажмите на фрагменты и выберите, что с ними сделать
-       <li>Сохранить в инструкциях аккаунта</li>
-        <li>Сохранить в инструкциях проекта</li>
-        <li>Оставить в промпте нового чата</li>
-        <li>Не передаем в ИИ</li>
     </p>
-    </div>
+    <ul class="instruction-list">
+      <li>Сохранить в инструкциях аккаунта</li>
+      <li>Сохранить в инструкциях проекта</li>
+      <li>Оставить в промпте нового чата</li>
+      <li>Не передаем в ИИ</li>
+    </ul>
     
     <div class="legend">
       <div class="legend-item"><span class="legend-dot" style="background: var(--g600)"></span>Инструкции аккаунта</div>
@@ -548,7 +530,7 @@ body {
   <div class="results-screen" id="resultsScreen">
     <h2 class="results-title">Готовая система промптов</h2>
     
-    <div class="accordion-block account open" id="accAccount">
+    <div class="accordion-block account" id="accAccount">
       <div class="accordion-header" onclick="toggleAccordion('accAccount')">
         <span class="accordion-icon"></span>
         <span class="accordion-title">Инструкции аккаунта</span>
@@ -567,7 +549,7 @@ body {
       </div>
     </div>
     
-    <div class="accordion-block project open" id="accProject">
+    <div class="accordion-block project" id="accProject">
       <div class="accordion-header" onclick="toggleAccordion('accProject')">
         <span class="accordion-icon"></span>
         <span class="accordion-title">Инструкции проекта</span>
@@ -586,7 +568,7 @@ body {
       </div>
     </div>
     
-    <div class="accordion-block chat open" id="accChat">
+    <div class="accordion-block chat" id="accChat">
       <div class="accordion-header" onclick="toggleAccordion('accChat')">
         <span class="accordion-icon"></span>
         <span class="accordion-title">Шаблон промпта нового чата</span>
@@ -607,7 +589,7 @@ body {
       </div>
     </div>
     
-    <div class="accordion-block check open" id="accCheck">
+    <div class="accordion-block check" id="accCheck">
       <div class="accordion-header" onclick="toggleAccordion('accCheck')">
         <span class="accordion-icon"></span>
         <span class="accordion-title">Не передаем в ИИ</span>
@@ -643,11 +625,11 @@ body {
 <div class="modal-backdrop" id="feedbackModal" style="z-index:200">
   <div class="modal">
     <div class="feedback-header">
-      <div class="feedback-icon incorrect" id="feedbackIcon">✕</div>
-      <div class="feedback-title" id="feedbackTitle">Не совсем так</div>
+      <div class="feedback-icon" id="feedbackIcon"></div>
+      <div class="feedback-title" id="feedbackTitle"></div>
     </div>
     <div class="feedback-text" id="feedbackText"></div>
-    <div class="feedback-correct" id="feedbackCorrect"></div>
+    <div class="feedback-correct" id="feedbackCorrect" style="display:none"></div>
     <button class="feedback-ok-btn" onclick="closeFeedbackModal()">Понятно</button>
   </div>
 </div>
@@ -821,23 +803,29 @@ function makeChoice(id, key) {
   
   document.getElementById('actionModal').classList.remove('show');
   
-  if (isCorrect) {
-    renderPrompt();
-    updateProgress();
-    triggerResize();
-  } else {
-    openFeedbackModal(f);
-  }
+  openFeedbackModal(f, isCorrect);
 }
 
-function openFeedbackModal(f) {
+function openFeedbackModal(f, isCorrect) {
+  const icon = document.getElementById('feedbackIcon');
+  const title = document.getElementById('feedbackTitle');
   const text = document.getElementById('feedbackText');
   const correct = document.getElementById('feedbackCorrect');
   
-  text.textContent = f.feedback;
-  
-  correct.style.display = 'block';
-  correct.textContent = 'Правильный ответ: ' + actionLabels[f.correct];
+  if (isCorrect) {
+    icon.className = 'feedback-icon correct';
+    icon.textContent = '✓';
+    title.textContent = 'Верно';
+    text.textContent = f.feedback;
+    correct.style.display = 'none';
+  } else {
+    icon.className = 'feedback-icon incorrect';
+    icon.textContent = '✕';
+    title.textContent = 'Не совсем так';
+    text.textContent = f.feedback;
+    correct.style.display = 'block';
+    correct.textContent = 'Правильный ответ: ' + actionLabels[f.correct];
+  }
   
   document.getElementById('feedbackModal').classList.add('show');
   triggerResize();
