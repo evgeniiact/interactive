@@ -1,0 +1,905 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --blue: #2563eb;
+  --blue-bg: #eff6ff;
+  --blue-border: #bfdbfe;
+  --purple: #7c3aed;
+  --purple-bg: #f5f3ff;
+  --purple-border: #ddd6fe;
+  --orange: #ea580c;
+  --orange-bg: #fff7ed;
+  --orange-border: #fed7aa;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.wrap {
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.header-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 12px 0;
+}
+
+.intro-text {
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 12px;
+  line-height: 1.6;
+}
+
+.instruction-box {
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  margin-bottom: 16px;
+}
+
+.instruction-title {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 8px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.instruction-text {
+  font-size: 13px;
+  color: var(--text);
+  margin: 0 0 8px 0;
+  line-height: 1.5;
+}
+
+.instruction-list {
+  margin: 0;
+  padding-left: 20px;
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+.instruction-list li { margin-bottom: 4px; }
+
+.progress-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+  padding: 10px 14px;
+  background: #f8fafc;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+}
+
+.progress-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.progress-dots {
+  display: flex;
+  gap: 6px;
+}
+
+.progress-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  background: var(--border);
+  transition: background 0.3s;
+}
+
+.progress-dot.done { background: var(--g600); }
+
+.legend {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11px;
+  color: var(--muted);
+}
+
+.legend-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+}
+
+.prompt-container {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-bottom: 16px;
+  line-height: 1.8;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.fragment {
+  display: inline;
+  background: #f1f5f9;
+  border-bottom: 2px dashed #94a3b8;
+  padding: 2px 4px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.fragment:hover { background: #e2e8f0; }
+
+.fragment.done { cursor: default; }
+
+.fragment.account {
+  background: var(--g50);
+  border-bottom: 3px solid var(--g600);
+  padding: 2px 6px;
+}
+
+.fragment.project {
+  background: var(--blue-bg);
+  border-bottom: 3px solid var(--blue);
+  padding: 2px 6px;
+}
+
+.fragment.chat {
+  background: var(--purple-bg);
+  border-bottom: 3px solid var(--purple);
+  padding: 2px 6px;
+}
+
+.fragment.check {
+  background: var(--orange-bg);
+  border-bottom: 3px solid var(--orange);
+  padding: 2px 6px;
+}
+
+.fragment-label {
+  display: block;
+  font-size: 11px;
+  font-weight: 700;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin: 6px 0 10px 0;
+  text-transform: uppercase;
+  letter-spacing: 0.3px;
+  width: fit-content;
+}
+
+.label-account { background: var(--g100); color: var(--g800); }
+.label-project { background: var(--blue-border); color: #1e40af; }
+.label-chat { background: var(--purple-border); color: #5b21b6; }
+.label-check { background: var(--orange-border); color: #9a3412; }
+
+.main-btn {
+  background: var(--g600);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+  transition: background 0.2s;
+}
+
+.main-btn:hover { background: var(--g700); }
+
+.main-btn:disabled {
+  background: var(--border);
+  cursor: not-allowed;
+}
+
+.main-btn.secondary {
+  background: #fff;
+  color: var(--g700);
+  border: 1px solid var(--g600);
+  margin-top: 10px;
+}
+
+.main-btn.secondary:hover { background: var(--g50); }
+
+/* Modal */
+.modal-backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(15, 23, 42, 0.5);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+  padding: 16px;
+}
+
+.modal-backdrop.show { display: flex; }
+
+.modal {
+  background: #fff;
+  border-radius: var(--radius);
+  max-width: 520px;
+  width: 100%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: var(--shadow);
+  padding: 24px;
+}
+
+.modal-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 16px 0;
+}
+
+.action-fragment {
+  font-size: 13px;
+  color: var(--text);
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 8px;
+  margin-bottom: 16px;
+  line-height: 1.5;
+  border-left: 3px solid var(--g600);
+}
+
+.action-buttons {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.action-btn {
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 14px;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.action-btn:hover {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.action-btn .dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.dot-account { background: var(--g600); }
+.dot-project { background: var(--blue); }
+.dot-chat { background: var(--purple); }
+.dot-check { background: var(--orange); }
+
+.cancel-btn {
+  background: none;
+  border: none;
+  color: var(--muted);
+  font-size: 13px;
+  cursor: pointer;
+  margin-top: 12px;
+  padding: 8px 0;
+  width: 100%;
+}
+
+.cancel-btn:hover { color: var(--text); }
+
+/* Feedback modal */
+.feedback-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 12px;
+}
+
+.feedback-icon {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.feedback-icon.incorrect {
+  background: #fee2e2;
+  color: #ef4444;
+}
+
+.feedback-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.feedback-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  margin-bottom: 16px;
+}
+
+.feedback-correct {
+  font-size: 13px;
+  color: var(--g700);
+  font-weight: 600;
+  padding: 10px 12px;
+  background: var(--g50);
+  border-radius: 8px;
+  margin-bottom: 16px;
+}
+
+.feedback-ok-btn {
+  background: var(--g600);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 24px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  width: 100%;
+}
+
+.feedback-ok-btn:hover { background: var(--g700); }
+
+/* Results screen */
+.results-screen { display: none; }
+.results-screen.show { display: block; }
+
+.results-title {
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 16px 0;
+}
+
+.accordion-block {
+  border-radius: var(--radius);
+  margin-bottom: 10px;
+  border: 1px solid;
+  overflow: hidden;
+}
+
+.accordion-block.account { background: var(--g50); border-color: var(--g100); }
+.accordion-block.project { background: var(--blue-bg); border-color: var(--blue-border); }
+.accordion-block.chat { background: var(--purple-bg); border-color: var(--purple-border); }
+.accordion-block.check { background: var(--orange-bg); border-color: var(--orange-border); }
+
+.accordion-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 14px 16px;
+  cursor: pointer;
+  user-select: none;
+  transition: background 0.2s;
+}
+
+.accordion-header:hover {
+  background: rgba(0,0,0,0.03);
+}
+
+.accordion-icon {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.accordion-block.account .accordion-icon { background: var(--g600); }
+.accordion-block.project .accordion-icon { background: var(--blue); }
+.accordion-block.chat .accordion-icon { background: var(--purple); }
+.accordion-block.check .accordion-icon { background: var(--orange); }
+
+.accordion-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--text);
+  flex-grow: 1;
+}
+
+.accordion-arrow {
+  font-size: 12px;
+  color: var(--muted);
+  transition: transform 0.2s;
+}
+
+.accordion-block.open .accordion-arrow {
+  transform: rotate(180deg);
+}
+
+.accordion-content {
+  max-height: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease;
+}
+
+.accordion-block.open .accordion-content {
+  max-height: 1000px;
+}
+
+.accordion-body {
+  padding: 0 16px 16px 16px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  white-space: pre-line;
+  margin: 0;
+}
+
+.final-box {
+  background: #fff;
+  border: 2px solid var(--g600);
+  border-radius: var(--radius);
+  padding: 18px;
+  margin-top: 20px;
+  margin-bottom: 20px;
+}
+
+.final-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 10px 0;
+}
+
+.final-text {
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--text);
+  margin: 0;
+}
+
+@media (max-width: 600px) {
+  body { padding: 16px; }
+  .prompt-container { padding: 14px; }
+  .modal { padding: 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div id="mainScreen">
+    <h1 class="header-title">Анатомия промпта</h1>
+    
+    <p class="intro-text">
+      Перед вами подробный запрос для подготовки памятки. В нем смешаны общие правила, требования к повторяющейся задаче, данные конкретного поручения и сведения, которые нельзя использовать без проверки.
+    </p>
+    
+    <p class="intro-text">
+      Нажимайте на выделенные фрагменты и выбирайте, что с ними сделать. После каждого выбора вы увидите, куда перенести этот блок.
+    </p>
+    
+    <div class="instruction-box">
+      <div class="instruction-title">Инструкция</div>
+      <p class="instruction-text">Кликните на выделенный фрагмент. Выберите одно действие.</p>
+      <ul class="instruction-list">
+        <li>Сохранить в инструкциях аккаунта</li>
+        <li>Сохранить в инструкциях проекта</li>
+        <li>Оставить в промпте нового чата</li>
+        <li>Не передаем в ИИ</li>
+      </ul>
+    </div>
+    
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background: var(--g600)"></span>Инструкции аккаунта</div>
+      <div class="legend-item"><span class="legend-dot" style="background: var(--blue)"></span>Инструкции проекта</div>
+      <div class="legend-item"><span class="legend-dot" style="background: var(--purple)"></span>Промпт нового чата</div>
+      <div class="legend-item"><span class="legend-dot" style="background: var(--orange)"></span>Не передаем в ИИ</div>
+    </div>
+    
+    <div class="progress-bar">
+      <span class="progress-label" id="progressLabel">Разобрано 0 из 7</span>
+      <div class="progress-dots" id="progressDots"></div>
+    </div>
+    
+    <div class="prompt-container" id="promptContainer"></div>
+    
+    <button class="main-btn" id="showResultBtn" onclick="showResults()" style="display:none">Показать результат</button>
+  </div>
+  
+  <div class="results-screen" id="resultsScreen">
+    <h2 class="results-title">Готовая система промптов</h2>
+    
+    <div class="accordion-block account open" id="accAccount">
+      <div class="accordion-header" onclick="toggleAccordion('accAccount')">
+        <span class="accordion-icon"></span>
+        <span class="accordion-title">Инструкции аккаунта</span>
+        <span class="accordion-arrow">▼</span>
+      </div>
+      <div class="accordion-content">
+        <p class="accordion-body">Я работаю промышленным экологом.
+
+Пиши по-русски. Используй деловой стиль. Пиши короткими предложениями.
+
+Все создаваемые материалы должны быть полностью обезличены. Оставляй для них пустые поля в квадратных скобках.
+
+Не придумывай факты, сроки, требования законодательства, реквизиты документов, условия договоров и обязательства предприятия.
+
+Если данных недостаточно, укажи, что нужно уточнить. Разделяй подтвержденные сведения, предположения и вопросы для проверки.</p>
+      </div>
+    </div>
+    
+    <div class="accordion-block project open" id="accProject">
+      <div class="accordion-header" onclick="toggleAccordion('accProject')">
+        <span class="accordion-icon"></span>
+        <span class="accordion-title">Инструкции проекта</span>
+        <span class="accordion-arrow">▼</span>
+      </div>
+      <div class="accordion-content">
+        <p class="accordion-body">Ты помогаешь готовить памятки и материалы для инструктажей. Используй согласованные внутренние документы как исходный материал.
+
+Готовь материал в такой структуре:
+1. Для кого предназначен материал.
+2. Что нужно сделать.
+3. Что запрещено.
+4. К кому обратиться с вопросом.
+
+Не добавляй действия, запреты, сроки и контакты, которых нет в исходных материалах.</p>
+      </div>
+    </div>
+    
+    <div class="accordion-block chat open" id="accChat">
+      <div class="accordion-header" onclick="toggleAccordion('accChat')">
+        <span class="accordion-icon"></span>
+        <span class="accordion-title">Шаблон промпта нового чата</span>
+        <span class="accordion-arrow">▼</span>
+      </div>
+      <div class="accordion-content">
+        <p class="accordion-body">Подготовь черновик памятки для [аудитория] по теме [тема].
+
+Цель памятки: [цель].
+
+Используй следующие исходные материалы: [перечень материалов].
+
+Подготовь результат в формате: [формат].
+
+Срок передачи черновика: [срок].
+
+Контакт ответственного: [контакт].</p>
+      </div>
+    </div>
+    
+    <div class="accordion-block check open" id="accCheck">
+      <div class="accordion-header" onclick="toggleAccordion('accCheck')">
+        <span class="accordion-icon"></span>
+        <span class="accordion-title">Не передаем в ИИ</span>
+        <span class="accordion-arrow">▼</span>
+      </div>
+      <div class="accordion-content">
+        <p class="accordion-body">Правило: не передавайте в ИИ сроки и контакты.
+
+Оставляйте поля в квадратных скобках и заполняйте их вручную после генерации текста. Это защищает конфиденциальные данные и дает контроль над финальным документом.</p>
+      </div>
+    </div>
+    
+    <div class="final-box">
+      <div class="final-title">Главное правило</div>
+      <p class="final-text">Не копируйте длинный промпт в каждый чат. Постоянные правила сохраните в инструкциях аккаунта. Правила повторяющейся темы и шаблоны храните в проекте. В новый чат добавляйте только данные конкретного поручения. Чувствительные данные оставляйте в квадратных скобках и заполняйте вручную.</p>
+    </div>
+    
+    <button class="main-btn secondary" onclick="restart()">Разобрать заново</button>
+  </div>
+</div>
+
+<!-- Action Modal -->
+<div class="modal-backdrop" id="actionModal">
+  <div class="modal">
+    <div class="modal-title">Куда перенести этот блок?</div>
+    <div class="action-fragment" id="actionFragmentText"></div>
+    <div class="action-buttons" id="actionButtons"></div>
+    <button class="cancel-btn" onclick="closeActionModal()">Отмена</button>
+  </div>
+</div>
+
+<!-- Feedback Modal -->
+<div class="modal-backdrop" id="feedbackModal" style="z-index:200">
+  <div class="modal">
+    <div class="feedback-header">
+      <div class="feedback-icon incorrect" id="feedbackIcon">✕</div>
+      <div class="feedback-title" id="feedbackTitle">Не совсем так</div>
+    </div>
+    <div class="feedback-text" id="feedbackText"></div>
+    <div class="feedback-correct" id="feedbackCorrect"></div>
+    <button class="feedback-ok-btn" onclick="closeFeedbackModal()">Понятно</button>
+  </div>
+</div>
+
+<script>
+const fragments = [
+  {
+    id: 0,
+    text: 'Я работаю промышленным экологом.',
+    correct: 'account',
+    label: 'Инструкции аккаунта',
+    labelClass: 'label-account',
+    feedback: 'Это общий рабочий контекст. Он пригодится в большинстве задач.'
+  },
+  {
+    id: 1,
+    text: 'Пиши по-русски. Используй деловой стиль. Пиши короткими предложениями. Все создаваемые материалы должны быть полностью обезличены. Оставляй для них пустые поля в квадратных скобках. Не придумывай факты, сроки, требования законодательства, реквизиты документов, условия договоров и обязательства предприятия. Если данных недостаточно, укажи, что нужно уточнить. Разделяй подтвержденные сведения, предположения и вопросы для проверки.',
+    correct: 'account',
+    label: 'Инструкции аккаунта',
+    labelClass: 'label-account',
+    feedback: 'Это постоянные правила языка, стиля, обезличивания и работы с неполными данными.'
+  },
+  {
+    id: 2,
+    text: 'Ты помогаешь готовить памятки и материалы для инструктажей. Используй согласованные внутренние документы как исходный материал.',
+    correct: 'project',
+    label: 'Инструкции проекта',
+    labelClass: 'label-project',
+    feedback: 'Эти правила относятся только к проекту "Памятки и инструктажи".'
+  },
+  {
+    id: 3,
+    text: 'Готовь материал в такой структуре: 1. Для кого предназначен материал. 2. Что нужно сделать. 3. Что запрещено. 4. К кому обратиться с вопросом.',
+    correct: 'project',
+    label: 'Инструкции проекта',
+    labelClass: 'label-project',
+    feedback: 'Это повторяющийся формат материалов одной рабочей темы.'
+  },
+  {
+    id: 4,
+    text: 'Не добавляй действия, запреты, сроки и контакты, которых нет в исходных материалах.',
+    correct: 'project',
+    label: 'Инструкции проекта',
+    labelClass: 'label-project',
+    feedback: 'Ограничение относится к подготовке памяток по согласованным документам.'
+  },
+  {
+    id: 5,
+    text: 'Подготовь черновик памятки для [аудитория] по теме [тема]. Цель памятки: [цель]. Используй следующие исходные материалы: [перечень материалов]. Подготовь результат в формате: [формат].',
+    correct: 'chat',
+    label: 'Промпт нового чата',
+    labelClass: 'label-chat',
+    feedback: 'Эти данные меняются в каждом поручении.'
+  },
+  {
+    id: 6,
+    text: 'Срок передачи черновика: [дата]. Контакт ответственного: [ФИО, телефон].',
+    correct: 'check',
+    label: 'Не передаем в ИИ',
+    labelClass: 'label-check',
+    feedback: 'Сроки и контакты не передаем в ИИ. Оставляем поля в квадратных скобках и заполняем вручную после генерации.'
+  }
+];
+
+const actions = [
+  { key: 'account', label: 'Сохранить в инструкциях аккаунта', dotClass: 'dot-account' },
+  { key: 'project', label: 'Сохранить в инструкциях проекта', dotClass: 'dot-project' },
+  { key: 'chat', label: 'Оставить в промпте нового чата', dotClass: 'dot-chat' },
+  { key: 'check', label: 'Не передаем в ИИ', dotClass: 'dot-check' }
+];
+
+const actionLabels = {
+  account: 'Инструкции аккаунта',
+  project: 'Инструкции проекта',
+  chat: 'Промпт нового чата',
+  check: 'Не передаем в ИИ'
+};
+
+let choices = {};
+let currentFragment = null;
+
+function renderPrompt() {
+  const container = document.getElementById('promptContainer');
+  container.innerHTML = '';
+  
+  fragments.forEach((f, idx) => {
+    const span = document.createElement('span');
+    span.className = 'fragment';
+    span.textContent = f.text;
+    
+    if (choices[f.id]) {
+      span.classList.add('done', choices[f.id].key);
+    } else {
+      span.onclick = () => openActionModal(f.id);
+    }
+    
+    container.appendChild(span);
+    
+    if (idx < fragments.length - 1) {
+      container.appendChild(document.createTextNode(' '));
+    }
+    
+    if (choices[f.id]) {
+      const label = document.createElement('div');
+      label.className = 'fragment-label ' + choices[f.id].labelClass;
+      label.textContent = choices[f.id].label;
+      container.appendChild(label);
+    }
+  });
+}
+
+function renderDots() {
+  const dots = document.getElementById('progressDots');
+  dots.innerHTML = '';
+  fragments.forEach((f) => {
+    const dot = document.createElement('span');
+    dot.className = 'progress-dot' + (choices[f.id] ? ' done' : '');
+    dots.appendChild(dot);
+  });
+}
+
+function updateProgress() {
+  const count = Object.keys(choices).length;
+  document.getElementById('progressLabel').textContent = 'Разобрано ' + count + ' из ' + fragments.length;
+  renderDots();
+  
+  if (count === fragments.length) {
+    document.getElementById('showResultBtn').style.display = 'block';
+  }
+}
+
+function openActionModal(id) {
+  if (choices[id]) return;
+  
+  currentFragment = id;
+  const f = fragments[id];
+  
+  document.getElementById('actionFragmentText').textContent = f.text;
+  
+  const buttonsContainer = document.getElementById('actionButtons');
+  buttonsContainer.innerHTML = '';
+  
+  actions.forEach(a => {
+    const btn = document.createElement('button');
+    btn.className = 'action-btn';
+    btn.innerHTML = '<span class="dot ' + a.dotClass + '"></span>' + a.label;
+    btn.onclick = () => makeChoice(id, a.key);
+    buttonsContainer.appendChild(btn);
+  });
+  
+  document.getElementById('actionModal').classList.add('show');
+  triggerResize();
+}
+
+function closeActionModal() {
+  document.getElementById('actionModal').classList.remove('show');
+  currentFragment = null;
+  triggerResize();
+}
+
+function makeChoice(id, key) {
+  const f = fragments[id];
+  const isCorrect = key === f.correct;
+  
+  choices[id] = {
+    key: f.correct,
+    label: f.label,
+    labelClass: f.labelClass,
+    feedback: f.feedback
+  };
+  
+  document.getElementById('actionModal').classList.remove('show');
+  
+  if (isCorrect) {
+    renderPrompt();
+    updateProgress();
+    triggerResize();
+  } else {
+    openFeedbackModal(f);
+  }
+}
+
+function openFeedbackModal(f) {
+  const text = document.getElementById('feedbackText');
+  const correct = document.getElementById('feedbackCorrect');
+  
+  text.textContent = f.feedback;
+  
+  correct.style.display = 'block';
+  correct.textContent = 'Правильный ответ: ' + actionLabels[f.correct];
+  
+  document.getElementById('feedbackModal').classList.add('show');
+  triggerResize();
+}
+
+function closeFeedbackModal() {
+  document.getElementById('feedbackModal').classList.remove('show');
+  renderPrompt();
+  updateProgress();
+  triggerResize();
+}
+
+function toggleAccordion(id) {
+  const block = document.getElementById(id);
+  block.classList.toggle('open');
+  triggerResize();
+}
+
+function showResults() {
+  document.getElementById('mainScreen').style.display = 'none';
+  document.getElementById('resultsScreen').classList.add('show');
+  triggerResize();
+}
+
+function restart() {
+  choices = {};
+  document.getElementById('mainScreen').style.display = 'block';
+  document.getElementById('resultsScreen').classList.remove('show');
+  document.getElementById('showResultBtn').style.display = 'none';
+  renderPrompt();
+  updateProgress();
+  triggerResize();
+}
+
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderPrompt();
+  updateProgress();
+  
+  const wrap = document.querySelector('.wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
