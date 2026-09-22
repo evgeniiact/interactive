@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<style>
+:root {
+  --bg: #ffffff;
+  --card: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --o50: #fff7ed;
+  --o100: #ffedd5;
+  --o600: #ea580c;
+  --o800: #9a3412;
+  --bl50: #eff6ff;
+  --bl100: #dbeafe;
+  --bl600: #2563eb;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px;
+  padding: 24px;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  margin: 0 auto;
+}
+
+.header-title {
+  font-size: 19px;
+  font-weight: 700;
+  color: var(--g800);
+  margin: 0 0 6px 0;
+}
+
+.header-text {
+  font-size: 14px;
+  color: var(--muted);
+  margin: 0 0 20px 0;
+  line-height: 1.5;
+}
+
+.cards-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.select-card {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 14px 16px;
+  background: #fff;
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.45;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  user-select: none;
+}
+
+.select-card:hover {
+  border-color: var(--bl600);
+  background: var(--bl50);
+}
+
+.select-card.active {
+  border-color: var(--g600);
+  background: var(--g50);
+  color: var(--g800);
+  font-weight: 600;
+}
+
+.select-card.active::before {
+  content: "✓";
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  background: var(--g600);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 12px;
+  flex-shrink: 0;
+}
+
+.select-card.disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  background: #f8fafc;
+}
+
+.action-btn {
+  display: block;
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 10px;
+  background: var(--g600);
+  color: #fff;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  font-family: inherit;
+  margin-top: 8px;
+}
+
+.action-btn:hover { background: var(--g700); }
+.action-btn:disabled { 
+  background: var(--border); 
+  color: var(--muted); 
+  cursor: not-allowed; 
+}
+
+.result-block {
+  margin-top: 24px;
+  padding: 16px;
+  border-radius: 10px;
+  background: var(--g50);
+  border-left: 4px solid var(--g600);
+  animation: fadeIn 0.3s ease;
+  display: none;
+}
+
+.result-block.visible { display: block; }
+
+.result-block.wrong {
+  background: var(--o50);
+  border-left-color: var(--o600);
+}
+
+.result-label {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  margin-bottom: 8px;
+  color: var(--g700);
+}
+
+.result-block.wrong .result-label { color: var(--o800); }
+
+.prompt-preview {
+  background: #fff;
+  border: 1px solid var(--g100);
+  border-radius: 8px;
+  padding: 14px;
+  font-family: monospace;
+  font-size: 13px;
+  line-height: 1.6;
+  color: var(--text);
+  margin: 12px 0;
+  white-space: pre-wrap;
+}
+
+.feedback-text {
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.restart-btn {
+  display: none;
+  width: 100%;
+  padding: 12px;
+  border: 2px solid var(--g600);
+  border-radius: 10px;
+  background: #fff;
+  color: var(--g700);
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-family: inherit;
+  margin-top: 12px;
+}
+
+.restart-btn.visible { display: block; }
+.restart-btn:hover { background: var(--g50); }
+
+.counter {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  font-weight: 600;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 600px) {
+  .wrap { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="wrap">
+  <h1 class="header-title">Тренажер. Соберите первый запрос</h1>
+  <p class="header-text">На участке нужно подготовить памятку для работников о порядке на контейнерной площадке. Выберите две карточки. Первая объяснит ИИ задачу. Вторая задаст формат результата.</p>
+
+  <div class="counter" id="counter">Выбрано: 0 из 2</div>
+
+  <div class="cards-grid" id="cards-grid">
+    <!-- Карточки генерируются JS -->
+  </div>
+
+  <button class="action-btn" id="check-btn" disabled>Собрать запрос</button>
+
+  <div class="result-block" id="result-block">
+    <div class="result-label" id="result-label"></div>
+    <div class="prompt-preview" id="prompt-preview"></div>
+    <div class="feedback-text" id="feedback-text"></div>
+  </div>
+
+  <button class="restart-btn" id="restart-btn">Попробовать еще раз</button>
+</div>
+
+<script>
+function triggerResize() {
+  if (window.iFrameResize) {
+    window.iFrameResize({ log: false, checkOrigin: false }, '*');
+  }
+}
+
+const cardsData = [
+  {
+    id: 1,
+    text: "Подготовить памятку для работников склада о порядке на контейнерной площадке",
+    isCorrect: true,
+    type: "task"
+  },
+  {
+    id: 2,
+    text: "Три коротких правила простым деловым языком",
+    isCorrect: true,
+    type: "format"
+  },
+  {
+    id: 3,
+    text: "Напиши что-нибудь про отходы",
+    isCorrect: false,
+    reason: "Слишком размыто. ИИ не поймет, какой именно документ и для кого нужно подготовить."
+  },
+  {
+    id: 4,
+    text: "Укажи название организации и адрес площадки",
+    isCorrect: false,
+    reason: "Это контекст, а не задача или формат. Без основной задачи ИИ не поймет, что делать с этими данными."
+  },
+  {
+    id: 5,
+    text: "Добавь ФИО ответственного работника",
+    isCorrect: false,
+    reason: "Это деталь содержания, а не формат или задача. Сначала нужно задать общее направление."
+  },
+  {
+    id: 6,
+    text: "Напиши длинно и подробно",
+    isCorrect: false,
+    reason: "Плохой формат. Памятка для работников должна быть краткой, иначе ее не прочитают."
+  }
+];
+
+let selectedIds = [];
+let isCompleted = false;
+
+function renderCards() {
+  const grid = document.getElementById('cards-grid');
+  grid.innerHTML = '';
+
+  cardsData.forEach(card => {
+    const el = document.createElement('div');
+    el.className = 'select-card';
+    if (selectedIds.includes(card.id)) {
+      el.classList.add('active');
+    }
+    if (selectedIds.length >= 2 && !selectedIds.includes(card.id)) {
+      el.classList.add('disabled');
+    }
+    
+    el.textContent = card.text;
+    el.addEventListener('click', () => toggleCard(card.id));
+    grid.appendChild(el);
+  });
+
+  updateCounter();
+  updateButton();
+  triggerResize();
+}
+
+function toggleCard(id) {
+  if (isCompleted) return;
+
+  if (selectedIds.includes(id)) {
+    selectedIds = selectedIds.filter(itemId => itemId !== id);
+  } else {
+    if (selectedIds.length < 2) {
+      selectedIds.push(id);
+    }
+  }
+  renderCards();
+}
+
+function updateCounter() {
+  document.getElementById('counter').textContent = `Выбрано: ${selectedIds.length} из 2`;
+}
+
+function updateButton() {
+  const btn = document.getElementById('check-btn');
+  btn.disabled = selectedIds.length !== 2;
+}
+
+function checkAnswer() {
+  isCompleted = true;
+  const resultBlock = document.getElementById('result-block');
+  const label = document.getElementById('result-label');
+  const preview = document.getElementById('prompt-preview');
+  const feedback = document.getElementById('feedback-text');
+  const restartBtn = document.getElementById('restart-btn');
+  const checkBtn = document.getElementById('check-btn');
+
+  const correctIds = cardsData.filter(c => c.isCorrect).map(c => c.id);
+  const isAllCorrect = selectedIds.every(id => correctIds.includes(id)) && selectedIds.length === correctIds.length;
+
+  resultBlock.classList.remove('wrong');
+  
+  if (isAllCorrect) {
+    label.textContent = "Верно";
+    preview.textContent = "Подготовь памятку для работников склада о порядке на контейнерной площадке.\n\nФормат:\nТри коротких правила простым деловым языком.";
+    feedback.textContent = "Готово. Вы назвали задачу и формат. Теперь ИИ может подготовить первый черновик.";
+  } else {
+    resultBlock.classList.add('wrong');
+    label.textContent = "Не совсем";
+    preview.textContent = "";
+    
+    const wrongCard = cardsData.find(c => selectedIds.includes(c.id) && !c.isCorrect);
+    feedback.textContent = wrongCard.reason + " Попробуйте выбрать задачу и формат результата.";
+  }
+
+  resultBlock.classList.add('visible');
+  checkBtn.style.display = 'none';
+  restartBtn.classList.add('visible');
+  
+  // Блокируем карточки визуально
+  document.querySelectorAll('.select-card').forEach(el => {
+    el.style.pointerEvents = 'none';
+  });
+
+  triggerResize();
+}
+
+function restart() {
+  selectedIds = [];
+  isCompleted = false;
+  document.getElementById('result-block').classList.remove('visible', 'wrong');
+  document.getElementById('restart-btn').classList.remove('visible');
+  document.getElementById('check-btn').style.display = 'block';
+  document.getElementById('check-btn').disabled = true;
+  renderCards();
+}
+
+document.getElementById('check-btn').addEventListener('click', checkAnswer);
+document.getElementById('restart-btn').addEventListener('click', restart);
+
+document.addEventListener('DOMContentLoaded', function() {
+  renderCards();
+  triggerResize();
+
+  const wrap = document.getElementById('wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
