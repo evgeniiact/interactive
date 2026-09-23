@@ -1,0 +1,567 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Выберите фрагменты для разбора</title>
+<style>
+:root {
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #1e3a5f;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --green-50: #f0fdf4;
+  --green-100: #dcfce7;
+  --green-500: #16a34a;
+  --green-600: #15803d;
+  --green-700: #166534;
+  --blue-50: #eff6ff;
+  --blue-100: #dbeafe;
+  --blue-500: #2563eb;
+  --orange-50: #fff7ed;
+  --orange-100: #ffedd5;
+  --orange-600: #ea580c;
+  --orange-700: #c2410c;
+  --radius: 12px;
+  --shadow: 0 4px 12px rgba(30, 58, 95, 0.06);
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 15px;
+  line-height: 1.55;
+}
+
+.wrap {
+  max-width: 680px;
+  margin: 0 auto;
+  background: var(--card);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  border: 1px solid var(--border);
+  padding: 28px;
+}
+
+.title {
+  font-size: 22px;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 18px 0;
+  line-height: 1.3;
+}
+
+.situation {
+  background: var(--blue-50);
+  border-left: 4px solid var(--blue-500);
+  border-radius: 8px;
+  padding: 14px 16px;
+  margin-bottom: 18px;
+  font-size: 14px;
+  color: var(--text);
+}
+
+.situation strong {
+  display: block;
+  font-size: 12px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--blue-500);
+  margin-bottom: 6px;
+  font-weight: 700;
+}
+
+.situation ul {
+  margin: 8px 0 0 0;
+  padding-left: 20px;
+}
+
+.situation li {
+  margin-bottom: 4px;
+}
+
+.instruction {
+  font-size: 15px;
+  color: var(--text);
+  margin: 0 0 18px 0;
+  font-weight: 500;
+}
+
+.cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+.card {
+  border: 2px solid var(--border);
+  border-radius: 10px;
+  padding: 16px 18px;
+  background: #fff;
+  font-size: 15px;
+  line-height: 1.45;
+  color: var(--text);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  font-family: inherit;
+  width: 100%;
+}
+
+.card:hover:not(:disabled) {
+  border-color: var(--green-500);
+  background: var(--green-50);
+}
+
+.card:focus-visible {
+  outline: 3px solid var(--blue-500);
+  outline-offset: 2px;
+}
+
+.card.selected {
+  border-color: var(--green-500);
+  background: var(--green-50);
+  color: var(--green-700);
+  font-weight: 600;
+}
+
+.card.selected .check {
+  background: var(--green-500);
+  border-color: var(--green-500);
+}
+
+.card.selected .check::after {
+  opacity: 1;
+}
+
+.card.correct {
+  border-color: var(--green-500);
+  background: var(--green-100);
+}
+
+.card.wrong {
+  border-color: var(--orange-600);
+  background: var(--orange-50);
+}
+
+.card:disabled {
+  cursor: default;
+}
+
+.check {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  flex-shrink: 0;
+  position: relative;
+  transition: all 0.15s ease;
+  background: #fff;
+}
+
+.check::after {
+  content: "";
+  position: absolute;
+  left: 5px;
+  top: 1px;
+  width: 7px;
+  height: 12px;
+  border: solid #fff;
+  border-width: 0 2px 2px 0;
+  transform: rotate(45deg);
+  opacity: 0;
+  transition: opacity 0.15s ease;
+}
+
+.card-text {
+  flex: 1;
+}
+
+.actions {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
+.btn-primary {
+  background: var(--green-500);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 12px 22px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.15s;
+  font-family: inherit;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--green-600);
+}
+
+.btn-primary:focus-visible {
+  outline: 3px solid var(--blue-500);
+  outline-offset: 2px;
+}
+
+.btn-primary:disabled {
+  background: var(--border);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.btn-secondary {
+  background: #fff;
+  color: var(--green-600);
+  border: 2px solid var(--green-500);
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s;
+  font-family: inherit;
+  display: none;
+}
+
+.btn-secondary:hover {
+  background: var(--green-50);
+}
+
+.btn-secondary:focus-visible {
+  outline: 3px solid var(--blue-500);
+  outline-offset: 2px;
+}
+
+.btn-secondary.visible {
+  display: inline-block;
+}
+
+.feedback {
+  margin-top: 20px;
+  padding: 16px 18px;
+  border-radius: 10px;
+  font-size: 15px;
+  line-height: 1.55;
+  display: none;
+  animation: fadeIn 0.25s ease;
+}
+
+.feedback.visible {
+  display: block;
+}
+
+.feedback.success {
+  background: var(--green-50);
+  border-left: 4px solid var(--green-500);
+  color: var(--green-700);
+}
+
+.feedback.partial {
+  background: var(--blue-50);
+  border-left: 4px solid var(--blue-500);
+  color: var(--text);
+}
+
+.feedback.error {
+  background: var(--orange-50);
+  border-left: 4px solid var(--orange-600);
+  color: var(--orange-700);
+}
+
+.feedback-label {
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.feedback.success .feedback-label { color: var(--green-600); }
+.feedback.partial .feedback-label { color: var(--blue-500); }
+.feedback.error .feedback-label { color: var(--orange-600); }
+
+.reminder {
+  margin-top: 14px;
+  padding: 14px 16px;
+  background: #fff;
+  border: 1px dashed var(--green-500);
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  color: var(--text);
+  display: none;
+}
+
+.reminder.visible {
+  display: block;
+}
+
+.reminder strong {
+  color: var(--green-700);
+}
+
+.checklist {
+  margin-top: 20px;
+  padding: 18px 20px;
+  background: var(--green-50);
+  border-radius: 10px;
+  border: 1px solid var(--green-100);
+  display: none;
+}
+
+.checklist.visible {
+  display: block;
+  animation: fadeIn 0.3s ease;
+}
+
+.checklist-title {
+  font-size: 13px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--green-700);
+  margin: 0 0 10px 0;
+}
+
+.checklist ul {
+  margin: 0;
+  padding-left: 0;
+  list-style: none;
+}
+
+.checklist li {
+  font-size: 14px;
+  line-height: 1.5;
+  padding: 6px 0 6px 28px;
+  position: relative;
+  color: var(--text);
+}
+
+.checklist li::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: 9px;
+  width: 18px;
+  height: 18px;
+  background: var(--green-500);
+  border-radius: 50%;
+  background-image: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16' fill='white'><path d='M13 5L6.5 11.5 3 8' stroke='white' stroke-width='2' fill='none' stroke-linecap='round' stroke-linejoin='round'/></svg>");
+  background-size: 12px;
+  background-position: center;
+  background-repeat: no-repeat;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(6px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (min-width: 600px) {
+  .cards {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .wrap {
+    padding: 20px 18px;
+  }
+  .title {
+    font-size: 20px;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <h1 class="title">Выберите фрагменты для разбора</h1>
+
+  <div class="situation">
+    <strong>Ситуация</strong>
+    Новая редакция внутреннего регламента изменила порядок передачи отходов между подразделениями. Эколог готовится к совещанию и хочет понять:
+    <ul>
+      <li>что изменилось;</li>
+      <li>какие действия указаны в регламенте;</li>
+      <li>какие сроки и формы сведений нужно обсудить.</li>
+    </ul>
+  </div>
+
+  <p class="instruction">Выберите фрагменты, которые нужно передать ИИ для первого разбора. Можно выбрать несколько вариантов.</p>
+
+  <div class="cards" id="cards" role="group" aria-label="Фрагменты документа для выбора">
+    <button class="card" data-id="1" type="button" aria-pressed="false" aria-label="Титульный лист и лист согласования">
+      <span class="check" aria-hidden="true"></span>
+      <span class="card-text">Титульный лист и лист согласования</span>
+    </button>
+    <button class="card" data-id="2" type="button" aria-pressed="false" aria-label="Раздел о порядке передачи отходов">
+      <span class="check" aria-hidden="true"></span>
+      <span class="card-text">Раздел о порядке передачи отходов</span>
+    </button>
+    <button class="card" data-id="3" type="button" aria-pressed="false" aria-label="Приложение со сроками и формой сведений">
+      <span class="check" aria-hidden="true"></span>
+      <span class="card-text">Приложение со сроками и формой сведений</span>
+    </button>
+    <button class="card" data-id="4" type="button" aria-pressed="false" aria-label="Раздел о хозяйственном обеспечении офиса">
+      <span class="check" aria-hidden="true"></span>
+      <span class="card-text">Раздел о хозяйственном обеспечении офиса</span>
+    </button>
+  </div>
+
+  <div class="actions">
+    <button class="btn-primary" id="check-btn" type="button" disabled aria-label="Проверить выбор">Проверить выбор</button>
+    <button class="btn-secondary" id="restart-btn" type="button" aria-label="Попробовать еще раз">Попробовать еще раз</button>
+  </div>
+
+  <div class="feedback" id="feedback" role="status" aria-live="polite">
+    <span class="feedback-label" id="feedback-label"></span>
+    <span id="feedback-text"></span>
+  </div>
+
+  <div class="reminder" id="reminder">
+    <strong>Напоминание.</strong> Перед передачей фрагментов проверьте, нет ли в них чувствительных сведений и можно ли использовать выбранный сервис.
+  </div>
+
+  <div class="checklist" id="checklist">
+    <h2 class="checklist-title">Итоговый чек-лист</h2>
+    <ul>
+      <li>Выбрал фрагмент по теме задачи</li>
+      <li>Проверил, нужны ли приложения и связанные разделы</li>
+      <li>Не просил ИИ анализировать весь документ, если достаточно части</li>
+      <li>Проверил, можно ли передавать выбранные фрагменты в сервис</li>
+    </ul>
+  </div>
+</div>
+
+<script>
+(function() {
+  var correctIds = ['2', '3'];
+  var selected = new Set();
+  var checked = false;
+
+  var cards = document.querySelectorAll('.card');
+  var checkBtn = document.getElementById('check-btn');
+  var restartBtn = document.getElementById('restart-btn');
+  var feedback = document.getElementById('feedback');
+  var feedbackLabel = document.getElementById('feedback-label');
+  var feedbackText = document.getElementById('feedback-text');
+  var reminder = document.getElementById('reminder');
+  var checklist = document.getElementById('checklist');
+
+  function updateButton() {
+    checkBtn.disabled = selected.size === 0 || checked;
+  }
+
+  function toggleCard(card) {
+    if (checked) return;
+    var id = card.getAttribute('data-id');
+    if (selected.has(id)) {
+      selected.delete(id);
+      card.classList.remove('selected');
+      card.setAttribute('aria-pressed', 'false');
+    } else {
+      selected.add(id);
+      card.classList.add('selected');
+      card.setAttribute('aria-pressed', 'true');
+    }
+    updateButton();
+  }
+
+  cards.forEach(function(card) {
+    card.addEventListener('click', function() {
+      toggleCard(card);
+    });
+    card.addEventListener('keydown', function(e) {
+      if (e.key === ' ' || e.key === 'Enter') {
+        e.preventDefault();
+        toggleCard(card);
+      }
+    });
+  });
+
+  function check() {
+    checked = true;
+    var selectedArr = Array.from(selected);
+    var hasCorrect = selectedArr.some(function(id) { return correctIds.indexOf(id) !== -1; });
+    var allCorrect = correctIds.every(function(id) { return selected.has(id); });
+    var hasWrong = selectedArr.some(function(id) { return correctIds.indexOf(id) === -1; });
+
+    cards.forEach(function(card) {
+      var id = card.getAttribute('data-id');
+      card.disabled = true;
+      if (correctIds.indexOf(id) !== -1) {
+        card.classList.add('correct');
+      }
+      if (selected.has(id) && correctIds.indexOf(id) === -1) {
+        card.classList.add('wrong');
+      }
+    });
+
+    feedback.classList.remove('success', 'partial', 'error');
+    feedback.classList.add('visible');
+
+    if (allCorrect && !hasWrong) {
+      feedback.classList.add('success');
+      feedbackLabel.textContent = 'Верно';
+      feedbackText.textContent = 'Для подготовки к совещанию нужны правила, сроки и форма сведений. Титульный лист не помогает разобрать изменения. Раздел о хозяйственном обеспечении не относится к теме.';
+      reminder.classList.add('visible');
+      checklist.classList.add('visible');
+      restartBtn.classList.add('visible');
+    } else if (hasWrong) {
+      feedback.classList.add('error');
+      feedbackLabel.textContent = 'Лишние фрагменты';
+      feedbackText.textContent = 'Титульный лист и раздел о хозяйственном обеспечении не помогают решить задачу. Оставьте только фрагменты, которые содержат правила, сроки и форму сведений.';
+      restartBtn.classList.add('visible');
+    } else if (!hasCorrect) {
+      feedback.classList.add('error');
+      feedbackLabel.textContent = 'Не совсем';
+      feedbackText.textContent = 'Сначала сопоставьте задачу и содержание фрагмента. Для совещания нужны правила передачи отходов, сроки и форма сведений.';
+      restartBtn.classList.add('visible');
+    } else if (hasCorrect && !allCorrect) {
+      feedback.classList.add('partial');
+      feedbackLabel.textContent = 'Почти';
+      feedbackText.textContent = 'Вы нашли нужный раздел, но не выбрали приложение. Проверьте, где в документе могут быть указаны сроки и форма сведений.';
+      restartBtn.classList.add('visible');
+    }
+
+    checkBtn.disabled = true;
+  }
+
+  function restart() {
+    checked = false;
+    selected.clear();
+    cards.forEach(function(card) {
+      card.disabled = false;
+      card.classList.remove('selected', 'correct', 'wrong');
+      card.setAttribute('aria-pressed', 'false');
+    });
+    feedback.classList.remove('visible', 'success', 'partial', 'error');
+    reminder.classList.remove('visible');
+    checklist.classList.remove('visible');
+    restartBtn.classList.remove('visible');
+    updateButton();
+  }
+
+  checkBtn.addEventListener('click', check);
+  restartBtn.addEventListener('click', restart);
+
+  updateButton();
+})();
+</script>
+
+</body>
+</html>
