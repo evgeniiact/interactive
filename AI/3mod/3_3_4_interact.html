@@ -54,13 +54,6 @@ body {
   margin: 0 0 6px 0;
 }
 
-.header-text {
-  font-size: 14px;
-  color: var(--muted);
-  margin: 0 0 16px 0;
-  line-height: 1.5;
-}
-
 .prog-bar {
   display: flex;
   align-items: center;
@@ -331,7 +324,7 @@ body {
 <div class="wrap" id="wrap">
   <h1 class="header-title">Проверьте презентацию</h1>
 
-  <div class="prog-bar">
+  <div class="prog-bar" id="prog-bar">
     <span class="prog-label" id="prog-label">Вопрос 1 из 6</span>
     <div class="prog-track">
       <div class="prog-fill" id="prog-fill"></div>
@@ -346,7 +339,7 @@ body {
       <div class="label" id="exp-label"></div>
       <div id="exp-text"></div>
     </div>
-    <button class="next-btn" id="next-btn">Далее</button>
+    <button class="next-btn" id="next-btn" type="button">Далее</button>
   </div>
 
   <div class="final-screen" id="final" style="display: none;">
@@ -363,223 +356,238 @@ body {
         <li>Согласуйте презентацию с ответственным за охрану труда.</li>
       </ol>
     </div>
-    <button class="restart-btn" id="restart-btn">Пройти еще раз</button>
+    <button class="restart-btn" id="restart-btn" type="button">Пройти еще раз</button>
   </div>
 </div>
 
 <script>
-function triggerResize() {
-  if (window.iFrameResize) {
-    window.iFrameResize({ log: false, checkOrigin: false }, '*');
-  }
-}
-
-var questions = [
-  {
-    q: 'На слайде о контейнерах для отходов Gamma использовала нейтральные пиктограммы. Что нужно сделать перед показом презентации работникам?',
-    options: [
-      'Оставить как есть - пиктограммы понятны и так',
-      'Нарисовать свои пиктограммы от руки',
-      'Заменить на реальные фото контейнеров вашего предприятия или добавить утвержденную маркировку',
-      'Убрать слайд с контейнерами совсем'
-    ],
-    correct: 2,
-    explain: 'Работник должен увидеть, куда складывать стеклобой, картон, пленку и бутылки именно на вашем предприятии. Нейтральные иконки не дают точного ориентира.'
-  },
-  {
-    q: 'Gamma написала в презентации правило: «Снимайте с бутылок крышки и этикетки». Что с этим делать?',
-    options: [
-      'Удалить, если такого правила нет в вашей локальной инструкции',
-      'Оставить - это правильное правило сортировки',
-      'Добавить в инструкцию это новое правило',
-      'Спросить у работников, как они привыкли'
-    ],
-    correct: 0,
-    explain: 'Сервис мог использовать общий шаблон сортировки. В презентации оставляйте только утвержденные действия: освободить бутылку от жидкости, смять и поместить в предназначенный контейнер.'
-  },
-  {
-    q: 'На слайде «Стеклобой» показан желтый контейнер с бумагой. В чем ошибка?',
-    options: [
-      'Желтый цвет - это правильно для стекла',
-      'Бумага тоже может быть в контейнере для стекла',
-      'Цвет контейнера не важен, главное - маркировка',
-      'Изображение не соответствует тексту - нужен серый металлический контейнер с маркировкой «Стеклобой»'
-    ],
-    correct: 3,
-    explain: 'Визуал должен подтверждать текст. Не используйте случайные иллюстрации, даже если они подходят по стилю.'
-  },
-  {
-    q: 'На слайде «Контейнер заполнен» написано: «Не оставляйте отходы рядом». Чего не хватает?',
-    options: [
-      'Фотографии заполненного контейнера',
-      'Следующего шага: «Сообщите мастеру участка или ответственному сотруднику»',
-      'Ничего не хватает - запрет понятен',
-      'Штрафа за нарушение'
-    ],
-    correct: 1,
-    explain: 'Работник должен понимать не только запрет, но и правильное действие. Всегда добавляйте следующий шаг.'
-  },
-  {
-    q: 'На слайде восемь пунктов мелким шрифтом. Как исправить?',
-    options: [
-      'Оставить как есть - вся информация важная',
-      'Увеличить шрифт, чтобы было читаемее',
-      'Оставить один главный тезис и до трех коротких пунктов, остальное перенести',
-      'Разбить на два слайда с теми же восемью пунктами'
-    ],
-    correct: 2,
-    explain: 'Презентация сопровождает объяснение, а не заменяет документ. Остальное перенесите на следующий слайд, в заметки ведущего или в локальную инструкцию.'
-  },
-  {
-    q: 'В черновике появились адрес предприятия, телефон, фамилия ответственного и номер внутренней инструкции. Что делать?',
-    options: [
-      'Удалить все служебные данные совсем',
-      'Оставить все данные - они полезные',
-      'Оставить только телефон и адрес',
-      'Удалить данные, если сервис добавил их сам, затем внести вручную только актуальные и согласованные сведения'
-    ],
-    correct: 3,
-    explain: 'Не оставляйте в файле шаблонные реквизиты или случайные контакты. Для рабочей версии презентации вносите только проверенные данные.'
-  }
-];
-
-var currentQ = 0;
-var score = 0;
-var answered = false;
-
-function renderQuestion() {
-  answered = false;
-
-  var q = questions[currentQ];
-
-  document.getElementById('q-text').textContent = q.q;
-  document.getElementById('prog-label').textContent = 'Вопрос ' + (currentQ + 1) + ' из ' + questions.length;
-  document.getElementById('prog-count').textContent = (currentQ + 1) + '/' + questions.length;
-  document.getElementById('prog-fill').style.width = (currentQ / questions.length * 100) + '%';
-
-  var box = document.getElementById('options');
-  box.innerHTML = '';
-
-  q.options.forEach(function(opt, idx) {
-    var btn = document.createElement('button');
-    btn.className = 'opt-btn';
-    btn.textContent = opt;
-    btn.addEventListener('click', function() {
-      answer(idx, btn);
-    });
-    box.appendChild(btn);
-  });
-
-  document.getElementById('explanation').classList.remove('visible', 'wrong');
-
-  var nextBtn = document.getElementById('next-btn');
-  nextBtn.classList.remove('active');
-  nextBtn.textContent = currentQ === questions.length - 1 ? 'К результатам' : 'Далее';
-
-  var quiz = document.getElementById('quiz');
-  quiz.style.animation = 'none';
-  void quiz.offsetWidth;
-  quiz.style.animation = '';
-
-  triggerResize();
-}
-
-function answer(idx, btn) {
-  if (answered) return;
-  answered = true;
-
-  var q = questions[currentQ];
-  var buttons = document.querySelectorAll('.opt-btn');
-
-  buttons.forEach(function(b, i) {
-    if (i === q.correct) {
-      b.classList.add(i === idx ? 'selected-correct' : 'reveal-correct');
-    } else if (i === idx) {
-      b.classList.add('selected-wrong');
-    } else {
-      b.classList.add('disabled');
+(function() {
+  function triggerResize() {
+    try {
+      if (typeof window.iFrameResize === 'function') {
+        window.iFrameResize({ log: false, checkOrigin: false }, '*');
+      } else if (window.parent !== window) {
+        window.parent.postMessage({ type: 'iframe-resize' }, '*');
+      }
+    } catch (e) {
+      // Игнорируем ошибки ресайза
     }
-  });
-
-  if (idx === q.correct) score++;
-
-  var explanation = document.getElementById('explanation');
-  var label = document.getElementById('exp-label');
-  var text = document.getElementById('exp-text');
-
-  if (idx === q.correct) {
-    label.textContent = 'Верно';
-    explanation.classList.remove('wrong');
-  } else {
-    label.textContent = 'Неверно';
-    explanation.classList.add('wrong');
-  }
-  text.textContent = q.explain;
-  explanation.classList.add('visible');
-
-  document.getElementById('next-btn').classList.add('active');
-  document.getElementById('prog-fill').style.width = ((currentQ + 1) / questions.length * 100) + '%';
-
-  triggerResize();
-}
-
-function showFinal() {
-  document.getElementById('quiz').style.display = 'none';
-  document.getElementById('prog-bar').style.display = 'none';
-
-  var title = document.getElementById('final-title');
-  var desc = document.getElementById('final-desc');
-
-  if (score === 6) {
-    title.textContent = 'Отлично';
-    desc.textContent = 'Вы нашли все ошибки. Теперь вы можете проверить любую презентацию перед инструктажем.';
-  } else if (score >= 4) {
-    title.textContent = 'Хорошо';
-    desc.textContent = 'Вы увидели основные проблемы. Обратите внимание на детали - служебные данные и соответствие визуала тексту.';
-  } else {
-    title.textContent = 'Стоит повторить';
-    desc.textContent = 'Пройдите урок еще раз. Запомните: презентация должна содержать только реальные данные вашего предприятия и утвержденные правила.';
   }
 
-  document.getElementById('final').style.display = 'block';
-  triggerResize();
-}
+  var questions = [
+    {
+      q: 'На слайде о контейнерах для отходов Gamma использовала нейтральные пиктограммы. Что нужно сделать перед показом презентации работникам?',
+      options: [
+        'Оставить как есть - пиктограммы понятны и так',
+        'Нарисовать свои пиктограммы от руки',
+        'Заменить на реальные фото контейнеров вашего предприятия или добавить утвержденную маркировку',
+        'Убрать слайд с контейнерами совсем'
+      ],
+      correct: 2,
+      explain: 'Работник должен увидеть, куда складывать стеклобой, картон, пленку и бутылки именно на вашем предприятии. Нейтральные иконки не дают точного ориентира.'
+    },
+    {
+      q: 'Gamma написала в презентации правило: «Снимайте с бутылок крышки и этикетки». Что с этим делать?',
+      options: [
+        'Удалить, если такого правила нет в вашей локальной инструкции',
+        'Оставить - это правильное правило сортировки',
+        'Добавить в инструкцию это новое правило',
+        'Спросить у работников, как они привыкли'
+      ],
+      correct: 0,
+      explain: 'Сервис мог использовать общий шаблон сортировки. В презентации оставляйте только утвержденные действия: освободить бутылку от жидкости, смять и поместить в предназначенный контейнер.'
+    },
+    {
+      q: 'На слайде «Стеклобой» показан желтый контейнер с бумагой. В чем ошибка?',
+      options: [
+        'Желтый цвет - это правильно для стекла',
+        'Бумага тоже может быть в контейнере для стекла',
+        'Цвет контейнера не важен, главное - маркировка',
+        'Изображение не соответствует тексту - нужен серый металлический контейнер с маркировкой «Стеклобой»'
+      ],
+      correct: 3,
+      explain: 'Визуал должен подтверждать текст. Не используйте случайные иллюстрации, даже если они подходят по стилю.'
+    },
+    {
+      q: 'На слайде «Контейнер заполнен» написано: «Не оставляйте отходы рядом». Чего не хватает?',
+      options: [
+        'Фотографии заполненного контейнера',
+        'Следующего шага: «Сообщите мастеру участка или ответственному сотруднику»',
+        'Ничего не хватает - запрет понятен',
+        'Штрафа за нарушение'
+      ],
+      correct: 1,
+      explain: 'Работник должен понимать не только запрет, но и правильное действие. Всегда добавляйте следующий шаг.'
+    },
+    {
+      q: 'На слайде восемь пунктов мелким шрифтом. Как исправить?',
+      options: [
+        'Оставить как есть - вся информация важная',
+        'Увеличить шрифт, чтобы было читаемее',
+        'Оставить один главный тезис и до трех коротких пунктов, остальное перенести',
+        'Разбить на два слайда с теми же восемью пунктами'
+      ],
+      correct: 2,
+      explain: 'Презентация сопровождает объяснение, а не заменяет документ. Остальное перенесите на следующий слайд, в заметки ведущего или в локальную инструкцию.'
+    },
+    {
+      q: 'В черновике появились адрес предприятия, телефон, фамилия ответственного и номер внутренней инструкции. Что делать?',
+      options: [
+        'Удалить все служебные данные совсем',
+        'Оставить все данные - они полезные',
+        'Оставить только телефон и адрес',
+        'Удалить данные, если сервис добавил их сам, затем внести вручную только актуальные и согласованные сведения'
+      ],
+      correct: 3,
+      explain: 'Не оставляйте в файле шаблонные реквизиты или случайные контакты. Для рабочей версии презентации вносите только проверенные данные.'
+    }
+  ];
 
-function restart() {
-  currentQ = 0;
-  score = 0;
-  answered = false;
+  var currentQ = 0;
+  var score = 0;
+  var answered = false;
 
-  document.getElementById('final').style.display = 'none';
-  document.getElementById('quiz').style.display = 'block';
-  document.getElementById('prog-bar').style.display = 'flex';
+  function renderQuestion() {
+    answered = false;
+    var q = questions[currentQ];
 
-  renderQuestion();
-}
+    document.getElementById('q-text').textContent = q.q;
+    document.getElementById('prog-label').textContent = 'Вопрос ' + (currentQ + 1) + ' из ' + questions.length;
+    document.getElementById('prog-count').textContent = (currentQ + 1) + '/' + questions.length;
+    document.getElementById('prog-fill').style.width = (currentQ / questions.length * 100) + '%';
 
-document.getElementById('next-btn').addEventListener('click', function() {
-  if (!answered) return;
-  currentQ++;
-  if (currentQ < questions.length) {
+    var box = document.getElementById('options');
+    box.innerHTML = '';
+
+    q.options.forEach(function(opt, idx) {
+      var btn = document.createElement('button');
+      btn.className = 'opt-btn';
+      btn.type = 'button';
+      btn.textContent = opt;
+      btn.addEventListener('click', function() {
+        answer(idx, btn);
+      });
+      box.appendChild(btn);
+    });
+
+    var explanation = document.getElementById('explanation');
+    explanation.classList.remove('visible', 'wrong');
+
+    var nextBtn = document.getElementById('next-btn');
+    nextBtn.classList.remove('active');
+    nextBtn.textContent = currentQ === questions.length - 1 ? 'К результатам' : 'Далее';
+
+    var quiz = document.getElementById('quiz');
+    quiz.style.animation = 'none';
+    void quiz.offsetWidth;
+    quiz.style.animation = '';
+
+    triggerResize();
+  }
+
+  function answer(idx, btn) {
+    if (answered) return;
+    answered = true;
+
+    var q = questions[currentQ];
+    var buttons = document.querySelectorAll('.opt-btn');
+
+    buttons.forEach(function(b, i) {
+      if (i === q.correct) {
+        b.classList.add(i === idx ? 'selected-correct' : 'reveal-correct');
+      } else if (i === idx) {
+        b.classList.add('selected-wrong');
+      } else {
+        b.classList.add('disabled');
+      }
+    });
+
+    if (idx === q.correct) score++;
+
+    var explanation = document.getElementById('explanation');
+    var label = document.getElementById('exp-label');
+    var text = document.getElementById('exp-text');
+
+    if (idx === q.correct) {
+      label.textContent = 'Верно';
+      explanation.classList.remove('wrong');
+    } else {
+      label.textContent = 'Неверно';
+      explanation.classList.add('wrong');
+    }
+    text.textContent = q.explain;
+    explanation.classList.add('visible');
+
+    document.getElementById('next-btn').classList.add('active');
+    document.getElementById('prog-fill').style.width = ((currentQ + 1) / questions.length * 100) + '%';
+
+    triggerResize();
+  }
+
+  function showFinal() {
+    document.getElementById('quiz').style.display = 'none';
+    document.getElementById('prog-bar').style.display = 'none';
+
+    var title = document.getElementById('final-title');
+    var desc = document.getElementById('final-desc');
+
+    if (score === questions.length) {
+      title.textContent = 'Отлично';
+      desc.textContent = 'Вы нашли все ошибки. Теперь вы можете проверить любую презентацию перед инструктажем.';
+    } else if (score >= questions.length - 2) {
+      title.textContent = 'Хорошо';
+      desc.textContent = 'Вы увидели основные проблемы. Обратите внимание на детали - служебные данные и соответствие визуала тексту.';
+    } else {
+      title.textContent = 'Стоит повторить';
+      desc.textContent = 'Пройдите урок еще раз. Запомните: презентация должна содержать только реальные данные вашего предприятия и утвержденные правила.';
+    }
+
+    document.getElementById('final').style.display = 'block';
+    triggerResize();
+  }
+
+  function restart() {
+    currentQ = 0;
+    score = 0;
+    answered = false;
+
+    document.getElementById('final').style.display = 'none';
+    document.getElementById('quiz').style.display = 'block';
+    document.getElementById('prog-bar').style.display = 'flex';
+
     renderQuestion();
+  }
+
+  function init() {
+    document.getElementById('next-btn').addEventListener('click', function() {
+      if (!answered) return;
+      currentQ++;
+      if (currentQ < questions.length) {
+        renderQuestion();
+      } else {
+        showFinal();
+      }
+    });
+
+    document.getElementById('restart-btn').addEventListener('click', restart);
+
+    renderQuestion();
+    triggerResize();
+
+    var wrap = document.getElementById('wrap');
+    if (wrap && window.ResizeObserver) {
+      new ResizeObserver(function() {
+        triggerResize();
+      }).observe(wrap);
+    }
+  }
+
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', init);
   } else {
-    showFinal();
+    init();
   }
-});
-
-document.getElementById('restart-btn').addEventListener('click', restart);
-
-document.addEventListener('DOMContentLoaded', function() {
-  renderQuestion();
-  triggerResize();
-
-  var wrap = document.getElementById('wrap');
-  if (wrap) {
-    new ResizeObserver(function() {
-      triggerResize();
-    }).observe(wrap);
-  }
-});
+})();
 </script>
 
 </body>
