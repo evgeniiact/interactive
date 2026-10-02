@@ -131,13 +131,6 @@ body {
 
 .prompt-header:first-child { margin-top: 0; }
 
-.prompt-text {
-  font-size: 13px;
-  color: var(--text);
-  margin-bottom: 16px;
-  line-height: 1.5;
-}
-
 .prompt-list {
   margin: 0 0 16px 0;
   padding-left: 20px;
@@ -180,12 +173,6 @@ body {
   line-height: 1.5;
   animation: fadeIn 0.3s ease-out;
   margin-top: 8px;
-}
-
-.callout-tip {
-  background: var(--tip-bg);
-  border: 1px solid var(--tip-border);
-  color: var(--tip-text);
 }
 
 .callout-check {
@@ -510,8 +497,8 @@ body {
     <div class="f-subtitle">Текстовый ИИ выделит данные для плаката и составит запрос для графической модели. Графическая модель создаст визуальную основу. Точный текст вы добавите вручную в редакторе.</div>
 
     <div class="controls">
-      <button class="tab-btn active" onclick="switchTab('prompt')">Промпт</button>
-      <button class="tab-btn" onclick="switchTab('chat')">Диалог с ИИ</button>
+      <button class="tab-btn active" id="btn-prompt">Промпт</button>
+      <button class="tab-btn" id="btn-chat">Диалог с ИИ</button>
     </div>
 
     <div id="prompt" class="tab-content active">
@@ -568,7 +555,7 @@ body {
     </div>
 
     <div class="footer-note">
-      <span class="footer-icon"></span>
+      <span class="footer-icon">💡</span>
       <div>
         <strong>Прием «Итерации»</strong> помогает превратить документ в рабочий материал и улучшить результат короткими запросами.
       </div>
@@ -584,25 +571,9 @@ function triggerResize() {
   }
 }
 
-function switchTab(tabId) {
-  document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
-  document.querySelectorAll('.tab-btn').forEach(function(el) { el.classList.remove('active'); });
-
-  document.getElementById(tabId).classList.add('active');
-  
-  var buttons = document.querySelectorAll('.tab-btn');
-  if (tabId === 'prompt') buttons[0].classList.add('active');
-  else buttons[1].classList.add('active');
-
-  triggerResize();
-}
-
-function toggleReveal(btn) {
-  var content = btn.nextElementSibling;
-  content.classList.toggle('visible');
-  btn.textContent = content.classList.contains('visible') ? 'Скрыть промпт' : 'Показать промпт для графической модели';
-  triggerResize();
-}
+let currentStep = 0;
+let dialogStarted = false;
+let choiceMade = false;
 
 const scenario = [
   {
@@ -615,15 +586,7 @@ const scenario = [
     type: 'message',
     role: 'ai',
     label: 'Текстовый ИИ',
-    text: 'Для графической модели подготовлю описание композиции без надписей. В верхней части оставлю свободное место для заголовка. Точный текст и контакт добавьте в PowerPoint после проверки.<br><br><button class="reveal-btn" onclick="toggleReveal(this)">Показать промпт для графической модели</button><div class="reveal-content">Вертикальный макет информационного постера А4.\n\nстиль - современная векторная 2D-иллюстрация, чистая инфографика. Фон очень светлый мятно-белый, по периметру широкая темно-зеленая рамка.
-
-Верхняя треть постера - полностью пустое светлое пространство (место под заголовок), без текста и лишних деталей.
-
-В средней части - горизонтальный ряд из 5 крупных иконок запрещенных предметов, каждый аккуратно перечеркнут одной диагональной красной линией: зарядное устройство с проводом, автомобильный аккумулятор, вейп с флаконом жидкости, компактная люминесцентная витая лампа, электронный медицинский термометр.
-
-В нижней части - крупный прозрачный пластиковый контейнер с оранжевой крышкой. Внутри контейнера в один ряд ровно стоят разноцветные бытовые батарейки (пальчиковые, мизинчиковые, цилиндрические, крона). На оранжевой крышке контейнера лежит прозрачный зип-пакет со старыми окислившимися батарейками.
-
-Строгий корпоративный стиль, чистые контуры, плоская векторная графика, без надписей, без букв и цифр..</div>'
+    text: 'Для графической модели подготовлю описание композиции без надписей. В верхней части оставлю свободное место для заголовка. Точный текст и контакт добавьте в PowerPoint после проверки.<br><br><button class="reveal-btn" onclick="toggleReveal(this)">Показать промпт для графической модели</button><div class="reveal-content">Вертикальный макет информационного постера А4.\n\nстиль - современная векторная 2D-иллюстрация, чистая инфографика. Фон очень светлый мятно-белый, по периметру широкая темно-зеленая рамка.\n\nВерхняя треть постера - полностью пустое светлое пространство (место под заголовок), без текста и лишних деталей.\n\nВ средней части - горизонтальный ряд из 5 крупных иконок запрещенных предметов, каждый аккуратно перечеркнут одной диагональной красной линией: зарядное устройство с проводом, автомобильный аккумулятор, вейп с флаконом жидкости, компактная люминесцентная витая лампа, электронный медицинский термометр.\n\nВ нижней части - крупный прозрачный пластиковый контейнер с оранжевой крышкой. Внутри контейнера в один ряд ровно стоят разноцветные бытовые батарейки (пальчиковые, мизинчиковые, цилиндрические, крона). На оранжевой крышке контейнера лежит прозрачный зип-пакет со старыми окислившимися батарейками.\n\nСтрогий корпоративный стиль, чистые контуры, плоская векторная графика, без надписей, без букв и цифр.</div>'
   },
   {
     type: 'message',
@@ -689,46 +652,11 @@ const scenario = [
   }
 ];
 
-let currentStep = 0;
-let dialogStarted = false;
-let choiceMade = false;
-
-const startBtn = document.getElementById('startBtn');
-const dialogProgress = document.getElementById('dialogProgress');
-const chatContainer = document.getElementById('chatContainer');
-
-startBtn.addEventListener('click', function() {
-  if (!dialogStarted) {
-    dialogStarted = true;
-    startBtn.textContent = 'Следующее сообщение';
-    startBtn.addEventListener('click', handleNextStep);
-    renderStep();
-  }
-});
-
-function handleNextStep() {
-  if (choiceMade) {
-    choiceMade = false;
-    startBtn.textContent = 'Следующее сообщение';
-  }
-  
-  currentStep++;
-  
-  if (currentStep >= scenario.length) {
-    document.getElementById('dialogControls').style.display = 'none';
-    return;
-  }
-  
-  if (scenario[currentStep].type === 'choice') {
-    startBtn.textContent = 'Выберите вариант';
-    startBtn.disabled = true;
-  } else if (scenario[currentStep].type === 'final') {
-    setTimeout(function() {
-      document.getElementById('dialogControls').style.display = 'none';
-    }, 100);
-  }
-  
-  renderStep();
+function toggleReveal(btn) {
+  var content = btn.nextElementSibling;
+  content.classList.toggle('visible');
+  btn.textContent = content.classList.contains('visible') ? 'Скрыть промпт' : 'Показать промпт для графической модели';
+  triggerResize();
 }
 
 function handleChoice(selectedIndex, stepIndex, choiceCard) {
@@ -751,6 +679,7 @@ function handleChoice(selectedIndex, stepIndex, choiceCard) {
     feedbackEl.className = 'choice-feedback is-correct';
     if (retryBtn) retryBtn.style.display = 'none';
     
+    const startBtn = document.getElementById('startBtn');
     startBtn.disabled = false;
     startBtn.textContent = 'Продолжить';
   } else {
@@ -777,6 +706,8 @@ function handleChoice(selectedIndex, stepIndex, choiceCard) {
 
 function renderStep() {
   const step = scenario[currentStep];
+  const dialogProgress = document.getElementById('dialogProgress');
+  const chatContainer = document.getElementById('chatContainer');
   
   dialogProgress.textContent = 'Шаг ' + (currentStep + 1) + ' из ' + scenario.length;
 
@@ -837,13 +768,74 @@ function renderStep() {
       '<div class="checklist">' + checklistHtml + '</div>';
       
     chatContainer.appendChild(finalEl);
+    
+    setTimeout(function() {
+      document.getElementById('dialogControls').style.display = 'none';
+    }, 100);
   }
 
   chatContainer.scrollTop = chatContainer.scrollHeight;
   triggerResize();
 }
 
+function handleNextStep() {
+  if (choiceMade) {
+    choiceMade = false;
+    const startBtn = document.getElementById('startBtn');
+    startBtn.textContent = 'Следующее сообщение';
+  }
+  
+  currentStep++;
+  
+  if (currentStep >= scenario.length) {
+    document.getElementById('dialogControls').style.display = 'none';
+    return;
+  }
+  
+  if (scenario[currentStep].type === 'choice') {
+    const startBtn = document.getElementById('startBtn');
+    startBtn.textContent = 'Выберите вариант';
+    startBtn.disabled = true;
+  }
+  
+  renderStep();
+}
+
 document.addEventListener('DOMContentLoaded', function() {
+  const btnPrompt = document.getElementById('btn-prompt');
+  const btnChat = document.getElementById('btn-chat');
+  const tabPrompt = document.getElementById('prompt');
+  const tabChat = document.getElementById('chat');
+  const startBtn = document.getElementById('startBtn');
+
+  function switchTab(tabId) {
+    document.querySelectorAll('.tab-content').forEach(function(el) { el.classList.remove('active'); });
+    document.querySelectorAll('.tab-btn').forEach(function(el) { el.classList.remove('active'); });
+
+    if (tabId === 'prompt') {
+      tabPrompt.classList.add('active');
+      btnPrompt.classList.add('active');
+    } else {
+      tabChat.classList.add('active');
+      btnChat.classList.add('active');
+    }
+
+    triggerResize();
+  }
+
+  btnPrompt.addEventListener('click', function() { switchTab('prompt'); });
+  btnChat.addEventListener('click', function() { switchTab('chat'); });
+
+  startBtn.addEventListener('click', function() {
+    if (!dialogStarted) {
+      dialogStarted = true;
+      startBtn.textContent = 'Следующее сообщение';
+      renderStep();
+    } else {
+      handleNextStep();
+    }
+  });
+
   const wrap = document.getElementById('wrap');
   if (wrap) {
     new ResizeObserver(function() {
