@@ -17,7 +17,6 @@
   --muted: #64748b;
   --border: #e2e8f0;
   --radius: 12px;
-  --shadow: 0 4px 12px rgba(0,0,0,0.05);
 }
 
 * { box-sizing: border-box; }
@@ -305,7 +304,7 @@ body {
 
 <div class="wrap">
   <div class="quiz-content" id="quizContent">
-    <div class="progress" id="progress">Ситуация 1/2</div>
+    <div class="progress" id="progress"></div>
     
     <div class="situation-text" id="situationText"></div>
     
@@ -325,7 +324,7 @@ body {
       <div class="feedback-text" id="feedbackText"></div>
     </div>
     
-    <button class="next-btn" id="nextBtn" onclick="nextQuestion()">Следующая ситуация</button>
+    <button class="next-btn" id="nextBtn">Далее</button>
   </div>
   
   <div class="results" id="results">
@@ -453,11 +452,15 @@ function submitAnswer() {
   
   document.getElementById('submitBtn').disabled = true;
   
+  const nextBtn = document.getElementById('nextBtn');
   if (currentQuestion < questions.length - 1) {
-    document.getElementById('nextBtn').classList.add('show');
+    nextBtn.textContent = 'Следующая ситуация';
+    nextBtn.onclick = nextQuestion;
   } else {
-    setTimeout(showResults, 1500);
+    nextBtn.textContent = 'Завершить';
+    nextBtn.onclick = showResults;
   }
+  nextBtn.classList.add('show');
   
   triggerResize();
 }
@@ -473,9 +476,9 @@ function showResults() {
   
   const resultsText = document.getElementById('resultsText');
   if (correctCount === questions.length) {
-    resultsText.textContent = `Вы правильно разобрали все ${questions.length} ситуации. Вы понимаете границы применения ИИ-сервисов.`;
+    resultsText.textContent = `Вы верно оценили обе ситуации. Вы понимаете границы применения ИИ-сервисов на производстве.`;
   } else {
-    resultsText.textContent = `Вы правильно разобрали ${correctCount} из ${questions.length} ситуаций. В уроке расскажем о рисках работы с ИИ.`;
+    resultsText.textContent = `Вы допустили ошибку в ${questions.length - correctCount} из ${questions.length} ситуаций. Ниже в уроке мы разберем ключевые риски работы с ИИ.`;
   }
   
   triggerResize();
