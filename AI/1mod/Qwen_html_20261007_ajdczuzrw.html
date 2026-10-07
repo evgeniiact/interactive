@@ -1,0 +1,538 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<!-- БЛОК МЕТАДАННЫХ И ПОДКЛЮЧЕНИЯ СКРИПТОВ -->
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<!-- Скрипт для автоматического изменения высоты iframe -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+
+<!-- БЛОК СТИЛЕЙ (CSS) -->
+<style>
+/* Основные переменные цветов и размеров для легкого редактирования */
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --red: #ef4444;
+  --red50: #fef2f2;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 10px;
+}
+
+/* Сброс стандартных отступов и настройка коробки */
+* { box-sizing: border-box; }
+
+/* Базовые стили тела документа */
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.5;
+}
+
+/* Ограничитель ширины контента для читаемости */
+.wrap {
+  max-width: 680px;
+  margin: 0 auto;
+}
+
+/* Стили шапки упражнения */
+.exercise-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+  padding-bottom: 10px;
+  border-bottom: 2px dashed var(--border);
+}
+
+.exercise-icon {
+  color: var(--g600);
+  font-weight: 700;
+  font-size: 14px;
+}
+
+.exercise-title {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Стили вводного текста и вопроса */
+.intro-text {
+  font-size: 13px;
+  color: var(--text);
+  margin-bottom: 14px;
+  line-height: 1.5;
+}
+
+.question {
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 10px;
+  line-height: 1.4;
+}
+
+.hint {
+  font-size: 12px;
+  color: var(--muted);
+  margin-bottom: 12px;
+  font-style: italic;
+}
+
+/* Контейнер для вариантов ответов */
+.answers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+/* Карточка варианта ответа */
+.answer-option {
+  position: relative;
+  padding: 12px 14px;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+}
+
+.answer-option:hover {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.answer-option.selected {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.answer-option.correct {
+  border-color: var(--g600);
+  background: var(--g100);
+}
+
+.answer-option.incorrect {
+  border-color: var(--red);
+  background: var(--red50);
+}
+
+.answer-option.disabled {
+  cursor: default;
+  opacity: 0.85;
+}
+
+/* Стили чекбокса */
+.checkbox {
+  width: 18px;
+  height: 18px;
+  border: 2px solid var(--border);
+  border-radius: 4px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-top: 1px;
+}
+
+.answer-option.selected .checkbox {
+  border-color: var(--g600);
+  background: var(--g600);
+}
+
+.answer-option.selected .checkbox::after {
+  content: '✓';
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.answer-option.correct .checkbox {
+  border-color: var(--g600);
+  background: var(--g600);
+}
+
+.answer-option.correct .checkbox::after {
+  content: '✓';
+  color: white;
+  font-size: 12px;
+  font-weight: 700;
+}
+
+.answer-option.incorrect .checkbox {
+  border-color: var(--red);
+  background: var(--red);
+}
+
+/* Контейнер для текста и комментария внутри ответа (исправляет отображение снизу) */
+.answer-content {
+  flex-grow: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.answer-text {
+  font-size: 13px;
+  line-height: 1.4;
+}
+
+/* Блок обратной связи под ответом */
+.feedback {
+  padding: 10px 12px;
+  border-radius: 6px;
+  font-size: 12px;
+  line-height: 1.4;
+  display: none;
+}
+
+.feedback.show {
+  display: block;
+}
+
+.feedback.correct {
+  background: var(--g100);
+  color: var(--g800);
+  border-left: 3px solid var(--g600);
+}
+
+.feedback.incorrect {
+  background: var(--red50);
+  color: #991b1b;
+  border-left: 3px solid var(--red);
+}
+
+.feedback strong {
+  display: block;
+  margin-bottom: 4px;
+  font-weight: 600;
+}
+
+/* Общие стили для кнопок */
+.btn {
+  border: none;
+  border-radius: 8px;
+  padding: 11px 20px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.submit-btn {
+  background: var(--g600);
+  color: #fff;
+}
+
+.submit-btn:hover {
+  background: var(--g700);
+}
+
+.submit-btn:disabled {
+  background: var(--border);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+.retry-btn {
+  background: #fff;
+  color: var(--g700);
+  border: 1px solid var(--g600);
+  margin-top: 10px;
+  display: none;
+}
+
+.retry-btn:hover {
+  background: var(--g50);
+}
+
+.retry-btn.show {
+  display: block;
+}
+
+/* Блок мотивирующего напутствия */
+.motivation-block {
+  display: none;
+  margin-top: 16px;
+  padding: 16px;
+  background: var(--g50);
+  border: 1px solid var(--g100);
+  border-radius: var(--radius);
+}
+
+.motivation-block.show {
+  display: block;
+}
+
+.motivation-title {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--g800);
+  margin-bottom: 8px;
+}
+
+.motivation-text {
+  font-size: 13px;
+  color: var(--text);
+  line-height: 1.5;
+}
+
+/* Адаптация для мобильных устройств */
+@media (max-width: 600px) {
+  body { padding: 12px; }
+  .answer-option { padding: 10px 12px; }
+}
+</style>
+</head>
+<body>
+
+<!-- БЛОК КОНТЕНТА -->
+<div class="wrap">
+  
+  <!-- Шапка упражнения -->
+  <div class="exercise-header">
+    <span class="exercise-icon">✎</span>
+    <span class="exercise-title">Вводное упражнение</span>
+  </div>
+  
+  <!-- Вводный текст и вопрос -->
+  <div class="intro-text">
+    Проверим ваши ожидания от нейросетей. Выберите задачи, которые ИИ решит надежно, а где его использование создаст риски для предприятия.
+  </div>
+  
+  <div class="question">
+    В каких из этих рабочих ситуаций ИИ станет надежным помощником?
+  </div>
+  
+  <div class="hint">Выберите все верные варианты и нажмите «Проверить»</div>
+  
+  <!-- Контейнер с вариантами ответов -->
+  <div class="answers" id="answers">
+    
+    <!-- Вариант 1 (Верный) -->
+    <div class="answer-option" data-correct="true" onclick="toggleAnswer(this)">
+      <div class="checkbox"></div>
+      <div class="answer-content">
+        <div class="answer-text">
+          Сократить 40-страничный СанПиН до чек-листа требований для конкретного цеха
+        </div>
+        <div class="feedback">
+          <strong>Верно.</strong>
+          ИИ отлично извлекает суть из больших текстов. Вы задаете контекст, нейросеть структурирует данные. Итоговый чек-лист все равно проверяете вы сами.
+        </div>
+      </div>
+    </div>
+    
+    <!-- Вариант 2 (Неверный) -->
+    <div class="answer-option" data-correct="false" onclick="toggleAnswer(this)">
+      <div class="checkbox"></div>
+      <div class="answer-content">
+        <div class="answer-text">
+          Загрузить в бесплатный чат-бот таблицу с объемами образования отходов и названиями цехов для ускорения расчетов
+        </div>
+        <div class="feedback">
+          <strong>Рискованно.</strong>
+          Публичные ИИ-сервисы используют загруженные данные для дообучения моделей. Внутренние объемы и структура предприятия составляют коммерческую тайну. Используйте только локальные или корпоративные защищенные решения.
+        </div>
+      </div>
+    </div>
+    
+    <!-- Вариант 3 (Верный) -->
+    <div class="answer-option" data-correct="true" onclick="toggleAnswer(this)">
+      <div class="checkbox"></div>
+      <div class="answer-content">
+        <div class="answer-text">
+          Составить черновик официального письма-запроса в лабораторию о переносе сроков отбора проб
+        </div>
+        <div class="feedback">
+          <strong>Верно.</strong>
+          ИИ быстро генерирует деловые шаблоны. Вы указываете суть, адресата и тон, а нейросеть убирает воду и соблюдает деловой этикет.
+        </div>
+      </div>
+    </div>
+    
+    <!-- Вариант 4 (Неверный) -->
+    <div class="answer-option" data-correct="false" onclick="toggleAnswer(this)">
+      <div class="checkbox"></div>
+      <div class="answer-content">
+        <div class="answer-text">
+          Получить от ИИ гарантированно верный ответ на сложный вопрос о применении новой редакции закона об отходах
+        </div>
+        <div class="feedback">
+          <strong>Рискованно.</strong>
+          ИИ может выдумывать несуществующие статьи или устаревшие нормы. Для сложных правовых коллизий используйте справочные системы или консультируйтесь с юристом.
+        </div>
+      </div>
+    </div>
+    
+    <!-- Вариант 5 (Верный) -->
+    <div class="answer-option" data-correct="true" onclick="toggleAnswer(this)">
+      <div class="checkbox"></div>
+      <div class="answer-content">
+        <div class="answer-text">
+          Найти канцеляризмы и грамматические ошибки в черновике отчета ПЭК перед отправкой
+        </div>
+        <div class="feedback">
+          <strong>Верно.</strong>
+          Проверка стилистики и орфографии базовая функция ИИ. Это экономит время на вычитке и делает текст понятнее для проверяющих органов.
+        </div>
+      </div>
+    </div>
+
+  </div>
+  
+  <!-- Кнопки управления -->
+  <button class="btn submit-btn" id="submitBtn" onclick="checkAnswers()" disabled>Проверить</button>
+  <button class="btn retry-btn" id="retryBtn" onclick="resetExercise()">Пройти заново</button>
+  
+  <!-- Мотивирующее напутствие (появляется после проверки) -->
+  <div class="motivation-block" id="motivationBlock">
+    <div class="motivation-title">Вы разобрали ключевые правила</div>
+    <div class="motivation-text">
+      Теперь вы знаете границы применения ИИ. Используйте нейросети для рутины и черновиков. Сложные правовые вопросы и конфиденциальные данные оставляйте за скобками автоматизации. Это сэкономит время и защитит предприятие от штрафов.
+    </div>
+  </div>
+
+</div>
+
+<!-- БЛОК СКРИПТОВ (JS) -->
+<script>
+// Переменные состояния интерактива
+let selectedCount = 0;
+let isChecked = false;
+
+// Функция для уведомления родительского окна об изменении высоты iframe
+function triggerResize() {
+  if (window.parentIFrame) {
+    window.parentIFrame.size();
+  }
+}
+
+// Функция выбора или отмены выбора варианта ответа
+function toggleAnswer(element) {
+  if (isChecked) return; // Блокируем изменение после проверки
+  
+  element.classList.toggle('selected');
+  
+  const selectedOptions = document.querySelectorAll('.answer-option.selected');
+  selectedCount = selectedOptions.length;
+  
+  // Активируем кнопку проверки, если выбран хотя бы один вариант
+  document.getElementById('submitBtn').disabled = selectedCount === 0;
+  
+  triggerResize();
+}
+
+// Функция проверки ответов
+function checkAnswers() {
+  if (isChecked) return;
+  isChecked = true;
+  
+  const options = document.querySelectorAll('.answer-option');
+  let correctSelected = 0;
+  let incorrectSelected = 0;
+  
+  // Проходим по всем вариантам и присваиваем классы корректности
+  options.forEach(option => {
+    option.classList.add('disabled');
+    
+    const isCorrect = option.dataset.correct === 'true';
+    const isSelected = option.classList.contains('selected');
+    
+    if (isCorrect && isSelected) {
+      option.classList.add('correct');
+      option.querySelector('.feedback').classList.add('show', 'correct');
+      correctSelected++;
+    } else if (!isCorrect && isSelected) {
+      option.classList.add('incorrect');
+      option.querySelector('.feedback').classList.add('show', 'incorrect');
+      incorrectSelected++;
+    } else if (isCorrect && !isSelected) {
+      option.classList.add('correct');
+      option.querySelector('.feedback').classList.add('show', 'correct');
+    }
+    
+    option.classList.remove('selected');
+  });
+  
+  const submitBtn = document.getElementById('submitBtn');
+  const retryBtn = document.getElementById('retryBtn');
+  const motivationBlock = document.getElementById('motivationBlock');
+  
+  // Меняем текст кнопки в зависимости от результата
+  if (incorrectSelected === 0 && correctSelected === 3) {
+    submitBtn.textContent = 'Отлично! Все верно';
+    submitBtn.style.background = 'var(--g700)';
+  } else {
+    submitBtn.textContent = `Верно: ${correctSelected} из 3. Ошибок: ${incorrectSelected}`;
+    submitBtn.style.background = 'var(--border)';
+    submitBtn.style.color = 'var(--text)';
+  }
+  
+  submitBtn.disabled = true;
+  retryBtn.classList.add('show');
+  motivationBlock.classList.add('show'); // Показываем мотивирующее напутствие
+  
+  // Пересчитываем высоту iframe после появления новых блоков
+  requestAnimationFrame(() => {
+    triggerResize();
+  });
+}
+
+// Функция сброса интерактива к начальному состоянию
+function resetExercise() {
+  isChecked = false;
+  selectedCount = 0;
+  
+  const options = document.querySelectorAll('.answer-option');
+  options.forEach(option => {
+    option.classList.remove('disabled', 'correct', 'incorrect', 'selected');
+    option.querySelector('.feedback').classList.remove('show', 'correct', 'incorrect');
+  });
+  
+  const submitBtn = document.getElementById('submitBtn');
+  submitBtn.textContent = 'Проверить';
+  submitBtn.style.background = 'var(--g600)';
+  submitBtn.style.color = '#fff';
+  submitBtn.disabled = true;
+  
+  document.getElementById('retryBtn').classList.remove('show');
+  document.getElementById('motivationBlock').classList.remove('show');
+  
+  triggerResize();
+}
+
+// Инициализация при загрузке страницы
+document.addEventListener('DOMContentLoaded', function() {
+  triggerResize();
+  
+  const wrap = document.querySelector('.wrap');
+  if (wrap) {
+    new ResizeObserver(function() {
+      triggerResize();
+    }).observe(wrap);
+  }
+});
+</script>
+
+</body>
+</html>
