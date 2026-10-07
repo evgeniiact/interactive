@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<style>
+:root {
+  --bg: #ffffff;
+  --g50: #f0fdf4;
+  --g100: #dcfce7;
+  --g600: #16a34a;
+  --g700: #15803d;
+  --g800: #166534;
+  --red: #ef4444;
+  --red50: #fef2f2;
+  --text: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+  color: var(--text);
+  font-size: 14px;
+  line-height: 1.6;
+}
+
+.wrap {
+  max-width: 700px;
+  margin: 0 auto;
+}
+
+.exercise-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 20px;
+  padding-bottom: 16px;
+  border-bottom: 2px dashed var(--border);
+}
+
+.exercise-icon {
+  color: var(--g600);
+  font-weight: 700;
+  font-size: 16px;
+}
+
+.exercise-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.intro-text {
+  font-size: 14px;
+  color: var(--text);
+  margin-bottom: 24px;
+  line-height: 1.6;
+}
+
+.question {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 16px;
+  line-height: 1.5;
+}
+
+.hint {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 20px;
+  font-style: italic;
+}
+
+.answers {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+  margin-bottom: 24px;
+}
+
+.answer-option {
+  position: relative;
+  padding: 20px;
+  background: #fff;
+  border: 2px solid var(--border);
+  border-radius: var(--radius);
+  cursor: pointer;
+  transition: all 0.3s;
+}
+
+.answer-option:hover {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.answer-option.selected {
+  border-color: var(--g600);
+  background: var(--g50);
+}
+
+.answer-option.correct {
+  border-color: var(--g600);
+  background: var(--g100);
+}
+
+.answer-option.incorrect {
+  border-color: var(--red);
+  background: var(--red50);
+}
+
+.answer-option.disabled {
+  cursor: default;
+  opacity: 0.7;
+}
+
+.checkbox {
+  width: 22px;
+  height: 22px;
+  border: 2px solid var(--border);
+  border-radius: 6px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s;
+  margin-right: 12px;
+  float: left;
+}
+
+.answer-option.selected .checkbox {
+  border-color: var(--g600);
+  background: var(--g600);
+}
+
+.answer-option.selected .checkbox::after {
+  content: '✓';
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.answer-option.correct .checkbox {
+  border-color: var(--g600);
+  background: var(--g600);
+}
+
+.answer-option.correct .checkbox::after {
+  content: '✓';
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.answer-option.incorrect .checkbox {
+  border-color: var(--red);
+  background: var(--red);
+}
+
+.answer-option.incorrect .checkbox::after {
+  content: '✕';
+  color: white;
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.answer-text {
+  font-size: 14px;
+  line-height: 1.5;
+  display: block;
+  overflow: hidden;
+}
+
+.feedback {
+  padding: 16px;
+  border-radius: 8px;
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  display: none;
+}
+
+.feedback.show {
+  display: block;
+}
+
+.feedback.correct {
+  background: var(--g100);
+  color: var(--g800);
+  border-left: 3px solid var(--g600);
+}
+
+.feedback.incorrect {
+  background: var(--red50);
+  color: #991b1b;
+  border-left: 3px solid var(--red);
+}
+
+.feedback strong {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+}
+
+.submit-btn {
+  background: var(--g600);
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  padding: 14px 28px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  width: 100%;
+}
+
+.submit-btn:hover {
+  background: var(--g700);
+}
+
+.submit-btn:disabled {
+  background: var(--border);
+  cursor: not-allowed;
+}
+
+@media (max-width: 600px) {
+  body { padding: 16px; }
+  .answer-option { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <div class="exercise-header">
+    <span class="exercise-icon">📝</span>
+    <span class="exercise-title">УПРАЖНЕНИЕ</span>
+  </div>
+  
+  <div class="intro-text">
+    Давайте определим границы возможностей современных ИИ-сервисов для работы с текстами. Какие из перечисленных ниже задач вы можете решить самостоятельно за 5 минут, не обращаясь к профессиональному копирайтеру или юристу?
+  </div>
+  
+  <div class="question">
+    Какие из перечисленных задач можно решить с помощью бесплатных ИИ-сервисов для работы с текстами?
+  </div>
+  
+  <div class="hint">Выберите все верные варианты и нажмите «Проверить»</div>
+  
+  <div class="answers" id="answers">
+    <div class="answer-option" data-correct="true" onclick="toggleAnswer(this)">
+      <div class="checkbox"></div>
+      <div class="answer-text">
+        Подготовить черновик отчета об образовании отходов за квартал на основе готовых данных и шаблона
+      </div>
+      <div class="feedback">
+        <strong>Верно!</strong>
+        ИИ отлично справляется с структурированием данных по шаблону. Вы загрузите цифры по отходам, а нейросеть оформит их в связный текст отчета. Это экономит до 80% времени на рутинной работе.
+      </div>
+    </div>
+    
+    <div class="answer-option" data-correct="true" onclick="toggleAnswer(this)">
+      <div class="checkbox"></div>
+      <div class="answer-text">
+        Сократить 50-страничный СанПиН до одной страницы с ключевыми требованиями для вашего производства
+      </div>
+      <div class="feedback">
+        <strong>Точно!</strong>
+        Функция суммаризации — одна из сильных сторон ИИ. Загрузите текст нормативного документа, попросите выделить требования, применимые к вашему предприятию. Но помните: финальную проверку делаете вы сами.
+      </div>
+    </div>
+    
+    <div class="answer-option" data-correct="false" onclick="toggleAnswer(this)">
+      <div class="checkbox"></div>
+      <div class="answer-text">
+        Получить юридически безупречный ответ на сложный запрос в Росприроднадзор с гарантией принятия документа
+      </div>
+      <div class="feedback">
+        <strong>Пока нет.</strong>
+        ИИ может подготовить черновик официального письма, но не гарантирует юридическую безупречность. Нейросеть не знает последних изменений в практике надзорных органов и не несет ответственности. Для важных документов всегда привлекайте юриста.
+      </div>
+    </div>
+    
+    <div class="answer-option" data-correct="true" onclick="toggleAnswer(this)">
+      <div class="checkbox"></div>
+      <div class="answer-text">
+        Перевести техническую документацию на оборудование с английского на русский с сохранением терминологии
+      </div>
+      <div class="feedback">
+        <strong>Да!</strong>
+        Современные ИИ-переводчики (DeepL, ChatGPT, Яндекс Переводчик с ИИ) отлично справляются с техническими текстами. Но после перевода проверьте терминологию по ГОСТам и отраслевым стандартам.
+      </div>
+    </div>
+    
+    <div class="answer-option" data-correct="false" onclick="toggleAnswer(this)">
+      <div class="checkbox"></div>
+      <div class="answer-text">
+        Автоматически заполнить все разделы программы производственного экологического контроля без вашего участия
+      </div>
+      <div class="feedback">
+        <strong>Не совсем.</strong>
+        ИИ поможет структурировать ПЭК, подготовить отдельные разделы, но не может полностью заменить эколога. Программа требует учета специфики вашего производства, данных инвентаризации, местных нормативов. ИИ — помощник, а не замена специалиста.
+      </div>
+    </div>
+    
+    <div class="answer-option" data-correct="true" onclick="toggleAnswer(this)">
+      <div class="checkbox"></div>
+      <div class="answer-text">
+        Проверить текст отчета на грамматические ошибки, канцеляризмы и улучшить читаемость
+      </div>
+      <div class="feedback">
+        <strong>Конечно!</strong>
+        ИИ-редакторы (от встроенных в ChatGPT до специализированных вроде Главреда) быстро находят ошибки, убирают воду, заменяют канцеляризмы на понятные формулировки. Это базовая функция, которая работает отлично.
+      </div>
+    </div>
+  </div>
+  
+  <button class="submit-btn" id="submitBtn" onclick="checkAnswers()" disabled>Проверить</button>
+</div>
+
+<script>
+let selectedCount = 0;
+
+function toggleAnswer(element) {
+  if (element.classList.contains('disabled')) return;
+  
+  element.classList.toggle('selected');
+  
+  const selectedOptions = document.querySelectorAll('.answer-option.selected');
+  selectedCount = selectedOptions.length;
+  
+  document.getElementById('submitBtn').disabled = selectedCount === 0;
+}
+
+function checkAnswers() {
+  const options = document.querySelectorAll('.answer-option');
+  let allCorrect = true;
+  
+  options.forEach(option => {
+    option.classList.add('disabled');
+    
+    const isCorrect = option.dataset.correct === 'true';
+    const isSelected = option.classList.contains('selected');
+    
+    if (isCorrect && isSelected) {
+      option.classList.add('correct');
+      option.querySelector('.feedback').classList.add('show', 'correct');
+    } else if (!isCorrect && isSelected) {
+      option.classList.add('incorrect');
+      option.querySelector('.feedback').classList.add('show', 'incorrect');
+      allCorrect = false;
+    } else if (isCorrect && !isSelected) {
+      option.classList.add('correct');
+      option.querySelector('.feedback').classList.add('show', 'correct');
+    }
+    
+    option.classList.remove('selected');
+  });
+  
+  const submitBtn = document.getElementById('submitBtn');
+  if (allCorrect && selectedCount === 4) {
+    submitBtn.textContent = 'Отлично! Все верные ответы найдены';
+    submitBtn.style.background = 'var(--g700)';
+  } else {
+    submitBtn.textContent = 'Проверьте еще раз';
+    submitBtn.style.background = 'var(--border)';
+    submitBtn.style.color = 'var(--text)';
+  }
+  
+  submitBtn.disabled = true;
+}
+</script>
+
+</body>
+</html>
