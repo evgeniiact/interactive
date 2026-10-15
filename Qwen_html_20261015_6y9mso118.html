@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+
+<style>
+:root {
+  --bg: #ffffff;
+  /* Цвета для правильной логики/нейтрального фона */
+  --accent-green-bg: #f0fdf4; 
+  --accent-green-border: #bbf7d0;
+  --accent-green-text: #166534;
+  
+  /* Цвета для мифов/предупреждений (мягкие тона) */
+  --warn-orange-bg: #fffbeb;
+  --warn-orange-border: #fde68a;
+  --warn-orange-text: #92400e;
+
+  --text-main: #1e293b;
+  --text-muted: #64748b;
+  --border-color: #e2e8f0;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 16px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--text-main);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.wrap {
+  max-width: 650px; /* Ширина под ваши требования */
+  margin: 0 auto;
+}
+
+/* Шапка упражнения */
+.exercise-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 16px;
+  padding-bottom: 12px;
+  border-bottom: 2px solid var(--border-color);
+}
+
+.header-icon {
+  width: 24px;
+  height: 24px;
+  fill: none;
+  stroke: currentColor;
+  stroke-width: 2;
+  color: var(--text-muted);
+}
+
+.exercise-title {
+  font-size: 16px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: var(--text-main);
+}
+
+.intro-text {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+}
+
+.question-block {
+  background: #f8fafc;
+  padding: 16px;
+  border-radius: var(--radius);
+  margin-bottom: 20px;
+  border-left: 4px solid #cbd5e1;
+}
+
+.question-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.question-text {
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--text-main);
+  line-height: 1.4;
+}
+
+/* Список карточек */
+.cards-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 24px;
+}
+
+.card-item {
+  position: relative;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.card-front {
+  background: #fff;
+  border: 1px solid var(--border-color);
+  border-radius: var(--radius);
+  padding: 16px;
+  display: flex;
+  align-items: flex-start;
+  gap: 12px;
+  box-shadow: 0 1px 2px rgba(0,0,0,0.03);
+}
+
+.card-marker {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #cbd5e1;
+  margin-top: 6px;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+
+.card-quote {
+  font-style: italic;
+  color: var(--text-main);
+  font-size: 14px;
+  line-height: 1.5;
+}
+
+.card-quote::before { content: '«'; }
+.card-quote::after { content: '»'; }
+
+/* Состояние активной карточки (до раскрытия) */
+.card-item.active .card-front {
+  border-color: var(--text-main);
+  background: #f8fafc;
+}
+.card-item.active .card-marker {
+  background: var(--text-main);
+}
+
+/* Обратная сторона (комментарий) */
+.card-back {
+  display: none;
+  margin-top: -1px; /* чтобы стык был бесшовным */
+  border: 1px solid var(--border-color);
+  border-top: none;
+  border-radius: 0 0 var(--radius) var(--radius);
+  padding: 16px;
+  animation: slideDown 0.3s ease-out forwards;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Классы состояний после проверки */
+.card-item.revealed .card-back {
+  display: block;
+}
+
+/* Стилизация "Миф" (все варианты здесь считаются заблуждением или сложностью) */
+.type-myth .card-front {
+  border-color: var(--warn-orange-border);
+  background: #fff;
+}
+.type-myth .card-marker {
+  background: #fcd34d;
+}
+.type-myth .card-back {
+  background: var(--warn-orange-bg);
+  border-color: var(--warn-orange-border);
+}
+.type-myth .back-title {
+  color: var(--warn-orange-text);
+}
+
+.back-title {
+  font-weight: 700;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 8px;
+  display: block;
+}
+
+.back-text {
+  font-size: 14px;
+  color: var(--text-main);
+  line-height: 1.55;
+}
+
+/* Кнопка проверки */
+.btn-check {
+  width: 100%;
+  padding: 14px;
+  background: var(--text-main);
+  color: white;
+  border: none;
+  border-radius: var(--radius);
+  font-size: 15px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background 0.2s;
+  margin-bottom: 20px;
+}
+
+.btn-check:hover {
+  background: #0f172a;
+}
+
+.btn-check:disabled {
+  background: #cbd5e1;
+  cursor: not-allowed;
+}
+
+/* Блок "Важно" / Итог */
+.summary-block {
+  display: none;
+  background: var(--accent-green-bg);
+  border: 1px solid var(--accent-green-border);
+  border-radius: var(--radius);
+  padding: 20px;
+  margin-top: 20px;
+  animation: fadeIn 0.5s ease;
+}
+
+.summary-block.visible {
+  display: block;
+}
+
+.summary-header {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 12px;
+}
+
+.summary-icon {
+  width: 20px;
+  height: 20px;
+  fill: none;
+  stroke: var(--accent-green-text);
+  stroke-width: 2;
+}
+
+.summary-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--accent-green-text);
+}
+
+.summary-text {
+  font-size: 14px;
+  color: #14532d;
+  line-height: 1.6;
+}
+
+.summary-text p {
+  margin: 0 0 10px 0;
+}
+.summary-text p:last-child {
+  margin-bottom: 0;
+}
+
+@media (max-width: 480px) {
+  body { padding: 12px; }
+  .card-front { padding: 14px; }
+}
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  
+  <div class="exercise-header">
+    <!-- SVG иконка вместо эмодзи -->
+    <svg class="header-icon" viewBox="0 0 24 24">
+      <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5"/>
+    </svg>
+    <span class="exercise-title">Разбор ожиданий</span>
+  </div>
+  
+  <div class="intro-text">
+    Ознакомьтесь с типичными фразами руководства и коллег по поводу внедрения системы экологического менеджмента (СЭМ). Нажмите на каждую карточку, чтобы увидеть профессиональный комментарий с точки зрения стандарта ГОСТ Р ИСО 14001-2016.
+  </div>
+  
+  <div class="question-block">
+    <span class="question-label">Задание</span>
+    <div class="question-text">Откройте все 5 карточек, чтобы понять разницу между декларацией о намерениях и реальными требованиями стандарта.</div>
+  </div>
+  
+  <div class="cards-list" id="cardsContainer">
+    
+    <!-- Карточка 1 -->
+    <div class="card-item type-myth" onclick="revealCard(this)">
+      <div class="card-front">
+        <div class="card-marker"></div>
+        <div class="card-quote">Сертификация по ГОСТ Р ИСО 14001 полностью исключает штрафы со стороны надзорных органов.</div>
+      </div>
+      <div class="card-back">
+        <span class="back-title">Комментарий эколога</span>
+        <div class="back-text">Наличие сертификата не заменяет выполнение обязательных требований законодательства РФ. Инспекторы проверяют фактическое состояние объектов НВОС, превышения ПДК и лимиты отходов. Однако правильно выстроенная СЭМ помогает вовремя находить несоответствия во внутренних процессах и устранять их до начала внешней проверки.</div>
+      </div>
+    </div>
+
+    <!-- Карточка 2 -->
+    <div class="card-item type-myth" onclick="revealCard(this)">
+      <div class="card-front">
+        <div class="card-marker"></div>
+        <div class="card-quote">Разработка документации и контроль процедур СЭМ – это задача исключительно экологической службы.</div>
+      </div>
+      <div class="card-back">
+        <span class="back-title">Комментарий эколога</span>
+        <div class="back-text">Согласно стандарту, СЭМ охватывает все процессы, влияющие на окружающую среду. Система работает эффективно только тогда, когда руководители подразделений, технологи и мастера цехов контролируют экологические аспекты на своих рабочих местах. Роль эколога – координировать эту работу, организовывать внутренние аудиты и оказывать методическую поддержку.</div>
+      </div>
+    </div>
+
+    <!-- Карточка 3 -->
+    <div class="card-item type-myth" onclick="revealCard(this)">
+      <div class="card-front">
+        <div class="card-marker"></div>
+        <div class="card-quote">Система экологического менеджмента окупается сразу после внедрения без дополнительных инвестиций.</div>
+      </div>
+      <div class="card-back">
+        <span class="back-title">Комментарий эколога</span>
+        <div class="back-text">СЭМ помогает выявить скрытые потери ресурсов и оптимизировать расходы на обращение с отходами. При этом для достижения устойчивого экономического эффекта часто требуются первоначальные вложения: модернизация оборудования, организация мест раздельного накопления отходов или обучение персонала. Эколог подсвечивает зоны роста, но решения принимаются с учетом бюджета предприятия.</div>
+      </div>
+    </div>
+
+    <!-- Карточка 4 -->
+    <div class="card-item type-myth" onclick="revealCard(this)">
+      <div class="card-front">
+        <div class="card-marker"></div>
+        <div class="card-quote">СЭМ можно разработать как отдельный независимый комплект документов, чтобы не менять текущие инструкции предприятия.</div>
+      </div>
+      <div class="card-back">
+        <span class="back-title">Комментарий эколога</span>
+        <div class="back-text">Если создать систему обособленно от общих бизнес-процессов, она увеличит бумажную нагрузку на эколога, но не принесет пользы производству. Принципы ГОСТ Р ИСО 14001 предполагают интеграцию: экологические требования должны быть встроены в уже существующие рабочие инструкции, технологические карты и регламенты цехов.</div>
+      </div>
+    </div>
+
+    <!-- Карточка 5 -->
+    <div class="card-item type-myth" onclick="revealCard(this)">
+      <div class="card-front">
+        <div class="card-marker"></div>
+        <div class="card-quote">Внедрить стандарты СЭМ можно незаметно для персонала, не отвлекая сотрудников от привычного производственного процесса.</div>
+      </div>
+      <div class="card-back">
+        <span class="back-title">Комментарий эколога</span>
+        <div class="back-text">Функционирование системы неизбежно требует изменения некоторых рабочих привычек. Мастерам необходимо фиксировать первичные данные, рабочим – соблюдать новые правила обращения с сырьем и отходами. Задача эколога – совместно с руководителями подразделений выстроить этот переход постепенно, минимизируя сопротивление через понятное объяснение целей изменений.</div>
+      </div>
+    </div>
+
+  </div>
+  
+  <button class="btn-check" id="finishBtn" disabled onclick="showSummary()">Подвести итоги</button>
+  
+  <!-- Блок итога (важно) -->
+  <div class="summary-block" id="summaryBlock">
+    <div class="summary-header">
+      <svg class="summary-icon" viewBox="0 0 24 24">
+        <path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+      </svg>
+      <div class="summary-title">Важно запомнить</div>
+    </div>
+    <div class="summary-text">
+      <p>Все перечисленные выше ожидания часто возникают из-за разного понимания целей СЭМ внутри компании.</p>
+      <p><strong>ГОСТ Р ИСО 14001-2016</strong> – это не просто набор документов для прохождения аудита. Это рабочий инструмент управления рисками. Он не гарантирует автоматической защиты от всех штрафов и не требует нулевых затрат, но позволяет:</p>
+      <ul style="margin: 10px 0; padding-left: 20px;">
+        <li>распределить ответственность между подразделениями;</li>
+        <li>системно собирать данные для отчетности;</li>
+        <li>снижать вероятность аварий за счет профилактики.</li>
+      </ul>
+      <p>Чтобы система приносила пользу, важно скорректировать эти ожидания у руководства на старте проекта.</p>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let revealedCount = 0;
+const totalCards = document.querySelectorAll('.card-item').length;
+
+function revealCard(element) {
+  if (element.classList.contains('revealed')) return;
+  
+  element.classList.add('revealed');
+  revealedCount++;
+  
+  // Активируем кнопку, когда открыты все
+  const btn = document.getElementById('finishBtn');
+  if (revealedCount === totalCards) {
+    btn.disabled = false;
+    btn.textContent = `Показать выводы (${totalCards}/${totalCards})`;
+  } else {
+    btn.textContent = `Открыто ${revealedCount} из ${totalCards}`;
+  }
+  
+  triggerResize();
+}
+
+function showSummary() {
+  const summary = document.getElementById('summaryBlock');
+  const btn = document.getElementById('finishBtn');
+  
+  summary.classList.add('visible');
+  btn.style.display = 'none'; // Прячем кнопку
+  
+  triggerResize();
+  
+  // Плавный скролл к результату
+  setTimeout(() => {
+    summary.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  }, 100);
+}
+
+// Функция ресайзера для iframe
+function triggerResize() {
+  if (window.parentIFrame) {
+    window.parentIFrame.size();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+  triggerResize();
+});
+</script>
+
+</body>
+</html>
