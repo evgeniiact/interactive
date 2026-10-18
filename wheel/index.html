@@ -115,9 +115,11 @@
 </div>
 
 <script>
-    // ИЗМЕНИТЕ ЭТО СЛОВО, ЕСЛИ ЗАХОТИТЕ СБРОСИТЬ ВСЕ РЕЗУЛЬТАТЫ ЕЩЕ РАЗ
+    // Если захотите полностью обнулить / перемешать результаты для остальных гостей, 
+    // просто измените эту строку (например, на "party_v2", "halloween_clean" и т.д.)
     const SECRET_SALT = "halloween_party_final_v1"; 
 
+    // Базовый список всех доступных костюмов
     const allCostumes = [
         { text: "Привидение", icon: "👻" },
         { text: "Клоун", icon: "🤡" },
@@ -125,14 +127,14 @@
         { text: "Черный кот", icon: "🐈‍⬛" },
         { text: "Ведьма(к)", icon: "🧙‍♀️" },
         { text: "Зомби/мумия", icon: "🧟" },
-        { text: "Харли Квин/Уэнсдей/Джокер/Дэдпул", icon: "🃏" },
+        { text: "Харли Квин/Уэнсдей/Джокер/Дэдпул", icon: "🃏" }, // Индекс 6
         { text: "Чёртик", icon: "😈" },
         { text: "Ворон", icon: "🐦‍⬛" },
         { text: "Демон", icon: "👹" },
         { text: "Хеллбой", icon: "🔥" },
         { text: "Снежный человек", icon: "👣" },
         { text: "Жаба", icon: "🐸" },
-        { text: "Кикимора/леший/русалка/водяной", icon: "🧜‍♀️" }
+        { text: "Кикимора/леший/русалка/водяной", icon: "🧜‍♀️" } // Индекс 13
     ];
 
     let currentUser = "";
@@ -141,6 +143,7 @@
     const canvas = document.getElementById('wheel');
     const ctx = canvas.getContext('2d');
 
+    // Функция генерации стабильного числа из букв имени
     function getHash(str) {
         let hash = 0;
         const cleanStr = str.trim().toLowerCase() + SECRET_SALT;
@@ -154,10 +157,26 @@
         const input = document.getElementById('username').value.trim();
         if (!input) return alert("Введите имя!");
         currentUser = input;
+        const lowUser = currentUser.toLowerCase();
 
-        const hash = getHash(currentUser);
-        const index = hash % allCostumes.length;
-        chosenCostume = allCostumes[index];
+        // 1. Фиксированный костюм для Жени
+        if (lowUser === "женя") {
+            chosenCostume = allCostumes[13]; // Кикимора/леший/русалка/водяной
+        } 
+        // 2. Фиксированный костюм для Оли
+        else if (lowUser === "оля") {
+            chosenCostume = allCostumes[6]; // Харли Квин/Уэнсдей/Джокер/Дэдпул
+        } 
+        // 3. Математическое распределение для всех остальных гостей
+        else {
+            // Чтобы костюмы Жени и Оли больше никому случайно не достались, 
+            // отфильтруем массив, убрав их из пула доступных
+            const restrictedCostumes = allCostumes.filter((c, index) => index !== 6 && index !== 13);
+            
+            const hash = getHash(lowUser);
+            const index = hash % restrictedCostumes.length;
+            chosenCostume = restrictedCostumes[index];
+        }
 
         document.getElementById('auth-block').style.display = 'none';
         document.getElementById('wheel-wrapper').style.display = 'block';
