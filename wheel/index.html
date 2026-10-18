@@ -85,7 +85,6 @@
         }
         .costume-title { font-size: 28px; color: #ff9f43; font-weight: bold; margin: 10px 0; }
         .costume-icon { font-size: 50px; margin-bottom: 10px; }
-        #status-msg { color: #ff5252; font-size: 14px; margin-top: 10px; }
     </style>
 </head>
 <body>
@@ -97,36 +96,26 @@
     <div id="auth-block">
         <input type="text" id="username" placeholder="Введите ваше имя или @никнейм" autocomplete="off">
         <br>
-        <button id="auth-btn" onclick="startVerification()">Войти в комнату</button>
-        <div id="status-msg"></div>
+        <button id="auth-btn" onclick="startGame()">Войти в комнату</button>
     </div>
 
     <div id="wheel-wrapper">
         <div class="pointer"></div>
         <canvas id="wheel" width="320" height="320"></canvas>
         <br><br>
-        <button id="spin-btn" onclick="spinAndSave()">Крутить колесо!</button>
+        <button id="spin-btn" onclick="spinWheel()">Крутить колесо!</button>
     </div>
 
     <div id="result-box">
         <div id="res-user" style="color:#aaa;"></div>
         <div class="costume-icon" id="res-icon">🎃</div>
         <div class="costume-title" id="res-text">Костюм</div>
-        <p style="margin:0; color:#8e8e93;">Этот костюм закреплен за вами и больше никому не выпадет!</p>
+        <p style="margin:0; color:#8e8e93;">Этот костюм закреплен за вашим именем!</p>
     </div>
 </div>
 
 <script>
-    // === НАСТРОЙКИ GITHUB ===
-    // Закодируйте новый токен в Base64 и вставьте строку ниже:
-    const ENCRYPTED_TOKEN = "Z2hwX3d3ZHc5OE9OMTBTWFRTRWx0Q1NEUUdnZExzcjVHYTJHeHdtNw=="; 
-
-    // Расшифровываем токен прямо в браузере, чтобы сканер GitHub его не заметил
-    const GITHUB_TOKEN = atob(ENCRYPTED_TOKEN); 
-    const REPO_OWNER = "evgeniiact"; 
-    const REPO_NAME = "interactive"; 
-    const FILE_PATH = "wheel/state.json";
-
+    // Массив костюмов (14 уникальных ролей)
     const allCostumes = [
         { text: "Привидение", icon: "👻" },
         { text: "Клоун", icon: "🤡" },
@@ -145,51 +134,34 @@
     ];
 
     let currentUser = "";
-    let fileSha = "";
-    let gameState = { occupied: {} };
     let chosenCostume = null;
 
     const canvas = document.getElementById('wheel');
     const ctx = canvas.getContext('2d');
 
-    function showMsg(text) { document.getElementById('status-msg').innerText = text; }
+    // Функция генерации уникального числа на основе букв имени
+    function getHash(str) {
+        let hash = 0;
+        const cleanStr = str.trim().toLowerCase();
+        for (let i = 0; i < cleanStr.length; i++) {
+            hash = cleanStr.charCodeAt(i) + ((hash << 5) - hash);
+        }
+        return Math.abs(hash);
+    }
 
-    async function startVerification() {
+    function startGame() {
         const input = document.getElementById('username').value.trim();
         if (!input) return alert("Введите имя!");
-        currentUser = input.toLowerCase();
+        currentUser = input;
 
-        document.getElementById('auth-btn').disabled = true;
-        showMsg("Подключение к серверу Хэллоуина...");
+        // Магический хэш привязывает имя к конкретному индексу в массиве костюмов
+        const hash = getHash(currentUser);
+        const index = hash % allCostumes.length;
+        chosenCostume = allCostumes[index];
 
-        try {
-            const url = `https://github.com{REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`;
-            const response = await fetch(url, {
-                headers: { "Authorization": `token ${GITHUB_TOKEN}`, "Cache-Control": "no-cache" }
-            });
-            
-            if (!response.ok) {
-                throw new Error(`Ошибка GitHub: ${response.status} (${response.statusText}).`);
-            }
-            
-            const data = await response.json();
-            fileSha = data.sha;
-            gameState = JSON.parse(atob(data.content));
-
-            if (gameState.occupied[currentUser]) {
-                showFinalResult(currentUser, gameState.occupied[currentUser]);
-                return;
-            }
-
-            document.getElementById('auth-block').style.display = 'none';
-            document.getElementById('wheel-wrapper').style.display = 'block';
-            drawWheel();
-            showMsg("");
-        } catch (err) {
-            console.error(err);
-            showMsg(`Детали ошибки: ${err.message} Проверьте токен, выключите VPN/AdBlock.`);
-            document.getElementById('auth-btn').disabled = false;
-        }
+        document.getElementById('auth-block').style.display = 'none';
+        document.getElementById('wheel-wrapper').style.display = 'block';
+        drawWheel();
     }
 
     function drawWheel() {
@@ -217,56 +189,20 @@
         }
     }
 
-    async function spinAndSave() {
+    function spinWheel() {
         document.getElementById('spin-btn').disabled = true;
-        showMsg("Бронирование костюма...");
 
-        const busyCostumes = Object.values(gameState.occupied).map(c => c.text);
-        const freeCostumes = allCostumes.filter(c => !busyCostumes.includes(c.text));
+        // Эффект случайного вращения колеса (всегда останавливается красиво)
+        const randomDegrees = Math.floor(3600 + Math.random() * 1800);
+        canvas.style.transform = `rotate(${randomDegrees}deg)`;
 
-        if (freeCostumes.length === 0) {
-            showMsg("Увы, все костюмы уже разобраны!");
-            return;
-        }
-
-        chosenCostume = freeCostumes[Math.floor(Math.random() * freeCostumes.length)];
-        gameState.occupied[currentUser] = chosenCostume;
-
-        try {
-            const updateResponse = await fetch(`https://github.com{REPO_OWNER}/${REPO_NAME}/contents/${FILE_PATH}`, {
-                method: "PUT",
-                headers: { "Authorization": `token ${GITHUB_TOKEN}`, "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    message: `Costume assigned to ${currentUser}`,
-                    content: btoa(unescape(encodeURIComponent(JSON.stringify(gameState, null, 2)))),
-                    sha: fileSha
-                })
-            });
-
-            if (!updateResponse.ok) throw new Error("Ошибка фиксации костюма. Попробуйте еще раз.");
-
-            showMsg("");
-            const randomDegrees = Math.floor(3600 + Math.random() * 1800);
-            canvas.style.transform = `rotate(${randomDegrees}deg)`;
-
-            setTimeout(() => {
-                showFinalResult(currentUser, chosenCostume);
-            }, 4000);
-
-        } catch (err) {
-            showMsg("Ошибка соединения. Пожалуйста, обновите страницу.");
-            document.getElementById('spin-btn').disabled = false;
-        }
-    }
-
-    function showFinalResult(user, costume) {
-        document.getElementById('wheel-wrapper').style.display = 'none';
-        document.getElementById('auth-block').style.display = 'none';
-        
-        document.getElementById('res-user').innerText = `${user.toUpperCase()}, ВАШ КОСТЮМ:`;
-        document.getElementById('res-icon').innerText = costume.icon;
-        document.getElementById('res-text').innerText = costume.text;
-        document.getElementById('result-box').style.display = 'block';
+        setTimeout(() => {
+            document.getElementById('wheel-wrapper').style.display = 'none';
+            document.getElementById('res-user').innerText = `${currentUser.toUpperCase()}, ВАШ КОСТЮМ:`;
+            document.getElementById('res-icon').innerText = chosenCostume.icon;
+            document.getElementById('res-text').innerText = chosenCostume.text;
+            document.getElementById('result-box').style.display = 'block';
+        }, 4000);
     }
 </script>
 </body>
