@@ -1,0 +1,483 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Тест: проверка лицензионных требований при обращении с отходами</title>
+<script type="text/javascript" src="https://gc.kis.v2.scr.kaspersky-labs.com/FD126C42-EBFA-4E12-B309-BB3FDD723AC1/main.js?attr=uhpydJMZlGEodOWdtvLYNrdIdOBv0QxfLjglVGJteLD7_LyW_gUHLZFMsoEAi-iBza4Cy1e8iu_lqk64foKwhglpROtz6Y3KiV2vzc-aSKMO7HuEWD9cxXKliAcGJjUrzr0f0WMOF1xoHp54W0PyAQPwxzUZvTmGkI2h6oaCpmTvpIhXzdNsTjyiHBYf1COq63Ahfr8YUMT_HiLSLgI20XDDC8L1OugK-U0nrB0GFPk" charset="UTF-8"></script><style>
+  *, *::before, *::after { box-sizing: border-box; }
+
+  html { -webkit-text-size-adjust: 100%; }
+
+  body {
+    margin: 0;
+    padding: 16px;
+    background: #FDFBF7;
+    color: #4A4A4A;
+    font-family: Roboto, "Segoe UI", "Helvetica Neue", Arial, sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
+  }
+
+  .quiz {
+    max-width: 720px;
+    margin: 0 auto;
+    padding: 16px;
+    border: 1px solid #007760;
+    background: #FDFBF7;
+  }
+
+  .quiz__title {
+    margin: 0 0 12px;
+    font-size: 1.15rem;
+    font-weight: 500;
+    color: #4A4A4A;
+  }
+
+  /* Прогресс */
+  .progress { margin-bottom: 16px; }
+  .progress__text {
+    margin: 0 0 6px;
+    font-size: .875rem;
+    color: #4A4A4A;
+    opacity: .85;
+  }
+  .progress__bar {
+    height: 4px;
+    background: #E8E4DA;
+    overflow: hidden;
+  }
+  .progress__fill {
+    height: 100%;
+    width: 0;
+    background: #007760;
+    transition: width .3s ease;
+  }
+
+  /* Вопросы */
+  .question { margin: 0; padding: 0; border: 0; min-width: 0; }
+  .question[hidden] { display: none; }
+  .question__text {
+    padding: 0;
+    margin: 0 0 16px;
+    font-size: 1.05rem;
+    font-weight: 500;
+    line-height: 1.45;
+    color: #4A4A4A;
+  }
+  .options { display: flex; flex-direction: column; gap: 10px; }
+
+  .option {
+    position: relative;
+    display: block;
+    width: 100%;
+    margin: 0;
+    padding: 12px 14px 12px 40px;
+    border: 1px solid #007760;
+    border-radius: 6px;
+    background-color: #FDFBF7;
+    color: #4A4A4A;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color .25s ease;
+  }
+  .option::before {
+    content: "";
+    position: absolute;
+    left: 14px;
+    top: 1.05em;
+    width: 13px;
+    height: 13px;
+    border-radius: 50%;
+    background-color: #007760;
+  }
+  .option:hover { background-color: #EAE5D9; }
+  .option:focus-visible { outline: 2px solid #007760; outline-offset: 2px; }
+
+  .question.is-answered .option { cursor: default; }
+  .question.is-answered .option:not(.is-correct):not(.is-wrong):hover { background-color: #FDFBF7; }
+
+  .option.is-correct {
+    border-color: #007760;
+    box-shadow: 0 0 0 1px #007760;
+    color: #4A4A4A;
+  }
+  .option.is-wrong {
+    border-color: #D32F2F;
+    box-shadow: 0 0 0 1px #D32F2F;
+    color: #D32F2F;
+  }
+  .option.is-wrong::before { background-color: #D32F2F; }
+
+  /* Нижняя панель вопроса */
+  .question__footer { margin-top: 16px; min-height: 48px; }
+  .question__footer[hidden] { display: none; }
+  .verdict {
+    margin: 0 0 12px;
+    font-weight: 500;
+  }
+  .verdict--ok { color: #007760; }
+  .verdict--bad { color: #D32F2F; }
+
+  .btn {
+    display: inline-block;
+    min-height: 44px;
+    padding: 10px 22px;
+    border: 1px solid #007760;
+    border-radius: 6px;
+    background-color: #007760;
+    color: #fff;
+    font: inherit;
+    cursor: pointer;
+    -webkit-tap-highlight-color: transparent;
+    transition: background-color .25s ease;
+  }
+  .btn:hover { background-color: #005a49; }
+  .btn:focus-visible { outline: 2px solid #007760; outline-offset: 2px; }
+  .btn--ghost { background-color: #FDFBF7; color: #007760; }
+  .btn--ghost:hover { background-color: #EAE5D9; }
+
+  /* Результат */
+  .result { text-align: center; padding: 16px 0; }
+  .result[hidden] { display: none; }
+  .result__score { margin: 0 0 8px; font-size: 2rem; font-weight: 500; color: #007760; }
+  .result__text { margin: 0 0 20px; }
+
+  /* Popup */
+  .overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 1000;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 16px;
+    background: rgba(0, 0, 0, .55);
+    animation: fadeIn .25s ease;
+  }
+  .overlay[hidden] { display: none; }
+  .popup {
+    width: 100%;
+    max-width: 520px;
+    max-height: 85vh;
+    max-height: 85dvh;
+    overflow-y: auto;
+    padding: 20px;
+    background: #FDFBF7;
+    color: #4A4A4A;
+    border: 1px solid #007760;
+    border-radius: 8px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, .25);
+    animation: fadeIn .25s ease;
+  }
+  .popup__title { margin: 0 0 10px; font-size: 1.15rem; font-weight: 500; color: #007760; }
+  .popup__text { margin: 0 0 18px; }
+  @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+  .sr-only {
+    position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0;
+    overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; border: 0;
+  }
+
+  @media (max-width: 480px) {
+    body { padding: 8px; font-size: 15px; }
+    .quiz { padding: 16px 12px; }
+    .option { padding: 12px 12px 12px 36px; }
+    .option::before { left: 12px; }
+    .btn { width: 100%; }
+    .popup { padding: 16px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .overlay, .popup { animation: none; }
+    .option, .btn, .progress__fill { transition: none; }
+  }
+</style>
+</head>
+<body>
+
+<main class="quiz" id="quiz" aria-labelledby="quiz-title">
+  <h1 class="quiz__title" id="quiz-title">Проверка лицензионных требований: тест из 10 вопросов</h1>
+
+  <div class="progress" id="progress">
+    <p class="progress__text" id="progress-text" aria-live="polite">Вопрос 1 из 10</p>
+    <div class="progress__bar" role="progressbar" aria-label="Прогресс прохождения теста" aria-valuemin="0" aria-valuemax="10" aria-valuenow="0" id="progress-bar">
+      <div class="progress__fill" id="progress-fill"></div>
+    </div>
+  </div>
+
+  <!-- ВОПРОС 1 -->
+  <fieldset class="question" data-explanation="Проектная документация и заключение ГЭЭ – это юридически значимые документы, которые фиксируют назначение объекта и применяемые технологии. Именно по ним инспектор подтверждает соответствие заявленному виду работ.">
+    <legend class="question__text">Вопрос 1. Вы проверяете, соответствует ли заявленный вид работ фактической инфраструктуре. Что в первую очередь подтвердит, что объект предназначен именно для заявленного вида деятельности (например, обезвреживание, а не просто хранение)?</legend>
+    <div class="options">
+      <button type="button" class="option">Рекламный буклет предприятия.</button>
+      <button type="button" class="option" data-correct="true">Проектная документация и/или заключение ГЭЭ, где чётко указан вид деятельности и технологические решения.</button>
+      <button type="button" class="option">Письмо от местной администрации о поддержке проекта.</button>
+      <button type="button" class="option">Фотогалерея «до и после» реконструкции.</button>
+    </div>
+  </fieldset>
+
+  <!-- ВОПРОС 2 -->
+  <fieldset class="question" hidden data-explanation="Инспектор обязан убедиться, что оборудование не только «есть в бумагах», но и физически установлено, идентифицируемо (маркировка) и введено в эксплуатацию (акты). Это закрывает риск «заявили одно, поставили другое».">
+    <legend class="question__text">Вопрос 2. В заявлении на лицензию указано конкретное оборудование для дробления и сепарации. Как вы подтвердите, что это оборудование действительно установлено и используется?</legend>
+    <div class="options">
+      <button type="button" class="option">Устное пояснение главного инженера.</button>
+      <button type="button" class="option">Презентация поставщика оборудования.</button>
+      <button type="button" class="option" data-correct="true">Сверка заводских шильдиков/маркировки на оборудовании с перечнем в документах (договор, спецификация, приложение к договору аренды) и наличие актов ввода в эксплуатацию.</button>
+      <button type="button" class="option">Список оборудования в Excel на рабочем столе.</button>
+    </div>
+  </fieldset>
+
+  <!-- ВОПРОС 3 -->
+  <fieldset class="question" hidden data-explanation="Лицензионные требования прямо предусматривают наличие у работников подтверждённой квалификации. Удостоверения и приказы – это обязательные документы, без которых допуск к работам неправомерен.">
+    <legend class="question__text">Вопрос 3. Вы проверяете выполнение лицензионных требований к персоналу. Что является достаточным подтверждением квалификации работников, допущенных к обращению с отходами I–IV классов?</legend>
+    <div class="options">
+      <button type="button" class="option" data-correct="true">Удостоверения о профессиональном обучении/повышении квалификации по обращению с отходами I–IV классов опасности, а также приказы о допуске к работам.</button>
+      <button type="button" class="option">Трудовая книжка с записью «оператор установки».</button>
+      <button type="button" class="option">Диплом о высшем образовании по смежной специальности.</button>
+      <button type="button" class="option">Характеристика от начальника цеха.</button>
+    </div>
+  </fieldset>
+
+  <!-- ВОПРОС 4 -->
+  <fieldset class="question" hidden data-explanation="Для технологий, меняющих класс опасности или химический состав отходов, ГЭЭ обязательна. Она подтверждает, что воздействие на окружающую среду оценено и допустимо.">
+    <legend class="question__text">Вопрос 4. На объекте применяется технология, которая существенно изменяет свойства отходов (например, термическое обезвреживание). Что вы запросите, чтобы подтвердить, что технология соответствует экологическим требованиям?</legend>
+    <div class="options">
+      <button type="button" class="option">Патент на технологию.</button>
+      <button type="button" class="option" data-correct="true">Заключение государственной экологической экспертизы (ГЭЭ) на проектную документацию либо на саму технологию, если она подлежит экспертизе.</button>
+      <button type="button" class="option">Отзывы других предприятий, использующих эту технологию.</button>
+      <button type="button" class="option">Коммерческое предложение разработчика.</button>
+    </div>
+  </fieldset>
+
+  <!-- ВОПРОС 5 -->
+  <fieldset class="question" hidden data-explanation="Требования СанПиН и природоохранного законодательства предусматривают инженерное обустройство мест накопления: твёрдое покрытие, защиту от осадков, сбор и очистку стоков, обваловку. Это предотвращает загрязнение почвы и вод.">
+    <legend class="question__text">Вопрос 5. Вы проверяете организацию мест накопления отходов на площадке до их обработки/утилизации. Что обязательно должно быть реализовано, чтобы исключить негативное воздействие на окружающую среду?</legend>
+    <div class="options">
+      <button type="button" class="option">Яркая разметка пола в зоне складирования.</button>
+      <button type="button" class="option">Табло с текущим количеством накопленных отходов.</button>
+      <button type="button" class="option">Журнал визуального осмотра площадки без технических решений.</button>
+      <button type="button" class="option" data-correct="true">Площадка с твёрдым водонепроницаемым покрытием, обваловкой, системой сбора ливневых стоков и укрытием от осадков (при необходимости).</button>
+    </div>
+  </fieldset>
+
+  <!-- ВОПРОС 6 -->
+  <fieldset class="question" hidden data-explanation="Требования к объектам НВОС (в том числе к объектам обработки/утилизации) предусматривают инженерные решения для минимизации воздействия: ливневая канализация, контроль выбросов, ПЭК. Это проверяется по проектной и разрешительной документации и фактически.">
+    <legend class="question__text">Вопрос 6. Вы проверяете соответствие площадки требованиям по предотвращению негативного воздействия на окружающую среду. Что обязательно должно быть реализовано для объекта обезвреживания/утилизации?</legend>
+    <div class="options">
+      <button type="button" class="option">Озеленение территории.</button>
+      <button type="button" class="option" data-correct="true">Система сбора и очистки поверхностных стоков, контроль выбросов (при наличии источников), наличие программы ПЭК и точек контроля.</button>
+      <button type="button" class="option">Баннер «Экологически чистое производство».</button>
+      <button type="button" class="option">Парковка для сотрудников.</button>
+    </div>
+  </fieldset>
+
+  <!-- ВОПРОС 7 -->
+  <fieldset class="question" hidden data-explanation="Маркировка и схема потоков исключают хаотичное складирование, а регламент с критериями примесей фиксирует технологические требования к качеству фракций – это база для контроля качества сырья перед обработкой. Такой комплект документов и технических решений подтверждает, что сортировка организована не формально, а как часть производственного процесса.">
+    <legend class="question__text">Вопрос 7. Вы проверяете организацию раздельного накопления и первичной сортировки отходов на участке приёма. Что обязательно должно быть предусмотрено, чтобы исключить смешивание фракций и нарушение технологии дальнейшей переработки?</legend>
+    <div class="options">
+      <button type="button" class="option">Цветовое оформление контейнеров без технической привязки к потокам.</button>
+      <button type="button" class="option">Ежедневный фотоотчёт о наполнении контейнеров.</button>
+      <button type="button" class="option" data-correct="true">Маркированные ёмкости/бункеры с указанием принимаемых фракций, схема потоков движения отходов по площадке и локальный регламент сортировки с критериями допустимых примесей.</button>
+      <button type="button" class="option">Стенд с памяткой «Разделяй отходы».</button>
+    </div>
+  </fieldset>
+
+  <!-- ВОПРОС 8 -->
+  <fieldset class="question" hidden data-explanation="Договор с приложением – это юридически значимое подтверждение права пользования и соответствия объекта заявленным целям. Инспектор сверяет характеристики объекта с теми, что указаны в лицензии и проектной документации.">
+    <legend class="question__text">Вопрос 8. Вы проверяете право пользования объектом (зданием, площадкой, сооружением). Что является надлежащим подтверждением права заявителя использовать объект для заявленных работ?</legend>
+    <div class="options">
+      <button type="button" class="option">Письмо-согласие собственника.</button>
+      <button type="button" class="option" data-correct="true">Договор аренды (или иной правоустанавливающий документ) с приложением, где указаны характеристики объекта, его назначение и разрешённые виды деятельности.</button>
+      <button type="button" class="option">Кадастровый номер на стенде в офисе.</button>
+      <button type="button" class="option">Переписка по электронной почте.</button>
+    </div>
+  </fieldset>
+
+  <!-- ВОПРОС 9 -->
+  <fieldset class="question" hidden data-explanation="Формальное наличие программы недостаточно: нужны доказательства её исполнения – журналы, акты, протоколы, данные приборов. Это подтверждает, что контроль ведётся регулярно и по установленным правилам, а не «для галочки».">
+    <legend class="question__text">Вопрос 9. Вы проверяете систему контроля выбросов/запахов на участке термического обезвреживания. Что покажет, что контроль организован не формально, а реально работает?</legend>
+    <div class="options">
+      <button type="button" class="option">Табличка «Контроль выбросов» на входе.</button>
+      <button type="button" class="option">Устное заверение начальника цеха, что «всё в норме».</button>
+      <button type="button" class="option">График совещаний по экологии.</button>
+      <button type="button" class="option" data-correct="true">Программа ПЭК с утверждёнными точками и периодичностью контроля, журналы учёта, акты отбора проб, протоколы лабораторных исследований, а при наличии – данные автоматических средств контроля.</button>
+    </div>
+  </fieldset>
+
+  <!-- ВОПРОС 10 -->
+  <fieldset class="question" hidden data-explanation="ТУ/СТО – это нормативная база, которая показывает, что продукция стандартизирована и контролируется по качеству. Протоколы испытаний подтверждают соответствие заявленным характеристикам.">
+    <legend class="question__text">Вопрос 10. Вы проверяете, как подтверждается качество получаемой продукции (вторичного сырья) при утилизации. Что является надлежащим документом?</legend>
+    <div class="options">
+      <button type="button" class="option" data-correct="true">Технические условия (ТУ) или стандарт организации (СТО) на продукцию, а при необходимости – протоколы испытаний.</button>
+      <button type="button" class="option">Фото готовой продукции.</button>
+      <button type="button" class="option">Отзыв клиента.</button>
+      <button type="button" class="option">Рекламный ролик.</button>
+    </div>
+  </fieldset>
+
+  <!-- Панель под вопросом: вердикт и кнопка перехода (появляется после закрытия пояснения) -->
+  <div class="question__footer" id="footer" hidden>
+    <p class="verdict" id="verdict" role="status"></p>
+    <button type="button" class="btn" id="next-btn">Следующий вопрос</button>
+  </div>
+
+  <!-- Итог -->
+  <section class="result" id="result" hidden aria-labelledby="result-score">
+    <p class="result__score" id="result-score" tabindex="-1"></p>
+    <p class="result__text" id="result-text"></p>
+    <button type="button" class="btn btn--ghost" id="restart-btn">Пройти заново</button>
+  </section>
+</main>
+
+<!-- Всплывающее окно с пояснением -->
+<div class="overlay" id="overlay" hidden>
+  <div class="popup" role="dialog" aria-modal="true" aria-labelledby="popup-title" aria-describedby="popup-text">
+    <h2 class="popup__title" id="popup-title">Объяснение</h2>
+    <p class="popup__text" id="popup-text"></p>
+    <button type="button" class="btn" id="popup-close">Закрыть</button>
+  </div>
+</div>
+
+<script>
+(function () {
+  var TOTAL = 10;
+  var quiz = document.getElementById('quiz');
+  var questions = Array.prototype.slice.call(quiz.querySelectorAll('.question'));
+  var progress = document.getElementById('progress');
+  var progressText = document.getElementById('progress-text');
+  var progressBar = document.getElementById('progress-bar');
+  var progressFill = document.getElementById('progress-fill');
+  var footer = document.getElementById('footer');
+  var verdict = document.getElementById('verdict');
+  var nextBtn = document.getElementById('next-btn');
+  var result = document.getElementById('result');
+  var resultScore = document.getElementById('result-score');
+  var resultText = document.getElementById('result-text');
+  var restartBtn = document.getElementById('restart-btn');
+  var overlay = document.getElementById('overlay');
+  var popupText = document.getElementById('popup-text');
+  var popupClose = document.getElementById('popup-close');
+
+  var current = 0;
+  var score = 0;
+  var lastFocus = null;
+
+  function showQuestion(index) {
+    questions.forEach(function (q, i) { q.hidden = i !== index; });
+    footer.hidden = true;
+    current = index;
+    progressText.textContent = 'Вопрос ' + (index + 1) + ' из ' + TOTAL;
+    progressBar.setAttribute('aria-valuenow', String(index));
+    progressFill.style.width = (index / TOTAL * 100) + '%';
+    var legend = questions[index].querySelector('legend');
+    legend.setAttribute('tabindex', '-1');
+    if (index > 0) {
+      var top = quiz.getBoundingClientRect().top;
+      if (top < 0) { quiz.scrollIntoView({ block: 'start' }); }
+      legend.focus({ preventScroll: true });
+    }
+  }
+
+  function openPopup(text) {
+    lastFocus = document.activeElement;
+    popupText.textContent = text;
+    overlay.hidden = false;
+    popupClose.focus();
+  }
+
+  function closePopup() {
+    if (overlay.hidden) return;
+    overlay.hidden = true;
+    // После закрытия пояснения открываем путь к следующему вопросу
+    if (questions[current].classList.contains('is-answered')) {
+      footer.hidden = false;
+      nextBtn.textContent = current === TOTAL - 1 ? 'Показать результат' : 'Следующий вопрос';
+      nextBtn.focus({ preventScroll: true });
+      footer.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+    } else if (lastFocus) {
+      lastFocus.focus();
+    }
+  }
+
+  function showResult() {
+    questions.forEach(function (q) { q.hidden = true; });
+    footer.hidden = true;
+    progress.hidden = true;
+    progressBar.setAttribute('aria-valuenow', String(TOTAL));
+    result.hidden = false;
+    resultScore.textContent = score + ' из ' + TOTAL;
+    var msg;
+    if (score >= 9) msg = 'Отличный результат! Вы уверенно разбираетесь в теме.';
+    else if (score >= 7) msg = 'Хороший результат. Повторите вопросы, в которых были ошибки.';
+    else if (score >= 5) msg = 'Неплохо, но материал стоит повторить.';
+    else msg = 'Рекомендуем вернуться к материалам урока и пройти тест ещё раз.';
+    resultText.textContent = 'Правильных ответов: ' + score + '. ' + msg;
+    if (quiz.getBoundingClientRect().top < 0) { quiz.scrollIntoView({ block: 'start' }); }
+    resultScore.focus({ preventScroll: true });
+  }
+
+  function restart() {
+    score = 0;
+    questions.forEach(function (q) {
+      q.classList.remove('is-answered');
+      Array.prototype.forEach.call(q.querySelectorAll('.option'), function (o) {
+        o.classList.remove('is-correct', 'is-wrong');
+        o.removeAttribute('aria-disabled');
+        o.removeAttribute('aria-pressed');
+      });
+    });
+    result.hidden = true;
+    progress.hidden = false;
+    showQuestion(0);
+    quiz.scrollIntoView({ block: 'start' });
+  }
+
+  // Клик по варианту ответа (делегирование)
+  quiz.addEventListener('click', function (e) {
+    var option = e.target.closest('.option');
+    if (!option) return;
+    var question = option.closest('.question');
+    if (!question || question.classList.contains('is-answered')) return; // выбор фиксируется
+
+    question.classList.add('is-answered');
+    Array.prototype.forEach.call(question.querySelectorAll('.option'), function (o) {
+      o.setAttribute('aria-disabled', 'true');
+    });
+    option.setAttribute('aria-pressed', 'true');
+
+    var isCorrect = option.getAttribute('data-correct') === 'true';
+    if (isCorrect) {
+      option.classList.add('is-correct');
+      score++;
+      verdict.textContent = 'Верно!';
+      verdict.className = 'verdict verdict--ok';
+    } else {
+      option.classList.add('is-wrong');
+      verdict.textContent = 'Неверно.';
+      verdict.className = 'verdict verdict--bad';
+    }
+    openPopup((isCorrect ? 'Верно! ' : 'Неверно. ') + question.getAttribute('data-explanation'));
+  });
+
+  nextBtn.addEventListener('click', function () {
+    if (current < TOTAL - 1) showQuestion(current + 1);
+    else showResult();
+  });
+
+  restartBtn.addEventListener('click', restart);
+  popupClose.addEventListener('click', closePopup);
+  overlay.addEventListener('click', function (e) { if (e.target === overlay) closePopup(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape') closePopup();
+    // удерживаем фокус внутри окна
+    if (e.key === 'Tab' && !overlay.hidden) { e.preventDefault(); popupClose.focus(); }
+  });
+
+  showQuestion(0);
+})();
+</script>
+</body>
+</html>
