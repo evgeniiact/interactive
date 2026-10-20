@@ -1,0 +1,1087 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+
+<style>
+:root {
+  --bg: #ffffff;
+  --primary: #1e293b;
+  --accent: #2563eb;
+  --success-bg: #f0fdf4;
+  --success-border: #bbf7d0;
+  --success-text: #166534;
+  --error-bg: #fef2f2;
+  --error-border: #fecaca;
+  --error-text: #991b1b;
+  --gray-light: #f8fafc;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --warn-bg: #fffbeb;
+  --warn-border: #fde68a;
+  --warn-text: #92400e;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--primary);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+.screen {
+  display: none;
+  animation: fadeIn 0.4s ease-out;
+}
+.screen.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin-bottom: 12px;
+  color: var(--primary);
+}
+
+h2 {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 20px 0 10px;
+  color: var(--primary);
+}
+
+.subtitle {
+  font-size: 13px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
+  font-weight: 600;
+}
+
+.intro-text {
+  font-size: 15px;
+  color: var(--primary);
+  margin-bottom: 16px;
+  line-height: 1.6;
+}
+
+.situation-card {
+  background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+  border-left: 4px solid var(--accent);
+  padding: 18px;
+  border-radius: 0 8px 8px 0;
+  margin-bottom: 20px;
+}
+
+.situation-card h3 {
+  font-size: 16px;
+  font-weight: 700;
+  margin: 0 0 10px;
+  color: var(--accent);
+}
+
+.situation-card p {
+  margin: 0 0 8px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: #1e40af;
+}
+
+/* Справочные блоки */
+.info-block {
+  background: var(--gray-light);
+  padding: 16px 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 12px;
+}
+
+.info-block h3 {
+  font-size: 14px;
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--primary);
+}
+
+.info-block p, .info-block li {
+  font-size: 14px;
+  line-height: 1.55;
+  color: #334155;
+  margin: 0 0 6px;
+}
+
+.info-block ul {
+  margin: 8px 0 0;
+  padding-left: 20px;
+}
+
+.info-block ul li { margin-bottom: 4px; }
+
+.callout {
+  background: var(--warn-bg);
+  border-left: 3px solid var(--warn-border);
+  padding: 12px 14px;
+  border-radius: 0 8px 8px 0;
+  font-size: 13px;
+  color: var(--warn-text);
+  margin: 12px 0;
+  line-height: 1.5;
+}
+.callout strong {
+  display: block;
+  margin-bottom: 4px;
+  color: #78350f;
+}
+
+/* Диалог */
+.dialogue {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  margin-bottom: 20px;
+}
+
+.message {
+  display: flex;
+  gap: 12px;
+  align-items: flex-start;
+}
+.message.leader { flex-direction: row; }
+.message.ecologist { flex-direction: row-reverse; }
+
+.avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  flex-shrink: 0;
+}
+.avatar.leader { background: #dbeafe; color: var(--accent); }
+.avatar.ecologist { background: var(--success-bg); color: var(--success-text); }
+
+.bubble {
+  max-width: 80%;
+  padding: 12px 16px;
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+.bubble.leader {
+  background: #f1f5f9;
+  color: var(--primary);
+  border-top-left-radius: 4px;
+}
+.bubble.ecologist {
+  background: var(--accent);
+  color: white;
+  border-top-right-radius: 4px;
+}
+
+.transition-note {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+  padding: 8px 12px;
+  border-left: 2px solid var(--border);
+  margin-bottom: 14px;
+}
+
+/* Варианты ответов */
+.options-list {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+
+.option-btn {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 14px 16px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-size: 14px;
+  color: var(--primary);
+  font-family: inherit;
+  width: 100%;
+  line-height: 1.5;
+}
+
+.option-btn:hover:not(:disabled) {
+  border-color: var(--accent);
+  background: #eff6ff;
+}
+
+.option-btn.selected-correct {
+  border-color: var(--success-text);
+  background: var(--success-bg);
+}
+.option-btn.selected-wrong {
+  border-color: var(--error-text);
+  background: var(--error-bg);
+}
+.option-btn.dimmed {
+  opacity: 0.55;
+}
+.option-btn:disabled { cursor: default; }
+
+.option-letter {
+  font-weight: 700;
+  color: var(--accent);
+  margin-right: 6px;
+}
+
+/* Комментарий после выбора */
+.feedback-block {
+  padding: 14px 16px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1.55;
+  margin-bottom: 16px;
+  display: none;
+}
+.feedback-block.show { display: block; animation: fadeIn 0.3s; }
+
+.feedback-block.correct {
+  background: var(--success-bg);
+  border: 1px solid var(--success-border);
+  color: var(--success-text);
+}
+.feedback-block.wrong {
+  background: var(--error-bg);
+  border: 1px solid var(--error-border);
+  color: var(--error-text);
+}
+.feedback-label {
+  font-weight: 700;
+  display: block;
+  margin-bottom: 4px;
+  font-size: 13px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Кнопки */
+.nav-buttons {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 16px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  padding: 11px 20px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  transition: background 0.2s;
+  font-family: inherit;
+}
+
+.btn-primary { background: var(--accent); color: white; }
+.btn-primary:hover { background: #1d4ed8; }
+
+.btn-secondary {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--primary);
+}
+.btn-secondary:hover { background: var(--gray-light); }
+
+.btn:disabled {
+  background: var(--border);
+  color: var(--muted);
+  cursor: not-allowed;
+}
+
+/* Итоговый экран */
+.final-summary {
+  background: var(--gray-light);
+  padding: 20px 22px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 16px;
+}
+.final-summary h2 {
+  margin-top: 0;
+}
+.final-summary p {
+  margin: 0 0 10px;
+  line-height: 1.6;
+  font-size: 14px;
+}
+.final-summary p:last-child { margin-bottom: 0; }
+
+.result-section {
+  margin-bottom: 16px;
+}
+.result-section-title {
+  font-weight: 700;
+  font-size: 14px;
+  margin-bottom: 8px;
+  display: block;
+}
+.result-section.keep .result-section-title { color: var(--success-text); }
+.result-section.fix .result-section-title { color: var(--error-text); }
+
+.result-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+.result-list li {
+  padding: 8px 12px;
+  background: white;
+  border-radius: 6px;
+  margin-bottom: 6px;
+  font-size: 13px;
+  line-height: 1.5;
+  border-left: 3px solid var(--border);
+}
+.result-section.keep .result-list li { border-left-color: var(--success-border); }
+.result-section.fix .result-list li { border-left-color: var(--error-border); }
+
+.closing-box {
+  background: var(--accent);
+  color: white;
+  padding: 18px 20px;
+  border-radius: var(--radius);
+  font-size: 14px;
+  line-height: 1.6;
+  margin-bottom: 20px;
+}
+.closing-box strong {
+  display: block;
+  margin-bottom: 8px;
+  font-size: 15px;
+}
+
+@media (max-width: 480px) {
+  body { padding: 12px; }
+  h1 { font-size: 20px; }
+  .bubble { max-width: 90%; font-size: 13px; }
+  .nav-buttons { flex-direction: column-reverse; }
+  .btn { width: 100%; text-align: center; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ЭКРАН 1: СИТУАЦИЯ -->
+  <div id="screen-intro" class="screen active">
+    <div class="subtitle">Заключительный тренажер. Защита проекта</div>
+    <h1>Встреча с руководством стекольного завода</h1>
+
+    <div class="situation-card">
+      <h3>Ситуация</h3>
+      <p>Вы - главный эколог стекольного завода. Предприятие работает стабильно, ведет природоохранную деятельность, имеет базовую разрешительную документацию.</p>
+      <p>Генеральный директор вызвал вас на встречу. Он слышал о системе экологического менеджмента от коллег по отрасли и хочет понять, нужно ли внедрять СЭМ на вашем заводе.</p>
+      <p>Вам предстоит защитить идею внедрения, ответить на возражения, объяснить связь между стандартами и получить согласие на начало работы с привлечением других подразделений.</p>
+    </div>
+
+    <p class="intro-text">Ваша задача: пройти все этапы разговора, обосновать необходимость СЭМ и получить одобрение на подготовительный этап.</p>
+
+    <div class="nav-buttons" style="justify-content:flex-end;">
+      <button class="btn btn-primary" onclick="goToScreen('screen-reference')">Изучить справку</button>
+    </div>
+  </div>
+
+  <!-- ЭКРАН 2: СПРАВКА -->
+  <div id="screen-reference" class="screen">
+    <div class="subtitle">Перед началом разговора</div>
+    <h1>Ключевые факты о СЭМ</h1>
+
+    <div class="info-block">
+      <h3>Что такое СЭМ</h3>
+      <p>Система экологического менеджмента - инструмент управления предприятием, который помогает снизить риски нарушений, сократить плату за НВОС и экономить на ресурсах.</p>
+      <p>СЭМ не заменяет текущие инструкции цехов, а дополняет их экологическими требованиями.</p>
+    </div>
+
+    <div class="info-block">
+      <h3>Три элемента СЭМ</h3>
+      <ul>
+        <li><strong>Экологические аспекты</strong> - элементы работы, которые влияют на окружающую среду (потребление газа, выбросы, образование отходов)</li>
+        <li><strong>Принятые обязательства</strong> - требования законов и внутренние правила компании</li>
+        <li><strong>Риски и возможности</strong> - события, которые могут помеш достичь целей или помочь улучшить показатели</li>
+      </ul>
+    </div>
+
+    <div class="info-block">
+      <h3>Цикл PDCA</h3>
+      <p>Вся система строится на цикле «Планируй - Делай - Проверяй - Действуй». Это механизм непрерывного улучшения.</p>
+      <p>Контроль становится частью системы только тогда, когда его результаты ведут к решениям и изменениям в работе.</p>
+    </div>
+
+    <div class="info-block">
+      <h3>ГОСТ Р ИСО 14001-2016 и ISO 14001</h3>
+      <p>Российский стандарт идентичен международному. Разные обозначения не требуют создавать две системы.</p>
+      <p>ГОСТ действует на территории РФ, используется для госзакупок и внутренних тендеров. Международный стандарт нужен для выхода на зарубежные рынки.</p>
+    </div>
+
+    <div class="callout">
+      <strong>Важно помнить</strong>
+      Внедрение СЭМ - добровольное решение. Оно не гарантирует отсутствие штрафов, но помогает системно управлять рисками и снижать затраты.
+    </div>
+
+    <div class="info-block">
+      <h3>Подготовительный этап</h3>
+      <ul>
+        <li>Уточнить, какой результат нужен на первом этапе</li>
+        <li>Определить участников и согласовать условия их работы</li>
+        <li>Собрать существующие сведения и проверить пробелы</li>
+        <li>Составить первичный план и передать вопросы руководству</li>
+      </ul>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="goToScreen('screen-intro')">Вернуться</button>
+      <button class="btn btn-primary" onclick="goToScreen('screen-card1')">Начать разговор</button>
+    </div>
+  </div>
+
+  <!-- КАРТОЧКА 1: Зачем нам СЭМ -->
+  <div id="screen-card1" class="screen">
+    <div class="subtitle">Шаг 1 из 8. Обоснование необходимости</div>
+    <h1>Зачем нам СЭМ</h1>
+
+    <div class="dialogue">
+      <div class="message leader">
+        <div class="avatar leader">ГД</div>
+        <div class="bubble leader">Мы и так ведем природоохранную работу, платим за НВОС, сдаем отчетность. Зачем нам еще одна система? Чем СЭМ поможет заводу?</div>
+      </div>
+    </div>
+
+    <p style="margin-bottom:12px;"><strong>Выберите ответ.</strong></p>
+
+    <div class="options-list" id="options-card1">
+      <button class="option-btn" data-type="wrong" onclick="handleCard(1, this)">
+        <span class="option-letter">А.</span>СЭМ гарантирует, что у нас больше не будет штрафов от Росприроднадзора и мы полностью исключим любые нарушения.
+      </button>
+      <button class="option-btn" data-type="correct" onclick="handleCard(1, this)">
+        <span class="option-letter">Б.</span>СЭМ поможет системно управлять экологическими рисками, снизить вероятность аварий и штрафов, а также сократить затраты на ресурсы и утилизацию отходов за счет выявления скрытых потерь.
+      </button>
+      <button class="option-btn" data-type="wrong" onclick="handleCard(1, this)">
+        <span class="option-letter">В.</span>СЭМ нужна только для получения сертификата, который мы покажем проверяющим органам. Это формальность для галочки.
+      </button>
+    </div>
+
+    <div class="feedback-block" id="fb-card1">
+      <span class="feedback-label" id="fb-card1-label"></span>
+      <span id="fb-card1-text"></span>
+    </div>
+
+    <div class="nav-buttons" id="nav-card1" style="display:none;">
+      <button class="btn btn-secondary" onclick="resetCard(1)">Изменить ответ</button>
+      <button class="btn btn-primary" onclick="goToScreen('screen-card2')">Продолжить</button>
+    </div>
+  </div>
+
+  <!-- КАРТОЧКА 2: Возражение о затратах -->
+  <div id="screen-card2" class="screen">
+    <div class="subtitle">Шаг 2 из 8. Возражение о затратах</div>
+    <h1>Это дорого и не окупится</h1>
+
+    <div class="transition-note">Директор выслушал ваше объяснение, но у него есть сомнения.</div>
+
+    <div class="dialogue">
+      <div class="message leader">
+        <div class="avatar leader">ГД</div>
+        <div class="bubble leader">Внедрение системы потребует времени сотрудников, возможно, консультантов, аудита. Это дорого. Когда это окупится?</div>
+      </div>
+    </div>
+
+    <div class="options-list" id="options-card2">
+      <button class="option-btn" data-type="wrong" onclick="handleCard(2, this)">
+        <span class="option-letter">А.</span>СЭМ окупится за три месяца за счет снижения платы за НВОС. Мы сразу увидим экономию.
+      </button>
+      <button class="option-btn" data-type="correct" onclick="handleCard(2, this)">
+        <span class="option-letter">Б.</span>Точный срок окупаемости можно оценить только после анализа текущих процессов. СЭМ помогает выявить скрытые потери ресурсов и сократить затраты, но для этого нужны первоначальные вложения в анализ и изменения процессов.
+      </button>
+      <button class="option-btn" data-type="wrong" onclick="handleCard(2, this)">
+        <span class="option-letter">В.</span>Окупаемость не важна. СЭМ - это обязательное требование для всех предприятий, иначе нас оштрафуют.
+      </button>
+    </div>
+
+    <div class="feedback-block" id="fb-card2">
+      <span class="feedback-label" id="fb-card2-label"></span>
+      <span id="fb-card2-text"></span>
+    </div>
+
+    <div class="nav-buttons" id="nav-card2" style="display:none;">
+      <button class="btn btn-secondary" onclick="resetCard(2)">Изменить ответ</button>
+      <button class="btn btn-primary" onclick="goToScreen('screen-card3')">Продолжить</button>
+    </div>
+  </div>
+
+  <!-- КАРТОЧКА 3: Какой стандарт выбрать -->
+  <div id="screen-card3" class="screen">
+    <div class="subtitle">Шаг 3 из 8. Выбор стандарта</div>
+    <h1>ГОСТ или ISO</h1>
+
+    <div class="transition-note">Директор заинтересовался, но хочет понять разницу между стандартами.</div>
+
+    <div class="dialogue">
+      <div class="message leader">
+        <div class="avatar leader">ГД</div>
+        <div class="bubble leader">Я слышал, есть российский ГОСТ и международный ISO 14001. Нам нужно внедрять оба? Это разные системы?</div>
+      </div>
+    </div>
+
+    <div class="options-list" id="options-card3">
+      <button class="option-btn" data-type="correct" onclick="handleCard(3, this)">
+        <span class="option-letter">А.</span>ГОСТ Р ИСО 14001-2016 идентичен международному ISO 14001:2015. Это один стандарт с разными обозначениями. Для работы на внутреннем рынке достаточно ГОСТа.
+      </button>
+      <button class="option-btn" data-type="wrong" onclick="handleCard(3, this)">
+        <span class="option-letter">Б.</span>Да, это разные системы с разными требованиями. Нам нужно внедрить обе, чтобы покрыть все возможные проверки.
+      </button>
+      <button class="option-btn" data-type="wrong" onclick="handleCard(3, this)">
+        <span class="option-letter">В.</span>ГОСТ устарел, нужно внедрять только международный стандарт, он современнее и лучше.
+      </button>
+    </div>
+
+    <div class="feedback-block" id="fb-card3">
+      <span class="feedback-label" id="fb-card3-label"></span>
+      <span id="fb-card3-text"></span>
+    </div>
+
+    <div class="nav-buttons" id="nav-card3" style="display:none;">
+      <button class="btn btn-secondary" onclick="resetCard(3)">Изменить ответ</button>
+      <button class="btn btn-primary" onclick="goToScreen('screen-card4')">Продолжить</button>
+    </div>
+  </div>
+
+  <!-- КАРТОЧКА 4: Возражение о нагрузке на производство -->
+  <div id="screen-card4" class="screen">
+    <div class="subtitle">Шаг 4 из 8. Нагрузка на производство</div>
+    <h1>Мы не можем отвлекать людей</h1>
+
+    <div class="transition-note">Директор начинает склоняться к идее, но беспокоится о производственном процессе.</div>
+
+    <div class="dialogue">
+      <div class="message leader">
+        <div class="avatar leader">ГД</div>
+        <div class="bubble leader">Производство загружено, план горит. Мы не можем отвлекать начальников цехов и рабочих на ваши собрания и сбор данных. Экологическая служба должна справиться сама.</div>
+      </div>
+    </div>
+
+    <div class="options-list" id="options-card4">
+      <button class="option-btn" data-type="wrong" onclick="handleCard(4, this)">
+        <span class="option-letter">А.</span>Хорошо, экологическая служба подготовит все документы самостоятельно. Мы не будем беспокоить производство.
+      </button>
+      <button class="option-btn" data-type="correct" onclick="handleCard(4, this)">
+        <span class="option-letter">Б.</span>СЭМ работает только тогда, когда в ней участвуют владельцы процессов. На старте нам нужно минимум времени: запросить существующие документы и провести короткие встречи для уточнения пробелов. Это не остановит производство.
+      </button>
+      <button class="option-btn" data-type="wrong" onclick="handleCard(4, this)">
+        <span class="option-letter">В.</span>Тогда давайте сначала создадим большую рабочую группу из всех руководителей и проведем недельное обучение основам СЭМ.
+      </button>
+    </div>
+
+    <div class="feedback-block" id="fb-card4">
+      <span class="feedback-label" id="fb-card4-label"></span>
+      <span id="fb-card4-text"></span>
+    </div>
+
+    <div class="nav-buttons" id="nav-card4" style="display:none;">
+      <button class="btn btn-secondary" onclick="resetCard(4)">Изменить ответ</button>
+      <button class="btn btn-primary" onclick="goToScreen('screen-card5')">Продолжить</button>
+    </div>
+  </div>
+
+  <!-- КАРТОЧКА 5: Кого привлечь -->
+  <div id="screen-card5" class="screen">
+    <div class="subtitle">Шаг 5 из 8. Привлечение подразделений</div>
+    <h1>Кого нужно подключить</h1>
+
+    <div class="transition-note">Директор согласен на короткие встречи. Теперь нужно определить участников.</div>
+
+    <div class="dialogue">
+      <div class="message leader">
+        <div class="avatar leader">ГД</div>
+        <div class="bubble leader">Хорошо, давайте начнем с малого. Кого конкретно нужно привлечь на первом этапе и что от них потребуется?</div>
+      </div>
+    </div>
+
+    <div class="options-list" id="options-card5">
+      <button class="option-btn" data-type="wrong" onclick="handleCard(5, this)">
+        <span class="option-letter">А.</span>Нужно собрать всех начальников цехов, технологов, мастеров, рабочих и провести серию многочасовых совещаний для разработки новых инструкций.
+      </button>
+      <button class="option-btn" data-type="correct" onclick="handleCard(5, this)">
+        <span class="option-letter">Б.</span>На первом этапе достаточно привлечь руководителей ключевых процессов (например, подготовка шихты), специалистов по учету ресурсов и отходов. От них нужно получить существующие документы и короткие пояснения к фактической работе.
+      </button>
+      <button class="option-btn" data-type="wrong" onclick="handleCard(5, this)">
+        <span class="option-letter">В.</span>Никого привлекать не нужно. Я сам соберу все данные из открытых источников и баз данных предприятия.
+      </button>
+    </div>
+
+    <div class="feedback-block" id="fb-card5">
+      <span class="feedback-label" id="fb-card5-label"></span>
+      <span id="fb-card5-text"></span>
+    </div>
+
+    <div class="nav-buttons" id="nav-card5" style="display:none;">
+      <button class="btn btn-secondary" onclick="resetCard(5)">Изменить ответ</button>
+      <button class="btn btn-primary" onclick="goToScreen('screen-card6')">Продолжить</button>
+    </div>
+  </div>
+
+  <!-- КАРТОЧКА 6: Что запросить -->
+  <div id="screen-card6" class="screen">
+    <div class="subtitle">Шаг 6 из 8. Запрос информации</div>
+    <h1>Какие данные нужны</h1>
+
+    <div class="transition-note">Директор дает согласие на работу с подразделениями. Теперь нужно сформулировать запрос.</div>
+
+    <div class="dialogue">
+      <div class="message leader">
+        <div class="avatar leader">ГД</div>
+        <div class="bubble leader">Что конкретно вы будете запрашивать у начальников цехов? Как сформулировать запрос, чтобы они поняли, что от них нужно?</div>
+      </div>
+    </div>
+
+    <div class="options-list" id="options-card6">
+      <button class="option-btn" data-type="wrong" onclick="handleCard(6, this)">
+        <span class="option-letter">А.</span>«Подготовьте полное описание всех экологических процессов вашего цеха в формате СЭМ к следующей пятнице».
+      </button>
+      <button class="option-btn" data-type="correct" onclick="handleCard(6, this)">
+        <span class="option-letter">Б.</span>«Предоставьте действующие инструкции по выбранному процессу, если они есть. Укажите, какие данные о расходе сырья и образовании отходов вы собираете, где их храните и кто может пояснить фактический порядок работы».
+      </button>
+      <button class="option-btn" data-type="wrong" onclick="handleCard(6, this)">
+        <span class="option-letter">В.</span>«Мне нужны все документы вашего цеха за последние пять лет. Пришлите все, что есть, я сам разберусь».
+      </button>
+    </div>
+
+    <div class="feedback-block" id="fb-card6">
+      <span class="feedback-label" id="fb-card6-label"></span>
+      <span id="fb-card6-text"></span>
+    </div>
+
+    <div class="nav-buttons" id="nav-card6" style="display:none;">
+      <button class="btn btn-secondary" onclick="resetCard(6)">Изменить ответ</button>
+      <button class="btn btn-primary" onclick="goToScreen('screen-card7')">Продолжить</button>
+    </div>
+  </div>
+
+  <!-- КАРТОЧКА 7: Возражение о сроках -->
+  <div id="screen-card7" class="screen">
+    <div class="subtitle">Шаг 7 из 8. Вопрос о сроках</div>
+    <h1>Когда мы получим сертификат</h1>
+
+    <div class="transition-note">Директор удовлетворен подходом, но хочет понять горизонт планирования.</div>
+
+    <div class="dialogue">
+      <div class="message leader">
+        <div class="avatar leader">ГД</div>
+        <div class="bubble leader">Если мы начнем сейчас, когда мы получим сертификат? Мне нужен конкретный срок для планирования бюджета и отчетности перед собственниками.</div>
+      </div>
+    </div>
+
+    <div class="options-list" id="options-card7">
+      <button class="option-btn" data-type="wrong" onclick="handleCard(7, this)">
+        <span class="option-letter">А.</span>Сертификат получим ровно через 8 месяцев. Это стандартный срок для любого предприятия.
+      </button>
+      <button class="option-btn" data-type="correct" onclick="handleCard(7, this)">
+        <span class="option-letter">Б.</span>Точный срок сертификации можно назвать только после анализа текущего состояния и объема работы. Сейчас мы можем согласовать срок подготовительного этапа (например, два месяца), а затем предложить реалистичный план внедрения.
+      </button>
+      <button class="option-btn" data-type="wrong" onclick="handleCard(7, this)">
+        <span class="option-letter">В.</span>Сроки обсуждать преждевременно. Сначала нужно изучить все требования стандарта, а это займет неопределенное время.
+      </button>
+    </div>
+
+    <div class="feedback-block" id="fb-card7">
+      <span class="feedback-label" id="fb-card7-label"></span>
+      <span id="fb-card7-text"></span>
+    </div>
+
+    <div class="nav-buttons" id="nav-card7" style="display:none;">
+      <button class="btn btn-secondary" onclick="resetCard(7)">Изменить ответ</button>
+      <button class="btn btn-primary" onclick="goToScreen('screen-card8')">Продолжить</button>
+    </div>
+  </div>
+
+  <!-- КАРТОЧКА 8: Финальное согласие -->
+  <div id="screen-card8" class="screen">
+    <div class="subtitle">Шаг 8 из 8. Получение согласия</div>
+    <h1>Итоговое решение</h1>
+
+    <div class="transition-note">Разговор подходит к завершению. Нужно подвести итог и получить конкретное решение.</div>
+
+    <div class="dialogue">
+      <div class="message leader">
+        <div class="avatar leader">ГД</div>
+        <div class="bubble leader">Хорошо, я вижу логику. Давайте зафиксируем: что именно мы делаем прямо сейчас, после этой встречи?</div>
+      </div>
+    </div>
+
+    <div class="options-list" id="options-card8">
+      <button class="option-btn" data-type="wrong" onclick="handleCard(8, this)">
+        <span class="option-letter">А.</span>Начинаем полноценное внедрение СЭМ. Я подготовлю полный комплект документов, а вы подпишете приказ о создании рабочей группы из всех руководителей.
+      </button>
+      <button class="option-btn" data-type="correct" onclick="handleCard(8, this)">
+        <span class="option-letter">Б.</span>Мы согласуем подготовительный этап: я запрошу существующие документы у ключевых подразделений, проведу короткие встречи для уточнения пробелов и через два месяца представлю вам обзор с предложениями по следующим шагам и необходимыми ресурсами.
+      </button>
+      <button class="option-btn" data-type="wrong" onclick="handleCard(8, this)">
+        <span class="option-letter">В.</span>Пока ничего не делаем. Я изучу все требования ГОСТа, подготовлю подробный план на три года, и мы вернемся к этому вопросу через полгода.
+      </button>
+    </div>
+
+    <div class="feedback-block" id="fb-card8">
+      <span class="feedback-label" id="fb-card8-label"></span>
+      <span id="fb-card8-text"></span>
+    </div>
+
+    <div class="nav-buttons" id="nav-card8" style="display:none;">
+      <button class="btn btn-secondary" onclick="resetCard(8)">Изменить ответ</button>
+      <button class="btn btn-primary" onclick="goToScreen('screen-final')">Завершить</button>
+    </div>
+  </div>
+
+  <!-- ИТОГ -->
+  <div id="screen-final" class="screen">
+    <div class="subtitle">Итог разговора</div>
+    <h1>Вы получили согласие на начало работы</h1>
+
+    <div class="final-summary">
+      <h2>Что получилось</h2>
+      <p>Вы успешно провели разговор с руководством, обосновали необходимость СЭМ, ответили на возражения и получили согласие на подготовительный этап.</p>
+      <p>Директор понял, что СЭМ - это не формальность, а инструмент управления рисками и затратами. Он согласился на разумный подход: начать с анализа, а не с масштабных изменений.</p>
+    </div>
+
+    <div id="keep-section" class="result-section keep"></div>
+    <div id="fix-section" class="result-section fix"></div>
+
+    <div class="final-summary">
+      <h2 style="margin-top:0;">Ключевые принципы, которые вы применили</h2>
+      <ul style="margin:8px 0 0; padding-left:20px; font-size:14px; line-height:1.7;">
+        <li><strong>Не обещайте невозможного.</strong> СЭМ не гарантирует отсутствие штрафов и мгновенную окупаемость.</li>
+        <li><strong>Говорите на языке бизнеса.</strong> Связывайте СЭМ с рисками, затратами и конкурентными преимуществами.</li>
+        <li><strong>Разделяйте стандарты правильно.</strong> ГОСТ и ISO идентичны, не нужно создавать две системы.</li>
+        <li><strong>Привлекайте владельцев процессов.</strong> СЭМ работает только при участии подразделений, но начинайте с малого.</li>
+        <li><strong>Запрашивайте существующее.</strong> Не поручайте создавать новые документы без проверки того, что уже есть.</li>
+        <li><strong>Согласуйте подготовительный этап.</strong> Не пытайтесь сразу внедрить всю систему, начните с анализа.</li>
+      </ul>
+    </div>
+
+    <div class="closing-box">
+      <strong>Следующие шаги</strong>
+      Теперь вы можете начать подготовительный этап: запросить документы, провести встречи с подразделениями, выявить пробелы и подготовить предложения для руководства. В следующих уроках программы вы детально разберете каждый этап внедрения СЭМ.
+    </div>
+
+    <div class="final-summary">
+      <h2 style="margin-top:0;">Что вы освоили в этой программе</h2>
+      <p><strong>Урок 1:</strong> Поняли, что СЭМ - это механизм управления, а не пакет документов.</p>
+      <p><strong>Урок 2:</strong> Изучили историю СЭМ, цикл PDCA и три ключевых элемента системы.</p>
+      <p><strong>Урок 3:</strong> Разобрались в связи между ГОСТ Р ИСО 14001-2016 и ISO 14001.</p>
+      <p><strong>Урок 4:</strong> Научились получать поддержку руководства и организовывать начало работы.</p>
+    </div>
+
+    <div class="nav-buttons" style="justify-content:center;">
+      <button class="btn btn-secondary" onclick="restartAll()">Пройти тренажер заново</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const FB = {
+  1: {
+    correct: {
+      label: "Верно",
+      text: "Вы правильно объяснили суть СЭМ: это инструмент системного управления рисками и затратами, а не гарантия отсутствия проблем."
+    },
+    wrongA: {
+      label: "Ложное обещание",
+      text: "СЭМ не гарантирует отсутствие штрафов. Она помогает снижать риски, но не исключает их полностью."
+    },
+    wrongV: {
+      label: "Формальный подход",
+      text: "СЭМ - это не формальность для проверяющих, а реальный инструмент управления, который помогает бизнесу."
+    }
+  },
+  2: {
+    correct: {
+      label: "Верно",
+      text: "Вы честно объяснили, что окупаемость зависит от анализа текущих процессов и требует первоначальных вложений."
+    },
+    wrongA: {
+      label: "Необоснованное обещание",
+      text: "Невозможно обещать конкретный срок окупаемости без анализа предприятия. Это подрывает доверие."
+    },
+    wrongV: {
+      label: "Неверный аргумент",
+      text: "СЭМ - добровольное решение, а не обязательное требование. Окупаемость важна для обоснования инвестиций."
+    }
+  },
+  3: {
+    correct: {
+      label: "Верно",
+      text: "Вы правильно объяснили, что ГОСТ и ISO идентичны, и для внутреннего рынка достаточно российского стандарта."
+    },
+    wrongB: {
+      label: "Неверно",
+      text: "ГОСТ Р ИСО 14001-2016 идентичен ISO 14001:2015. Это один стандарт, не нужно создавать две системы."
+    },
+    wrongV: {
+      label: "Неверно",
+      text: "ГОСТ Р ИСО 14001-2016 действует на территории РФ и имеет юридическую силу. Он не устарел."
+    }
+  },
+  4: {
+    correct: {
+      label: "Верно",
+      text: "Вы объяснили, что СЭМ требует участия владельцев процессов, но предложили разумный подход с минимальной нагрузкой."
+    },
+    wrongA: {
+      label: "Ошибка",
+      text: "СЭМ не работает, если ее разрабатывает только экологическая служба. Нужны владельцы процессов."
+    },
+    wrongV: {
+      label: "Избыточно",
+      text: "Создание большой рабочей группы и недельное обучение на старте избыточно. Начните с малого."
+    }
+  },
+  5: {
+    correct: {
+      label: "Верно",
+      text: "Вы предложили привлечь ключевых участников для конкретных задач, а не всех подряд."
+    },
+    wrongA: {
+      label: "Избыточно",
+      text: "Сбор всех руководителей и многочасовые совещания остановят производство. Начните с малого."
+    },
+    wrongV: {
+      label: "Недостаточно",
+      text: "Открытые источники не дадут информации о фактических процессах. Нужны владельцы процессов."
+    }
+  },
+  6: {
+    correct: {
+      label: "Верно",
+      text: "Вы сформулировали конкретный запрос на существующие документы и пояснения, а не на создание нового."
+    },
+    wrongA: {
+      label: "Неверный запрос",
+      text: "Нельзя требовать создать описание процессов в формате СЭМ без проверки того, что уже есть."
+    },
+    wrongV: {
+      label: "Слишком широко",
+      text: "Запрос всех документов за пять лет избыточен и затруднит работу. Нужны конкретные материалы."
+    }
+  },
+  7: {
+    correct: {
+      label: "Верно",
+      text: "Вы разделили ближайшее действие (подготовительный этап) и весь проект, не дали необоснованных обещаний."
+    },
+    wrongA: {
+      label: "Необоснованное обещание",
+      text: "Нельзя обещать конкретный срок сертификации без анализа объема работы и ресурсов."
+    },
+    wrongV: {
+      label: "Излишняя осторожность",
+      text: "Можно согласовать срок подготовительного этапа, даже если срок всей сертификации пока неизвестен."
+    }
+  },
+  8: {
+    correct: {
+      label: "Верно",
+      text: "Вы согласовали конкретный подготовительный этап с понятным результатом, а не все внедрение сразу."
+    },
+    wrongA: {
+      label: "Преждевременно",
+      text: "Нельзя начинать полноценное внедрение без анализа текущего состояния и объема работы."
+    },
+    wrongV: {
+      label: "Откладывание",
+      text: "Откладывать на полгода - значит потерять время. Подготовительный этап можно начать сразу."
+    }
+  }
+};
+
+const choices = { 1: null, 2: null, 3: null, 4: null, 5: null, 6: null, 7: null, 8: null };
+
+function goToScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  resizeIframe();
+}
+
+function handleCard(n, btn) {
+  const opts = document.querySelectorAll(`#options-card${n} .option-btn`);
+  opts.forEach(o => o.disabled = true);
+
+  const type = btn.getAttribute('data-type');
+  const idx = Array.from(opts).indexOf(btn);
+
+  opts.forEach(o => o.classList.add('dimmed'));
+  btn.classList.remove('dimmed');
+  if (type === 'correct') {
+    btn.classList.add('selected-correct');
+  } else {
+    btn.classList.add('selected-wrong');
+  }
+
+  let fb;
+  if (type === 'correct') {
+    fb = FB[n].correct;
+    choices[n] = 'correct';
+  } else {
+    const wrongKey = idx === 0 ? 'wrongA' : (idx === 1 ? 'wrongB' : 'wrongV');
+    fb = FB[n][wrongKey];
+    choices[n] = 'wrong';
+  }
+
+  const fbBlock = document.getElementById(`fb-card${n}`);
+  const fbLabel = document.getElementById(`fb-card${n}-label`);
+  const fbText = document.getElementById(`fb-card${n}-text`);
+
+  fbBlock.className = 'feedback-block show ' + (type === 'correct' ? 'correct' : 'wrong');
+  fbLabel.textContent = fb.label;
+  fbText.textContent = fb.text;
+
+  document.getElementById(`nav-card${n}`).style.display = 'flex';
+  resizeIframe();
+}
+
+function resetCard(n) {
+  const opts = document.querySelectorAll(`#options-card${n} .option-btn`);
+  opts.forEach(o => {
+    o.disabled = false;
+    o.classList.remove('selected-correct', 'selected-wrong', 'dimmed');
+  });
+  document.getElementById(`fb-card${n}`).classList.remove('show');
+  document.getElementById(`nav-card${n}`).style.display = 'none';
+  choices[n] = null;
+  resizeIframe();
+}
+
+function buildFinalReport() {
+  const keep = [];
+  const fix = [];
+
+  const cardTitles = {
+    1: 'Обоснование необходимости СЭМ',
+    2: 'Ответ на возражение о затратах',
+    3: 'Выбор стандарта',
+    4: 'Нагрузка на производство',
+    5: 'Привлечение подразделений',
+    6: 'Запрос информации',
+    7: 'Вопрос о сроках',
+    8: 'Получение согласия'
+  };
+
+  const keepMessages = {
+    1: 'Вы правильно объяснили, что СЭМ помогает системно управлять рисками и затратами, а не гарантирует отсутствие проблем.',
+    2: 'Вы честно объяснили, что окупаемость зависит от анализа и требует первоначальных вложений.',
+    3: 'Вы правильно объяснили, что ГОСТ и ISO идентичны, и для внутреннего рынка достаточно ГОСТа.',
+    4: 'Вы предложили разумный подход с минимальной нагрузкой на производство.',
+    5: 'Вы предложили привлечь ключевых участников для конкретных задач.',
+    6: 'Вы сформулировали конкретный запрос на существующие документы и пояснения.',
+    7: 'Вы разделили ближайшее действие и весь проект, не дали необоснованных обещаний.',
+    8: 'Вы согласовали конкретный подготовительный этап с понятным результатом.'
+  };
+
+  const fixMessages = {
+    1: 'Стоило объяснить, что СЭМ - это инструмент управления рисками, а не гарантия отсутствия штрафов.',
+    2: 'Не стоило обещать конкретный срок окупаемости без анализа предприятия.',
+    3: 'Стоило объяснить, что ГОСТ и ISO идентичны, не нужно создавать две системы.',
+    4: 'Стоило объяснить, что СЭМ требует участия владельцев процессов, но начать можно с малого.',
+    5: 'Стоило предложить привлечь ключевых участников, а не всех подряд или никого.',
+    6: 'Стоило запросить существующие документы и пояснения, а не создавать новые.',
+    7: 'Стоило согласовать срок подготовительного этапа, даже если срок сертификации неизвестен.',
+    8: 'Стоило согласовать подготовительный этап, а не все внедрение сразу или откладывание.'
+  };
+
+  for (let i = 1; i <= 8; i++) {
+    if (choices[i] === 'correct') {
+      keep.push({ title: cardTitles[i], text: keepMessages[i] });
+    } else if (choices[i] === 'wrong') {
+      fix.push({ title: cardTitles[i], text: fixMessages[i] });
+    }
+  }
+
+  const keepSection = document.getElementById('keep-section');
+  if (keep.length > 0) {
+    let html = '<span class="result-section-title">Что получилось хорошо</span><ul class="result-list">';
+    keep.forEach(item => {
+      html += `<li><strong>${item.title}.</strong> ${item.text}</li>`;
+    });
+    html += '</ul>';
+    keepSection.innerHTML = html;
+    keepSection.style.display = 'block';
+  } else {
+    keepSection.style.display = 'none';
+  }
+
+  const fixSection = document.getElementById('fix-section');
+  if (fix.length > 0) {
+    let html = '<span class="result-section-title">Что стоит учесть в следующий раз</span><ul class="result-list">';
+    fix.forEach(item => {
+      html += `<li><strong>${item.title}.</strong> ${item.text}</li>`;
+    });
+    html += '</ul>';
+    fixSection.innerHTML = html;
+    fixSection.style.display = 'block';
+  } else {
+    fixSection.style.display = 'none';
+  }
+}
+
+function restartAll() {
+  for (let i = 1; i <= 8; i++) {
+    resetCard(i);
+  }
+  for (let i = 1; i <= 8; i++) choices[i] = null;
+  goToScreen('screen-intro');
+}
+
+const originalGoToScreen = goToScreen;
+goToScreen = function(id) {
+  if (id === 'screen-final') {
+    buildFinalReport();
+  }
+  originalGoToScreen(id);
+};
+
+function resizeIframe() {
+  if (window.parentIFrame) {
+    window.parentIFrame.size();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  resizeIframe();
+});
+</script>
+
+</body>
+</html>
