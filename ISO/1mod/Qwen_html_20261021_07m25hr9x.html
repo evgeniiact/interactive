@@ -1,0 +1,1044 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SWOT для внедрения СЭМ</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --primary: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --gray-light: #f8fafc;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --ok-bg: #f0fdf4;
+  --ok-border: #bbf7d0;
+  --ok-text: #166534;
+  --bad-bg: #fef2f2;
+  --bad-border: #fecaca;
+  --bad-text: #991b1b;
+  --s-bg: #e6f4ea; --s-border: #a8d5b5; --s-text: #1b5e20;
+  --w-bg: #fff3e0; --w-border: #f2c089; --w-text: #9a3412;
+  --o-bg: #e3f0fd; --o-border: #9cc3ee; --o-text: #0d47a1;
+  --t-bg: #fde8ef; --t-border: #efa8c0; --t-text: #9d174d;
+  --a-bg: #f1f5f9; --a-border: #cbd5e1; --a-text: #334155;
+  --radius: 12px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--primary);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.container { max-width: 680px; margin: 0 auto; }
+
+.screen { display: none; animation: fadeIn .35s ease-out; }
+.screen.active { display: block; }
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+h1 { font-size: 22px; font-weight: 800; margin: 0 0 10px; }
+h2 { font-size: 17px; font-weight: 700; margin: 18px 0 8px; }
+
+.subtitle {
+  font-size: 13px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .5px; margin-bottom: 12px; font-weight: 600;
+}
+
+.lead { font-size: 14px; color: var(--primary); margin: 0 0 14px; line-height: 1.6; }
+
+.callout {
+  background: #fffbeb;
+  border-left: 3px solid #fde68a;
+  padding: 12px 14px;
+  border-radius: 0 8px 8px 0;
+  font-size: 13px;
+  color: #92400e;
+  margin: 14px 0;
+  line-height: 1.55;
+}
+
+.hint-box {
+  background: var(--gray-light);
+  border: 1px dashed var(--border);
+  border-radius: 10px;
+  padding: 10px 14px;
+  font-size: 13px;
+  color: var(--muted);
+  margin: 12px 0;
+}
+
+/* Матрица этап 1 */
+.matrix {
+  display: grid;
+  grid-template-columns: 108px 1fr 1fr;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.axis {
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .4px;
+  text-align: center; padding: 4px;
+}
+
+.quad {
+  border: 2px solid; border-radius: 14px;
+  min-height: 132px; padding: 14px;
+  display: flex; flex-direction: column; align-items: flex-start; gap: 2px;
+  cursor: pointer; font-family: inherit; text-align: left;
+  transition: box-shadow .15s;
+}
+
+.quad .q-letter { font-size: 26px; font-weight: 800; line-height: 1.1; }
+.quad .q-name { font-size: 15px; font-weight: 700; }
+.quad .q-hint { font-size: 12px; opacity: .8; margin-top: auto; }
+
+.quad[aria-expanded="true"] { box-shadow: 0 0 0 3px rgba(37,99,235,.28); }
+
+.g-s { background: var(--s-bg); border-color: var(--s-border); color: var(--s-text); }
+.g-w { background: var(--w-bg); border-color: var(--w-border); color: var(--w-text); }
+.g-o { background: var(--o-bg); border-color: var(--o-border); color: var(--o-text); }
+.g-t { background: var(--t-bg); border-color: var(--t-border); color: var(--t-text); }
+
+.group-panel {
+  margin-top: 14px;
+  border: 1px solid var(--border);
+  border-left: 6px solid var(--muted);
+  border-radius: 10px;
+  padding: 16px 18px;
+  display: none;
+  background: #fff;
+}
+.group-panel.show { display: block; }
+.group-panel.p-s { border-left-color: var(--s-text); }
+.group-panel.p-w { border-left-color: var(--w-text); }
+.group-panel.p-o { border-left-color: var(--o-text); }
+.group-panel.p-t { border-left-color: var(--t-text); }
+
+.group-panel h3 { margin: 0 0 8px; font-size: 16px; }
+.group-panel p { margin: 0 0 8px; font-size: 14px; line-height: 1.55; }
+.group-panel p:last-child { margin-bottom: 0; }
+
+/* Этап 2 */
+.slot { margin: 12px 0; }
+
+.drag-card {
+  border: 2px solid var(--accent);
+  background: #eff6ff;
+  border-radius: 12px;
+  padding: 12px 14px;
+  cursor: grab;
+  user-select: none;
+  transition: box-shadow .15s;
+}
+.drag-card:active { cursor: grabbing; }
+.drag-card.selected { box-shadow: 0 0 0 3px rgba(37,99,235,.35); }
+.drag-card .card-num { margin: 0 0 4px; display: inline-block; }
+.drag-card p { margin: 0; font-size: 14px; line-height: 1.5; }
+.drag-hint { font-size: 12px; color: var(--muted); margin-top: 6px; }
+
+.matrix-compact {
+  display: grid;
+  grid-template-columns: 74px 1fr 1fr;
+  gap: 6px;
+}
+
+.zone {
+  border: 2px solid; border-radius: 12px;
+  min-height: 104px;
+  padding: 8px;
+  display: flex; flex-direction: column; gap: 6px;
+  transition: box-shadow .15s;
+}
+.zone.drop-hover { outline: 3px dashed var(--accent); outline-offset: -4px; }
+.zone.drop-ready { box-shadow: 0 0 0 2px rgba(37,99,235,.25); }
+
+.zone-head {
+  display: flex; align-items: center; gap: 6px;
+  font-size: 12px; font-weight: 700;
+}
+.zone-letter {
+  width: 22px; height: 22px; border-radius: 6px;
+  display: inline-flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 800; color: #fff; flex-shrink: 0;
+}
+.zl-s { background: var(--s-text); }
+.zl-w { background: var(--w-text); }
+.zl-o { background: var(--o-text); }
+.zl-t { background: var(--t-text); }
+.zl-a { background: var(--a-text); }
+
+.zone-scope { font-size: 10px; color: var(--muted); font-weight: 500; display: block; }
+
+.zone-chips { display: flex; flex-wrap: wrap; gap: 6px; }
+
+.zone-act {
+  margin-top: 6px;
+  border: 2px dashed var(--a-border);
+  background: var(--a-bg);
+  border-radius: 12px;
+  padding: 8px;
+  min-height: 64px;
+  transition: box-shadow .15s;
+}
+.zone-act.drop-hover { outline: 3px dashed var(--accent); outline-offset: -4px; }
+.zone-act.drop-ready { box-shadow: 0 0 0 2px rgba(37,99,235,.25); }
+
+.chip {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 5px 8px;
+  font-size: 12px;
+  line-height: 1.4;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  max-width: 100%;
+  cursor: default;
+}
+.chip.draggable { cursor: grab; }
+.chip .chip-num { font-weight: 700; color: var(--accent); white-space: nowrap; }
+
+.chip.tint-s { background: var(--s-bg); border-color: var(--s-border); }
+.chip.tint-w { background: var(--w-bg); border-color: var(--w-border); }
+.chip.tint-o { background: var(--o-bg); border-color: var(--o-border); }
+.chip.tint-t { background: var(--t-bg); border-color: var(--t-border); }
+.chip.tint-a { background: var(--a-bg); border-color: var(--a-border); }
+
+.chip.reviewable { cursor: pointer; }
+.chip.reviewable:hover { outline: 2px solid var(--accent); }
+
+.chip-x {
+  border: 1px solid var(--border); background: #fff; border-radius: 5px;
+  font-size: 11px; padding: 1px 6px; cursor: pointer; color: var(--muted);
+  font-family: inherit;
+}
+.chip-x:hover { color: var(--bad-text); border-color: var(--bad-border); }
+
+.badge {
+  font-size: 10px; font-weight: 700; text-transform: uppercase;
+  letter-spacing: .3px; padding: 1px 6px; border-radius: 20px; white-space: nowrap;
+}
+.badge.ok { background: var(--ok-bg); color: var(--ok-text); border: 1px solid var(--ok-border); }
+.badge.bad { background: var(--bad-bg); color: var(--bad-text); border: 1px solid var(--bad-border); }
+
+.score-line {
+  background: #eff6ff; border: 1px solid #bfdbfe; color: var(--accent-dark);
+  border-radius: 10px; padding: 10px 14px; font-size: 13px; font-weight: 600;
+  margin: 12px 0; display: none;
+}
+.score-line.show { display: block; }
+
+.review-panel {
+  border: 1px solid var(--border);
+  border-left: 5px solid var(--accent);
+  border-radius: 10px;
+  padding: 12px 14px;
+  margin-top: 12px;
+  font-size: 13px;
+  line-height: 1.55;
+  background: #fff;
+  display: none;
+}
+.review-panel.show { display: block; }
+.review-panel strong { display: block; margin-bottom: 4px; }
+
+.result-panel {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; margin-top: 14px; background: #fff; display: none;
+}
+.result-panel.show { display: block; }
+
+.res-item { padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; line-height: 1.55; }
+.res-item:last-child { margin-bottom: 0; }
+.res-item.ok { background: var(--ok-bg); border: 1px solid var(--ok-border); color: var(--ok-text); }
+.res-item.bad { background: var(--bad-bg); border: 1px solid var(--bad-border); color: var(--bad-text); }
+.res-item.neutral { background: var(--gray-light); border: 1px solid var(--border); }
+.res-item strong { display: block; margin-bottom: 3px; }
+.res-item ul { margin: 6px 0 0; padding-left: 18px; }
+.res-item li { margin-bottom: 4px; }
+.res-note { margin: 6px 0 0; padding-left: 10px; border-left: 2px solid currentColor; }
+
+/* Этап 3 */
+.sit-block {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 14px; background: #fff;
+}
+
+.opt-btn {
+  display: block; width: 100%; text-align: left;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: #fff; padding: 12px 14px; margin-bottom: 8px;
+  font-family: inherit; font-size: 14px; line-height: 1.5; color: var(--primary);
+  cursor: pointer; transition: all .15s;
+}
+.opt-btn:hover:not(:disabled) { border-color: var(--accent); background: #eff6ff; }
+.opt-btn.sel-ok { border-color: var(--ok-text); background: var(--ok-bg); }
+.opt-btn.sel-bad { border-color: var(--bad-text); background: var(--bad-bg); }
+.opt-btn.dim { opacity: .55; }
+.opt-btn:disabled { cursor: default; }
+
+.fb { display: none; border-radius: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.55; margin-bottom: 10px; }
+.fb.show { display: block; }
+.fb.ok { background: var(--ok-bg); border: 1px solid var(--ok-border); color: var(--ok-text); }
+.fb.bad { background: var(--bad-bg); border: 1px solid var(--bad-border); color: var(--bad-text); }
+.fb strong { display: block; margin-bottom: 3px; }
+
+/* Кнопки */
+.nav-buttons { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+
+.btn {
+  padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; font-family: inherit; transition: background .2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--primary); }
+.btn-secondary:hover { background: var(--gray-light); }
+
+button:focus-visible, .quad:focus-visible, [tabindex]:focus-visible {
+  outline: 3px solid var(--accent-dark);
+  outline-offset: 2px;
+}
+
+/* Итог */
+.final-matrix { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin: 14px 0; }
+.fm-cell { border-radius: 12px; border: 2px solid; padding: 12px; font-size: 13px; line-height: 1.5; }
+.fm-cell h4 { margin: 0 0 6px; font-size: 14px; }
+.fm-cell ul { margin: 0; padding-left: 18px; }
+.fm-cell li { margin-bottom: 4px; }
+
+.memo {
+  background: var(--gray-light); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 18px; font-size: 14px; margin-top: 14px;
+}
+.memo ol { margin: 6px 0 0; padding-left: 20px; }
+.memo li { margin-bottom: 4px; }
+
+.summary-line {
+  background: #eff6ff; border: 1px solid #bfdbfe; color: var(--accent-dark);
+  border-radius: 10px; padding: 12px 14px; font-size: 14px; font-weight: 600; margin-bottom: 14px;
+}
+
+@media (max-width: 560px) {
+  body { padding: 12px; }
+  h1 { font-size: 20px; }
+  .matrix { grid-template-columns: 64px 1fr 1fr; gap: 6px; }
+  .matrix-compact { grid-template-columns: 1fr 1fr; }
+  .matrix-compact .axis { display: none; }
+  .axis { font-size: 10px; }
+  .quad { min-height: 108px; padding: 10px; }
+  .quad .q-letter { font-size: 20px; }
+  .quad .q-name { font-size: 13px; }
+  .zone { min-height: 92px; }
+  .final-matrix { grid-template-columns: 1fr; }
+  .nav-buttons { flex-direction: column; }
+  .btn { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ЭТАП 1 -->
+  <div id="screen-stage1" class="screen active">
+    <div class="subtitle">Этап 1 из 3</div>
+    <h1>Что помогает и что мешает внедрению СЭМ</h1>
+
+    <p class="lead">SWOT распределяет условия по четырем группам. Сначала определите, находится ли условие внутри предприятия или за его пределами. Затем оцените, помогает оно решать задачи СЭМ или может затруднить работу.</p>
+
+    <p class="hint-box">Нажмите на поле. Прочитайте объяснение и разберите пример.</p>
+
+    <div class="matrix" role="group" aria-label="Матрица SWOT">
+      <div class="axis"></div>
+      <div class="axis">Положительное влияние</div>
+      <div class="axis">Отрицательное влияние</div>
+
+      <div class="axis">Внутренние условия</div>
+      <button class="quad g-s" id="quad-s" aria-expanded="false" aria-controls="groupPanel" onclick="openGroup('S')">
+        <span class="q-letter">S</span>
+        <span class="q-name">Сильные стороны</span>
+        <span class="q-hint">Нажмите для объяснения</span>
+      </button>
+      <button class="quad g-w" id="quad-w" aria-expanded="false" aria-controls="groupPanel" onclick="openGroup('W')">
+        <span class="q-letter">W</span>
+        <span class="q-name">Слабые стороны</span>
+        <span class="q-hint">Нажмите для объяснения</span>
+      </button>
+
+      <div class="axis">Внешние условия</div>
+      <button class="quad g-o" id="quad-o" aria-expanded="false" aria-controls="groupPanel" onclick="openGroup('O')">
+        <span class="q-letter">O</span>
+        <span class="q-name">Возможности</span>
+        <span class="q-hint">Нажмите для объяснения</span>
+      </button>
+      <button class="quad g-t" id="quad-t" aria-expanded="false" aria-controls="groupPanel" onclick="openGroup('T')">
+        <span class="q-letter">T</span>
+        <span class="q-name">Угрозы</span>
+        <span class="q-hint">Нажмите для объяснения</span>
+      </button>
+    </div>
+
+    <div class="group-panel" id="groupPanel" aria-live="polite"></div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-primary" onclick="goToScreen('screen-stage2')">Перейти к практике</button>
+    </div>
+  </div>
+
+  <!-- ЭТАП 2 -->
+  <div id="screen-stage2" class="screen">
+    <div class="subtitle">Этап 2 из 3</div>
+    <h1>Распределите условия</h1>
+
+    <p class="lead" style="margin-bottom:8px;">Карточки появляются по одной. Перенесите карточку в поле матрицы или в зону действия. Две карточки описывают не условия, а предлагаемые действия.</p>
+    <p class="hint-box" style="margin-top:0;">Перетащите карточку мышью. На телефоне или с клавиатуры: нажмите карточку, затем нужное поле.</p>
+
+    <div class="callout">
+      Условие и действие не одно и то же. "Работники не знают правил" является условием. "Провести обучение" является действием. В SWOT сначала описывают условия.
+    </div>
+
+    <div class="slot" id="cardSlot"></div>
+
+    <div class="matrix-compact" role="group" aria-label="Матрица SWOT для распределения карточек">
+      <div class="axis"></div>
+      <div class="axis">Положительное</div>
+      <div class="axis">Отрицательное</div>
+
+      <div class="axis">Внутренние</div>
+      <div class="zone g-s" id="zone-S" data-zone="S" tabindex="0" role="button"
+           aria-label="Зона S - Сильные стороны"
+           onclick="zoneClick(event,'S')"
+           onkeydown="zoneKey(event,'S')">
+        <div class="zone-head"><span class="zone-letter zl-s">S</span><span>Сильные стороны<span class="zone-scope">внутренние, положительные</span></span></div>
+        <div class="zone-chips" id="chips-S"></div>
+      </div>
+      <div class="zone g-w" id="zone-W" data-zone="W" tabindex="0" role="button"
+           aria-label="Зона W - Слабые стороны"
+           onclick="zoneClick(event,'W')"
+           onkeydown="zoneKey(event,'W')">
+        <div class="zone-head"><span class="zone-letter zl-w">W</span><span>Слабые стороны<span class="zone-scope">внутренние, отрицательные</span></span></div>
+        <div class="zone-chips" id="chips-W"></div>
+      </div>
+
+      <div class="axis">Внешние</div>
+      <div class="zone g-o" id="zone-O" data-zone="O" tabindex="0" role="button"
+           aria-label="Зона O - Возможности"
+           onclick="zoneClick(event,'O')"
+           onkeydown="zoneKey(event,'O')">
+        <div class="zone-head"><span class="zone-letter zl-o">O</span><span>Возможности<span class="zone-scope">внешние, положительные</span></span></div>
+        <div class="zone-chips" id="chips-O"></div>
+      </div>
+      <div class="zone g-t" id="zone-T" data-zone="T" tabindex="0" role="button"
+           aria-label="Зона T - Угрозы"
+           onclick="zoneClick(event,'T')"
+           onkeydown="zoneKey(event,'T')">
+        <div class="zone-head"><span class="zone-letter zl-t">T</span><span>Угрозы<span class="zone-scope">внешние, отрицательные</span></span></div>
+        <div class="zone-chips" id="chips-T"></div>
+      </div>
+    </div>
+
+    <div class="zone-act" id="zone-ACT" data-zone="ACT" tabindex="0" role="button"
+         aria-label="Зона: это действие, а не условие"
+         onclick="zoneClick(event,'ACT')"
+         onkeydown="zoneKey(event,'ACT')">
+      <div class="zone-head"><span class="zone-letter zl-a">-</span><span>Это действие, а не условие</span></div>
+      <div class="zone-chips" id="chips-ACT"></div>
+    </div>
+
+    <div class="score-line" id="scoreLine"></div>
+    <div class="review-panel" id="cardReview" aria-live="polite"></div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-primary" id="checkBtn" style="display:none;" onclick="checkStage2()">Проверить</button>
+      <button class="btn btn-secondary" id="bigReviewBtn" style="display:none;" onclick="toggleBigReview()">Посмотреть большой разбор</button>
+      <button class="btn btn-secondary" id="changeBtn" style="display:none;" onclick="changeAnswers()">Изменить ответы</button>
+      <button class="btn btn-primary" onclick="goToScreen('screen-stage3')">Далее</button>
+    </div>
+
+    <div class="result-panel" id="bigReview"></div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="goToScreen('screen-stage1')">Вернуться к объяснениям</button>
+    </div>
+  </div>
+
+  <!-- ЭТАП 3 -->
+  <div id="screen-stage3" class="screen">
+    <div class="subtitle">Этап 3 из 3</div>
+    <h1>Выберите следующий шаг</h1>
+
+    <p class="lead">Распределить условия недостаточно. Нужно понять, какие сведения проверить, прежде чем выбирать действия.</p>
+
+    <div class="sit-block">
+      <h2 style="margin-top:0;">Ситуация 1</h2>
+      <p class="lead">Есть только общие данные об образовании отходов по заводу. Нужно разобраться, где возникают потери.</p>
+      <p class="lead"><strong>Что проверить сначала?</strong></p>
+      <div id="sit1-opts">
+        <button class="opt-btn" onclick="chooseOpt(1,0,this)">А. Можно ли определить образование выбранного отхода по участкам и за какие периоды доступны сведения.</button>
+        <button class="opt-btn" onclick="chooseOpt(1,1,this)">Б. Какую одинаковую цель по сокращению отходов установить всем участкам.</button>
+        <button class="opt-btn" onclick="chooseOpt(1,2,this)">В. Какую новую форму учета немедленно ввести во всех подразделениях.</button>
+      </div>
+      <div class="fb" id="sit1-fb"></div>
+      <button class="btn btn-secondary" id="sit1-change" style="display:none;" onclick="changeSit(1)">Изменить ответ</button>
+    </div>
+
+    <div class="sit-block">
+      <h2 style="margin-top:0;">Ситуация 2</h2>
+      <p class="lead">Появился исполнитель, который предлагает переработку отхода завода.</p>
+      <p class="lead"><strong>Что проверить перед решением о передаче отхода?</strong></p>
+      <div id="sit2-opts">
+        <button class="opt-btn" onclick="chooseOpt(2,0,this)">А. Подходит ли услуга конкретному отходу, выполнены ли применимые требования к исполнителю и приемлемы ли условия передачи.</button>
+        <button class="opt-btn" onclick="chooseOpt(2,1,this)">Б. Какую гарантированную экономию включить в план.</button>
+        <button class="opt-btn" onclick="chooseOpt(2,2,this)">В. На какую дату сразу прекратить действующий договор.</button>
+      </div>
+      <div class="fb" id="sit2-fb"></div>
+      <button class="btn btn-secondary" id="sit2-change" style="display:none;" onclick="changeSit(2)">Изменить ответ</button>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="goToScreen('screen-stage2')">Вернуться к распределению</button>
+      <button class="btn btn-primary" onclick="finish()">Посмотреть результаты</button>
+    </div>
+  </div>
+
+  <!-- ИТОГ -->
+  <div id="screen-final" class="screen">
+    <div class="subtitle">Итог</div>
+    <h1>Результаты работы</h1>
+
+    <div class="summary-line" id="summaryLine"></div>
+    <p class="lead" id="finalNote"></p>
+
+    <h2>Матрица с верными местами карточек</h2>
+    <div class="final-matrix">
+      <div class="fm-cell g-s">
+        <h4>S - Сильные стороны</h4>
+        <ul><li>Карточка 1. На заводе есть действующая система учета документов. В ней можно определять актуальные версии и ограничивать редактирование.</li></ul>
+      </div>
+      <div class="fm-cell g-w">
+        <h4>W - Слабые стороны</h4>
+        <ul><li>Карточка 2. Сведения об образовании отходов есть только в общей сумме по заводу. Данных по участкам нет.</li></ul>
+      </div>
+      <div class="fm-cell g-o">
+        <h4>O - Возможности</h4>
+        <ul><li>Карточка 3. На рынке появилась технология, которую поставщик предлагает для сокращения расхода ресурсов при выпуске стекла. Применимость к заводу не проверена.</li></ul>
+      </div>
+      <div class="fm-cell g-t">
+        <h4>T - Угрозы</h4>
+        <ul><li>Карточка 4. Исполнитель сообщил о планируемом прекращении приема одного из видов отходов завода.</li></ul>
+      </div>
+    </div>
+
+    <div class="callout">
+      Не являются условиями: карточка 5 "Обучить работников новым правилам раздельного сбора" и карточка 6 "Закупить оборудование для уменьшения расхода воды". Это предлагаемые действия. Для SWOT сначала описывают исходное обстоятельство.
+    </div>
+
+    <h2>Связки: условие и что проверить</h2>
+    <div class="result-panel show" style="display:block;">
+      <div class="res-item ok">
+        <strong>Условие: есть только общие данные об образовании отходов по заводу.</strong>
+        Проверить: можно ли определить образование выбранного отхода по участкам и за какие периоды доступны сведения.
+      </div>
+      <div class="res-item ok">
+        <strong>Условие: появился исполнитель, который предлагает переработку отхода.</strong>
+        Проверить: подходит ли услуга конкретному отходу, выполнены ли применимые требования к исполнителю и приемлемы ли условия передачи.
+      </div>
+    </div>
+
+    <p class="lead">SWOT помог распределить условия. Для дальнейшей работы в СЭМ нужно проверить исходные сведения и определить, какие решения зависят от этих условий. Само заполнение матрицы не означает, что мероприятия выбраны или внедрены.</p>
+
+    <div class="memo">
+      <strong>Для своего предприятия:</strong>
+      <ol>
+        <li>Опишите конкретное условие.</li>
+        <li>Определите его группу SWOT.</li>
+        <li>Объясните связь с задачей СЭМ.</li>
+        <li>Запишите, что нужно проверить.</li>
+      </ol>
+    </div>
+
+    <div class="nav-buttons" style="justify-content:center;">
+      <button class="btn btn-secondary" onclick="restartAll()">Пройти заново</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const GROUPS = {
+  S: { letter: 'S', name: 'Сильные стороны', scope: 'inner', sign: 'plus', label: 'S - Сильные стороны' },
+  W: { letter: 'W', name: 'Слабые стороны', scope: 'inner', sign: 'minus', label: 'W - Слабые стороны' },
+  O: { letter: 'O', name: 'Возможности', scope: 'outer', sign: 'plus', label: 'O - Возможности' },
+  T: { letter: 'T', name: 'Угрозы', scope: 'outer', sign: 'minus', label: 'T - Угрозы' },
+  ACT: { letter: '-', name: 'Это действие, а не условие', scope: null, sign: null, label: 'Это действие, а не условие' }
+};
+
+const CARDS = {
+  1: { text: 'На заводе есть действующая система учета документов. В ней можно определять актуальные версии и ограничивать редактирование.', correct: 'S',
+       explain: 'Это уже имеющийся внутренний инструмент. Можно проверить, какие его функции подходят для документов СЭМ.' },
+  2: { text: 'Сведения об образовании отходов есть только в общей сумме по заводу. Данных по участкам нет.', correct: 'W',
+       explain: 'Это внутреннее ограничение для анализа того, где образуются отходы и какие изменения дают результат. Оно не означает автоматически, что предприятие нарушает требования.' },
+  3: { text: 'На рынке появилась технология, которую поставщик предлагает для сокращения расхода ресурсов при выпуске стекла. Применимость к заводу не проверена.', correct: 'O',
+       explain: 'Это внешняя возможность. Обещания поставщика еще не подтверждают результат для конкретного завода. Сначала нужны техническая оценка и проверка исходных условий.' },
+  4: { text: 'Исполнитель сообщил о планируемом прекращении приема одного из видов отходов завода.', correct: 'T',
+       explain: 'Это внешнее изменение. Оно может потребовать другого решения по обращению с отходом. Последствия нужно оценить заранее.' },
+  5: { text: 'Обучить работников новым правилам раздельного сбора.', correct: 'ACT',
+       explain: 'Фраза описывает, что предлагается сделать. Для SWOT сначала нужно назвать исходное обстоятельство, например подтвержденный недостаток знаний.' },
+  6: { text: 'Закупить оборудование для уменьшения расхода воды.', correct: 'ACT',
+       explain: 'Это предлагаемое решение. Оно не объясняет, какое условие выявлено и почему выбран именно такой способ.' }
+};
+
+const PANELS = {
+  S: { title: 'S - Сильные стороны',
+       explain: 'То, что уже есть внутри предприятия и помогает решать задачи СЭМ.',
+       example: 'На заводе ежемесячно учитывают расход воды и выпуск стекла. Сведения доступны за одинаковые периоды.',
+       link: 'Не нужно начинать сбор этих данных с нуля. Можно проверить их качество и использовать при выборе показателя расхода воды.',
+       question: 'Какие существующие данные, знания и рабочие правила можно использовать в вашей СЭМ?' },
+  W: { title: 'W - Слабые стороны',
+       explain: 'Внутренние ограничения, которые затрудняют решение задач СЭМ.',
+       example: 'На участке действует инструкция по раздельному сбору отходов, но часть работников не знает ее требований. Это установлено при беседе с работниками.',
+       link: 'Одной инструкции недостаточно. При подготовке работников нужно определить, что они должны знать и уметь, а затем проверить результат подготовки.',
+       question: 'Какие внутренние ограничения мешают выполнять установленные правила или оценивать результаты?' },
+  O: { title: 'O - Возможности',
+       explain: 'Благоприятные внешние условия, которые предприятие может использовать.',
+       example: 'В регионе появился исполнитель, который предлагает переработку одного из видов отходов завода. Раньше такую услугу поблизости не предлагали.',
+       link: 'Можно рассмотреть другой способ обращения с отходом. Но сначала нужно проверить пригодность услуги, требования к исполнителю и условия передачи отхода.',
+       question: 'Какие новые внешние условия дают вашему предприятию варианты улучшения?' },
+  T: { title: 'T - Угрозы',
+       explain: 'Внешние условия, которые могут затруднить работу и достижение результатов СЭМ.',
+       example: 'Действующий исполнитель сообщил, что планирует вывозить отходы реже.',
+       link: 'Нужно проверить, как новый график соотносится с образованием отходов, доступными местами накопления и применимыми требованиями.',
+       question: 'Какие изменения за пределами предприятия могут потребовать пересмотра ваших решений?' }
+};
+
+const FB3 = {
+  1: [
+    'Верно. Сначала нужно установить, какие сведения уже есть и чего не хватает для анализа.',
+    'Цель выбрана без исходных данных по участкам. Пока неизвестно, одинаковы ли условия и возможности сокращения.',
+    'Новая форма может оказаться нужна, но сначала проверьте существующие сведения. Не создавайте документ до выяснения задачи.'
+  ],
+  2: [
+    'Верно. Наличие предложения еще не подтверждает пригодность решения.',
+    'Экономия не установлена. Для вывода нужны условия, стоимость и сравнение вариантов.',
+    'Прекращать действующий договор до проверки нового решения преждевременно.'
+  ]
+};
+
+let order = shuffle([1, 2, 3, 4, 5, 6]);
+let assign = {};
+let checked = false;
+let selectedCard = null;
+let lastSortCorrect = null;
+let s3 = { 1: null, 2: null };
+let sitLock = { 1: false, 2: false };
+
+function shuffle(arr) {
+  const a = arr.slice();
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+function goToScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  resizeIframe();
+}
+
+/* Этап 1 */
+function openGroup(key) {
+  const panel = document.getElementById('groupPanel');
+  const data = PANELS[key];
+  ['S', 'W', 'O', 'T'].forEach(k => {
+    document.getElementById('quad-' + k.toLowerCase()).setAttribute('aria-expanded', k === key ? 'true' : 'false');
+  });
+  panel.className = 'group-panel show p-' + key.toLowerCase();
+  panel.innerHTML =
+    '<h3>' + data.title + '</h3>' +
+    '<p><strong>Объяснение.</strong> ' + data.explain + '</p>' +
+    '<p><strong>Пример.</strong> ' + data.example + '</p>' +
+    '<p><strong>Связь с СЭМ.</strong> ' + data.link + '</p>' +
+    '<p><strong>Вопрос для своего предприятия.</strong> ' + data.question + '</p>';
+  resizeIframe();
+}
+
+/* Этап 2 */
+function currentId() {
+  for (const id of order) {
+    if (!assign[id]) return id;
+  }
+  return null;
+}
+
+function allPlaced() {
+  return currentId() === null;
+}
+
+function renderSlot() {
+  const slot = document.getElementById('cardSlot');
+  const id = currentId();
+  if (id === null) {
+    slot.innerHTML = '<p class="hint-box" style="margin:0;">Все карточки распределены. Нажмите "Проверить".</p>';
+    return;
+  }
+  const placedCount = Object.keys(assign).length;
+  slot.innerHTML =
+    '<div class="drag-card' + (selectedCard === id ? ' selected' : '') + '" id="dragCard" data-drag-id="' + id + '" ' +
+    'draggable="' + (!checked) + '" tabindex="0" role="button" aria-pressed="' + (selectedCard === id) + '" ' +
+    'aria-label="Карточка ' + id + '. Нажмите, чтобы выбрать, затем нажмите поле группы" ' +
+    'onclick="toggleSelect(' + id + ')" onkeydown="cardKey(event,' + id + ')">' +
+      '<span class="card-num">Карточка ' + id + ' из 6</span>' +
+      '<p>' + CARDS[id].text + '</p>' +
+      '<div class="drag-hint">Перетащите в поле матрицы или в зону действия</div>' +
+    '</div>' +
+    '<div class="drag-hint" style="margin-top:6px;">Размещено: ' + placedCount + ' из 6</div>';
+}
+
+function renderZones() {
+  ['S', 'W', 'O', 'T', 'ACT'].forEach(z => {
+    const box = document.getElementById('chips-' + z);
+    const ids = order.filter(id => assign[id] === z);
+    if (ids.length === 0) {
+      box.innerHTML = '';
+      return;
+    }
+    box.innerHTML = ids.map(id => {
+      let extra = '';
+      let cls = 'chip';
+      if (checked) {
+        cls += ' reviewable tint-' + CARDS[id].correct.toLowerCase();
+        const ok = assign[id] === CARDS[id].correct;
+        extra = '<span class="badge ' + (ok ? 'ok">Верно' : 'bad">Неверно') + '</span>';
+        return '<span class="' + cls + '" data-review-id="' + id + '" tabindex="0" role="button" ' +
+               'aria-label="Карточка ' + id + ', показать разбор" ' +
+               'onclick="event.stopPropagation(); showReview(' + id + ')" ' +
+               'onkeydown="if(event.key===\'Enter\'||event.key===\' \'){event.preventDefault();event.stopPropagation();showReview(' + id + ');}" ' +
+               'onmouseenter="showReview(' + id + ')">' +
+               '<span class="chip-num">' + id + '</span>' + extra + '</span>';
+      }
+      cls += ' draggable';
+      return '<span class="' + cls + '" data-drag-id="' + id + '" draggable="true">' +
+             '<span class="chip-num">' + id + '</span>' +
+             '<button class="chip-x" onclick="event.stopPropagation(); returnCard(' + id + ')" aria-label="Вернуть карточку ' + id + '">вернуть</button></span>';
+    }).join('');
+  });
+}
+
+function updateStage2Buttons() {
+  const checkBtn = document.getElementById('checkBtn');
+  const bigBtn = document.getElementById('bigReviewBtn');
+  const changeBtn = document.getElementById('changeBtn');
+  if (checked) {
+    checkBtn.style.display = 'none';
+    bigBtn.style.display = 'inline-block';
+    changeBtn.style.display = 'inline-block';
+  } else {
+    checkBtn.style.display = allPlaced() ? 'inline-block' : 'none';
+    bigBtn.style.display = 'none';
+    changeBtn.style.display = 'none';
+  }
+}
+
+function renderStage2() {
+  renderSlot();
+  renderZones();
+  updateStage2Buttons();
+  markDropReady();
+}
+
+function place(id, zone) {
+  if (checked) return;
+  assign[id] = zone;
+  selectedCard = null;
+  renderStage2();
+  resizeIframe();
+}
+
+function returnCard(id) {
+  if (checked) return;
+  delete assign[id];
+  selectedCard = null;
+  renderStage2();
+  resizeIframe();
+}
+
+function toggleSelect(id) {
+  if (checked) return;
+  selectedCard = (selectedCard === id) ? null : id;
+  renderStage2();
+}
+
+function cardKey(e, id) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    toggleSelect(id);
+  }
+}
+
+function zoneClick(e, zone) {
+  if (checked) return;
+  if (selectedCard !== null) {
+    place(selectedCard, zone);
+  }
+}
+
+function zoneKey(e, zone) {
+  if (e.key === 'Enter' || e.key === ' ') {
+    e.preventDefault();
+    zoneClick(e, zone);
+  }
+}
+
+function markDropReady() {
+  document.querySelectorAll('[data-zone]').forEach(z => {
+    z.classList.toggle('drop-ready', selectedCard !== null && !checked);
+  });
+}
+
+/* Drag and drop */
+document.addEventListener('dragstart', e => {
+  const el = e.target.closest && e.target.closest('[data-drag-id]');
+  if (!el || checked) return;
+  e.dataTransfer.setData('text/plain', el.getAttribute('data-drag-id'));
+  e.dataTransfer.effectAllowed = 'move';
+});
+
+document.addEventListener('dragover', e => {
+  const zone = e.target.closest && e.target.closest('[data-zone]');
+  if (!zone || checked) return;
+  e.preventDefault();
+  e.dataTransfer.dropEffect = 'move';
+  zone.classList.add('drop-hover');
+});
+
+document.addEventListener('dragleave', e => {
+  const zone = e.target.closest && e.target.closest('[data-zone]');
+  if (zone) zone.classList.remove('drop-hover');
+});
+
+document.addEventListener('drop', e => {
+  const zone = e.target.closest && e.target.closest('[data-zone]');
+  if (!zone || checked) return;
+  e.preventDefault();
+  zone.classList.remove('drop-hover');
+  const id = parseInt(e.dataTransfer.getData('text/plain'), 10);
+  if (id) place(id, zone.getAttribute('data-zone'));
+});
+
+document.addEventListener('dragend', () => {
+  document.querySelectorAll('[data-zone]').forEach(z => z.classList.remove('drop-hover'));
+});
+
+/* Проверка и разборы */
+function notesFor(id, answer) {
+  const correct = CARDS[id].correct;
+  const notes = [];
+  if (correct !== 'ACT' && answer !== 'ACT') {
+    if (GROUPS[correct].scope !== GROUPS[answer].scope) {
+      notes.push('Проверьте источник условия. Внутренние условия возникают внутри предприятия: процессы, ресурсы, правила, знания работников. Внешние условия возникают за его пределами: рынок, подрядчики, законодательство, соседи.');
+    }
+    if (GROUPS[correct].sign !== GROUPS[answer].sign) {
+      notes.push('Проверьте влияние на задачу СЭМ. Положительное условие помогает решать задачи, отрицательное затрудняет их и требует учета.');
+    }
+  } else if (correct === 'ACT' && answer !== 'ACT') {
+    notes.push('Фраза описывает действие. В SWOT сначала фиксируют исходное условие, а действия обсуждают после.');
+  } else if (correct !== 'ACT' && answer === 'ACT') {
+    notes.push('Это существующее условие, а не предложение о действии. Его можно поместить в одну из групп.');
+  }
+  return notes;
+}
+
+function countSortCorrect() {
+  let c = 0;
+  for (let id = 1; id <= 6; id++) {
+    if (assign[id] && assign[id] === CARDS[id].correct) c++;
+  }
+  return c;
+}
+
+function checkStage2() {
+  checked = true;
+  selectedCard = null;
+  lastSortCorrect = countSortCorrect();
+
+  const line = document.getElementById('scoreLine');
+  line.textContent = 'Верных размещений: ' + lastSortCorrect + ' из 6. Наведите курсор или нажмите на карточку в поле, чтобы открыть ее разбор.';
+  line.classList.add('show');
+
+  document.getElementById('cardReview').classList.remove('show');
+  renderStage2();
+  resizeIframe();
+}
+
+function showReview(id) {
+  if (!checked) return;
+  const panel = document.getElementById('cardReview');
+  const answer = assign[id];
+  const correct = CARDS[id].correct;
+  const ok = answer === correct;
+  let html = '<strong>Карточка ' + id + '. ' + (ok ? 'Размещена верно: ' + GROUPS[correct].label : 'Ваше место: ' + GROUPS[answer].label + '. Верное место: ' + GROUPS[correct].label) + '.</strong>' +
+             '<div>' + CARDS[id].text + '</div>' +
+             '<div style="margin-top:6px;">' + CARDS[id].explain + '</div>';
+  if (!ok) {
+    html += notesFor(id, answer).map(n => '<p class="res-note" style="color:var(--bad-text);">' + n + '</p>').join('');
+  }
+  panel.innerHTML = html;
+  panel.classList.add('show');
+  resizeIframe();
+}
+
+function toggleBigReview() {
+  const panel = document.getElementById('bigReview');
+  if (panel.classList.contains('show')) {
+    panel.classList.remove('show');
+    resizeIframe();
+    return;
+  }
+  let html = '<h2 style="margin-top:0;">Большой разбор: условия и факторы предприятия</h2>' +
+    '<p style="font-size:13px; margin:0 0 10px;">Вокруг учебного завода в задании возникли шесть формулировок: четыре описывают условия предприятия, две предлагают действия. Посмотрим на картину целиком и свяжем ее с логикой SWOT.</p>' +
+    '<div class="res-item neutral"><strong>Внутренние условия: что происходит внутри завода.</strong>' +
+      '<ul>' +
+        '<li>Действующая система учета документов с контролем версий и прав доступа. Это опора для СЭМ: управление документами уже выстроено, его достаточно проверить и дополнить. Группа S.</li>' +
+        '<li>Сведения об отходах только в общей сумме по заводу. Это ограничение: без данных по участкам невозможно понять, где возникают потери и какие изменения дают результат. Группа W.</li>' +
+      '</ul></div>' +
+    '<div class="res-item neutral"><strong>Внешние условия: что происходит за пределами завода.</strong>' +
+      '<ul>' +
+        '<li>Поставщик предлагает технологию сокращения расхода ресурсов. Это шанс улучшить показатели, но применимость к заводу еще не проверена, поэтому условие требует оценки, а не немедленного решения. Группа O.</li>' +
+        '<li>Исполнитель планирует прекратить прием одного из видов отходов. Это изменение правил игры на рынке услуг, которое может сломать действующую схему обращения с отходом. Группа T.</li>' +
+      '</ul></div>' +
+    '<div class="res-item neutral"><strong>Как условия связаны с группами SWOT.</strong> ' +
+      'S и W описывают внутреннюю среду: процессы, данные, правила, знания людей, то есть то, что возникает внутри предприятия. O и T описывают внешнюю среду: рынок, подрядчиков, технологии, требования извне. ' +
+      'Знак группы показывает не хорошее или плохое само по себе, а влияние на задачи СЭМ: помогает условие или затрудняет. Одно и то же событие попадает в разные группы в зависимости от того, какую задачу СЭМ мы рассматриваем, поэтому каждую запись связывают с конкретной задачей.</div>' +
+    '<div class="res-item neutral"><strong>Условия и действия: почему две карточки выпали из матрицы.</strong> ' +
+      'Обучение работников и закупка оборудования это ответы на условия, а не сами условия. За обучением стоит подтвержденный недостаток знаний правил, за закупкой стоит высокий расход или потеря воды. ' +
+      'SWOT фиксирует обстоятельства, а действия выбирают позже, когда понятно, какое условие выявлено и что нужно проверить. Если действие попадает в матрицу вместо условия, анализ теряет опору на факты.</div>' +
+    '<div class="res-item neutral"><strong>Что делать с этой картиной дальше.</strong> ' +
+      'Совокупность внутренних и внешних условий это контекст предприятия по пункту 4.1 ГОСТ Р ИСО 14001-2016. Для каждого условия запишите, какие сведения нужно проверить и на какое решение оно влияет. ' +
+      'Значимые условия переносят в анализ рисков и возможностей, затем в цели и действия. Матрица SWOT не выбирает мероприятия: она наводит порядок в условиях, чтобы решения опирались на факты, а не на впечатления.</div>';
+  panel.innerHTML = html;
+  panel.classList.add('show');
+  resizeIframe();
+}
+
+function changeAnswers() {
+  checked = false;
+  document.getElementById('scoreLine').classList.remove('show');
+  document.getElementById('cardReview').classList.remove('show');
+  document.getElementById('bigReview').classList.remove('show');
+  renderStage2();
+  resizeIframe();
+}
+
+/* Этап 3 */
+function chooseOpt(sit, idx, btn) {
+  if (sitLock[sit]) return;
+  sitLock[sit] = true;
+  s3[sit] = idx;
+
+  const opts = document.querySelectorAll('#sit' + sit + '-opts .opt-btn');
+  opts.forEach((b, i) => {
+    b.disabled = true;
+    if (i === idx) b.classList.add(idx === 0 ? 'sel-ok' : 'sel-bad');
+    else b.classList.add('dim');
+  });
+
+  const fb = document.getElementById('sit' + sit + '-fb');
+  fb.className = 'fb show ' + (idx === 0 ? 'ok' : 'bad');
+  fb.innerHTML = '<strong>' + (idx === 0 ? 'Верно' : 'Неверно') + '</strong>' + FB3[sit][idx];
+  document.getElementById('sit' + sit + '-change').style.display = 'inline-block';
+  resizeIframe();
+}
+
+function changeSit(sit) {
+  sitLock[sit] = false;
+  s3[sit] = null;
+  const opts = document.querySelectorAll('#sit' + sit + '-opts .opt-btn');
+  opts.forEach(b => {
+    b.disabled = false;
+    b.classList.remove('sel-ok', 'sel-bad', 'dim');
+  });
+  document.getElementById('sit' + sit + '-fb').className = 'fb';
+  document.getElementById('sit' + sit + '-change').style.display = 'none';
+  resizeIframe();
+}
+
+/* Итог */
+function finish() {
+  const sc = lastSortCorrect !== null ? lastSortCorrect : countSortCorrect();
+  let dc = 0;
+  if (s3[1] === 0) dc++;
+  if (s3[2] === 0) dc++;
+  const unanswered = (s3[1] === null ? 1 : 0) + (s3[2] === null ? 1 : 0);
+
+  document.getElementById('summaryLine').textContent =
+    'Этап 2: верных размещений - ' + sc + ' из 6. Этап 3: верных решений - ' + dc + ' из 2.' +
+    (unanswered > 0 ? ' Решений без ответа: ' + unanswered + '.' : '');
+
+  const note = document.getElementById('finalNote');
+  if (sc === 6 && dc === 2) {
+    note.textContent = 'Все условия распределены верно, оба шага проверки выбраны правильно. Ниже собраны верные размещения и связки для дальнейшей работы.';
+  } else {
+    note.textContent = 'Сверьте свои ответы с разбором ниже. В нем собраны верные размещения карточек и шаги проверки перед выбором действий.';
+  }
+
+  goToScreen('screen-final');
+}
+
+function restartAll() {
+  order = shuffle([1, 2, 3, 4, 5, 6]);
+  assign = {};
+  checked = false;
+  selectedCard = null;
+  lastSortCorrect = null;
+  s3 = { 1: null, 2: null };
+  sitLock = { 1: false, 2: false };
+
+  document.getElementById('scoreLine').classList.remove('show');
+  document.getElementById('cardReview').classList.remove('show');
+  document.getElementById('bigReview').classList.remove('show');
+
+  const panel = document.getElementById('groupPanel');
+  panel.className = 'group-panel';
+  ['s', 'w', 'o', 't'].forEach(k => document.getElementById('quad-' + k).setAttribute('aria-expanded', 'false'));
+
+  changeSit(1);
+  changeSit(2);
+
+  renderStage2();
+  goToScreen('screen-stage1');
+}
+
+function resizeIframe() {
+  if (window.parentIFrame) {
+    window.parentIFrame.size();
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderStage2();
+  resizeIframe();
+});
+</script>
+
+</body>
+</html>
