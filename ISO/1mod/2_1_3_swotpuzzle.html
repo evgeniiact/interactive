@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <title>Анализ условий предприятия для СЭМ</title>
 <style>
 :root {
@@ -337,6 +338,13 @@ let state = {
 let bodiesById = {};
 let storageOk = true;
 
+/* ================= РЕСАЙЗЕР ФРЕЙМА ================= */
+function resizeIframe() {
+  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+    window.parentIFrame.size();
+  }
+}
+
 /* ================= ЛОКАЛЬНАЯ ПАМЯТЬ ================= */
 function saveState() {
   if (!storageOk) return;
@@ -353,6 +361,7 @@ function saveState() {
     if (w) w.style.display = 'block';
     const n = document.getElementById('storageNote');
     if (n) n.style.display = 'none';
+    resizeIframe();
   }
 }
 
@@ -404,6 +413,7 @@ function goStep(n) {
   document.querySelectorAll('#screen-step' + n + ' .step-btn').forEach((b, i) => b.classList.toggle('active', i === n - 1));
   if (n === 3) renderPreview();
   window.scrollTo({ top: 0, behavior: 'smooth' });
+  resizeIframe();
 }
 
 function setToday() {
@@ -420,6 +430,7 @@ function togglePanel(id, btn) {
   const show = !p.classList.contains('show');
   p.classList.toggle('show', show);
   if (btn) btn.setAttribute('aria-expanded', show ? 'true' : 'false');
+  resizeIframe();
 }
 
 /* ================= ВКЛАДКИ И ПАНЕЛИ ================= */
@@ -489,6 +500,7 @@ function refreshTabsUI() {
   }
 
   applyActivePanel();
+  resizeIframe();
 }
 
 function applyActivePanel() {
@@ -504,6 +516,7 @@ function activateTab(id) {
   state.activeId = id;
   applyActivePanel();
   saveState();
+  resizeIframe();
 }
 
 function tabKeydown(e, id) {
@@ -540,6 +553,7 @@ function addCondition() {
   saveState();
   const inp = document.getElementById('name-' + id);
   if (inp) inp.focus();
+  resizeIframe();
 }
 
 function deleteCard(id) {
@@ -551,6 +565,7 @@ function deleteCard(id) {
   if (state.activeId === id) state.activeId = state.conditions.length ? state.conditions[0].id : null;
   refreshTabsUI();
   saveState();
+  resizeIframe();
 }
 
 function goToCard(id) {
@@ -644,7 +659,12 @@ function buildBody(c) {
 
 function syncQWarn(c) {
   const w = document.getElementById('qwarn-' + c.id);
-  if (w) w.style.display = (c.noQuestion && c.question.trim()) ? 'block' : 'none';
+  if (w) {
+    const show = (c.noQuestion && c.question.trim());
+    const was = w.style.display === 'block';
+    w.style.display = show ? 'block' : 'none';
+    if (show !== was) resizeIframe();
+  }
 }
 
 /* ================= ПРОВЕРКИ ================= */
@@ -774,6 +794,7 @@ function renderPreview() {
   html += '<p style="font-size:12px; color:var(--muted);">Документ подготовлен с помощью учебного конструктора. Он помогает организовать предварительный анализ условий и не является подтверждением соответствия СЭМ стандарту.</p>';
 
   document.getElementById('previewBox').innerHTML = html;
+  resizeIframe();
 }
 
 /* ================= ГЕНЕРАЦИЯ DOCX ================= */
@@ -978,6 +999,7 @@ function downloadDocx() {
   document.body.removeChild(a);
   setTimeout(() => URL.revokeObjectURL(url), 4000);
   document.getElementById('downloadNote').textContent = 'Документ скачан. Можно продолжать редактирование и скачать новую версию после изменений.';
+  resizeIframe();
 }
 
 /* ================= СБРОС ================= */
@@ -1021,7 +1043,16 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   refreshTabsUI();
   saveState();
+
+  // Следим за изменением размера контента в обе стороны
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(() => resizeIframe());
+    ro.observe(document.body);
+  }
+  resizeIframe();
 });
+
+window.addEventListener('load', () => resizeIframe());
 </script>
 
 </body>
