@@ -3,6 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <title>SWOT для внедрения СЭМ</title>
 <style>
 :root {
@@ -359,7 +360,7 @@ button:focus-visible, .quad:focus-visible, [tabindex]:focus-visible {
   <!-- ЭТАП 1 -->
   <div id="screen-stage1" class="screen active">
     <div class="subtitle">Этап 1 из 3</div>
-    <h1>Что помогает и мешает внедрению СЭМ</h1>
+    <h1>Что помогает и что мешает внедрению СЭМ</h1>
 
     <p class="lead">SWOT распределяет условия по четырем группам. Сначала определите, находится ли условие внутри предприятия или за его пределами. Затем оцените, помогает оно решать задачи СЭМ или может затруднить работу.</p>
 
@@ -649,6 +650,13 @@ let lastSortCorrect = null;
 let s3 = { 1: null, 2: null };
 let sitLock = { 1: false, 2: false };
 
+/* ================= РЕСАЙЗЕР ФРЕЙМА ================= */
+function resizeIframe() {
+  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+    window.parentIFrame.size();
+  }
+}
+
 function shuffle(arr) {
   const a = arr.slice();
   for (let i = a.length - 1; i > 0; i--) {
@@ -764,6 +772,7 @@ function renderStage2() {
   renderZones();
   updateStage2Buttons();
   markDropReady();
+  resizeIframe();
 }
 
 function place(id, zone) {
@@ -771,7 +780,6 @@ function place(id, zone) {
   assign[id] = zone;
   selectedCard = null;
   renderStage2();
-  resizeIframe();
 }
 
 function returnCard(id) {
@@ -779,7 +787,6 @@ function returnCard(id) {
   delete assign[id];
   selectedCard = null;
   renderStage2();
-  resizeIframe();
 }
 
 function toggleSelect(id) {
@@ -887,7 +894,6 @@ function checkStage2() {
 
   document.getElementById('cardReview').classList.remove('show');
   renderStage2();
-  resizeIframe();
 }
 
 function showReview(id) {
@@ -946,7 +952,6 @@ function changeAnswers() {
   document.getElementById('cardReview').classList.remove('show');
   document.getElementById('bigReview').classList.remove('show');
   renderStage2();
-  resizeIframe();
 }
 
 /* Этап 3 */
@@ -1028,16 +1033,18 @@ function restartAll() {
   goToScreen('screen-stage1');
 }
 
-function resizeIframe() {
-  if (window.parentIFrame) {
-    window.parentIFrame.size();
-  }
-}
-
 document.addEventListener('DOMContentLoaded', () => {
   renderStage2();
+
+  // Следим за изменением размера контента в обе стороны
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(() => resizeIframe());
+    ro.observe(document.body);
+  }
   resizeIframe();
 });
+
+window.addEventListener('load', () => resizeIframe());
 </script>
 
 </body>
