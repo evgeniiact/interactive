@@ -1,0 +1,1028 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Анализ условий предприятия для СЭМ</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --primary: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --gray-light: #f8fafc;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --warn-bg: #fffbeb;
+  --warn-border: #fde68a;
+  --warn-text: #92400e;
+  --bad-bg: #fef2f2;
+  --bad-border: #fecaca;
+  --bad-text: #991b1b;
+  --s-bg: #e6f4ea; --s-border: #a8d5b5; --s-text: #1b5e20;
+  --w-bg: #fff3e0; --w-border: #f2c089; --w-text: #9a3412;
+  --o-bg: #e3f0fd; --o-border: #9cc3ee; --o-text: #0d47a1;
+  --t-bg: #fde8ef; --t-border: #efa8c0; --t-text: #9d174d;
+  --n-bg: #f1f5f9; --n-border: #cbd5e1; --n-text: #334155;
+  --radius: 12px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 20px; background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--primary); font-size: 15px; line-height: 1.6;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.screen { display: none; animation: fadeIn .3s ease-out; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+h1 { font-size: 22px; font-weight: 800; margin: 0 0 10px; }
+h2 { font-size: 17px; font-weight: 700; margin: 18px 0 8px; }
+.lead { font-size: 14px; margin: 0 0 12px; line-height: 1.6; }
+.note-box {
+  background: var(--gray-light); border: 1px solid var(--border);
+  border-left: 4px solid var(--muted); border-radius: 0 8px 8px 0;
+  padding: 10px 14px; font-size: 13px; color: var(--muted); margin: 10px 0;
+}
+.warn-box {
+  background: var(--warn-bg); border-left: 3px solid var(--warn-border);
+  border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 13px;
+  color: var(--warn-text); margin: 10px 0; line-height: 1.5;
+}
+.error-box {
+  background: var(--bad-bg); border: 1px solid var(--bad-border);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--bad-text); margin: 12px 0;
+}
+.error-box ul { margin: 6px 0 0; padding-left: 20px; }
+.error-box li { margin-bottom: 4px; }
+.notices-box {
+  background: var(--warn-bg); border: 1px solid var(--warn-border);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--warn-text); margin: 12px 0;
+}
+.notices-box ul { margin: 6px 0 0; padding-left: 20px; }
+.notices-box li { margin-bottom: 4px; }
+
+.steps-nav { display: flex; gap: 8px; margin: 14px 0 18px; flex-wrap: wrap; }
+.step-btn {
+  flex: 1 1 140px; padding: 10px 12px; border: 2px solid var(--border); border-radius: 10px;
+  background: #fff; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--muted);
+  cursor: pointer; transition: all .15s; text-align: center;
+}
+.step-btn.active { border-color: var(--accent); color: var(--accent); background: #eff6ff; }
+
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.field .req { color: var(--bad-text); font-weight: 600; }
+.field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.field input[type="text"], .field textarea, .field select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+  font-family: inherit; font-size: 14px; color: var(--primary); background: #fff;
+}
+.field textarea { min-height: 64px; resize: vertical; }
+.field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible,
+button:focus-visible { outline: 3px solid var(--accent-dark); outline-offset: 2px; }
+.check-row { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; margin-top: 6px; }
+.check-row input { width: 18px; height: 18px; margin: 2px 0 0; flex-shrink: 0; }
+
+.nav-buttons { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
+.btn {
+  padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; font-family: inherit; transition: background .2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--primary); }
+.btn-secondary:hover { background: var(--gray-light); }
+.btn-danger { background: #fff; border: 1px solid var(--bad-border); color: var(--bad-text); }
+.btn-danger:hover { background: var(--bad-bg); }
+.btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+.btn-small {
+  padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 6px;
+  border: 1px solid var(--border); background: #fff; color: var(--primary);
+  cursor: pointer; font-family: inherit;
+}
+.btn-small:hover { background: var(--gray-light); }
+
+.tabs-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; margin: 14px 0 0; }
+.tab-btn {
+  border: 1px solid var(--border); border-radius: 10px 10px 0 0;
+  padding: 9px 12px; background: var(--gray-light); color: var(--muted);
+  font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; max-width: 190px;
+}
+.tab-btn .tab-name {
+  font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 110px;
+}
+.tab-btn[aria-selected="true"] { background: #fff; color: var(--accent); border-color: var(--accent); }
+.tab-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot-S { background: var(--s-text); }
+.dot-W { background: var(--w-text); }
+.dot-O { background: var(--o-text); }
+.dot-T { background: var(--t-text); }
+.dot-N { background: var(--muted); }
+.tab-add {
+  border: 1px dashed var(--accent); color: var(--accent); background: #fff;
+  border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
+.tab-add:hover { background: #eff6ff; }
+.tab-panel {
+  border: 1px solid var(--border); border-radius: 0 10px 10px 10px;
+  padding: 16px; background: #fff; margin-top: -1px;
+}
+.tab-panel[hidden] { display: none; }
+.panel-head {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.panel-head strong { font-size: 15px; }
+
+.grp-badge {
+  display: inline-block; font-size: 11px; font-weight: 700; border-radius: 20px;
+  padding: 1px 8px; border: 1px solid;
+}
+.grp-S { background: var(--s-bg); color: var(--s-text); border-color: var(--s-border); }
+.grp-W { background: var(--w-bg); color: var(--w-text); border-color: var(--w-border); }
+.grp-O { background: var(--o-bg); color: var(--o-text); border-color: var(--o-border); }
+.grp-T { background: var(--t-bg); color: var(--t-text); border-color: var(--t-border); }
+.grp-N { background: var(--n-bg); color: var(--n-text); border-color: var(--n-border); }
+
+.help-panel {
+  border: 1px solid var(--border); border-left: 5px solid var(--accent);
+  border-radius: 10px; padding: 14px 16px; margin: 12px 0; font-size: 13px;
+  background: #fff; display: none;
+}
+.help-panel.show { display: block; }
+.help-panel p { margin: 0 0 8px; }
+.help-panel p:last-child { margin-bottom: 0; }
+
+.counts-box {
+  background: #eff6ff; border: 1px solid #bfdbfe; color: var(--accent-dark);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; margin: 12px 0;
+}
+.counts-box ul { margin: 6px 0 0; padding-left: 20px; }
+.prev-section { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+.prev-section h3 { margin: 0 0 10px; font-size: 15px; }
+.prev-swot { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+.prev-cell { border: 1px solid; border-radius: 10px; padding: 10px 12px; font-size: 13px; min-height: 80px; }
+.prev-cell h4 { margin: 0 0 6px; font-size: 13px; }
+.prev-cell ul { margin: 0; padding-left: 18px; }
+.prev-cell li { margin-bottom: 3px; }
+.prev-empty { color: var(--muted); font-style: italic; }
+.prev-cond { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; font-size: 13px; }
+.prev-cond-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.prev-cond-head strong { font-size: 14px; }
+.prev-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.prev-table th, .prev-table td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
+.prev-table th { background: var(--gray-light); width: 34%; font-weight: 600; }
+.prev-q li { margin-bottom: 6px; }
+.link-btn {
+  background: none; border: none; color: var(--accent); font-size: 12px;
+  cursor: pointer; padding: 0; font-family: inherit; text-decoration: underline;
+}
+
+@media (max-width: 560px) {
+  body { padding: 12px; }
+  h1 { font-size: 20px; }
+  .prev-swot { grid-template-columns: 1fr; }
+  .nav-buttons { flex-direction: column; }
+  .btn { width: 100%; }
+  .tab-btn { max-width: 140px; }
+  .tab-btn .tab-name { max-width: 70px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ВВОДНЫЙ ЭКРАН -->
+  <div id="screen-intro" class="screen active">
+    <h1>Разберите условия своего предприятия</h1>
+    <p class="lead">Опишите условия, которые нужно учитывать при построении СЭМ. Для каждого объясните, на какое решение оно влияет и что нужно проверить. Затем скачайте предварительный анализ в Word.</p>
+    <div class="note-box">SWOT является инструментом анализа. Заполненная форма не подтверждает выполнение всех требований ГОСТ Р ИСО 14001-2016.</div>
+    <div class="warn-box">Не вводите сведения, которые запрещено размещать в учебных сервисах. Вместо реального названия можно использовать условное.</div>
+    <div class="note-box" id="storageNote">Записи сохраняются в локальной памяти вашего браузера и не передаются в сеть. Они переживают обновление страницы. Скачайте готовый документ перед завершением работы: локальная память удаляется при очистке данных сайта и не доступна с других устройств.</div>
+    <div class="warn-box" id="storageWarn" style="display:none;">Локальная память недоступна в этом браузере или режиме. Введенные данные будут потеряны при обновлении страницы. Скачивайте документ перед выходом.</div>
+    <div class="note-box" id="restoreNote" style="display:none;">Найдена сохраненная ранее версия анализа. Данные восстановлены из локальной памяти браузера.</div>
+    <div class="nav-buttons">
+      <button class="btn btn-primary" onclick="startWork()">Начать работу</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 1 -->
+  <div id="screen-step1" class="screen">
+    <div class="steps-nav">
+      <button class="step-btn active" onclick="goStep(1)">1. Сведения об анализе</button>
+      <button class="step-btn" onclick="goStep(2)">2. Условия</button>
+      <button class="step-btn" onclick="goStep(3)">3. Предпросмотр</button>
+    </div>
+    <h1>Сведения об анализе</h1>
+    <p class="lead">Эти реквизиты попадут в начало документа. Необязательные поля можно оставить пустыми.</p>
+
+    <div class="field">
+      <label for="m-org">Предприятие или объект анализа</label>
+      <input type="text" id="m-org" oninput="onMeta('org', this.value)">
+      <div class="hint">Можно указать условное название.</div>
+    </div>
+    <div class="field">
+      <label for="m-scope">Что рассматриваете</label>
+      <textarea id="m-scope" oninput="onMeta('scope', this.value)"></textarea>
+      <div class="hint">Например, одну производственную площадку или определенную деятельность. Это описание текущего анализа, а не утвержденная область применения СЭМ.</div>
+    </div>
+    <div class="field">
+      <label for="m-date">Дата анализа</label>
+      <input type="text" id="m-date" oninput="onMeta('date', this.value)">
+      <div class="hint">Формат произвольный. Кнопка рядом подставит текущую дату.</div>
+      <button class="btn-small" style="margin-top:6px;" onclick="setToday()">Подставить текущую дату</button>
+    </div>
+    <div class="field">
+      <label for="m-author">Подготовил</label>
+      <input type="text" id="m-author" oninput="onMeta('author', this.value)">
+      <div class="hint">Должность или имя. Можно оставить пустым.</div>
+    </div>
+    <div class="field">
+      <label for="m-basis">Основа работы</label>
+      <select id="m-basis" onchange="onMeta('basis', this.value)">
+        <option value="Данные моего предприятия">Данные моего предприятия</option>
+        <option value="Учебные данные">Учебные данные</option>
+      </select>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-primary" onclick="goStep(2)">Перейти к условиям</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 2 -->
+  <div id="screen-step2" class="screen">
+    <div class="steps-nav">
+      <button class="step-btn" onclick="goStep(1)">1. Сведения об анализе</button>
+      <button class="step-btn active" onclick="goStep(2)">2. Условия</button>
+      <button class="step-btn" onclick="goStep(3)">3. Предпросмотр</button>
+    </div>
+    <h1>Добавьте условия</h1>
+    <p class="lead">Каждая запись живет на своей вкладке. Опишите условие: что известно, для какой задачи СЭМ оно важно и что нужно проверить. Обязательные поля помечены как обязательные. Записи сохраняются автоматически.</p>
+
+    <div class="nav-buttons" style="margin-top:8px;">
+      <button class="btn btn-secondary" onclick="togglePanel('examplePanel', this)" aria-expanded="false">Посмотреть пример</button>
+      <button class="btn btn-secondary" onclick="togglePanel('groupHelpPanel', this)" aria-expanded="false">Как выбрать группу</button>
+    </div>
+
+    <div class="help-panel" id="examplePanel">
+      <p><strong>Пример записи. Название:</strong> Раздельный учет воды и выпуска.</p>
+      <p><strong>Что известно:</strong> Расход воды учитывают за месяц. Выпуск продукции фиксируют отдельно. Сопоставимость периодов не проверена.</p>
+      <p><strong>Группа:</strong> W. <strong>Для какой задачи важно:</strong> Выбрать данные и показатель для оценки использования воды с учетом объема выпуска.</p>
+      <p><strong>Источник:</strong> Учебная ситуация. <strong>Статус:</strong> Есть предварительные сведения.</p>
+      <p><strong>Что проверить:</strong> Можно ли получить расход воды и выпуск продукции за одинаковые периоды?</p>
+      <p>Пример не является фактом вашего предприятия и не подставляется в документ автоматически.</p>
+    </div>
+
+    <div class="help-panel" id="groupHelpPanel">
+      <p><strong>S.</strong> Внутреннее условие, которое помогает решать задачи СЭМ.</p>
+      <p><strong>W.</strong> Внутреннее ограничение, которое затрудняет решение задач СЭМ.</p>
+      <p><strong>O.</strong> Благоприятное внешнее условие, которое предприятие может использовать.</p>
+      <p><strong>T.</strong> Внешнее условие, которое может затруднить работу.</p>
+      <p class="warn-box" style="margin:8px 0 0;">"Обучить работников" является действием. Для анализа сначала опишите условие, например подтвержденный недостаток знаний.</p>
+    </div>
+
+    <div class="tabs-bar" id="tabsBar" role="tablist" aria-label="Записи условий"></div>
+    <div id="panelsBox"></div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="goStep(1)">К сведениям</button>
+      <button class="btn btn-primary" onclick="goStep(3)">Перейти к предпросмотру</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 3 -->
+  <div id="screen-step3" class="screen">
+    <div class="steps-nav">
+      <button class="step-btn" onclick="goStep(1)">1. Сведения об анализе</button>
+      <button class="step-btn" onclick="goStep(2)">2. Условия</button>
+      <button class="step-btn active" onclick="goStep(3)">3. Предпросмотр</button>
+    </div>
+    <h1>Предпросмотр и скачивание</h1>
+
+    <div class="counts-box" id="countsBox" aria-live="polite"></div>
+    <div class="error-box" id="errorsBox" style="display:none;" aria-live="polite"></div>
+    <div class="notices-box" id="noticesBox" style="display:none;" aria-live="polite"></div>
+
+    <div id="previewBox"></div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="goStep(2)">Вернуться к условиям</button>
+      <button class="btn btn-primary" id="downloadBtn" onclick="downloadDocx()">Скачать Word</button>
+      <button class="btn btn-danger" onclick="restartAll()">Начать заново</button>
+    </div>
+    <p class="hint" id="downloadNote" style="font-size:12px; color:var(--muted); margin-top:8px;"></p>
+  </div>
+
+</div>
+
+<script>
+/* ================= КОНСТАНТЫ ================= */
+const STORAGE_KEY = 'sem-conditions-analysis-v1';
+const GROUP_LABELS = { S: 'S - Сильная сторона', W: 'W - Слабая сторона', O: 'O - Возможность', T: 'T - Угроза', '': 'Группа не определена' };
+const GROUP_DOC_COLORS = { S: '1B5E20', W: '9A3412', O: '0D47A1', T: '9D174D', '': '334155' };
+const SWOT_FILLS = { S: 'E6F4EA', W: 'FFF3E0', O: 'E3F0FD', T: 'FDE8EF' };
+const STATUS_LABELS = { source: 'Есть подтверждающий источник', prelim: 'Есть предварительные сведения', assumption: 'Пока предположение', undefined: 'Не определено' };
+
+let state = {
+  meta: { org: '', scope: '', date: '', author: '', basis: 'Данные моего предприятия' },
+  conditions: [],
+  nextNum: 1,
+  activeId: null
+};
+let bodiesById = {};
+let storageOk = true;
+
+/* ================= ЛОКАЛЬНАЯ ПАМЯТЬ ================= */
+function saveState() {
+  if (!storageOk) return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      meta: state.meta,
+      conditions: state.conditions,
+      nextNum: state.nextNum,
+      activeId: state.activeId
+    }));
+  } catch (e) {
+    storageOk = false;
+    const w = document.getElementById('storageWarn');
+    if (w) w.style.display = 'block';
+    const n = document.getElementById('storageNote');
+    if (n) n.style.display = 'none';
+  }
+}
+
+function sanitizeCond(c) {
+  c = c || {};
+  return {
+    id: String(c.id || ''),
+    name: String(c.name || ''),
+    known: String(c.known || ''),
+    group: ['S', 'W', 'O', 'T'].indexOf(c.group) >= 0 ? c.group : '',
+    task: String(c.task || ''),
+    source: String(c.source || ''),
+    status: STATUS_LABELS[c.status] ? c.status : 'undefined',
+    question: String(c.question || ''),
+    noQuestion: !!c.noQuestion
+  };
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.conditions)) return false;
+    state.meta = Object.assign(
+      { org: '', scope: '', date: '', author: '', basis: 'Данные моего предприятия' },
+      data.meta || {}
+    );
+    state.conditions = data.conditions.map(sanitizeCond).filter(c => c.id);
+    state.nextNum = Number(data.nextNum) || (state.conditions.length + 1);
+    state.activeId = data.activeId || null;
+    return true;
+  } catch (e) { return false; }
+}
+
+function clearStorage() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+}
+
+/* ================= НАВИГАЦИЯ ================= */
+function startWork() { goStep(1); }
+
+function goStep(n) {
+  ['screen-intro', 'screen-step1', 'screen-step2', 'screen-step3'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.classList.remove('active');
+  });
+  document.getElementById('screen-step' + n).classList.add('active');
+  document.querySelectorAll('#screen-step' + n + ' .step-btn').forEach((b, i) => b.classList.toggle('active', i === n - 1));
+  if (n === 3) renderPreview();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+}
+
+function setToday() {
+  const d = new Date();
+  const s = String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
+  document.getElementById('m-date').value = s;
+  onMeta('date', s);
+}
+
+function onMeta(key, value) { state.meta[key] = value; saveState(); }
+
+function togglePanel(id, btn) {
+  const p = document.getElementById(id);
+  const show = !p.classList.contains('show');
+  p.classList.toggle('show', show);
+  if (btn) btn.setAttribute('aria-expanded', show ? 'true' : 'false');
+}
+
+/* ================= ВКЛАДКИ И ПАНЕЛИ ================= */
+function refreshTabsUI() {
+  const bar = document.getElementById('tabsBar');
+  const box = document.getElementById('panelsBox');
+  bar.innerHTML = '';
+
+  state.conditions.forEach(c => {
+    if (!bodiesById[c.id]) {
+      const body = buildBody(c);
+      bodiesById[c.id] = body;
+      box.appendChild(body);
+    }
+  });
+
+  Object.keys(bodiesById).forEach(id => {
+    if (!state.conditions.find(c => c.id === id)) {
+      bodiesById[id].remove();
+      delete bodiesById[id];
+    }
+  });
+
+  const oldPh = document.getElementById('emptyPlaceholder');
+  if (oldPh) oldPh.remove();
+
+  if (!state.conditions.find(c => c.id === state.activeId)) {
+    state.activeId = state.conditions.length ? state.conditions[0].id : null;
+  }
+
+  state.conditions.forEach(c => {
+    const tab = document.createElement('button');
+    tab.className = 'tab-btn';
+    tab.id = 'tab-' + c.id;
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-controls', 'panel-' + c.id);
+    tab.setAttribute('aria-selected', c.id === state.activeId ? 'true' : 'false');
+    tab.onclick = () => activateTab(c.id);
+    tab.onkeydown = e => tabKeydown(e, c.id);
+
+    const dot = document.createElement('span');
+    dot.className = 'tab-dot dot-' + (c.group || 'N');
+    dot.id = 'dot-' + c.id;
+    const idTxt = document.createElement('span');
+    idTxt.textContent = c.id;
+    const nm = document.createElement('span');
+    nm.className = 'tab-name';
+    nm.id = 'tabname-' + c.id;
+    nm.textContent = c.name.trim() || 'без названия';
+    tab.appendChild(dot); tab.appendChild(idTxt); tab.appendChild(nm);
+    bar.appendChild(tab);
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'tab-add';
+  addBtn.textContent = 'Добавить условие';
+  addBtn.onclick = () => addCondition();
+  bar.appendChild(addBtn);
+
+  if (!state.conditions.length) {
+    const ph = document.createElement('div');
+    ph.className = 'note-box';
+    ph.id = 'emptyPlaceholder';
+    ph.style.marginTop = '10px';
+    ph.textContent = 'Записей пока нет. Нажмите "Добавить условие", чтобы создать первую.';
+    box.appendChild(ph);
+  }
+
+  applyActivePanel();
+}
+
+function applyActivePanel() {
+  state.conditions.forEach(c => {
+    const panel = bodiesById[c.id];
+    const tab = document.getElementById('tab-' + c.id);
+    if (panel) panel.hidden = c.id !== state.activeId;
+    if (tab) tab.setAttribute('aria-selected', c.id === state.activeId ? 'true' : 'false');
+  });
+}
+
+function activateTab(id) {
+  state.activeId = id;
+  applyActivePanel();
+  saveState();
+}
+
+function tabKeydown(e, id) {
+  const ids = state.conditions.map(c => c.id);
+  if (!ids.length) return;
+  const idx = ids.indexOf(id);
+  let target = null;
+  if (e.key === 'ArrowRight') target = ids[(idx + 1) % ids.length];
+  if (e.key === 'ArrowLeft') target = ids[(idx - 1 + ids.length) % ids.length];
+  if (e.key === 'Home') target = ids[0];
+  if (e.key === 'End') target = ids[ids.length - 1];
+  if (target) {
+    e.preventDefault();
+    activateTab(target);
+    const t = document.getElementById('tab-' + target);
+    if (t) t.focus();
+  }
+}
+
+function updateTabLabel(c) {
+  const nm = document.getElementById('tabname-' + c.id);
+  if (nm) nm.textContent = c.name.trim() || 'без названия';
+  const dot = document.getElementById('dot-' + c.id);
+  if (dot) dot.className = 'tab-dot dot-' + (c.group || 'N');
+}
+
+function addCondition() {
+  const id = 'F' + String(state.nextNum).padStart(2, '0');
+  state.nextNum++;
+  const cond = { id, name: '', known: '', group: '', task: '', source: '', status: 'undefined', question: '', noQuestion: false };
+  state.conditions.push(cond);
+  state.activeId = id;
+  refreshTabsUI();
+  saveState();
+  const inp = document.getElementById('name-' + id);
+  if (inp) inp.focus();
+}
+
+function deleteCard(id) {
+  const c = state.conditions.find(x => x.id === id);
+  if (!c) return;
+  const filled = c.name || c.known || c.task || c.source || c.question;
+  if (filled && !confirm('Удалить запись ' + id + '? Введенные данные записи будут потеряны.')) return;
+  state.conditions = state.conditions.filter(x => x.id !== id);
+  if (state.activeId === id) state.activeId = state.conditions.length ? state.conditions[0].id : null;
+  refreshTabsUI();
+  saveState();
+}
+
+function goToCard(id) {
+  goStep(2);
+  activateTab(id);
+  const inp = document.getElementById('name-' + id);
+  if (inp) inp.focus();
+}
+
+function buildBody(c) {
+  const panel = document.createElement('div');
+  panel.className = 'tab-panel';
+  panel.id = 'panel-' + c.id;
+  panel.setAttribute('role', 'tabpanel');
+  panel.setAttribute('aria-labelledby', 'tab-' + c.id);
+
+  const head = document.createElement('div');
+  head.className = 'panel-head';
+  const strong = document.createElement('strong');
+  strong.textContent = 'Запись ' + c.id;
+  const badge = document.createElement('span');
+  badge.className = 'grp-badge grp-' + (c.group || 'N');
+  badge.id = 'badge-' + c.id;
+  badge.textContent = c.group ? c.group : 'группа не выбрана';
+  const del = document.createElement('button');
+  del.className = 'btn-small';
+  del.textContent = 'Удалить запись';
+  del.onclick = () => deleteCard(c.id);
+  const headLeft = document.createElement('span');
+  headLeft.style.display = 'inline-flex';
+  headLeft.style.gap = '8px';
+  headLeft.style.alignItems = 'center';
+  headLeft.appendChild(strong); headLeft.appendChild(badge);
+  head.appendChild(headLeft); head.appendChild(del);
+  panel.appendChild(head);
+
+  const body = document.createElement('div');
+  body.innerHTML =
+    '<div class="field"><label for="name-' + c.id + '">Короткое название <span class="req">(обязательное поле)</span></label>' +
+    '<input type="text" id="name-' + c.id + '"><div class="hint">Два до восьми слов. Например, "Раздельный учет воды и выпуска".</div></div>' +
+    '<div class="field"><label for="known-' + c.id + '">Что известно <span class="req">(обязательное поле)</span></label>' +
+    '<textarea id="known-' + c.id + '"></textarea><div class="hint">Опишите конкретное обстоятельство. Не пишите только "персонал" или "оборудование".</div></div>' +
+    '<div class="field"><label for="group-' + c.id + '">Группа SWOT</label>' +
+    '<select id="group-' + c.id + '"><option value="">Пока не определено</option><option value="S">S. Сильная сторона</option><option value="W">W. Слабая сторона</option><option value="O">O. Возможность</option><option value="T">T. Угроза</option></select></div>' +
+    '<div class="field"><label for="task-' + c.id + '">Для какой задачи СЭМ важно <span class="req">(обязательное поле)</span></label>' +
+    '<textarea id="task-' + c.id + '"></textarea><div class="hint">Назовите конкретную задачу. Например, выбрать показатель расхода воды, проверить правила хранения или определить требования заказчика.</div></div>' +
+    '<div class="field"><label for="source-' + c.id + '">Источник сведений</label>' +
+    '<input type="text" id="source-' + c.id + '"><div class="hint">Документ, данные учета, письмо, наблюдение или пояснение работника.</div></div>' +
+    '<div class="field"><label for="status-' + c.id + '">Статус сведений</label>' +
+    '<select id="status-' + c.id + '"><option value="source">Есть подтверждающий источник</option><option value="prelim">Есть предварительные сведения</option><option value="assumption">Пока предположение</option><option value="undefined">Не определено</option></select>' +
+    '<div class="hint">Статус выбираете вы. Конструктор не подтверждает достоверность сведений.</div></div>' +
+    '<div class="field"><label for="question-' + c.id + '">Что проверить или уточнить</label>' +
+    '<textarea id="question-' + c.id + '"></textarea><div class="hint">Сформулируйте конкретный вопрос. Например, "Можно ли получить расход воды и выпуск за одинаковые периоды?"</div>' +
+    '<div class="check-row"><input type="checkbox" id="noq-' + c.id + '"><label for="noq-' + c.id + '" style="font-weight:500;">На этом этапе уточнений нет</label></div>' +
+    '<div class="warn-box" id="qwarn-' + c.id + '" style="display:none;">Вы указали вопрос и одновременно отметили, что уточнений нет. Оставьте только одно из двух.</div></div>';
+  panel.appendChild(body);
+
+  body.querySelector('[id="name-' + c.id + '"]').value = c.name;
+  body.querySelector('[id="known-' + c.id + '"]').value = c.known;
+  body.querySelector('[id="group-' + c.id + '"]').value = c.group;
+  body.querySelector('[id="task-' + c.id + '"]').value = c.task;
+  body.querySelector('[id="source-' + c.id + '"]').value = c.source;
+  body.querySelector('[id="status-' + c.id + '"]').value = c.status;
+  body.querySelector('[id="question-' + c.id + '"]').value = c.question;
+  body.querySelector('[id="noq-' + c.id + '"]').checked = c.noQuestion;
+
+  const set = (key, v) => {
+    c[key] = v;
+    saveState();
+    updateTabLabel(c);
+    if (key === 'group') {
+      const b = document.getElementById('badge-' + c.id);
+      if (b) {
+        b.className = 'grp-badge grp-' + (c.group || 'N');
+        b.textContent = c.group ? c.group : 'группа не выбрана';
+      }
+    }
+  };
+  body.querySelector('[id="name-' + c.id + '"]').addEventListener('input', e => set('name', e.target.value));
+  body.querySelector('[id="known-' + c.id + '"]').addEventListener('input', e => set('known', e.target.value));
+  body.querySelector('[id="group-' + c.id + '"]').addEventListener('change', e => set('group', e.target.value));
+  body.querySelector('[id="task-' + c.id + '"]').addEventListener('input', e => set('task', e.target.value));
+  body.querySelector('[id="source-' + c.id + '"]').addEventListener('input', e => set('source', e.target.value));
+  body.querySelector('[id="status-' + c.id + '"]').addEventListener('change', e => set('status', e.target.value));
+  body.querySelector('[id="question-' + c.id + '"]').addEventListener('input', e => { set('question', e.target.value); syncQWarn(c); });
+  body.querySelector('[id="noq-' + c.id + '"]').addEventListener('change', e => { set('noQuestion', e.target.checked); syncQWarn(c); });
+
+  syncQWarn(c);
+  return panel;
+}
+
+function syncQWarn(c) {
+  const w = document.getElementById('qwarn-' + c.id);
+  if (w) w.style.display = (c.noQuestion && c.question.trim()) ? 'block' : 'none';
+}
+
+/* ================= ПРОВЕРКИ ================= */
+function validate() {
+  const errors = [];
+  state.conditions.forEach(c => {
+    const missing = [];
+    if (!c.name.trim()) missing.push('Короткое название');
+    if (!c.known.trim()) missing.push('Что известно');
+    if (!c.task.trim()) missing.push('Для какой задачи СЭМ важно');
+    if (missing.length) errors.push({ id: c.id, missing });
+  });
+  return errors;
+}
+
+function notices() {
+  const list = [];
+  state.conditions.forEach(c => {
+    if (!c.group) list.push('Запись ' + c.id + ': группа не определена, в документе будет пометка "Группа не определена".');
+    if (c.status === 'undefined') list.push('Запись ' + c.id + ': статус сведений не определен, в документе будет пометка "Не определено".');
+    if (!c.source.trim()) list.push('Запись ' + c.id + ': источник не указан. Можно добавить его позже.');
+    if (!c.question.trim() && !c.noQuestion) list.push('Запись ' + c.id + ': вопрос для проверки не сформулирован.');
+  });
+  return list;
+}
+
+/* ================= ПРЕДПРОСМОТР ================= */
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+
+function checkTextOf(c) {
+  if (c.question.trim()) return c.question.trim();
+  if (c.noQuestion) return 'На этом этапе уточнений нет.';
+  return 'Вопрос для проверки не сформулирован.';
+}
+
+function renderPreview() {
+  const conds = state.conditions;
+  const unassigned = conds.filter(c => !c.group).length;
+  const shaky = conds.filter(c => c.status === 'assumption' || c.status === 'undefined').length;
+
+  const counts = document.getElementById('countsBox');
+  counts.innerHTML = '<strong>Сведения о заполнении.</strong><ul>' +
+    '<li>Условий добавлено: ' + conds.length + '.</li>' +
+    '<li>Записей без группы SWOT: ' + unassigned + '.</li>' +
+    '<li>Записей со статусом "Пока предположение" или "Не определено": ' + shaky + '.</li></ul>' +
+    '<div style="margin-top:6px;">Это сведения о заполнении, а не оценка качества анализа.</div>';
+
+  const errors = validate();
+  const errBox = document.getElementById('errorsBox');
+  const dlBtn = document.getElementById('downloadBtn');
+  if (errors.length) {
+    errBox.style.display = 'block';
+    errBox.innerHTML = '<strong>Заполните обязательные поля, чтобы скачать документ.</strong><ul>' +
+      errors.map(e => '<li>Запись ' + e.id + ': не заполнено - ' + esc(e.missing.join(', ')) +
+        '. <button class="link-btn" onclick="goToCard(\'' + e.id + '\')">Перейти к записи</button></li>').join('') + '</ul>';
+    dlBtn.disabled = true;
+    document.getElementById('downloadNote').textContent = 'Скачивание станет доступным после заполнения обязательных полей.';
+  } else {
+    errBox.style.display = 'none';
+    dlBtn.disabled = conds.length === 0;
+    document.getElementById('downloadNote').textContent = conds.length === 0
+      ? 'Добавьте хотя бы одну запись с обязательными полями.'
+      : 'Документ будет сохранен на ваше устройство по нажатию кнопки.';
+  }
+
+  const nt = notices();
+  const ntBox = document.getElementById('noticesBox');
+  if (nt.length) {
+    ntBox.style.display = 'block';
+    ntBox.innerHTML = '<strong>Мягкие уведомления.</strong><ul>' + nt.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>';
+  } else ntBox.style.display = 'none';
+
+  let html = '';
+  html += '<div class="prev-section"><h3>1. Сведения об анализе</h3>';
+  html += '<p style="margin:0 0 6px;"><strong>Предварительный анализ условий предприятия для СЭМ</strong></p>';
+  html += '<p style="margin:0 0 10px; font-size:12px; color:var(--muted);">Предварительный рабочий материал. Требует проверки и обсуждения на предприятии.</p>';
+  if (state.meta.org.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Предприятие или объект:</strong> ' + esc(state.meta.org) + '</p>';
+  if (state.meta.scope.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Что рассматривается:</strong> ' + esc(state.meta.scope).replace(/\n/g, '<br>') + '</p>';
+  if (state.meta.date.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Дата анализа:</strong> ' + esc(state.meta.date) + '</p>';
+  if (state.meta.author.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Подготовил:</strong> ' + esc(state.meta.author) + '</p>';
+  html += '<p style="margin:0; font-size:13px;"><strong>Основа работы:</strong> ' + esc(state.meta.basis) + '</p></div>';
+
+  html += '<div class="prev-section"><h3>2. SWOT-матрица</h3><div class="prev-swot">';
+  ['S', 'W', 'O', 'T'].forEach(g => {
+    const items = conds.filter(c => c.group === g);
+    const titles = { S: 'S. Сильные стороны', W: 'W. Слабые стороны', O: 'O. Возможности', T: 'T. Угрозы' };
+    const bg = { S: 'var(--s-bg)', W: 'var(--w-bg)', O: 'var(--o-bg)', T: 'var(--t-bg)' }[g];
+    const bd = { S: 'var(--s-border)', W: 'var(--w-border)', O: 'var(--o-border)', T: 'var(--t-border)' }[g];
+    html += '<div class="prev-cell" style="background:' + bg + '; border-color:' + bd + ';">' +
+      '<h4>' + titles[g] + '</h4>' +
+      (items.length ? '<ul>' + items.map(c => '<li>' + esc(c.id + '. ' + (c.name.trim() || 'Без названия')) + '</li>').join('') + '</ul>'
+        : '<p class="prev-empty" style="margin:0;">Условия пока не указаны</p>') + '</div>';
+  });
+  html += '</div>';
+  const un = conds.filter(c => !c.group);
+  if (un.length) {
+    html += '<h4 style="margin:12px 0 6px; font-size:14px;">Требуют распределения</h4><ul style="margin:0; padding-left:20px; font-size:13px;">' +
+      un.map(c => '<li>' + esc(c.id + '. ' + (c.name.trim() || 'Без названия')) + ' <button class="link-btn" onclick="goToCard(\'' + c.id + '\')">Открыть запись</button></li>').join('') + '</ul>';
+  }
+  html += '</div>';
+
+  html += '<div class="prev-section"><h3>3. Разбор условий</h3>';
+  if (!conds.length) html += '<p class="prev-empty" style="margin:0;">Записи пока не добавлены.</p>';
+  conds.forEach(c => {
+    html += '<div class="prev-cond"><div class="prev-cond-head"><strong>' + esc(c.id + '. ' + (c.name.trim() || 'Без названия')) + '</strong>' +
+      '<span class="grp-badge grp-' + (c.group || 'N') + '">' + esc(GROUP_LABELS[c.group]) + '</span>' +
+      '<button class="link-btn" onclick="goToCard(\'' + c.id + '\')">Открыть запись</button></div>' +
+      '<table class="prev-table"><tbody>' +
+      '<tr><th>Что известно</th><td>' + esc(c.known).replace(/\n/g, '<br>') + '</td></tr>' +
+      '<tr><th>Для какой задачи СЭМ важно</th><td>' + esc(c.task).replace(/\n/g, '<br>') + '</td></tr>' +
+      '<tr><th>Источник</th><td>' + esc(c.source.trim() || 'Не указан') + '</td></tr>' +
+      '<tr><th>Статус сведений</th><td>' + esc(STATUS_LABELS[c.status]) + '</td></tr>' +
+      '<tr><th>Что проверить</th><td>' + esc(checkTextOf(c)) + '</td></tr>' +
+      '</tbody></table></div>';
+  });
+  html += '</div>';
+
+  html += '<div class="prev-section"><h3>4. Вопросы для уточнения</h3>';
+  const qs = conds.filter(c => c.question.trim());
+  if (!qs.length) html += '<p class="prev-empty" style="margin:0;">Вопросы для уточнения в этой версии не указаны.</p>';
+  else html += '<ul class="prev-q" style="margin:0; padding-left:20px; font-size:13px;">' +
+    qs.map(c => '<li><strong>' + esc(c.id) + ':</strong> ' + esc(c.question.trim()).replace(/\n/g, ' ') + '</li>').join('') + '</ul>';
+  html += '</div>';
+
+  html += '<p style="font-size:12px; color:var(--muted);">Документ подготовлен с помощью учебного конструктора. Он помогает организовать предварительный анализ условий и не является подтверждением соответствия СЭМ стандарту.</p>';
+
+  document.getElementById('previewBox').innerHTML = html;
+}
+
+/* ================= ГЕНЕРАЦИЯ DOCX ================= */
+function xmlEsc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+
+function run(text, o) {
+  o = o || {};
+  let rpr = '';
+  if (o.b) rpr += '<w:b/>';
+  if (o.i) rpr += '<w:i/>';
+  if (o.color) rpr += '<w:color w:val="' + o.color + '"/>';
+  if (o.sz) rpr += '<w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/>';
+  return '<w:r>' + (rpr ? '<w:rPr>' + rpr + '</w:rPr>' : '') + '<w:t xml:space="preserve">' + xmlEsc(text) + '</w:t></w:r>';
+}
+
+function para(text, o) {
+  o = o || {};
+  let ppr = '';
+  if (o.style) ppr += '<w:pStyle w:val="' + o.style + '"/>';
+  if (o.jc) ppr += '<w:jc w:val="' + o.jc + '"/>';
+  if (o.before || o.after) ppr += '<w:spacing w:before="' + (o.before || 0) + '" w:after="' + (o.after || 0) + '"/>';
+  return '<w:p>' + (ppr ? '<w:pPr>' + ppr + '</w:pPr>' : '') + run(text, o) + '</w:p>';
+}
+
+function paraMulti(text, o) {
+  return String(text).split(/\r?\n/).map(l => para(l, o)).join('');
+}
+
+function labelPara(label, value) {
+  return '<w:p><w:pPr><w:spacing w:after="60"/></w:pPr>' + run(label + ': ', { b: true }) + run(value) + '</w:p>';
+}
+
+function cell(width, parasXml, fill) {
+  const tcpr = '<w:tcPr><w:tcW w:w="' + width + '" w:type="dxa"/>' + (fill ? '<w:shd w:val="clear" w:color="auto" w:fill="' + fill + '"/>' : '') + '<w:vAlign w:val="top"/></w:tcPr>';
+  return '<w:tc>' + tcpr + (parasXml || '<w:p/>') + '</w:tc>';
+}
+
+const TBL_BORDERS = '<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
+const CELL_MAR = '<w:tblCellMar><w:top w:w="80" w:type="dxa"/><w:left w:w="100" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:right w:w="100" w:type="dxa"/></w:tblCellMar>';
+
+function table(widths, rowsXml) {
+  const total = widths.reduce((a, b) => a + b, 0);
+  return '<w:tbl><w:tblPr><w:tblW w:w="' + total + '" w:type="dxa"/>' + TBL_BORDERS + CELL_MAR + '<w:tblLayout w:type="fixed"/></w:tblPr>' +
+    '<w:tblGrid>' + widths.map(w => '<w:gridCol w:w="' + w + '"/>').join('') + '</w:tblGrid>' + rowsXml + '</w:tbl>';
+}
+
+function buildDocumentXml() {
+  const b = [];
+  b.push(para('Предварительный анализ условий предприятия для СЭМ', { style: 'Title' }));
+  b.push(para('Предварительный рабочий материал. Требует проверки и обсуждения на предприятии.', { i: true, color: '6B7280', sz: 20, after: 200 }));
+
+  b.push(para('1. Сведения об анализе', { style: 'Heading1' }));
+  if (state.meta.org.trim()) b.push(labelPara('Предприятие или объект', state.meta.org.trim()));
+  if (state.meta.scope.trim()) {
+    const lines = state.meta.scope.trim().split(/\r?\n/);
+    let xml = '<w:p><w:pPr><w:spacing w:after="60"/></w:pPr>' + run('Что рассматривается: ', { b: true }) + run(lines[0]) + '</w:p>';
+    for (let i = 1; i < lines.length; i++) xml += para(lines[i]);
+    b.push(xml);
+  }
+  if (state.meta.date.trim()) b.push(labelPara('Дата анализа', state.meta.date.trim()));
+  if (state.meta.author.trim()) b.push(labelPara('Подготовил', state.meta.author.trim()));
+  b.push(labelPara('Основа работы', state.meta.basis));
+
+  b.push(para('2. SWOT-матрица', { style: 'Heading1' }));
+  const titles = { S: 'S. Сильные стороны', W: 'W. Слабые стороны', O: 'O. Возможности', T: 'T. Угрозы' };
+  function swotCell(g) {
+    const items = state.conditions.filter(c => c.group === g);
+    let xml = para(titles[g], { b: true, after: 60 });
+    if (items.length) items.forEach(c => { xml += para(c.id + '. ' + (c.name.trim() || 'Без названия'), { sz: 20, after: 40 }); });
+    else xml += para('Условия пока не указаны', { i: true, color: '6B7280', sz: 20 });
+    return cell(4819, xml, SWOT_FILLS[g]);
+  }
+  b.push(table([4819, 4819], '<w:tr>' + swotCell('S') + swotCell('W') + '</w:tr><w:tr>' + swotCell('O') + swotCell('T') + '</w:tr>'));
+  const un = state.conditions.filter(c => !c.group);
+  if (un.length) {
+    b.push(para('Требуют распределения', { style: 'Heading2' }));
+    un.forEach(c => b.push(para(c.id + '. ' + (c.name.trim() || 'Без названия'), { after: 40 })));
+  }
+
+  b.push(para('3. Разбор условий', { style: 'Heading1' }));
+  state.conditions.forEach(c => {
+    b.push(para(c.id + '. ' + (c.name.trim() || 'Без названия'), { style: 'Heading2' }));
+    b.push(para('Группа: ' + GROUP_LABELS[c.group], { b: true, color: GROUP_DOC_COLORS[c.group], after: 100 }));
+    const rows = [
+      ['Что известно', c.known],
+      ['Для какой задачи СЭМ важно', c.task],
+      ['Источник', c.source.trim() || 'Не указан'],
+      ['Статус сведений', STATUS_LABELS[c.status]],
+      ['Что проверить', checkTextOf(c)]
+    ];
+    let rowsXml = '';
+    rows.forEach(r => {
+      rowsXml += '<w:tr>' + cell(2800, para(r[0], { b: true, sz: 20 }), 'F8FAFC') + cell(6838, paraMulti(r[1], { sz: 20 })) + '</w:tr>';
+    });
+    b.push(table([2800, 6838], rowsXml));
+    b.push(para('', { after: 120 }));
+  });
+
+  b.push(para('4. Вопросы для уточнения', { style: 'Heading1' }));
+  const qs = state.conditions.filter(c => c.question.trim());
+  if (!qs.length) b.push(para('Вопросы для уточнения в этой версии не указаны.', { i: true, color: '6B7280' }));
+  qs.forEach(c => {
+    const lines = c.question.trim().split(/\r?\n/);
+    b.push('<w:p><w:pPr><w:spacing w:after="40"/></w:pPr>' + run(c.id + ': ', { b: true }) + run(lines[0]) + '</w:p>');
+    for (let i = 1; i < lines.length; i++) b.push(para(lines[i]));
+  });
+
+  b.push(para('Документ подготовлен с помощью учебного конструктора. Он помогает организовать предварительный анализ условий и не является подтверждением соответствия СЭМ стандарту.', { i: true, color: '6B7280', sz: 20, before: 240 }));
+  b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>' +
+    b.join('') + '</w:body></w:document>';
+}
+
+const CT_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
+const RELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+const DRELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+const FOOTER_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:fldSimple w:instr=" PAGE "><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
+const STYLES_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="334155"/></w:rPr></w:style></w:styles>';
+
+/* ZIP (store) */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; }
+  return t;
+})();
+function crc32(u8) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function zipStore(files) {
+  const enc = new TextEncoder();
+  const now = new Date();
+  const dosTime = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xFFFF;
+  const dosDate = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xFFFF;
+  const locals = [], centrals = [];
+  let offset = 0;
+  files.forEach(f => {
+    const nameB = enc.encode(f.name);
+    const data = f.data;
+    const crc = crc32(data);
+    const lh = new Uint8Array(30 + nameB.length);
+    const dv = new DataView(lh.buffer);
+    dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true); dv.setUint16(6, 0, true); dv.setUint16(8, 0, true);
+    dv.setUint16(10, dosTime, true); dv.setUint16(12, dosDate, true);
+    dv.setUint32(14, crc, true); dv.setUint32(18, data.length, true); dv.setUint32(22, data.length, true);
+    dv.setUint16(26, nameB.length, true); dv.setUint16(28, 0, true);
+    lh.set(nameB, 30);
+    locals.push(lh, data);
+    const ch = new Uint8Array(46 + nameB.length);
+    const cv = new DataView(ch.buffer);
+    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true); cv.setUint16(8, 0, true); cv.setUint16(10, 0, true);
+    cv.setUint16(12, dosTime, true); cv.setUint16(14, dosDate, true);
+    cv.setUint32(16, crc, true); cv.setUint32(20, data.length, true); cv.setUint32(24, data.length, true);
+    cv.setUint16(28, nameB.length, true); cv.setUint16(30, 0, true); cv.setUint16(32, 0, true);
+    cv.setUint16(34, 0, true); cv.setUint16(36, 0, true); cv.setUint32(38, 0, true); cv.setUint32(42, offset, true);
+    ch.set(nameB, 46);
+    centrals.push(ch);
+    offset += lh.length + data.length;
+  });
+  const centralSize = centrals.reduce((a, c) => a + c.length, 0);
+  const eocd = new Uint8Array(22);
+  const ev = new DataView(eocd.buffer);
+  ev.setUint32(0, 0x06054b50, true); ev.setUint16(4, 0, true); ev.setUint16(6, 0, true);
+  ev.setUint16(8, files.length, true); ev.setUint16(10, files.length, true);
+  ev.setUint32(12, centralSize, true); ev.setUint32(16, offset, true); ev.setUint16(20, 0, true);
+  let total = 0;
+  locals.forEach(p => total += p.length);
+  centrals.forEach(p => total += p.length);
+  total += 22;
+  const out = new Uint8Array(total);
+  let o = 0;
+  locals.forEach(p => { out.set(p, o); o += p.length; });
+  centrals.forEach(p => { out.set(p, o); o += p.length; });
+  out.set(eocd, o);
+  return out;
+}
+
+function downloadDocx() {
+  const errors = validate();
+  if (errors.length || state.conditions.length === 0) { renderPreview(); return; }
+  const enc = new TextEncoder();
+  const files = [
+    { name: '[Content_Types].xml', data: enc.encode(CT_XML) },
+    { name: '_rels/.rels', data: enc.encode(RELS_XML) },
+    { name: 'word/document.xml', data: enc.encode(buildDocumentXml()) },
+    { name: 'word/styles.xml', data: enc.encode(STYLES_XML) },
+    { name: 'word/footer1.xml', data: enc.encode(FOOTER_XML) },
+    { name: 'word/_rels/document.xml.rels', data: enc.encode(DRELS_XML) }
+  ];
+  const bytes = zipStore(files);
+  const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'predvaritelnyi-analiz-uslovii-sem.docx';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  document.getElementById('downloadNote').textContent = 'Документ скачан. Можно продолжать редактирование и скачать новую версию после изменений.';
+}
+
+/* ================= СБРОС ================= */
+function restartAll() {
+  if (!confirm('Очистить все введенные данные и удалить их из локальной памяти браузера?')) return;
+  clearStorage();
+  state.meta = { org: '', scope: '', date: '', author: '', basis: 'Данные моего предприятия' };
+  state.conditions = [];
+  state.nextNum = 1;
+  state.activeId = null;
+  bodiesById = {};
+  document.getElementById('panelsBox').innerHTML = '';
+  document.getElementById('m-org').value = '';
+  document.getElementById('m-scope').value = '';
+  document.getElementById('m-date').value = '';
+  document.getElementById('m-author').value = '';
+  document.getElementById('m-basis').value = 'Данные моего предприятия';
+  setToday();
+  addCondition();
+  goStep(1);
+}
+
+/* ================= СТАРТ ================= */
+document.addEventListener('DOMContentLoaded', () => {
+  const restored = loadState();
+  if (restored && state.conditions.length) {
+    const rn = document.getElementById('restoreNote');
+    if (rn) rn.style.display = 'block';
+  }
+  document.getElementById('m-org').value = state.meta.org;
+  document.getElementById('m-scope').value = state.meta.scope;
+  document.getElementById('m-date').value = state.meta.date;
+  document.getElementById('m-author').value = state.meta.author;
+  document.getElementById('m-basis').value = state.meta.basis;
+  if (!state.meta.date) setToday();
+  if (!state.conditions.length) {
+    const id = 'F' + String(state.nextNum).padStart(2, '0');
+    state.nextNum++;
+    state.conditions.push({ id, name: '', known: '', group: '', task: '', source: '', status: 'undefined', question: '', noQuestion: false });
+    state.activeId = id;
+  }
+  refreshTabsUI();
+  saveState();
+});
+</script>
+
+</body>
+</html>
