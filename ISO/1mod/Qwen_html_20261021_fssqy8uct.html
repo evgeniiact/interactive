@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+
+<style>
+:root {
+  --bg: #ffffff;
+  --primary: #1e293b;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --back-bg: #eff6ff;
+  --back-border: #bfdbfe;
+  --gray-light: #f8fafc;
+  --border: #e2e8f0;
+  --muted: #64748b;
+  --radius: 14px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+  margin: 0;
+  padding: 20px;
+  background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--primary);
+  font-size: 15px;
+  line-height: 1.6;
+}
+
+.container {
+  max-width: 650px;
+  margin: 0 auto;
+}
+
+h1 {
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 16px;
+  color: var(--primary);
+}
+
+/* Кнопки выбора ситуации */
+.situation-buttons {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.sit-btn {
+  flex: 1 1 200px;
+  padding: 12px 14px;
+  border: 2px solid var(--border);
+  background: #fff;
+  border-radius: 10px;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  color: var(--muted);
+  transition: all 0.2s;
+  font-family: inherit;
+  text-align: center;
+}
+
+.sit-btn:hover {
+  border-color: var(--accent);
+  color: var(--accent);
+}
+
+.sit-btn.active {
+  border-color: var(--accent);
+  color: var(--accent);
+  background: var(--back-bg);
+}
+
+/* Блок ситуации */
+.case {
+  display: none;
+}
+.case.active {
+  display: block;
+  animation: fadeIn 0.35s ease-out;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.case-title {
+  font-size: 17px;
+  font-weight: 700;
+  margin: 0 0 12px;
+  color: var(--primary);
+}
+
+/* Карточка-перевертыш */
+.flip-card {
+  perspective: 1400px;
+  position: relative;
+}
+
+.flip-inner {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition: transform 0.65s cubic-bezier(0.4, 0.2, 0.2, 1);
+}
+
+.flip-card.flipped .flip-inner {
+  transform: rotateY(180deg);
+}
+
+.flip-face {
+  position: absolute;
+  inset: 0;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  box-shadow: 0 2px 8px rgba(15, 23, 42, 0.07);
+}
+
+.flip-front {
+  background: #fff;
+  border: 1px solid var(--border);
+}
+
+.flip-back {
+  background: var(--back-bg);
+  border: 1px solid var(--back-border);
+  transform: rotateY(180deg);
+}
+
+.face-text {
+  font-size: 14px;
+  line-height: 1.55;
+  margin: 0;
+}
+
+.face-question {
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.5;
+  margin: 0;
+}
+
+.face-hint {
+  font-size: 13px;
+  color: var(--muted);
+  font-style: italic;
+  margin: 0;
+}
+
+.back-answer {
+  font-size: 14px;
+  font-weight: 600;
+  line-height: 1.5;
+  margin: 0;
+  color: var(--accent-dark);
+}
+
+.back-item {
+  background: #fff;
+  border-radius: 8px;
+  padding: 8px 12px;
+  font-size: 13px;
+  line-height: 1.5;
+  border-left: 3px solid var(--accent);
+}
+
+.back-item strong {
+  display: block;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  color: var(--accent);
+  margin-bottom: 2px;
+}
+
+.flip-btn {
+  margin-top: auto;
+  align-self: flex-start;
+  padding: 10px 18px;
+  border: none;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  font-weight: 600;
+  font-size: 14px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: background 0.2s;
+}
+.flip-btn:hover { background: var(--accent-dark); }
+
+.flip-btn.back-btn {
+  background: #fff;
+  border: 1px solid var(--accent);
+  color: var(--accent);
+}
+.flip-btn.back-btn:hover { background: var(--back-bg); }
+
+/* Итоговая заметка */
+.summary-note {
+  margin-top: 22px;
+  padding: 16px 18px;
+  background: var(--gray-light);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--primary);
+}
+
+@media (max-width: 480px) {
+  body { padding: 12px; }
+  h1 { font-size: 20px; }
+  .flip-face { padding: 16px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <h1>Тренажер: условие прежде решения</h1>
+
+  <div class="situation-buttons">
+    <button class="sit-btn active" id="sit-btn-1" onclick="selectCase(1)">Ситуация 1. Расход воды</button>
+    <button class="sit-btn" id="sit-btn-2" onclick="selectCase(2)">Ситуация 2. Вода на территории</button>
+  </div>
+
+  <!-- СИТУАЦИЯ 1 -->
+  <div class="case active" id="case-1">
+    <div class="case-title">Карточка 1. Достаточно ли данных для оценки расхода воды</div>
+
+    <div class="flip-card" id="flip-1">
+      <div class="flip-inner">
+
+        <div class="flip-face flip-front">
+          <p class="face-text">На заводе учитывают расход воды за месяц. Выпуск стекла фиксируют отдельно. Вместе эти сведения пока не анализируют.</p>
+          <p class="face-question">В этом месяце завод израсходовал меньше воды. Можно ли считать, что воду стали использовать экономнее?</p>
+          <p class="face-hint">Сначала сформулируйте свой ответ, затем откройте разбор.</p>
+          <button class="flip-btn" onclick="flipCard(1, true)">Посмотреть разбор</button>
+        </div>
+
+        <div class="flip-face flip-back">
+          <p class="back-answer">Снижение общего расхода еще не доказывает экономию. Возможно, завод выпустил меньше стекла.</p>
+          <div class="back-item">
+            <strong>Условие предприятия</strong>
+            Расход воды и выпуск продукции рассматривают отдельно.
+          </div>
+          <div class="back-item">
+            <strong>Связь с СЭМ</strong>
+            Для оценки использования воды нужно выбрать показатель, который позволит объяснять изменение расхода.
+          </div>
+          <div class="back-item">
+            <strong>Действие сейчас</strong>
+            Проверить, можно ли получить расход воды и выпуск продукции за одинаковые периоды.
+          </div>
+          <div class="back-item">
+            <strong>Что пока рано делать</strong>
+            Устанавливать цель по экономии только по изменению общего расхода.
+          </div>
+          <button class="flip-btn back-btn" onclick="flipCard(1, false)">Вернуться к ситуации</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- СИТУАЦИЯ 2 -->
+  <div class="case" id="case-2">
+    <div class="case-title">Карточка 2. Что означает вода на территории</div>
+
+    <div class="flip-card" id="flip-2">
+      <div class="flip-inner">
+
+        <div class="flip-face flip-front">
+          <p class="face-text">После сильных осадков на территории завода скапливается вода. Пока неизвестно, затрагивает ли она места хранения материалов.</p>
+          <p class="face-question">Что нужно сделать сначала? Выбрать систему водоотведения или выяснить, какие участки затапливает?</p>
+          <p class="face-hint">Объясните свой выбор, затем откройте разбор.</p>
+          <button class="flip-btn" onclick="flipCard(2, true)">Посмотреть разбор</button>
+        </div>
+
+        <div class="flip-face flip-back">
+          <p class="back-answer">Сначала нужно установить, где скапливается вода и что находится в этих зонах. Без этого нельзя обоснованно выбрать решение.</p>
+          <div class="back-item">
+            <strong>Условие предприятия</strong>
+            После осадков на территории скапливается вода.
+          </div>
+          <div class="back-item">
+            <strong>Связь с СЭМ</strong>
+            Если вода затрагивает материалы или отходы, это нужно учитывать при подготовке правил хранения и разборе возможных нештатных ситуаций.
+          </div>
+          <div class="back-item">
+            <strong>Действие сейчас</strong>
+            Уточнить затрагиваемые зоны, материалы и операции.
+          </div>
+          <div class="back-item">
+            <strong>Что пока рано делать</strong>
+            Объявлять загрязнение установленным или выбирать техническое решение без проверки обстоятельств.
+          </div>
+          <button class="flip-btn back-btn" onclick="flipCard(2, false)">Вернуться к ситуации</button>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <div class="summary-note">
+    В обоих примерах мы не выбирали мероприятие сразу. Сначала установили, для какой задачи СЭМ важно условие и каких сведений не хватает.
+  </div>
+
+</div>
+
+<script>
+let currentCase = 1;
+
+function selectCase(n) {
+  currentCase = n;
+
+  document.querySelectorAll('.sit-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById(`sit-btn-${n}`).classList.add('active');
+
+  document.querySelectorAll('.case').forEach(c => c.classList.remove('active'));
+  document.getElementById(`case-${n}`).classList.add('active');
+
+  setHeights();
+  resizeIframe();
+}
+
+function flipCard(n, toBack) {
+  const card = document.getElementById(`flip-${n}`);
+  card.classList.toggle('flipped', toBack);
+  setTimeout(resizeIframe, 700);
+}
+
+function setHeights() {
+  const caseBlock = document.getElementById(`case-${currentCase}`);
+  const card = caseBlock.querySelector('.flip-card');
+  const front = caseBlock.querySelector('.flip-front');
+  const back = caseBlock.querySelector('.flip-back');
+
+  // Временно сбрасываем высоту, чтобы измерить контент
+  card.style.height = 'auto';
+  const h = Math.max(front.scrollHeight, back.scrollHeight);
+  card.style.height = h + 'px';
+}
+
+function resizeIframe() {
+  if (window.parentIFrame) {
+    window.parentIFrame.size();
+  }
+}
+
+window.addEventListener('resize', () => {
+  setHeights();
+  resizeIframe();
+});
+
+window.addEventListener('load', () => {
+  setHeights();
+  resizeIframe();
+});
+
+document.addEventListener('DOMContentLoaded', () => {
+  setHeights();
+  resizeIframe();
+});
+</script>
+
+</body>
+</html>
