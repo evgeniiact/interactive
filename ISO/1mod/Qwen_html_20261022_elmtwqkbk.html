@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Кто связан с экологическими вопросами завода</title>
+<!-- При необходимости автомасштаба фрейма на платформе подключите локальную копию:
+<script src="js/iframeResizer.contentWindow.min.js"></script>
+Без этого файла интерактив работает автономно. -->
+<style>
+:root {
+  --bg: #ffffff;
+  --primary: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --gray-light: #f8fafc;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --ok-bg: #f0fdf4;
+  --ok-border: #bbf7d0;
+  --ok-text: #166534;
+  --bad-bg: #fef2f2;
+  --bad-border: #fecaca;
+  --bad-text: #991b1b;
+  --warn-bg: #fffbeb;
+  --warn-border: #fde68a;
+  --warn-text: #92400e;
+  --radius: 12px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 20px; background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--primary); font-size: 15px; line-height: 1.6;
+}
+.container { max-width: 720px; margin: 0 auto; }
+h1 { font-size: 22px; font-weight: 800; margin: 0 0 6px; }
+h2 { font-size: 17px; font-weight: 700; margin: 18px 0 8px; }
+h3 { font-size: 15px; font-weight: 700; margin: 0 0 8px; }
+.lead { font-size: 14px; margin: 0 0 12px; line-height: 1.6; }
+.subtitle {
+  font-size: 13px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .5px; margin-bottom: 8px; font-weight: 600;
+}
+.note-box {
+  background: var(--gray-light); border: 1px solid var(--border);
+  border-left: 4px solid var(--muted); border-radius: 0 8px 8px 0;
+  padding: 10px 14px; font-size: 13px; color: var(--muted); margin: 10px 0;
+}
+.rules-box {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  background: #fff; padding: 14px 16px; margin: 12px 0;
+}
+.rules-box h2 { margin: 0 0 8px; font-size: 15px; }
+.rules-box ol { margin: 0; padding-left: 20px; font-size: 13px; line-height: 1.55; }
+.rules-box li { margin-bottom: 6px; }
+.warn-box {
+  background: var(--warn-bg); border-left: 3px solid var(--warn-border);
+  border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 13px;
+  color: var(--warn-text); margin: 10px 0; line-height: 1.5;
+}
+
+/* Режимы */
+.mode-bar { display: flex; gap: 8px; margin: 14px 0; flex-wrap: wrap; }
+.mode-btn {
+  flex: 1 1 180px; padding: 11px 14px; border: 2px solid var(--border); border-radius: 10px;
+  background: #fff; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--muted);
+  cursor: pointer; transition: all .15s; text-align: center;
+}
+.mode-btn[aria-pressed="true"] { border-color: var(--accent); color: #fff; background: var(--accent); }
+
+/* Вкладки */
+.tabs { display: flex; gap: 8px; margin: 12px 0 6px; flex-wrap: wrap; }
+.vtab {
+  padding: 9px 14px; border: 1px solid var(--border); border-radius: 10px;
+  background: var(--gray-light); font-family: inherit; font-size: 13px; font-weight: 700;
+  color: var(--muted); cursor: pointer; transition: all .15s;
+}
+.vtab[aria-selected="true"] { background: #fff; color: var(--accent); border-color: var(--accent); }
+
+/* Карта */
+.map-figure {
+  position: relative; border-radius: 12px; overflow: hidden;
+  border: 1px solid var(--border); background: #eef2f7; margin: 8px 0 0;
+}
+.map-figure img { width: 100%; height: auto; display: block; }
+.marker-layer { position: absolute; inset: 0; }
+.marker {
+  position: absolute; transform: translate(-50%, -50%);
+  width: 26px; height: 26px; border-radius: 50%;
+  background: var(--accent-dark); color: #fff; border: 2px solid #fff;
+  font-family: inherit; font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; box-shadow: 0 1px 4px rgba(15,23,42,.35); padding: 0;
+}
+.marker .m-name {
+  position: absolute; top: 100%; left: 50%; transform: translateX(-50%);
+  margin-top: 5px; background: var(--primary); color: #fff;
+  font-size: 11px; font-weight: 600; padding: 3px 8px; border-radius: 6px;
+  white-space: nowrap; display: none; z-index: 6; pointer-events: none;
+}
+.marker.labeled .m-name {
+  display: block; white-space: normal; width: max-content; max-width: 132px;
+  text-align: center; background: rgba(30,41,59,.92);
+}
+.marker:focus .m-name, .marker.open .m-name { display: block; }
+.marker.open { background: var(--accent); }
+.marker.chosen { background: var(--ok-text); }
+.marker.bad { background: var(--bad-text); }
+.marker:disabled { cursor: default; opacity: .9; }
+.img-missing { display: none; padding: 14px; font-size: 13px; color: var(--warn-text); background: var(--warn-bg); }
+.map-figure.no-img img { display: none; }
+.map-figure.no-img .marker-layer { display: none; }
+.map-figure.no-img .img-missing { display: block; }
+
+.point-list { display: flex; flex-wrap: wrap; gap: 8px; margin: 10px 0; }
+.point-btn {
+  border: 1px solid var(--border); background: #fff; border-radius: 8px;
+  padding: 8px 12px; font-size: 13px; cursor: pointer; font-family: inherit; color: var(--primary);
+}
+.point-btn:hover { border-color: var(--accent); }
+.point-btn[aria-pressed="true"] { border-color: var(--accent); color: var(--accent); background: #eff6ff; }
+.point-btn:disabled { cursor: default; opacity: .7; }
+
+/* Панель пояснения */
+.info-panel {
+  border: 1px solid var(--border); border-left: 5px solid var(--accent);
+  border-radius: 10px; padding: 14px 16px; margin: 12px 0; background: #fff;
+  font-size: 14px; display: none;
+}
+.info-panel.show { display: block; }
+.info-panel p { margin: 0 0 8px; }
+.info-panel p:last-child { margin-bottom: 0; }
+
+/* Обратная связь */
+.fb-box {
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; line-height: 1.55;
+  margin: 12px 0; display: none;
+}
+.fb-box.show { display: block; }
+.fb-box.ok { background: var(--ok-bg); border: 1px solid var(--ok-border); color: var(--ok-text); }
+.fb-box.bad { background: var(--bad-bg); border: 1px solid var(--bad-border); color: var(--bad-text); }
+.fb-box.info { background: var(--gray-light); border: 1px solid var(--border); color: var(--primary); }
+.fb-box strong { display: block; margin-bottom: 3px; }
+
+/* Задания */
+.task-card {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 16px; margin-bottom: 14px; background: #fff;
+}
+.opt-btn {
+  display: block; width: 100%; text-align: left;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: #fff; padding: 11px 14px; margin-bottom: 8px;
+  font-family: inherit; font-size: 14px; line-height: 1.5; color: var(--primary);
+  cursor: pointer; transition: all .15s;
+}
+.opt-btn:hover:not(:disabled) { border-color: var(--accent); background: #eff6ff; }
+.opt-btn.sel-ok { border-color: var(--ok-text); background: var(--ok-bg); }
+.opt-btn.sel-bad { border-color: var(--bad-text); background: var(--bad-bg); }
+.opt-btn.dim { opacity: .55; }
+.opt-btn:disabled { cursor: default; }
+
+/* Кнопки */
+.nav-buttons { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.btn {
+  padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; font-family: inherit; transition: background .2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--primary); }
+.btn-secondary:hover { background: var(--gray-light); }
+
+/* Итоги */
+.link-item {
+  padding: 10px 12px; border-radius: 8px; margin-bottom: 8px; font-size: 13px; line-height: 1.55;
+  display: flex; gap: 10px; align-items: flex-start; flex-wrap: wrap;
+}
+.link-item.ok { background: var(--ok-bg); border: 1px solid var(--ok-border); color: var(--ok-text); }
+.link-item.rev { background: var(--warn-bg); border: 1px solid var(--warn-border); color: var(--warn-text); }
+.link-badge {
+  font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: .3px;
+  padding: 2px 8px; border-radius: 20px; border: 1px solid currentColor; white-space: nowrap;
+}
+
+button:focus-visible, .marker:focus-visible {
+  outline: 3px solid var(--accent-dark); outline-offset: 2px;
+}
+
+@media (max-width: 560px) {
+  body { padding: 12px; }
+  h1 { font-size: 20px; }
+  .marker { width: 30px; height: 30px; font-size: 13px; }
+  .marker .m-name { max-width: 110px; }
+  .nav-buttons { flex-direction: column; }
+  .btn { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="subtitle">Игровой интерактив</div>
+  <h1>Кто связан с экологическими вопросами завода</h1>
+  <p class="lead">Посмотрите, кто связан с деятельностью предприятия. Одни стороны работают на площадке или находятся рядом. Другие участвуют через договоры, финансирование и решения. Откройте маркеры, чтобы разобраться в этих связях.</p>
+
+  <div class="rules-box">
+    <h2>Правила и механика</h2>
+    <ol>
+      <li>Две карты. "На площадке и рядом" живут те, кто работает на площадке или соседствует с ней. "Через офис" участвуют через решения, договоры и финансирование. На офисной карте роли подписаны сразу рядом с маркерами.</li>
+      <li>Режим "Изучите карту": нажмите маркер или кнопку в списке под картой. Под картой откроется пояснение: учебная ситуация, связь с СЭМ и что проверить.</li>
+      <li>Режим "Проверьте связи": три раунда. В каждом раунде прочитайте ситуацию, найдите сторону на карте и ответьте на вопрос о связи.</li>
+      <li>Ошибка не тупик: интерактив объяснит различие ролей и даст выбрать снова. Подсказка и разбор доступны в любой момент, угадывать не нужно.</li>
+      <li>Таймера и очков за открытие пояснений нет. В конце видно, какие связи вы подтвердили сами, а какие стоит пересмотреть.</li>
+      <li>Прогресс живет только в открытой странице. Закроете или обновите вкладку до итогов: начнете заново.</li>
+    </ol>
+  </div>
+
+  <div class="mode-bar" role="group" aria-label="Режим работы">
+    <button class="mode-btn" id="modeExplore" aria-pressed="true" onclick="setMode('explore')">Изучите карту</button>
+    <button class="mode-btn" id="modePractice" aria-pressed="false" onclick="setMode('practice')">Проверьте связи</button>
+  </div>
+
+  <!-- РЕЖИМ 1 -->
+  <section id="exploreSection">
+    <div class="tabs" id="tabsExplore" role="tablist" aria-label="Карты заинтересованных сторон"></div>
+    <div id="tabNoteExplore"></div>
+    <figure class="map-figure" id="mapExplore"></figure>
+    <div class="point-list" id="listExplore"></div>
+    <div class="info-panel" id="infoPanel" aria-live="polite"></div>
+    <div class="note-box">Это учебные ситуации. Наличие конкретного требования нужно проверять по источникам. Один участник может выступать в нескольких ролях.</div>
+  </section>
+
+  <!-- РЕЖИМ 2 -->
+  <section id="practiceSection" style="display:none;">
+    <div id="taskArea"></div>
+    <div id="resultsArea" style="display:none;"></div>
+  </section>
+
+</div>
+
+<script>
+/* ================= ДАННЫЕ ================= */
+/* Имена файлов изображений. Если расширение другое, поменяйте только здесь. */
+const IMG_SRC = { site: 'img/plant.jpg', office: 'img/office.jpg' };
+const IMG_ALT = {
+  site: 'Промышленная площадка учебного завода: производственный корпус, места хранения материалов, въезд с грузовиком и жилые дома рядом.',
+  office: 'Офис с четырьмя переговорными комнатами и общей рабочей зоной.'
+};
+const TAB_NAMES = { site: 'На площадке и рядом', office: 'Через офис' };
+const OFFICE_NOTE = 'Одна организация может выступать в нескольких ролях. Например, инвестор может одновременно быть собственником. В своей таблице описывайте конкретные связи и требования, а не создавайте дубли только из-за названий групп.';
+
+const POINTS = [
+  { id: 1, tab: 'site', x: 22, y: 36, name: 'Работники завода',
+    sit: 'Работник сообщает, что инструкция не объясняет, куда передавать определенный остаток материала.',
+    link: 'Работники выполняют операции, от которых зависят обращение с материалами и отходами. Они могут выявлять затруднения в рабочих правилах.',
+    check: 'Что это за материал? Как с ним обращаются сейчас? Какие правила установлены и чего в них не хватает?',
+    role: 'Работники выполняют внутренние операции и опираются на рабочие правила завода.' },
+  { id: 2, tab: 'site', x: 43, y: 42, name: 'Подрядчики',
+    sit: 'Внешний исполнитель обслуживает оборудование на площадке. Он просит уточнить порядок обращения с материалами, которые остаются после работ.',
+    link: 'Работы подрядчика могут быть связаны с экологическими аспектами завода. Нахождение на территории не делает его работником предприятия.',
+    check: 'Какие работы и материалы рассматриваются? Что установлено договором и действующими правилами? Как распределены обязанности?',
+    role: 'Внешний исполнитель выполняет работы на площадке по договору.' },
+  { id: 3, tab: 'site', x: 16, y: 80, name: 'Поставщики',
+    sit: 'Поставщик сообщил, что меняет упаковку поступающих материалов.',
+    link: 'Условия поставки могут повлиять на приемку, хранение и обращение с упаковкой.',
+    check: 'Что именно изменится? Какие условия согласованы? Как это отразится на работе с материалами и упаковкой?',
+    role: 'Поставщик определяет условия поставки и упаковку материалов.' },
+  { id: 4, tab: 'site', x: 65, y: 48, name: 'Заказчики и потребители',
+    sit: 'Работники склада заказчика просят пояснить порядок возврата многоразовой упаковки.',
+    link: 'С продукцией и упаковкой работают не только те, кто подписал договор. Их затруднения могут выявить важные для СЭМ вопросы.',
+    check: 'В чем затруднение? Какой порядок установлен договором и инструкциями?',
+    role: 'Заказчик работает с продукцией и упаковкой после передачи.' },
+  { id: 5, tab: 'site', x: 29, y: 55, name: 'Государственные органы',
+    sit: 'Представитель государственного органа прибыл для выполнения определенной процедуры. Его роль и полномочия установлены относящимися к ситуации документами.',
+    link: 'Предприятие должно определить конкретный орган, его полномочия и применимые основания, а не ограничиваться записью "проверяющие".',
+    check: 'Какой орган представляет посетитель? Что является основанием процедуры? Какие вопросы и требования относятся к предприятию?',
+    role: 'Государственный орган действует в пределах полномочий по применимым основаниям.' },
+  { id: 6, tab: 'site', x: 87, y: 27, name: 'Жители',
+    sit: 'Жители направили через администрацию обращение о периодическом запахе. Источник пока не установлен.',
+    link: 'Они сообщают о предполагаемом воздействии. Нужно рассмотреть связь, не объявляя завод источником заранее.',
+    check: 'Кто сообщает? Где и когда наблюдают запах? Какие сведения помогут проверить возможную связь с заводом?',
+    role: 'Жители сообщают о наблюдаемом воздействии извне площадки.' },
+  { id: 7, tab: 'office', x: 27, y: 28, name: 'Собственники и акционеры',
+    sit: 'На встрече обсуждают предложение включать экологические результаты в отчет о работе предприятия.',
+    link: 'Собственники могут участвовать в определении направления развития и принятии решений в пределах своих полномочий.',
+    check: 'Это предложение или принятое решение? Какие сведения нужны? На какую деятельность распространяется решение?',
+    role: 'Собственники определяют направление развития и принимают решения в пределах полномочий.' },
+  { id: 8, tab: 'office', x: 77, y: 35, name: 'Инвесторы',
+    sit: 'При рассмотрении проекта инвестор запросил сведения об использовании ресурсов и управлении экологическими рисками.',
+    link: 'Экологические вопросы могут учитываться при решении об участии в проекте.',
+    check: 'Какие сведения запрошены? Для какого решения? Какие условия уже приняты?',
+    role: 'Инвестор рассматривает участие в проекте и запрашивает сведения.' },
+  { id: 9, tab: 'office', x: 24, y: 67, name: 'Банки',
+    sit: 'В анкете на финансирование есть вопросы о разрешительных документах и СЭМ.',
+    link: 'Банк может запрашивать экологические сведения при рассмотрении финансирования.',
+    check: 'Какие подтверждения нужны? Есть ли соответствующие условия финансирования?',
+    note: 'Вопрос о СЭМ сам по себе не означает требования получить сертификат.',
+    role: 'Банк рассматривает финансирование и запрашивает сведения по анкете.' },
+  { id: 10, tab: 'office', x: 71, y: 70, name: 'Страховые компании',
+    sit: 'Страховщик запросил описание действий при разливе технической жидкости.',
+    link: 'Сведения о рисках и мерах управления могут использоваться при рассмотрении страхования.',
+    check: 'Для какого объекта запрошены сведения? Каковы условия запроса и договора?',
+    role: 'Страховщик рассматривает условия страхования и запрашивает описание рисков.' }
+];
+
+const TASKS = [
+  { id: 1, tab: 'site', title: 'Кто находится внутри территории',
+    text: 'Организация направила специалиста обслуживать оборудование завода. Специалист не является работником завода.',
+    action: 'Найдите подходящую точку на площадке.',
+    correct: 2,
+    hint: 'Ищите внешнего исполнителя работ.',
+    q: 'Почему эту сторону нужно рассмотреть в СЭМ?',
+    answers: [
+      { t: 'Работы могут затрагивать экологические аспекты площадки.', ok: true, fb: 'Верно. Важна связь работ с экологическими вопросами, а не только местонахождение.' },
+      { t: 'Любой человек внутри ограждения считается работником завода.', ok: false, fb: 'Место работы не определяет принадлежность к организации.' },
+      { t: 'Подрядчик автоматически отвечает за все экологические вопросы завода.', ok: false, fb: 'Обязанности нужно определять по применимым основаниям. Нельзя передать все вопросы подрядчику автоматически.' }
+    ],
+    core: 'На площадку пришел специалист сторонней организации для обслуживания оборудования, он не работник завода.',
+    link: 'Подрядчик → экологически значимые работы → проверить условия и обязанности.' },
+  { id: 2, tab: 'site', title: 'Кто стоит за письмом',
+    text: 'Администрация переслала заводу обращение жителей о запахе. Источник не подтвержден.',
+    action: 'Найдите на картинке сторону, чьи наблюдения нельзя потерять за сопроводительным письмом.',
+    correct: 6,
+    hint: 'Кто сообщил о наблюдаемом воздействии?',
+    q: 'Какой вывод обоснован?',
+    answers: [
+      { t: 'Жителей нужно рассмотреть как сторону, а связь запаха с заводом проверить.', ok: true, fb: 'Верно. Выявление стороны и доказательство источника воздействия являются разными задачами.' },
+      { t: 'Полученное письмо уже доказывает загрязнение от завода.', ok: false, fb: 'В условии источник не установлен.' },
+      { t: 'До подтверждения источника жителей нельзя учитывать.', ok: false, fb: 'Сообщение уже дает основание рассмотреть связь, не признавая ее доказанной.' }
+    ],
+    core: 'Администрация переслала обращение жителей, и важно не потерять наблюдения самих заявителей.',
+    link: 'Жители → сообщение о предполагаемом воздействии → проверить обстоятельства.' },
+  { id: 3, tab: 'office', title: 'Вопрос о сертификате',
+    text: 'В анкете банка есть вопрос о наличии сертификата СЭМ. В представленных материалах не указано, обязателен ли сертификат для финансирования.',
+    action: 'Найдите сторону во вкладке "Через офис".',
+    correct: 9,
+    hint: 'Кто рассматривает финансирование?',
+    q: 'Что проверить дальше?',
+    answers: [
+      { t: 'Какие подтверждения нужны и является ли сертификат условием финансирования.', ok: true, fb: 'Верно. Сначала нужно установить содержание условия.' },
+      { t: 'На какую дату немедленно назначить сертификационный аудит.', ok: false, fb: 'Необходимость сертификации пока не установлена.' },
+      { t: 'Какой размер льготы банк обязан предоставить за сертификат.', ok: false, fb: 'Ни льгота, ни обязанность банка в условии не подтверждены.' }
+    ],
+    core: 'В анкете организации, рассматривающей финансирование, есть вопрос о сертификате СЭМ.',
+    link: 'Банк → запрос при финансировании → уточнить содержание условия.' }
+];
+
+/* ================= СОСТОЯНИЕ ================= */
+let activeTab = 'site';
+let mode = 'explore';
+let openedInfo = null;
+let current = 0;
+let taskState = TASKS.map(() => ({ point: null, pointOk: false, ans: null, revealed: false }));
+
+function resizeIframe() {
+  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+    window.parentIFrame.size();
+  }
+}
+
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+}
+
+function pointById(id) { return POINTS.find(p => p.id === id); }
+
+function tabNoteHtml(tab) {
+  if (tab !== 'office') return '';
+  return '<div class="note-box">' + OFFICE_NOTE + '</div>';
+}
+
+/* ================= ВКЛАДКИ ================= */
+function buildTabs() {
+  const bar = document.getElementById('tabsExplore');
+  bar.innerHTML = '';
+  ['site', 'office'].forEach(key => {
+    const b = document.createElement('button');
+    b.className = 'vtab';
+    b.setAttribute('role', 'tab');
+    b.dataset.tab = key;
+    b.textContent = TAB_NAMES[key];
+    b.setAttribute('aria-selected', key === activeTab ? 'true' : 'false');
+    b.onclick = () => setTab(key);
+    b.onkeydown = e => {
+      if (e.key === 'ArrowRight' || e.key === 'ArrowLeft') {
+        e.preventDefault();
+        const next = key === 'site' ? 'office' : 'site';
+        setTab(next);
+        const nb = bar.querySelector('[data-tab="' + next + '"]');
+        if (nb) nb.focus();
+      }
+    };
+    bar.appendChild(b);
+  });
+}
+
+function setTab(key) {
+  activeTab = key;
+  document.querySelectorAll('.vtab').forEach(b => b.setAttribute('aria-selected', b.dataset.tab === key ? 'true' : 'false'));
+  if (mode === 'explore') renderExplore();
+  else renderPractice();
+  resizeIframe();
+}
+
+/* ================= КАРТА ================= */
+function buildFigure(container, tab, interactiveMode) {
+  container.innerHTML = '';
+  container.classList.remove('no-img');
+
+  const img = document.createElement('img');
+  img.src = IMG_SRC[tab];
+  img.alt = IMG_ALT[tab];
+  img.addEventListener('error', () => {
+    container.classList.add('no-img');
+    resizeIframe();
+  });
+  container.appendChild(img);
+
+  const layer = document.createElement('div');
+  layer.className = 'marker-layer';
+  POINTS.filter(p => p.tab === tab).forEach(p => {
+    const m = document.createElement('button');
+    m.className = 'marker' + (tab === 'office' ? ' labeled' : '');
+    m.dataset.id = p.id;
+    m.style.left = p.x + '%';
+    m.style.top = p.y + '%';
+    m.setAttribute('aria-label', p.id + '. ' + p.name);
+    m.innerHTML = '<span aria-hidden="true">' + p.id + '</span><span class="m-name">' + esc(p.name) + '</span>';
+    m.onclick = () => {
+      if (interactiveMode === 'explore') openInfo(p.id);
+      else pickPoint(p.id);
+    };
+    layer.appendChild(m);
+  });
+  container.appendChild(layer);
+
+  const miss = document.createElement('div');
+  miss.className = 'img-missing';
+  miss.textContent = 'Изображение не найдено. Положите файлы img/plant.jpg и img/office.jpg рядом с этим HTML или укажите свое расширение в объекте IMG_SRC. Точки доступны списком ниже.';
+  container.appendChild(miss);
+}
+
+function buildPointList(container, tab, interactiveMode) {
+  container.innerHTML = '';
+  POINTS.filter(p => p.tab === tab).forEach(p => {
+    const b = document.createElement('button');
+    b.className = 'point-btn';
+    b.dataset.id = p.id;
+    b.textContent = p.id + '. ' + p.name;
+    if (interactiveMode === 'explore') {
+      b.setAttribute('aria-pressed', openedInfo === p.id ? 'true' : 'false');
+      b.onclick = () => openInfo(p.id);
+    } else {
+      b.onclick = () => pickPoint(p.id);
+    }
+    container.appendChild(b);
+  });
+}
+
+/* ================= РЕЖИМ 1 ================= */
+function setMode(m) {
+  mode = m;
+  document.getElementById('modeExplore').setAttribute('aria-pressed', m === 'explore' ? 'true' : 'false');
+  document.getElementById('modePractice').setAttribute('aria-pressed', m === 'practice' ? 'true' : 'false');
+  document.getElementById('exploreSection').style.display = m === 'explore' ? 'block' : 'none';
+  document.getElementById('practiceSection').style.display = m === 'practice' ? 'block' : 'none';
+  if (m === 'explore') renderExplore();
+  else renderPractice();
+  resizeIframe();
+}
+
+function renderExplore() {
+  document.getElementById('tabNoteExplore').innerHTML = tabNoteHtml(activeTab);
+  buildFigure(document.getElementById('mapExplore'), activeTab, 'explore');
+  buildPointList(document.getElementById('listExplore'), activeTab, 'explore');
+  updateExploreMarkers();
+  renderInfoPanel();
+}
+
+function updateExploreMarkers() {
+  document.querySelectorAll('#mapExplore .marker').forEach(m => {
+    const isOpen = Number(m.dataset.id) === openedInfo;
+    m.classList.toggle('open', isOpen);
+    m.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+  });
+  document.querySelectorAll('#listExplore .point-btn').forEach(b => {
+    b.setAttribute('aria-pressed', Number(b.dataset.id) === openedInfo ? 'true' : 'false');
+  });
+}
+
+function openInfo(id) {
+  openedInfo = id;
+  updateExploreMarkers();
+  renderInfoPanel();
+  resizeIframe();
+}
+
+function renderInfoPanel() {
+  const panel = document.getElementById('infoPanel');
+  if (!openedInfo) { panel.classList.remove('show'); panel.innerHTML = ''; return; }
+  const p = pointById(openedInfo);
+  let html = '<h3>' + esc(p.id + '. ' + p.name) + '</h3>' +
+    '<p><strong>Учебная ситуация.</strong> ' + esc(p.sit) + '</p>' +
+    '<p><strong>Связь с СЭМ.</strong> ' + esc(p.link) + '</p>' +
+    '<p><strong>Что проверить.</strong> ' + esc(p.check) + '</p>';
+  if (p.note) html += '<p><strong>Пояснение.</strong> ' + esc(p.note) + '</p>';
+  panel.innerHTML = html;
+  panel.classList.add('show');
+}
+
+/* ================= РЕЖИМ 2 ================= */
+function renderPractice() {
+  const taskArea = document.getElementById('taskArea');
+  const resArea = document.getElementById('resultsArea');
+  if (current >= TASKS.length) {
+    taskArea.style.display = 'none';
+    resArea.style.display = 'block';
+    renderResults();
+    return;
+  }
+  resArea.style.display = 'none';
+  taskArea.style.display = 'block';
+
+  const t = TASKS[current];
+  const st = taskState[current];
+
+  let html = '<div class="task-card">' +
+    '<div style="font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:6px;">Раунд ' + (current + 1) + ' из 3</div>' +
+    '<h2 style="margin-top:0;">' + esc(t.title) + '</h2>' +
+    '<p class="lead">' + esc(t.text) + '</p>' +
+    '<p class="lead"><strong>' + esc(t.action) + '</strong></p>' +
+    '<div class="tabs" id="tabsPracticeInner"></div>' +
+    tabNoteHtml(activeTab) +
+    '<figure class="map-figure" id="mapPractice"></figure>' +
+    '<div class="point-list" id="listPractice"></div>' +
+    '<div class="fb-box" id="pointFb"></div>';
+
+  if (st.pointOk) {
+    html += '<div class="fb-box ok show"><strong>Точка найдена: ' + esc(pointById(t.correct).id + '. ' + pointById(t.correct).name) + '</strong>Теперь ответьте на вопрос.</div>';
+    html += '<h3>' + esc(t.q) + '</h3><div id="ansBox">';
+    t.answers.forEach((a, i) => {
+      let cls = 'opt-btn';
+      let dis = '';
+      if (st.ans !== null) {
+        dis = ' disabled';
+        if (i === st.ans) cls += a.ok ? ' sel-ok' : ' sel-bad';
+        else cls += ' dim';
+      }
+      html += '<button class="' + cls + '"' + dis + ' onclick="pickAnswer(' + i + ')">' + esc(a.t) + '</button>';
+    });
+    html += '</div><div class="fb-box" id="ansFb"></div>';
+  }
+
+  html += '<div class="nav-buttons">' +
+    '<button class="btn btn-secondary" onclick="toggleHint()">Подсказка</button>' +
+    '<button class="btn btn-secondary" onclick="showExplain()">Посмотреть разбор</button>' +
+    (st.ans !== null ? '<button class="btn btn-secondary" onclick="changeAnswer()">Изменить ответ</button>' : '') +
+    '<button class="btn btn-primary" onclick="nextTask()">' + (current < TASKS.length - 1 ? 'Следующий раунд' : 'К итогам') + '</button>' +
+    '</div>' +
+    '<div class="fb-box info" id="hintBox"><strong>Подсказка</strong>' + esc(t.hint) + '</div>' +
+    '<div class="fb-box info" id="explainBox"></div>' +
+    '</div>';
+
+  taskArea.innerHTML = html;
+
+  const innerBar = document.getElementById('tabsPracticeInner');
+  ['site', 'office'].forEach(key => {
+    const b = document.createElement('button');
+    b.className = 'vtab';
+    b.dataset.tab = key;
+    b.textContent = TAB_NAMES[key];
+    b.setAttribute('aria-selected', key === activeTab ? 'true' : 'false');
+    b.onclick = () => setTab(key);
+    innerBar.appendChild(b);
+  });
+
+  buildFigure(document.getElementById('mapPractice'), activeTab, 'practice');
+  buildPointList(document.getElementById('listPractice'), activeTab, 'practice');
+  updatePracticeMarkers();
+
+  const pfb = document.getElementById('pointFb');
+  if (!st.pointOk && st.point !== null) {
+    pfb.className = 'fb-box bad show';
+    pfb.innerHTML = wrongPointHtml(st.point);
+  }
+  if (st.pointOk && st.ans !== null) {
+    const afb = document.getElementById('ansFb');
+    const a = t.answers[st.ans];
+    afb.className = 'fb-box show ' + (a.ok ? 'ok' : 'bad');
+    afb.innerHTML = '<strong>' + (a.ok ? 'Верно' : 'Неточно') + '</strong>' + esc(a.fb);
+  }
+  if (st.revealed) fillExplain();
+}
+
+function updatePracticeMarkers() {
+  const st = taskState[current];
+  const t = TASKS[current];
+  document.querySelectorAll('#mapPractice .marker').forEach(m => {
+    const id = Number(m.dataset.id);
+    m.disabled = !!st.pointOk;
+    m.classList.toggle('chosen', st.pointOk && id === t.correct);
+    m.classList.toggle('bad', !st.pointOk && st.point === id);
+  });
+  document.querySelectorAll('#listPractice .point-btn').forEach(b => {
+    const id = Number(b.dataset.id);
+    b.disabled = !!st.pointOk;
+    b.setAttribute('aria-pressed', st.point === id ? 'true' : 'false');
+  });
+}
+
+function wrongPointHtml(id) {
+  const p = pointById(id);
+  const t = TASKS[current];
+  return '<strong>Это другая роль</strong>Вы выбрали: ' + esc(p.id + '. ' + p.name) + '. ' +
+    esc(p.role) + ' ' + esc(t.core) + ' ' +
+    'Роли различаются: точка не подходит условию раунда, хотя сторона может быть значима для СЭМ в других ситуациях. Выберите другую точку или откройте разбор.';
+}
+
+function pickPoint(id) {
+  if (current >= TASKS.length) return;
+  const st = taskState[current];
+  const t = TASKS[current];
+  if (st.pointOk) return;
+  st.point = id;
+  if (id === t.correct) st.pointOk = true;
+  renderPractice();
+  resizeIframe();
+}
+
+function pickAnswer(i) {
+  const st = taskState[current];
+  if (st.ans !== null) return;
+  st.ans = i;
+  renderPractice();
+  resizeIframe();
+}
+
+function changeAnswer() {
+  taskState[current].ans = null;
+  renderPractice();
+  resizeIframe();
+}
+
+function toggleHint() {
+  const h = document.getElementById('hintBox');
+  h.classList.toggle('show');
+  resizeIframe();
+}
+
+function fillExplain() {
+  const t = TASKS[current];
+  const box = document.getElementById('explainBox');
+  const okAns = t.answers.findIndex(a => a.ok);
+  box.innerHTML = '<strong>Разбор раунда</strong>' +
+    'Верная точка: ' + esc(t.correct + '. ' + pointById(t.correct).name) + '. ' +
+    'Обоснованный ответ: ' + esc(t.answers[okAns].t) + ' ' + esc(t.answers[okAns].fb) + ' ' +
+    'Связка для работы: ' + esc(t.link);
+  box.classList.add('show');
+}
+
+function showExplain() {
+  taskState[current].revealed = true;
+  fillExplain();
+  resizeIframe();
+}
+
+function nextTask() {
+  current++;
+  if (current < TASKS.length) activeTab = TASKS[current].tab;
+  renderPractice();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  resizeIframe();
+}
+
+/* ================= ИТОГИ ================= */
+function taskResolved(i) {
+  const st = taskState[i];
+  return st.pointOk && st.ans !== null && TASKS[i].answers[st.ans].ok;
+}
+
+function renderResults() {
+  const res = document.getElementById('resultsArea');
+  const solved = TASKS.map((t, i) => taskResolved(i));
+  const count = solved.filter(Boolean).length;
+
+  let html = '<h2>Итоги игры</h2>' +
+    '<p class="lead">Собственных верных решений: ' + count + ' из 3. Это сведения о прохождении, а не оценка освоения навыка.</p>';
+
+  if (solved.some(s => !s)) {
+    html += '<div class="warn-box">Пересмотрите связи по раундам, где точка или ответ не подтверждены собственным верным решением, либо разбор был открыт до собственного решения.</div>';
+  }
+
+  TASKS.forEach((t, i) => {
+    html += '<div class="link-item ' + (solved[i] ? 'ok' : 'rev') + '">' +
+      '<span class="link-badge">' + (solved[i] ? 'Подтверждена' : 'Пересмотреть') + '</span>' +
+      '<span>' + esc(t.link) + '</span></div>';
+  });
+
+  html += '<div class="note-box">Заинтересованные стороны находят по их связи с деятельностью и решениями предприятия. Название стороны еще не показывает, какие требования обязательны. Для этого нужны содержание запроса и подтверждающие основания.</div>' +
+    '<div class="note-box">В следующем конструкторе вы составите перечень сторон своего предприятия и оцените их влияние и затронутость.</div>' +
+    '<div class="nav-buttons">' +
+    '<button class="btn btn-secondary" onclick="resetPractice()">Играть заново</button>' +
+    '<button class="btn btn-primary" onclick="setMode(\'explore\')">К карте</button>' +
+    '</div>';
+
+  res.innerHTML = html;
+}
+
+function resetPractice() {
+  taskState = TASKS.map(() => ({ point: null, pointOk: false, ans: null, revealed: false }));
+  current = 0;
+  activeTab = TASKS[0].tab;
+  renderPractice();
+  resizeIframe();
+}
+
+/* ================= СТАРТ ================= */
+document.addEventListener('DOMContentLoaded', () => {
+  buildTabs();
+  renderExplore();
+  resizeIframe();
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(() => resizeIframe());
+    ro.observe(document.body);
+  }
+});
+window.addEventListener('load', () => resizeIframe());
+</script>
+
+</body>
+</html>
