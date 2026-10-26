@@ -1,0 +1,1224 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Реестр заинтересованных сторон и матрица значимости и влияния</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --primary: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --gray-light: #f8fafc;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --warn-bg: #fffbeb;
+  --warn-border: #fde68a;
+  --warn-text: #92400e;
+  --bad-bg: #fef2f2;
+  --bad-border: #fecaca;
+  --bad-text: #991b1b;
+  --zb-bg: #e6f4ea; --zb-bd: #cfe8d4;
+  --zad-bg: #fdf6e7; --zad-bd: #eadfc3;
+  --zc-bg: #f1f5f9; --zc-bd: #dbe3ec;
+  --radius: 12px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 20px; background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--primary); font-size: 15px; line-height: 1.6;
+}
+.container { max-width: 720px; margin: 0 auto; }
+.screen { display: none; animation: fadeIn .3s ease-out; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+h1 { font-size: 22px; font-weight: 800; margin: 0 0 10px; }
+h2 { font-size: 17px; font-weight: 700; margin: 18px 0 8px; }
+h3 { font-size: 14px; font-weight: 700; margin: 0 0 6px; }
+.lead { font-size: 14px; margin: 0 0 12px; line-height: 1.6; }
+.subtitle {
+  font-size: 13px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .5px; margin-bottom: 10px; font-weight: 600;
+}
+.note-box {
+  background: var(--gray-light); border: 1px solid var(--border);
+  border-left: 4px solid var(--muted); border-radius: 0 8px 8px 0;
+  padding: 10px 14px; font-size: 13px; color: var(--muted); margin: 10px 0;
+}
+.note-box.accent { border-left-color: var(--accent); color: var(--primary); }
+.warn-box {
+  background: var(--warn-bg); border-left: 3px solid var(--warn-border);
+  border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 13px;
+  color: var(--warn-text); margin: 10px 0; line-height: 1.5;
+}
+.error-box {
+  background: var(--bad-bg); border: 1px solid var(--bad-border);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--bad-text); margin: 12px 0;
+}
+.error-box ul { margin: 6px 0 0; padding-left: 20px; }
+.error-box li { margin-bottom: 4px; }
+.notices-box {
+  background: var(--warn-bg); border: 1px solid var(--warn-border);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--warn-text); margin: 12px 0;
+}
+.notices-box ul { margin: 6px 0 0; padding-left: 20px; }
+.notices-box li { margin-bottom: 4px; }
+
+.steps-nav { display: flex; gap: 8px; margin: 14px 0 18px; flex-wrap: wrap; }
+.step-btn {
+  flex: 1 1 140px; padding: 10px 12px; border: 2px solid var(--border); border-radius: 10px;
+  background: #fff; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--muted);
+  cursor: pointer; transition: all .15s; text-align: center;
+}
+.step-btn.active { border-color: var(--accent); color: var(--accent); background: #eff6ff; }
+
+.field { margin-bottom: 12px; }
+.field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.field .req { color: var(--bad-text); font-weight: 600; }
+.field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.field input[type="text"], .field textarea, .field select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+  font-family: inherit; font-size: 14px; color: var(--primary); background: #fff;
+}
+.field textarea { min-height: 56px; resize: vertical; }
+.field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible,
+button:focus-visible { outline: 3px solid var(--accent-dark); outline-offset: 2px; }
+
+.nav-buttons { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.btn {
+  padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; font-family: inherit; transition: background .2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--primary); }
+.btn-secondary:hover { background: var(--gray-light); }
+.btn-danger { background: #fff; border: 1px solid var(--bad-border); color: var(--bad-text); }
+.btn-danger:hover { background: var(--bad-bg); }
+.btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+.btn-small {
+  padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 6px;
+  border: 1px solid var(--border); background: #fff; color: var(--primary);
+  cursor: pointer; font-family: inherit;
+}
+.btn-small:hover { background: var(--gray-light); }
+.inline-links { display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 10px; }
+
+/* Матрица */
+.m-layout { display: grid; grid-template-columns: 26px 1fr; gap: 6px; margin: 12px 0; }
+.m-ytitle {
+  writing-mode: vertical-rl; transform: rotate(180deg);
+  font-weight: 700; font-size: 13px; color: var(--muted);
+  display: flex; align-items: center; justify-content: center;
+}
+.m-grid { display: grid; grid-template-columns: 30px repeat(3, minmax(88px, 1fr)); gap: 6px; }
+.m-rowlabel { display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--muted); font-size: 14px; }
+.m-cell { min-height: 72px; border-radius: 10px; border: 1px solid; position: relative; }
+.m-collabels { display: grid; grid-template-columns: 30px repeat(3, minmax(88px, 1fr)); gap: 6px; margin-top: 6px; }
+.m-collabels span { text-align: center; font-weight: 700; color: var(--muted); font-size: 14px; }
+.m-xtitle { text-align: center; font-weight: 700; font-size: 13px; color: var(--muted); margin-top: 4px; }
+.zb { background: var(--zb-bg); border-color: var(--zb-bd); }
+.zad { background: var(--zad-bg); border-color: var(--zad-bd); }
+.zc { background: var(--zc-bg); border-color: var(--zc-bd); }
+.pt {
+  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
+  max-width: 92%; padding: 3px 7px; border-radius: 7px;
+  background: var(--primary); color: #fff; font-weight: 700; font-size: 11px;
+  text-align: center; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(15,23,42,.3);
+}
+.legend { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 10px 0; }
+.legend-item { font-size: 12px; line-height: 1.4; border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; background: #fff; }
+.legend-swatch { display: inline-block; width: 13px; height: 13px; border-radius: 4px; border: 1px solid; margin-right: 6px; vertical-align: -2px; }
+.legend-item strong { display: block; font-size: 12px; }
+
+/* Вкладки сторон */
+.tabs-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; margin: 14px 0 0; }
+.tab-btn {
+  border: 1px solid var(--border); border-radius: 10px 10px 0 0;
+  padding: 9px 12px; background: var(--gray-light); color: var(--muted);
+  font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; max-width: 200px;
+}
+.tab-btn .tab-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px; }
+.tab-btn[aria-selected="true"] { background: #fff; color: var(--accent); border-color: var(--accent); }
+.tab-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.dot-b { background: #7fb98a; }
+.dot-ad { background: #d8c08a; }
+.dot-c { background: #aebccb; }
+.dot-n { background: var(--muted); }
+.tab-add {
+  border: 1px dashed var(--accent); color: var(--accent); background: #fff;
+  border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
+.tab-add:hover { background: #eff6ff; }
+.tab-panel {
+  border: 1px solid var(--border); border-radius: 0 10px 10px 10px;
+  padding: 16px; background: #fff; margin-top: -1px;
+}
+.tab-panel[hidden] { display: none; }
+.panel-head {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.panel-head strong { font-size: 15px; }
+.grp-badge {
+  display: inline-block; font-size: 11px; font-weight: 700; border-radius: 20px;
+  padding: 1px 8px; border: 1px solid;
+}
+.grp-b { background: var(--zb-bg); color: #1b5e20; border-color: var(--zb-bd); }
+.grp-ad { background: var(--zad-bg); color: #92400e; border-color: var(--zad-bd); }
+.grp-c { background: var(--zc-bg); color: #334155; border-color: var(--zc-bd); }
+.grp-n { background: var(--gray-light); color: var(--muted); border-color: var(--border); }
+
+/* Окна справки */
+.scale-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0; }
+.scale-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; background: var(--gray-light); }
+.scale-card p { margin: 0 0 7px; font-size: 13px; }
+.scale-card p:last-child { margin-bottom: 0; }
+.rules-list { margin: 0; padding-left: 20px; font-size: 13px; }
+.rules-list li { margin-bottom: 6px; }
+
+/* Предпросмотр */
+.counts-box {
+  background: #eff6ff; border: 1px solid #bfdbfe; color: var(--accent-dark);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; margin: 12px 0;
+}
+.counts-box ul { margin: 6px 0 0; padding-left: 20px; }
+.prev-section { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+.prev-section h3 { margin: 0 0 10px; font-size: 15px; }
+.prev-party { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; font-size: 13px; }
+.prev-party-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+.prev-party-head strong { font-size: 14px; }
+.prev-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+.prev-table th, .prev-table td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
+.prev-table th { background: var(--gray-light); width: 34%; font-weight: 600; }
+.prev-empty { color: var(--muted); font-style: italic; }
+.link-btn {
+  background: none; border: none; color: var(--accent); font-size: 12px;
+  cursor: pointer; padding: 0; font-family: inherit; text-decoration: underline;
+}
+.legend-line { font-size: 12px; color: var(--muted); margin: 6px 0; }
+
+@media (max-width: 560px) {
+  body { padding: 12px; }
+  h1 { font-size: 20px; }
+  .nav-buttons { flex-direction: column; }
+  .btn { width: 100%; }
+  .tab-btn { max-width: 150px; }
+  .tab-btn .tab-name { max-width: 80px; }
+  .scale-grid, .legend { grid-template-columns: 1fr; }
+  .m-grid, .m-collabels { grid-template-columns: 26px repeat(3, minmax(72px, 1fr)); }
+  .m-cell { min-height: 62px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ВВОДНЫЙ ЭКРАН -->
+  <div id="screen-intro" class="screen active">
+    <h1>Оцените заинтересованные стороны и соберите черновик реестра</h1>
+    <p class="lead">Опишите стороны, их требования и источники, поставьте значимость и влияние по шкале 1-3 и скачайте черновик реестра и матрицу в Word. Справка по матрице открывается в отдельных окнах и не мешает заполнению.</p>
+    <div class="note-box accent">Матрица значимости и влияния помогает установить цели, настроить процедуры под потребности значимых сторон и управлять рисками. С каждой стороной можно поддерживать свой уровень отношений: сохранять удовлетворенность, наблюдать, информировать или активно взаимодействовать.</div>
+    <div class="note-box">Черновик сохраняется в вашем браузере и не передается в сеть. Названия сторон и предприятия можно заменить условными.</div>
+    <div class="warn-box" id="storageWarn" style="display:none;">Похоже, браузер не разрешает сохранять черновик. В этом режиме записи не переживут обновление страницы, поэтому скачайте документ перед выходом.</div>
+    <div class="note-box" id="restoreNote" style="display:none;">Мы нашли ваш прошлый черновик и восстановили его. Можно продолжить с того места, где вы остановились.</div>
+    <div class="nav-buttons">
+      <button class="btn btn-primary" onclick="startWork()">Начать работу</button>
+    </div>
+  </div>
+
+  <!-- ОКНО: КАК УСТРОЕНА МАТРИЦА -->
+  <div id="screen-help" class="screen">
+    <div class="subtitle">Справочное окно</div>
+    <h1>Как устроена матрица</h1>
+    <p class="lead">Значимость это ценность требования стороны для работы предприятия. Влияние это способность стороны повлиять на производство и цели. Произведение баллов подсказывает сектор и уровень отношений.</p>
+
+    <div class="m-layout">
+      <div class="m-ytitle">Значимость</div>
+      <div>
+        <div class="m-grid" id="helpMatrix"></div>
+        <div class="m-collabels"><span></span><span>1</span><span>2</span><span>3</span></div>
+        <div class="m-xtitle">Влияние</div>
+      </div>
+    </div>
+    <div class="legend" id="helpLegend"></div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="openWindow('screen-scale')">Шкала 1-3</button>
+      <button class="btn btn-secondary" onclick="openWindow('screen-rules')">Правила работы</button>
+      <button class="btn btn-primary" onclick="goStep(1)">К конструктору</button>
+    </div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="goScreen('screen-intro')">Назад к введению</button>
+    </div>
+  </div>
+
+  <!-- ОКНО: ШКАЛА -->
+  <div id="screen-scale" class="screen">
+    <div class="subtitle">Справочное окно</div>
+    <h1>Шкала баллов</h1>
+    <div class="scale-grid">
+      <div class="scale-card">
+        <h3>Значимость требования</h3>
+        <p>Вопрос: насколько ценно для работы предприятия выполнение этого требования?</p>
+        <p><strong>1.</strong> Требование касается узкого вопроса и не влияет на производство или цели. Пример: пожелание поставщика о формате приложений к письму.</p>
+        <p><strong>2.</strong> Требование влияет на отдельный процесс, договор или площадку. Пример: требование заказчика о порядке возврата тары по одному договору.</p>
+        <p><strong>3.</strong> Невыполнение останавливает производство, закрывает рынок или ведет к приостановке деятельности. Пример: разрешения и нормативы надзорного органа, объем заказов ключевого клиента.</p>
+      </div>
+      <div class="scale-card">
+        <h3>Влияние стороны</h3>
+        <p>Вопрос: насколько сторона может повлиять на производство и достижение целей?</p>
+        <p><strong>1.</strong> Сторона может передать запрос или обратиться, но не задает условий. Пример: соседи направляют вопрос через администрацию.</p>
+        <p><strong>2.</strong> Сторона влияет на отдельное решение или условие: согласует, подтверждает, ведет операцию. Пример: работники линии сообщают, что мешает порядку возврата тары.</p>
+        <p><strong>3.</strong> Сторона определяет или блокирует ключевые решения: разрешения, предписания, объем заказов, остановка отгрузки. Пример: надзорный орган, ключевой клиент.</p>
+      </div>
+    </div>
+    <div class="note-box accent">Балл опирается на факты из договора, норматива, письма или инструкции. Если фактов пока не хватает, оставьте «еще не определено» и вернитесь после проверки: это точнее, чем поспешная единица.</div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="backFromWindow()">Назад</button>
+    </div>
+  </div>
+
+  <!-- ОКНО: ПРАВИЛА -->
+  <div id="screen-rules" class="screen">
+    <div class="subtitle">Справочное окно</div>
+    <h1>Правила работы</h1>
+    <ol class="rules-list">
+      <li>Оценивайте сторону по фактам источника, а не по общему впечатлению о ней.</li>
+      <li>Если фактов не хватает, оставьте «еще не определено» и запишите, что проверить. Неизвестность не равна единице.</li>
+      <li>Держите два балла и обоснование: произведение подсказывает сектор, но не заменяет анализ требования.</li>
+      <li>Подход по сектору подсказывает уровень взаимодействия и не отменяет применимые требования: их выполняют независимо от баллов.</li>
+      <li>Черновик обсуждают с руководством: оно может добавить стороны, изменить баллы и подход.</li>
+    </ol>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="backFromWindow()">Назад</button>
+    </div>
+  </div>
+
+  <!-- ОКНО: ТОЧКА НА МАТРИЦЕ -->
+  <div id="screen-matrix" class="screen">
+    <div class="subtitle">Справочное окно</div>
+    <h1>Точка стороны на матрице</h1>
+    <p class="lead" id="winMatrixTitle"></p>
+    <div class="m-layout">
+      <div class="m-ytitle">Значимость</div>
+      <div>
+        <div class="m-grid" id="winMatrixGrid"></div>
+        <div class="m-collabels"><span></span><span>1</span><span>2</span><span>3</span></div>
+        <div class="m-xtitle">Влияние</div>
+      </div>
+    </div>
+    <div class="note-box accent" id="winMatrixPanel"></div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="openWindow('screen-scale')">Шкала 1-3</button>
+      <button class="btn btn-primary" onclick="backFromWindow()">Назад к стороне</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 1 -->
+  <div id="screen-step1" class="screen">
+    <div class="steps-nav">
+      <button class="step-btn active" onclick="goStep(1)">1. Сведения об анализе</button>
+      <button class="step-btn" onclick="goStep(2)">2. Стороны</button>
+      <button class="step-btn" onclick="goStep(3)">3. Предпросмотр</button>
+    </div>
+    <h1>Сведения об анализе</h1>
+    <p class="lead">Эти реквизиты попадут в начало документа. Необязательные поля можно оставить пустыми и вернуться к ним позже.</p>
+
+    <div class="field">
+      <label for="m-org">Предприятие или объект анализа</label>
+      <input type="text" id="m-org" oninput="onMeta('org', this.value)">
+      <div class="hint">Можно указать условное название.</div>
+    </div>
+    <div class="field">
+      <label for="m-scope">Что рассматриваете</label>
+      <textarea id="m-scope" oninput="onMeta('scope', this.value)"></textarea>
+      <div class="hint">Например, одну площадку или вид деятельности.</div>
+    </div>
+    <div class="field">
+      <label for="m-date">Дата анализа</label>
+      <input type="text" id="m-date" oninput="onMeta('date', this.value)">
+      <button class="btn-small" style="margin-top:6px;" onclick="setToday()">Подставить текущую дату</button>
+    </div>
+    <div class="field">
+      <label for="m-author">Подготовил</label>
+      <input type="text" id="m-author" oninput="onMeta('author', this.value)">
+      <div class="hint">Должность или имя. Можно оставить пустым.</div>
+    </div>
+    <div class="field">
+      <label for="m-basis">Основа работы</label>
+      <select id="m-basis" onchange="onMeta('basis', this.value)">
+        <option value="Данные моего предприятия">Данные моего предприятия</option>
+        <option value="Учебные данные">Учебные данные</option>
+      </select>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="openWindow('screen-help')">Матрица и шкала</button>
+      <button class="btn btn-primary" onclick="goStep(2)">Перейти к сторонам</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 2 -->
+  <div id="screen-step2" class="screen">
+    <div class="steps-nav">
+      <button class="step-btn" onclick="goStep(1)">1. Сведения об анализе</button>
+      <button class="step-btn active" onclick="goStep(2)">2. Стороны</button>
+      <button class="step-btn" onclick="goStep(3)">3. Предпросмотр</button>
+    </div>
+    <h1>Заинтересованные стороны</h1>
+    <p class="lead">Каждая сторона живет на своей вкладке. Черновик сохраняется автоматически. Шкала, правила и точка на матрице открываются в отдельных окнах кнопками под баллами.</p>
+
+    <div class="tabs-bar" id="tabsBar" role="tablist" aria-label="Записи сторон"></div>
+    <div id="panelsBox"></div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="goStep(1)">К сведениям</button>
+      <button class="btn btn-primary" onclick="goStep(3)">Перейти к предпросмотру</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 3 -->
+  <div id="screen-step3" class="screen">
+    <div class="steps-nav">
+      <button class="step-btn" onclick="goStep(1)">1. Сведения об анализе</button>
+      <button class="step-btn" onclick="goStep(2)">2. Стороны</button>
+      <button class="step-btn active" onclick="goStep(3)">3. Предпросмотр</button>
+    </div>
+    <h1>Предпросмотр и скачивание</h1>
+
+    <div class="counts-box" id="countsBox" aria-live="polite"></div>
+    <div class="error-box" id="errorsBox" style="display:none;" aria-live="polite"></div>
+    <div class="notices-box" id="noticesBox" style="display:none;" aria-live="polite"></div>
+
+    <div id="previewBox"></div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="goStep(2)">Вернуться к сторонам</button>
+      <button class="btn btn-primary" id="downloadBtn" onclick="downloadDocx()">Скачать Word</button>
+      <button class="btn btn-danger" onclick="restartAll()">Начать заново</button>
+    </div>
+    <p class="hint" id="downloadNote" style="font-size:12px; color:var(--muted); margin-top:8px;"></p>
+  </div>
+
+</div>
+
+<script>
+/* ================= КОНСТАНТЫ ================= */
+const STORAGE_KEY = 'sem-stakeholder-registry-v1';
+const SECTORS = {
+  b:  { name: 'Сектор B, произведение 6-9', title: 'Активно взаимодействовать',
+        app: 'Держите обратную связь и стремитесь выполнять требования стороны.' },
+  ad: { name: 'Сектора A и D, произведение 3-4', title: 'Сохранять удовлетворенность и информированность',
+        app: 'Соблюдайте основные требования по возможности и обменивайтесь информацией по каналам.' },
+  c:  { name: 'Сектор C, произведение 1-2', title: 'Наблюдать',
+        app: 'Сторону сейчас все устраивает. Проверяйте, не выросли ли значимость и влияние.' }
+};
+const TYPE_LABELS = { in: 'Внутренняя', out: 'Внешняя', '': 'Тип не определен' };
+const COMP_LABELS = { yes: 'Да', no: 'Нет', unknown: 'Пока неизвестно', '': 'Не определено' };
+
+let state = {
+  meta: { org: '', scope: '', date: '', author: '', basis: 'Данные моего предприятия' },
+  parties: [],
+  nextNum: 1,
+  activeId: null
+};
+let bodiesById = {};
+let storageOk = true;
+let currentScreen = 'screen-intro';
+let returnScreen = 'screen-help';
+
+/* ================= ЭКРАНЫ ================= */
+function resizeIframe() {
+  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+    window.parentIFrame.size();
+  }
+}
+
+function goScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  currentScreen = id;
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  resizeIframe();
+}
+
+function openWindow(id) {
+  returnScreen = currentScreen;
+  if (id === 'screen-matrix') renderMatrixWindow();
+  goScreen(id);
+}
+
+function backFromWindow() {
+  goScreen(returnScreen || 'screen-help');
+}
+
+function startWork() {
+  goScreen('screen-help');
+}
+
+function goStep(n) {
+  goScreen('screen-step' + n);
+  document.querySelectorAll('#screen-step' + n + ' .step-btn').forEach((b, i) => b.classList.toggle('active', i === n - 1));
+  if (n === 3) renderPreview();
+}
+
+function setToday() {
+  const d = new Date();
+  const s = String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
+  document.getElementById('m-date').value = s;
+  onMeta('date', s);
+}
+
+function onMeta(key, value) { state.meta[key] = value; saveState(); }
+
+/* ================= ПАМЯТЬ ================= */
+function saveState() {
+  if (!storageOk) return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify({
+      meta: state.meta, parties: state.parties, nextNum: state.nextNum, activeId: state.activeId
+    }));
+  } catch (e) {
+    storageOk = false;
+    document.getElementById('storageWarn').style.display = 'block';
+    resizeIframe();
+  }
+}
+
+function sanitizeParty(p) {
+  p = p || {};
+  const num = n => (n === 1 || n === 2 || n === 3) ? n : null;
+  return {
+    id: String(p.id || ''),
+    name: String(p.name || ''),
+    type: TYPE_LABELS[p.type] !== undefined ? p.type : '',
+    req: String(p.req || ''),
+    source: String(p.source || ''),
+    sig: num(p.sig),
+    inf: num(p.inf),
+    comp: COMP_LABELS[p.comp] !== undefined ? p.comp : '',
+    plan: String(p.plan || ''),
+    dept: String(p.dept || ''),
+    channel: String(p.channel || '')
+  };
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || !Array.isArray(data.parties)) return false;
+    state.meta = Object.assign({ org: '', scope: '', date: '', author: '', basis: 'Данные моего предприятия' }, data.meta || {});
+    state.parties = data.parties.map(sanitizeParty).filter(p => p.id);
+    state.nextNum = Number(data.nextNum) || (state.parties.length + 1);
+    state.activeId = data.activeId || null;
+    return true;
+  } catch (e) { return false; }
+}
+
+function clearStorage() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+}
+
+/* ================= ОЦЕНКИ И МАТРИЦА ================= */
+function zoneOf(sig, inf) {
+  const p = sig * inf;
+  if (p <= 2) return 'c';
+  if (p <= 4) return 'ad';
+  return 'b';
+}
+function zoneOfParty(p) {
+  return (p.sig && p.inf) ? zoneOf(p.sig, p.inf) : null;
+}
+
+function buildZoneMatrix(el, point) {
+  el.innerHTML = '';
+  [3, 2, 1].forEach(y => {
+    const rl = document.createElement('div');
+    rl.className = 'm-rowlabel';
+    rl.textContent = y;
+    el.appendChild(rl);
+    for (let x = 1; x <= 3; x++) {
+      const c = document.createElement('div');
+      c.className = 'm-cell z' + zoneOf(x, y);
+      c.setAttribute('aria-label', 'Влияние ' + x + ', значимость ' + y + ': ' + SECTORS[zoneOf(x, y)].title);
+      if (point && point.x === x && point.y === y) {
+        const m = document.createElement('span');
+        m.className = 'pt';
+        m.textContent = point.label;
+        c.appendChild(m);
+      }
+      el.appendChild(c);
+    }
+  });
+}
+
+function buildLegend(el) {
+  const sw = { b: 'var(--zb-bg)', ad: 'var(--zad-bg)', c: 'var(--zc-bg)' };
+  const bd = { b: 'var(--zb-bd)', ad: 'var(--zad-bd)', c: 'var(--zc-bd)' };
+  el.innerHTML = ['b', 'ad', 'c'].map(z =>
+    '<div class="legend-item"><span class="legend-swatch" style="background:' + sw[z] + '; border-color:' + bd[z] + ';"></span>' +
+    '<strong>' + SECTORS[z].title + '</strong>' + SECTORS[z].name + '.</div>'
+  ).join('');
+}
+
+function renderMatrixWindow() {
+  const p = state.parties.find(x => x.id === state.activeId);
+  document.getElementById('winMatrixTitle').textContent = p
+    ? 'Сторона ' + p.id + '. ' + (p.name.trim() || 'Название пока не задано') + '.'
+    : 'Сторона не выбрана.';
+  buildZoneMatrix(document.getElementById('winMatrixGrid'),
+    (p && p.sig && p.inf) ? { x: p.inf, y: p.sig, label: p.id } : null);
+  const panel = document.getElementById('winMatrixPanel');
+  if (p && p.sig && p.inf) {
+    const z = zoneOf(p.sig, p.inf);
+    panel.innerHTML = '<strong>Значимость ' + p.sig + ', влияние ' + p.inf + ', произведение ' + (p.sig * p.inf) + '.</strong> ' +
+      SECTORS[z].name + ': ' + SECTORS[z].title.toLowerCase() + '. ' + SECTORS[z].app;
+  } else {
+    panel.textContent = 'Баллы еще не поставлены. Выберите значимость и влияние на вкладке стороны, и точка появится на матрице.';
+  }
+}
+
+/* ================= ВКЛАДКИ И ПАНЕЛИ ================= */
+function refreshTabsUI() {
+  const bar = document.getElementById('tabsBar');
+  const box = document.getElementById('panelsBox');
+  bar.innerHTML = '';
+
+  state.parties.forEach(p => {
+    if (!bodiesById[p.id]) {
+      const body = buildBody(p);
+      bodiesById[p.id] = body;
+      box.appendChild(body);
+    }
+  });
+  Object.keys(bodiesById).forEach(id => {
+    if (!state.parties.find(p => p.id === id)) {
+      bodiesById[id].remove();
+      delete bodiesById[id];
+    }
+  });
+
+  const oldPh = document.getElementById('emptyPlaceholder');
+  if (oldPh) oldPh.remove();
+  if (!state.parties.find(p => p.id === state.activeId)) {
+    state.activeId = state.parties.length ? state.parties[0].id : null;
+  }
+
+  state.parties.forEach(p => {
+    const z = zoneOfParty(p);
+    const tab = document.createElement('button');
+    tab.className = 'tab-btn';
+    tab.id = 'tab-' + p.id;
+    tab.setAttribute('role', 'tab');
+    tab.setAttribute('aria-controls', 'panel-' + p.id);
+    tab.setAttribute('aria-selected', p.id === state.activeId ? 'true' : 'false');
+    tab.onclick = () => activateTab(p.id);
+    const dot = document.createElement('span');
+    dot.className = 'tab-dot dot-' + (z || 'n');
+    dot.id = 'dot-' + p.id;
+    const idTxt = document.createElement('span');
+    idTxt.textContent = p.id;
+    const nm = document.createElement('span');
+    nm.className = 'tab-name';
+    nm.id = 'tabname-' + p.id;
+    nm.textContent = p.name.trim() || 'без названия';
+    tab.appendChild(dot); tab.appendChild(idTxt); tab.appendChild(nm);
+    bar.appendChild(tab);
+  });
+
+  const addBtn = document.createElement('button');
+  addBtn.className = 'tab-add';
+  addBtn.textContent = 'Добавить сторону';
+  addBtn.onclick = () => addParty();
+  bar.appendChild(addBtn);
+
+  if (!state.parties.length) {
+    const ph = document.createElement('div');
+    ph.className = 'note-box';
+    ph.id = 'emptyPlaceholder';
+    ph.style.marginTop = '10px';
+    ph.textContent = 'Записей пока нет. Нажмите "Добавить сторону", чтобы создать первую.';
+    box.appendChild(ph);
+  }
+  applyActivePanel();
+}
+
+function applyActivePanel() {
+  state.parties.forEach(p => {
+    const panel = bodiesById[p.id];
+    const tab = document.getElementById('tab-' + p.id);
+    if (panel) panel.hidden = p.id !== state.activeId;
+    if (tab) tab.setAttribute('aria-selected', p.id === state.activeId ? 'true' : 'false');
+  });
+}
+
+function activateTab(id) {
+  state.activeId = id;
+  applyActivePanel();
+  saveState();
+  resizeIframe();
+}
+
+function updateTabLabel(p) {
+  const nm = document.getElementById('tabname-' + p.id);
+  if (nm) nm.textContent = p.name.trim() || 'без названия';
+  const dot = document.getElementById('dot-' + p.id);
+  if (dot) dot.className = 'tab-dot dot-' + (zoneOfParty(p) || 'n');
+  const badge = document.getElementById('badge-' + p.id);
+  if (badge) {
+    const z = zoneOfParty(p);
+    badge.className = 'grp-badge grp-' + (z || 'n');
+    badge.textContent = z ? SECTORS[z].title : 'баллы не определены';
+  }
+}
+
+function addParty() {
+  const id = 'P' + String(state.nextNum).padStart(2, '0');
+  state.nextNum++;
+  const p = { id, name: '', type: '', req: '', source: '', sig: null, inf: null, comp: '', plan: '', dept: '', channel: '' };
+  state.parties.push(p);
+  state.activeId = id;
+  refreshTabsUI();
+  saveState();
+  const inp = document.getElementById('name-' + id);
+  if (inp) inp.focus();
+  resizeIframe();
+}
+
+function deleteParty(id) {
+  const p = state.parties.find(x => x.id === id);
+  if (!p) return;
+  const filled = p.name || p.req || p.source || p.plan || p.dept;
+  if (filled && !confirm('Удалить запись ' + id + '? Введенные данные этой записи будут потеряны.')) return;
+  state.parties = state.parties.filter(x => x.id !== id);
+  if (state.activeId === id) state.activeId = state.parties.length ? state.parties[0].id : null;
+  refreshTabsUI();
+  saveState();
+  resizeIframe();
+}
+
+function goToParty(id) {
+  goStep(2);
+  activateTab(id);
+  const inp = document.getElementById('name-' + id);
+  if (inp) inp.focus();
+}
+
+/* ================= КАРТОЧКА СТОРОНЫ ================= */
+function buildBody(p) {
+  const panel = document.createElement('div');
+  panel.className = 'tab-panel';
+  panel.id = 'panel-' + p.id;
+  panel.setAttribute('role', 'tabpanel');
+  panel.setAttribute('aria-labelledby', 'tab-' + p.id);
+
+  const head = document.createElement('div');
+  head.className = 'panel-head';
+  const left = document.createElement('span');
+  left.style.display = 'inline-flex'; left.style.gap = '8px'; left.style.alignItems = 'center';
+  const strong = document.createElement('strong');
+  strong.textContent = 'Сторона ' + p.id;
+  const badge = document.createElement('span');
+  badge.className = 'grp-badge grp-' + (zoneOfParty(p) || 'n');
+  badge.id = 'badge-' + p.id;
+  badge.textContent = zoneOfParty(p) ? SECTORS[zoneOfParty(p)].title : 'баллы не определены';
+  left.appendChild(strong); left.appendChild(badge);
+  const del = document.createElement('button');
+  del.className = 'btn-small';
+  del.textContent = 'Удалить запись';
+  del.onclick = () => deleteParty(p.id);
+  head.appendChild(left); head.appendChild(del);
+  panel.appendChild(head);
+
+  const body = document.createElement('div');
+  body.innerHTML =
+    '<div class="field"><label for="name-' + p.id + '">Название стороны <span class="req">(обязательное поле)</span></label>' +
+    '<input type="text" id="name-' + p.id + '"><div class="hint">Роль или организация: клиент, надзорный орган, работники участка.</div></div>' +
+    '<div class="field"><label for="type-' + p.id + '">Тип стороны</label>' +
+    '<select id="type-' + p.id + '"><option value="">Не определен</option><option value="in">Внутренняя</option><option value="out">Внешняя</option></select></div>' +
+    '<div class="field"><label for="req-' + p.id + '">Требование или ожидание <span class="req">(обязательное поле)</span></label>' +
+    '<textarea id="req-' + p.id + '"></textarea><div class="hint">Что сторона хочет от предприятия: упаковка, сроки отчетности, качество воды.</div></div>' +
+    '<div class="field"><label for="source-' + p.id + '">Источник требования</label>' +
+    '<input type="text" id="source-' + p.id + '"><div class="hint">Договор, норматив, разрешение, письмо, опрос, инструкция.</div></div>' +
+    '<div class="field"><label for="sig-' + p.id + '">Значимость требования</label>' +
+    '<select id="sig-' + p.id + '"><option value="">Еще не определено</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>' +
+    '<div class="hint">1 - узкий вопрос. 2 - процесс, договор или площадка. 3 - ключевые решения и остановка производства.</div></div>' +
+    '<div class="field"><label for="inf-' + p.id + '">Влияние стороны</label>' +
+    '<select id="inf-' + p.id + '"><option value="">Еще не определено</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>' +
+    '<div class="hint">1 - обращение без условий. 2 - отдельное решение. 3 - определяет или блокирует ключевые решения.</div></div>' +
+    '<div class="inline-links">' +
+    '<button class="btn-small" onclick="openWindow(\'screen-matrix\')">Точка на матрице</button>' +
+    '<button class="btn-small" onclick="openWindow(\'screen-scale\')">Напомнить шкалу</button>' +
+    '<button class="btn-small" onclick="openWindow(\'screen-rules\')">Правила работы</button></div>' +
+    '<div class="field"><label for="comp-' + p.id + '">Требование выполняется</label>' +
+    '<select id="comp-' + p.id + '"><option value="">Не определено</option><option value="yes">Да</option><option value="no">Нет</option><option value="unknown">Пока неизвестно</option></select></div>' +
+    '<div class="field"><label for="plan-' + p.id + '">План или комментарий по выполнению</label>' +
+    '<textarea id="plan-' + p.id + '"></textarea><div class="hint">Если не выполняется: суть плана, владелец и сроки. Если выполняется: чем подтверждено.</div></div>' +
+    '<div class="field"><label for="dept-' + p.id + '">Ответственный отдел за связь</label>' +
+    '<input type="text" id="dept-' + p.id + '"></div>' +
+    '<div class="field"><label for="channel-' + p.id + '">Канал коммуникации</label>' +
+    '<input type="text" id="channel-' + p.id + '"><div class="hint">Аудиты, встречи, деловая переписка, опросы.</div></div>';
+  panel.appendChild(body);
+
+  const q = sel => body.querySelector('[id="' + sel + '"]');
+  q('name-' + p.id).value = p.name;
+  q('type-' + p.id).value = p.type;
+  q('req-' + p.id).value = p.req;
+  q('source-' + p.id).value = p.source;
+  q('sig-' + p.id).value = p.sig === null ? '' : String(p.sig);
+  q('inf-' + p.id).value = p.inf === null ? '' : String(p.inf);
+  q('comp-' + p.id).value = p.comp;
+  q('plan-' + p.id).value = p.plan;
+  q('dept-' + p.id).value = p.dept;
+  q('channel-' + p.id).value = p.channel;
+
+  const set = (key, v) => {
+    p[key] = v;
+    saveState();
+    updateTabLabel(p);
+  };
+  q('name-' + p.id).addEventListener('input', e => set('name', e.target.value));
+  q('type-' + p.id).addEventListener('change', e => set('type', e.target.value));
+  q('req-' + p.id).addEventListener('input', e => set('req', e.target.value));
+  q('source-' + p.id).addEventListener('input', e => set('source', e.target.value));
+  q('sig-' + p.id).addEventListener('change', e => set('sig', e.target.value === '' ? null : Number(e.target.value)));
+  q('inf-' + p.id).addEventListener('change', e => set('inf', e.target.value === '' ? null : Number(e.target.value)));
+  q('comp-' + p.id).addEventListener('change', e => set('comp', e.target.value));
+  q('plan-' + p.id).addEventListener('input', e => set('plan', e.target.value));
+  q('dept-' + p.id).addEventListener('input', e => set('dept', e.target.value));
+  q('channel-' + p.id).addEventListener('input', e => set('channel', e.target.value));
+  return panel;
+}
+
+/* ================= ПРОВЕРКИ ================= */
+function validate() {
+  const errors = [];
+  state.parties.forEach(p => {
+    const missing = [];
+    if (!p.name.trim()) missing.push('название стороны');
+    if (!p.req.trim()) missing.push('требование или ожидание');
+    if (missing.length) errors.push({ id: p.id, missing });
+  });
+  return errors;
+}
+
+function notices() {
+  const list = [];
+  state.parties.forEach(p => {
+    if (!p.sig || !p.inf) list.push('Сторона ' + p.id + ': баллы еще не поставлены. Запись попадет в реестр, а точку на матрице можно добавить позже.');
+    if (!p.source.trim()) list.push('Сторона ' + p.id + ': источник требования пока не указан. Его можно добавить в любой момент.');
+    if (!p.comp) list.push('Сторона ' + p.id + ': осталось оценить, выполняется ли требование.');
+    if (p.comp === 'unknown') list.push('Сторона ' + p.id + ': выполнение помечено как неизвестное. Запишите, что проверить, и вопрос попадет в список уточнений.');
+    if (p.comp === 'no' && !p.plan.trim()) list.push('Сторона ' + p.id + ': требование не выполняется, и план еще не описан. Когда будете готовы, добавьте суть, владельца и сроки.');
+  });
+  return list;
+}
+
+function questions() {
+  const list = [];
+  state.parties.forEach(p => {
+    if (!p.sig || !p.inf) list.push(p.id + ': определить значимость и влияние по фактам источника.');
+    if (!p.source.trim()) list.push(p.id + ': уточнить источник требования.');
+    if (p.comp === 'unknown') list.push(p.id + ': проверить факты выполнения требования.');
+    if (p.comp === 'no' && !p.plan.trim()) list.push(p.id + ': подготовить план устранения несоответствия.');
+  });
+  return list;
+}
+
+/* ================= ПРЕДПРОСМОТР ================= */
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+
+function renderPreview() {
+  const ps = state.parties;
+  const scored = ps.filter(p => p.sig && p.inf);
+  const unscored = ps.filter(p => !(p.sig && p.inf));
+  const compNo = ps.filter(p => p.comp === 'no').length;
+
+  document.getElementById('countsBox').innerHTML = '<strong>Что уже заполнено.</strong><ul>' +
+    '<li>Сторон добавлено: ' + ps.length + '.</li>' +
+    '<li>Сторон с двумя баллами и точкой на матрице: ' + scored.length + '.</li>' +
+    '<li>Сторон, где баллы еще впереди: ' + unscored.length + '.</li>' +
+    '<li>Требований с отметкой "нет": ' + compNo + '.</li></ul>';
+
+  const errors = validate();
+  const errBox = document.getElementById('errorsBox');
+  const dlBtn = document.getElementById('downloadBtn');
+  if (errors.length) {
+    errBox.style.display = 'block';
+    errBox.innerHTML = '<strong>Для сборки документа не хватает названия и требования у перечисленных сторон.</strong> Заполните эти поля или удалите лишние записи, и скачивание откроется.<ul>' +
+      errors.map(e => '<li>Сторона ' + e.id + ': не хватает ' + esc(e.missing.join(' и ')) +
+        '. <button class="link-btn" onclick="goToParty(\'' + e.id + '\')">Перейти к записи</button></li>').join('') + '</ul>';
+    dlBtn.disabled = true;
+    document.getElementById('downloadNote').textContent = 'Скачивание откроется, когда у каждой записи будут название и требование.';
+  } else {
+    errBox.style.display = 'none';
+    dlBtn.disabled = ps.length === 0;
+    document.getElementById('downloadNote').textContent = ps.length === 0
+      ? 'Добавьте хотя бы одну запись с названием и требованием.'
+      : 'Документ сохранится на ваше устройство по нажатию кнопки.';
+  }
+
+  const nt = notices();
+  const ntBox = document.getElementById('noticesBox');
+  if (nt.length) {
+    ntBox.style.display = 'block';
+    ntBox.innerHTML = '<strong>Что можно дописать позже.</strong><ul>' + nt.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>';
+  } else ntBox.style.display = 'none';
+
+  let html = '';
+  html += '<div class="prev-section"><h3>1. Сведения об анализе</h3>' +
+    '<p style="margin:0 0 6px;"><strong>Реестр заинтересованных сторон и матрица значимости и влияния</strong></p>' +
+    '<p style="margin:0 0 10px; font-size:12px; color:var(--muted);">Предварительный рабочий материал. Требует проверки и обсуждения на предприятии.</p>';
+  if (state.meta.org.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Предприятие или объект:</strong> ' + esc(state.meta.org) + '</p>';
+  if (state.meta.scope.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Что рассматривается:</strong> ' + esc(state.meta.scope).replace(/\n/g, '<br>') + '</p>';
+  if (state.meta.date.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Дата анализа:</strong> ' + esc(state.meta.date) + '</p>';
+  if (state.meta.author.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Подготовил:</strong> ' + esc(state.meta.author) + '</p>';
+  html += '<p style="margin:0; font-size:13px;"><strong>Основа работы:</strong> ' + esc(state.meta.basis) + '</p></div>';
+
+  html += '<div class="prev-section"><h3>2. Матрица значимости и влияния</h3>';
+  html += '<div class="m-layout" style="margin:6px 0;"><div class="m-ytitle">Значимость</div><div><div class="m-grid" id="prevMatrix"></div>' +
+    '<div class="m-collabels"><span></span><span>1</span><span>2</span><span>3</span></div><div class="m-xtitle">Влияние</div></div></div>';
+  html += '<p class="legend-line">Сектор B, произведение 6-9: активно взаимодействовать. Сектора A и D, произведение 3-4: сохранять удовлетворенность и информированность. Сектор C, произведение 1-2: наблюдать.</p>';
+  if (unscored.length) {
+    html += '<h4 style="margin:10px 0 6px; font-size:14px;">Баллы еще не определены</h4><ul style="margin:0; padding-left:20px; font-size:13px;">' +
+      unscored.map(p => '<li>' + esc(p.id + '. ' + (p.name.trim() || 'Без названия')) + ' <button class="link-btn" onclick="goToParty(\'' + p.id + '\')">Открыть запись</button></li>').join('') + '</ul>';
+  }
+  html += '</div>';
+
+  html += '<div class="prev-section"><h3>3. Черновик реестра</h3>';
+  if (!ps.length) html += '<p class="prev-empty" style="margin:0;">Записи пока не добавлены.</p>';
+  ps.forEach(p => {
+    const z = zoneOfParty(p);
+    html += '<div class="prev-party"><div class="prev-party-head"><strong>' + esc(p.id + '. ' + (p.name.trim() || 'Без названия')) + '</strong>' +
+      '<span class="grp-badge grp-' + (z || 'n') + '">' + esc(z ? SECTORS[z].title : 'баллы не определены') + '</span>' +
+      '<button class="link-btn" onclick="goToParty(\'' + p.id + '\')">Открыть запись</button></div>' +
+      '<table class="prev-table"><tbody>' +
+      '<tr><th>Тип стороны</th><td>' + esc(TYPE_LABELS[p.type]) + '</td></tr>' +
+      '<tr><th>Требование или ожидание</th><td>' + esc(p.req).replace(/\n/g, '<br>') + '</td></tr>' +
+      '<tr><th>Источник требования</th><td>' + esc(p.source.trim() || 'Не указан') + '</td></tr>' +
+      '<tr><th>Значимость и влияние</th><td>' + (p.sig && p.inf ? p.sig + ' и ' + p.inf + ', произведение ' + (p.sig * p.inf) : 'Еще не определены') + '</td></tr>' +
+      '<tr><th>Сектор и подход</th><td>' + esc(z ? SECTORS[z].name + ': ' + SECTORS[z].app : 'Подход появится после постановки баллов') + '</td></tr>' +
+      '<tr><th>Требование выполняется</th><td>' + esc(COMP_LABELS[p.comp]) + '</td></tr>' +
+      '<tr><th>План или комментарий</th><td>' + esc(p.plan.trim() || '-') + '</td></tr>' +
+      '<tr><th>Ответственный отдел</th><td>' + esc(p.dept.trim() || '-') + '</td></tr>' +
+      '<tr><th>Канал коммуникации</th><td>' + esc(p.channel.trim() || '-') + '</td></tr>' +
+      '</tbody></table></div>';
+  });
+  html += '</div>';
+
+  const qs = questions();
+  html += '<div class="prev-section"><h3>4. Вопросы для уточнения</h3>';
+  if (!qs.length) html += '<p class="prev-empty" style="margin:0;">Дополнительные уточнения в этой версии не нужны.</p>';
+  else html += '<ul style="margin:0; padding-left:20px; font-size:13px;">' + qs.map(q => '<li>' + esc(q) + '</li>').join('') + '</ul>';
+  html += '</div>';
+
+  html += '<p style="font-size:12px; color:var(--muted);">Подход по сектору подсказывает уровень взаимодействия и не отменяет применимые требования. Документ собран учебным конструктором и помогает организовать обсуждение, а не подтверждает соответствие СЭМ стандарту.</p>';
+  document.getElementById('previewBox').innerHTML = html;
+
+  const prevPoints = scored.map(p => ({ x: p.inf, y: p.sig, label: p.id }));
+  buildZoneMatrixMulti(document.getElementById('prevMatrix'), prevPoints);
+  resizeIframe();
+}
+
+function buildZoneMatrixMulti(el, points) {
+  el.innerHTML = '';
+  [3, 2, 1].forEach(y => {
+    const rl = document.createElement('div');
+    rl.className = 'm-rowlabel';
+    rl.textContent = y;
+    el.appendChild(rl);
+    for (let x = 1; x <= 3; x++) {
+      const c = document.createElement('div');
+      c.className = 'm-cell z' + zoneOf(x, y);
+      c.style.minHeight = '64px';
+      const here = points.filter(p => p.x === x && p.y === y);
+      here.forEach(p => {
+        const m = document.createElement('span');
+        m.className = 'pt';
+        m.style.position = 'static';
+        m.style.transform = 'none';
+        m.style.display = 'inline-block';
+        m.style.margin = '2px';
+        m.textContent = p.label;
+        c.appendChild(m);
+      });
+      el.appendChild(c);
+    }
+  });
+}
+
+/* ================= ГЕНЕРАЦИЯ DOCX ================= */
+function xmlEsc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+function run(text, o) {
+  o = o || {};
+  let rpr = '';
+  if (o.b) rpr += '<w:b/>';
+  if (o.i) rpr += '<w:i/>';
+  if (o.color) rpr += '<w:color w:val="' + o.color + '"/>';
+  if (o.sz) rpr += '<w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/>';
+  return '<w:r>' + (rpr ? '<w:rPr>' + rpr + '</w:rPr>' : '') + '<w:t xml:space="preserve">' + xmlEsc(text) + '</w:t></w:r>';
+}
+function para(text, o) {
+  o = o || {};
+  let ppr = '';
+  if (o.style) ppr += '<w:pStyle w:val="' + o.style + '"/>';
+  if (o.before || o.after) ppr += '<w:spacing w:before="' + (o.before || 0) + '" w:after="' + (o.after || 0) + '"/>';
+  return '<w:p>' + (ppr ? '<w:pPr>' + ppr + '</w:pPr>' : '') + run(text, o) + '</w:p>';
+}
+function paraMulti(text, o) {
+  return String(text).split(/\r?\n/).map(l => para(l, o)).join('');
+}
+function labelPara(label, value) {
+  return '<w:p><w:pPr><w:spacing w:after="60"/></w:pPr>' + run(label + ': ', { b: true }) + run(value) + '</w:p>';
+}
+function cell(width, parasXml, fill) {
+  const tcpr = '<w:tcPr><w:tcW w:w="' + width + '" w:type="dxa"/>' + (fill ? '<w:shd w:val="clear" w:color="auto" w:fill="' + fill + '"/>' : '') + '<w:vAlign w:val="top"/></w:tcPr>';
+  return '<w:tc>' + tcpr + (parasXml || '<w:p/>') + '</w:tc>';
+}
+const TBL_BORDERS = '<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
+const CELL_MAR = '<w:tblCellMar><w:top w:w="80" w:type="dxa"/><w:left w:w="100" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:right w:w="100" w:type="dxa"/></w:tblCellMar>';
+function table(widths, rowsXml) {
+  const total = widths.reduce((a, b) => a + b, 0);
+  return '<w:tbl><w:tblPr><w:tblW w:w="' + total + '" w:type="dxa"/>' + TBL_BORDERS + CELL_MAR + '<w:tblLayout w:type="fixed"/></w:tblPr>' +
+    '<w:tblGrid>' + widths.map(w => '<w:gridCol w:w="' + w + '"/>').join('') + '</w:tblGrid>' + rowsXml + '</w:tbl>';
+}
+const ZFILL = { b: 'E6F4EA', ad: 'FDF6E7', c: 'F1F5F9' };
+
+function buildDocumentXml() {
+  const b = [];
+  b.push(para('Реестр заинтересованных сторон и матрица значимости и влияния', { style: 'Title' }));
+  b.push(para('Предварительный рабочий материал. Требует проверки и обсуждения на предприятии.', { i: true, color: '6B7280', sz: 20, after: 200 }));
+
+  b.push(para('1. Сведения об анализе', { style: 'Heading1' }));
+  if (state.meta.org.trim()) b.push(labelPara('Предприятие или объект', state.meta.org.trim()));
+  if (state.meta.scope.trim()) {
+    const lines = state.meta.scope.trim().split(/\r?\n/);
+    let xml = '<w:p><w:pPr><w:spacing w:after="60"/></w:pPr>' + run('Что рассматривается: ', { b: true }) + run(lines[0]) + '</w:p>';
+    for (let i = 1; i < lines.length; i++) xml += para(lines[i]);
+    b.push(xml);
+  }
+  if (state.meta.date.trim()) b.push(labelPara('Дата анализа', state.meta.date.trim()));
+  if (state.meta.author.trim()) b.push(labelPara('Подготовил', state.meta.author.trim()));
+  b.push(labelPara('Основа работы', state.meta.basis));
+
+  b.push(para('2. Матрица значимости и влияния', { style: 'Heading1' }));
+  b.push(para('Сектор B, произведение 6-9: активно взаимодействовать. Сектора A и D, произведение 3-4: сохранять удовлетворенность и информированность. Сектор C, произведение 1-2: наблюдать.', { sz: 20, after: 120 }));
+  const widths = [1800, 2613, 2613, 2612];
+  let rows = '<w:tr>' + cell(widths[0], para('Значимость и влияние', { b: true, sz: 20 }), 'F8FAFC') +
+    cell(widths[1], para('Влияние 1', { b: true, sz: 20 }), 'F8FAFC') +
+    cell(widths[2], para('Влияние 2', { b: true, sz: 20 }), 'F8FAFC') +
+    cell(widths[3], para('Влияние 3', { b: true, sz: 20 }), 'F8FAFC') + '</w:tr>';
+  [3, 2, 1].forEach(y => {
+    let row = '<w:tr>' + cell(widths[0], para('Значимость ' + y, { b: true, sz: 20 }), 'F8FAFC');
+    for (let x = 1; x <= 3; x++) {
+      const pts = state.parties.filter(p => p.sig === y && p.inf === x);
+      let inner = '';
+      if (pts.length) pts.forEach(p => { inner += para(p.id + '. ' + (p.name.trim() || 'Без названия'), { sz: 20, after: 40 }); });
+      else inner = para('Сторон пока нет', { i: true, color: '6B7280', sz: 20 });
+      row += cell(widths[x], inner, ZFILL[zoneOf(x, y)]);
+    }
+    row += '</w:tr>';
+    rows += row;
+  });
+  b.push(table(widths, rows));
+  const unscored = state.parties.filter(p => !(p.sig && p.inf));
+  if (unscored.length) {
+    b.push(para('Баллы еще не определены', { style: 'Heading2' }));
+    unscored.forEach(p => b.push(para(p.id + '. ' + (p.name.trim() || 'Без названия'), { after: 40 })));
+  }
+
+  b.push(para('3. Черновик реестра', { style: 'Heading1' }));
+  state.parties.forEach(p => {
+    const z = zoneOfParty(p);
+    b.push(para(p.id + '. ' + (p.name.trim() || 'Без названия'), { style: 'Heading2' }));
+    b.push(para('Тип: ' + TYPE_LABELS[p.type] + (z ? '. Сектор: ' + SECTORS[z].name : ''), { b: true, color: z ? (z === 'b' ? '1B5E20' : z === 'ad' ? '9A3412' : '334155') : '334155', after: 100 }));
+    const rowsData = [
+      ['Требование или ожидание', p.req],
+      ['Источник требования', p.source.trim() || 'Не указан'],
+      ['Значимость', p.sig ? String(p.sig) : 'Не определено'],
+      ['Влияние', p.inf ? String(p.inf) : 'Не определено'],
+      ['Произведение и сектор', (p.sig && p.inf) ? String(p.sig * p.inf) + ', ' + SECTORS[z].name : 'Не определено'],
+      ['Подход к взаимодействию', z ? SECTORS[z].app : 'Появится после постановки баллов'],
+      ['Требование выполняется', COMP_LABELS[p.comp]],
+      ['План или комментарий', p.plan.trim() || '-'],
+      ['Ответственный отдел', p.dept.trim() || '-'],
+      ['Канал коммуникации', p.channel.trim() || '-']
+    ];
+    let rowsXml = '';
+    rowsData.forEach(r => {
+      rowsXml += '<w:tr>' + cell(2800, para(r[0], { b: true, sz: 20 }), 'F8FAFC') + cell(6838, paraMulti(r[1], { sz: 20 })) + '</w:tr>';
+    });
+    b.push(table([2800, 6838], rowsXml));
+    b.push(para('', { after: 120 }));
+  });
+
+  b.push(para('4. Вопросы для уточнения', { style: 'Heading1' }));
+  const qs = questions();
+  if (!qs.length) b.push(para('Дополнительные уточнения в этой версии не нужны.', { i: true, color: '6B7280' }));
+  qs.forEach(q => b.push(para(q, { after: 40 })));
+
+  b.push(para('Подход по сектору подсказывает уровень взаимодействия и не отменяет применимые требования: их выполняют независимо от баллов.', { i: true, color: '6B7280', sz: 20, before: 240 }));
+  b.push(para('Документ подготовлен с помощью учебного конструктора. Он помогает организовать обсуждение заинтересованных сторон и не является подтверждением соответствия СЭМ стандарту.', { i: true, color: '6B7280', sz: 20 }));
+  b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>' +
+    b.join('') + '</w:body></w:document>';
+}
+
+const CT_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
+const RELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+const DRELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+const FOOTER_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:fldSimple w:instr=" PAGE "><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
+const STYLES_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="334155"/></w:rPr></w:style></w:styles>';
+
+/* ZIP (store) */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; }
+  return t;
+})();
+function crc32(u8) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function zipStore(files) {
+  const enc = new TextEncoder();
+  const now = new Date();
+  const dosTime = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xFFFF;
+  const dosDate = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xFFFF;
+  const locals = [], centrals = [];
+  let offset = 0;
+  files.forEach(f => {
+    const nameB = enc.encode(f.name);
+    const data = f.data;
+    const crc = crc32(data);
+    const lh = new Uint8Array(30 + nameB.length);
+    const dv = new DataView(lh.buffer);
+    dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true); dv.setUint16(6, 0, true); dv.setUint16(8, 0, true);
+    dv.setUint16(10, dosTime, true); dv.setUint16(12, dosDate, true);
+    dv.setUint32(14, crc, true); dv.setUint32(18, data.length, true); dv.setUint32(22, data.length, true);
+    dv.setUint16(26, nameB.length, true); dv.setUint16(28, 0, true);
+    lh.set(nameB, 30);
+    locals.push(lh, data);
+    const ch = new Uint8Array(46 + nameB.length);
+    const cv = new DataView(ch.buffer);
+    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true); cv.setUint16(8, 0, true); cv.setUint16(10, 0, true);
+    cv.setUint16(12, dosTime, true); cv.setUint16(14, dosDate, true);
+    cv.setUint32(16, crc, true); cv.setUint32(20, data.length, true); cv.setUint32(24, data.length, true);
+    cv.setUint16(28, nameB.length, true); cv.setUint16(30, 0, true); cv.setUint16(32, 0, true);
+    cv.setUint16(34, 0, true); cv.setUint16(36, 0, true); cv.setUint32(38, 0, true); cv.setUint32(42, offset, true);
+    ch.set(nameB, 46);
+    centrals.push(ch);
+    offset += lh.length + data.length;
+  });
+  const centralSize = centrals.reduce((a, c) => a + c.length, 0);
+  const eocd = new Uint8Array(22);
+  const ev = new DataView(eocd.buffer);
+  ev.setUint32(0, 0x06054b50, true); ev.setUint16(4, 0, true); ev.setUint16(6, 0, true);
+  ev.setUint16(8, files.length, true); ev.setUint16(10, files.length, true);
+  ev.setUint32(12, centralSize, true); ev.setUint32(16, offset, true); ev.setUint16(20, 0, true);
+  let total = 0;
+  locals.forEach(p => total += p.length);
+  centrals.forEach(p => total += p.length);
+  total += 22;
+  const out = new Uint8Array(total);
+  let o = 0;
+  locals.forEach(p => { out.set(p, o); o += p.length; });
+  centrals.forEach(p => { out.set(p, o); o += p.length; });
+  out.set(eocd, o);
+  return out;
+}
+
+function downloadDocx() {
+  const errors = validate();
+  if (errors.length || state.parties.length === 0) { renderPreview(); return; }
+  const enc = new TextEncoder();
+  const files = [
+    { name: '[Content_Types].xml', data: enc.encode(CT_XML) },
+    { name: '_rels/.rels', data: enc.encode(RELS_XML) },
+    { name: 'word/document.xml', data: enc.encode(buildDocumentXml()) },
+    { name: 'word/styles.xml', data: enc.encode(STYLES_XML) },
+    { name: 'word/footer1.xml', data: enc.encode(FOOTER_XML) },
+    { name: 'word/_rels/document.xml.rels', data: enc.encode(DRELS_XML) }
+  ];
+  const bytes = zipStore(files);
+  const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'reestr-zainteresovannykh-storon.docx';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  document.getElementById('downloadNote').textContent = 'Документ скачан. Можно продолжать работу и скачать новую версию после изменений.';
+  resizeIframe();
+}
+
+/* ================= СБРОС ================= */
+function restartAll() {
+  if (!confirm('Очистить все введенные данные и удалить черновик из локальной памяти браузера?')) return;
+  clearStorage();
+  state.meta = { org: '', scope: '', date: '', author: '', basis: 'Данные моего предприятия' };
+  state.parties = [];
+  state.nextNum = 1;
+  state.activeId = null;
+  bodiesById = {};
+  document.getElementById('panelsBox').innerHTML = '';
+  document.getElementById('m-org').value = '';
+  document.getElementById('m-scope').value = '';
+  document.getElementById('m-date').value = '';
+  document.getElementById('m-author').value = '';
+  document.getElementById('m-basis').value = 'Данные моего предприятия';
+  setToday();
+  addParty();
+  goStep(1);
+}
+
+/* ================= СТАРТ ================= */
+document.addEventListener('DOMContentLoaded', () => {
+  const restored = loadState();
+  if (restored && state.parties.length) {
+    document.getElementById('restoreNote').style.display = 'block';
+  }
+  document.getElementById('m-org').value = state.meta.org;
+  document.getElementById('m-scope').value = state.meta.scope;
+  document.getElementById('m-date').value = state.meta.date;
+  document.getElementById('m-author').value = state.meta.author;
+  document.getElementById('m-basis').value = state.meta.basis;
+  if (!state.meta.date) setToday();
+  if (!state.parties.length) {
+    const id = 'P' + String(state.nextNum).padStart(2, '0');
+    state.nextNum++;
+    state.parties.push({ id, name: '', type: '', req: '', source: '', sig: null, inf: null, comp: '', plan: '', dept: '', channel: '' });
+    state.activeId = id;
+  }
+  refreshTabsUI();
+  buildZoneMatrix(document.getElementById('helpMatrix'), null);
+  buildLegend(document.getElementById('helpLegend'));
+  saveState();
+  resizeIframe();
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(() => resizeIframe());
+    ro.observe(document.body);
+  }
+});
+window.addEventListener('load', () => resizeIframe());
+</script>
+
+</body>
+</html>
