@@ -1,0 +1,390 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Формулировки как в реальных документах: найдите и исправьте ошибку</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --primary: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --gray-light: #f8fafc;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --ok-bg: #f0fdf4;
+  --ok-border: #bbf7d0;
+  --ok-text: #166534;
+  --bad-bg: #fef2f2;
+  --bad-border: #fecaca;
+  --bad-text: #991b1b;
+  --warn-bg: #fffbeb;
+  --warn-border: #fde68a;
+  --warn-text: #92400e;
+  --radius: 12px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 20px; background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--primary); font-size: 15px; line-height: 1.6;
+}
+.container { max-width: 680px; margin: 0 auto; }
+.screen { display: none; animation: fadeIn .35s ease-out; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+h1 { font-size: 21px; font-weight: 800; margin: 0 0 10px; }
+h2 { font-size: 16px; font-weight: 700; margin: 16px 0 8px; }
+.subtitle {
+  font-size: 13px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .5px; margin-bottom: 10px; font-weight: 600;
+}
+.lead { font-size: 14px; margin: 0 0 12px; line-height: 1.6; }
+
+/* Выдержка из документа */
+.doc { border: 1px solid var(--border); border-radius: 10px; background: #fff; margin: 0 0 12px; }
+.doc-head {
+  background: var(--gray-light); border-bottom: 1px solid var(--border);
+  padding: 8px 12px; font-size: 11px; font-weight: 700; color: var(--muted);
+  text-transform: uppercase; letter-spacing: .4px; border-radius: 10px 10px 0 0;
+}
+.doc-body { padding: 12px 14px; font-size: 14px; line-height: 1.6; }
+
+.question { font-size: 15px; font-weight: 600; margin: 0 0 12px; }
+
+.options { display: flex; flex-direction: column; gap: 10px; margin-bottom: 14px; }
+.opt-btn {
+  display: block; width: 100%; text-align: left;
+  border: 1px solid var(--border); border-radius: 10px;
+  background: #fff; padding: 12px 14px;
+  font-family: inherit; font-size: 14px; line-height: 1.5; color: var(--primary);
+  cursor: pointer; transition: all .15s;
+}
+.opt-btn:hover:not(:disabled) { border-color: var(--accent); background: #eff6ff; }
+.opt-btn.sel-ok { border-color: var(--ok-text); background: var(--ok-bg); }
+.opt-btn.sel-bad { border-color: var(--bad-text); background: var(--bad-bg); }
+.opt-btn.dim { opacity: .55; }
+.opt-btn:disabled { cursor: default; }
+
+.fb {
+  display: none; border-radius: 10px; padding: 12px 14px;
+  font-size: 13px; line-height: 1.55; margin: 0 0 10px;
+}
+.fb.show { display: block; }
+.fb.ok { background: var(--ok-bg); border: 1px solid var(--ok-border); color: var(--ok-text); }
+.fb.bad { background: var(--bad-bg); border: 1px solid var(--bad-border); color: var(--bad-text); }
+.fb strong { display: block; margin-bottom: 3px; }
+
+.analysis { display: none; margin: 0 0 10px; }
+.analysis.show { display: block; }
+.err-box {
+  background: var(--warn-bg); border-left: 4px solid var(--warn-border);
+  border-radius: 0 10px 10px 0; padding: 12px 14px; font-size: 13px;
+  line-height: 1.55; color: var(--warn-text); margin: 0 0 10px;
+}
+.fix-box {
+  background: var(--ok-bg); border-left: 4px solid var(--ok-border);
+  border-radius: 0 10px 10px 0; padding: 12px 14px; font-size: 13px;
+  line-height: 1.55; color: var(--ok-text); margin: 0 0 10px;
+}
+.box-title {
+  display: block; font-weight: 700; font-size: 12px; text-transform: uppercase;
+  letter-spacing: .4px; margin-bottom: 4px;
+}
+.ref-line { font-size: 12px; color: var(--muted); margin: 0 0 10px; }
+
+.hint-box {
+  display: none; background: var(--gray-light); border: 1px dashed var(--border);
+  border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--muted);
+  margin: 0 0 12px; font-style: italic;
+}
+.hint-box.show { display: block; }
+
+.nav-buttons { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.btn {
+  padding: 10px 18px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; font-family: inherit; transition: background .2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--primary); }
+.btn-secondary:hover { background: var(--gray-light); }
+
+.check-grid { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 12px 0; }
+.check-item {
+  border: 1px solid var(--border); border-radius: 10px; padding: 10px 12px;
+  background: var(--gray-light); font-size: 13px; line-height: 1.45;
+}
+.check-item strong { display: block; font-size: 14px; color: var(--accent); margin-bottom: 3px; }
+
+.note-box {
+  background: var(--gray-light); border: 1px solid var(--border);
+  border-left: 4px solid var(--muted); border-radius: 0 8px 8px 0;
+  padding: 10px 14px; font-size: 13px; color: var(--muted); margin: 10px 0;
+}
+.summary-line {
+  background: #eff6ff; border: 1px solid #bfdbfe; color: var(--accent-dark);
+  border-radius: 10px; padding: 10px 14px; font-size: 13px; font-weight: 600; margin: 0 0 12px;
+}
+
+button:focus-visible { outline: 3px solid var(--accent-dark); outline-offset: 2px; }
+
+@media (max-width: 560px) {
+  body { padding: 12px; }
+  h1 { font-size: 19px; }
+  .check-grid { grid-template-columns: 1fr; }
+  .nav-buttons { flex-direction: column; }
+  .btn { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div id="screen-cards" class="screen active">
+    <div id="cardBox"></div>
+  </div>
+
+  <div id="screen-final" class="screen">
+    <div class="subtitle">Вывод после разбора</div>
+    <h1>Проверяйте свои документы так же</h1>
+
+    <div class="summary-line" id="sumLine"></div>
+
+    <p class="lead">Ошибки в реальных документах редко выглядят как прямые нарушения. Чаще это общие слова без срока, ответственного и способа проверки: «своевременно», «постоянно», «все сотрудники», «по мере необходимости». Поэтому каждую формулировку полезно прогнать через три вопроса.</p>
+
+    <div class="check-grid">
+      <div class="check-item"><strong>Кто делает и кто отвечает?</strong>Без владельца требование никто не выполняет и никто не проверяет.</div>
+      <div class="check-item"><strong>К какому сроку и как проверяем?</strong>Без срока и способа проверки исполнение нельзя подтвердить.</div>
+      <div class="check-item"><strong>Какой факт подтверждает исполнение?</strong>Запись, отчет, замер, подписанный документ: факт, а не намерение.</div>
+    </div>
+
+    <div class="note-box">Исправленная редакция в карточках не является единственно верной. Важно, чтобы формулировка была выполнимой, проверяемой и привязанной к фактам и владельцам.</div>
+    <div class="note-box">Тренажер разбирает качество формулировок в пределах условий задания и не подтверждает соответствие документов ГОСТ Р ИСО 14001-2016.</div>
+
+    <div class="nav-buttons" style="justify-content:center;">
+      <button class="btn btn-secondary" onclick="restartAll()">Пройти заново</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const CARDS = [
+  {
+    title: 'Экологическая политика',
+    doc: 'Экологическая политика. Фрагмент проекта документа.',
+    excerpt: 'Предприятие обязуется полностью исключить воздействие на окружающую среду и достичь нулевого образования отходов. Политика утверждена руководителем экологической службы и пересматривается один раз в 10 лет.',
+    question: 'В чем главная слабость этой формулировки?',
+    hint: 'Проверьте, кто утверждает политику и можно ли проверить взятые обязательства.',
+    options: [
+      { t: 'Обязательства непроверяемы, а политика утверждена не высшим руководством.', ok: true,
+        fb: 'Верно. «Полностью исключить воздействие» и «нулевые отходы» невозможно подтвердить и выполнить, а ответственность за политику по стандарту несет высшее руководство, а не экологическая служба.' },
+      { t: 'В политике не хватает официального стиля: ее нужно писать сухим канцелярским языком.', ok: false,
+        fb: 'Стиль не главная проблема. Простая и понятная формулировка уместна, если обязательства проверяемы и приняты на правильном уровне.' },
+      { t: 'Слабости нет: строгие обязательства мотивируют персонал работать лучше.', ok: false,
+        fb: 'Невыполнимое обязательство не мотивирует, а подрывает доверие к документу: первая же проверка покажет, что оно не достигается.' }
+    ],
+    err: 'Непроверяемые обязательства превращают политику в декларацию. Утверждение на уровне эколога лишает ее силы: у подразделений нет оснований ее выполнять. Срок в 10 лет не учитывает изменения законодательства и самого предприятия.',
+    fix: 'Организация обязуется выполнять применимые требования, предотвращать загрязнение и постоянно улучшать СЭМ. Политика утверждена приказом генерального директора, доведена до всех работников и пересматривается на анализе со стороны руководства и при значимых изменениях.',
+    ref: 'Пункт 5.2 ГОСТ Р ИСО 14001-2016: политику устанавливает высшее руководство, и она включает обязательства по выполнению требований и постоянному улучшению.'
+  },
+  {
+    title: 'Цели и показатели',
+    doc: 'Перечень экологических целей. Фрагмент проекта документа.',
+    excerpt: 'Цель: улучшить экологическую обстановку в регионе. Срок: бессрочно. Ответственный: все сотрудники предприятия.',
+    question: 'Почему такой целью нельзя управлять?',
+    hint: 'Попробуйте понять, по какому факту вы проверите, что цель достигнута.',
+    options: [
+      { t: 'У цели нет измеримости, срока и владельца: достижение невозможно проверить.', ok: true,
+        fb: 'Верно. Без показателя, базового значения, срока и ответственного цель остается лозунгом: прогресс нечем измерить и не с кем обсудить.' },
+      { t: 'Целью нельзя управлять, потому что она касается региона, а не площадки предприятия.', ok: false,
+        fb: 'Регион может быть контекстом цели, но главная ошибка не в этом: даже цель по своей площадке без показателя, срока и владельца неуправляема.' },
+      { t: 'Целью нельзя управлять, потому что к ней не приложен бюджет.', ok: false,
+        fb: 'Бюджет важен для действий, но и с бюджетом цель без показателя, срока и ответственного остается непроверяемой.' }
+    ],
+    err: 'Формулировка «улучшить обстановку» не говорит, что именно изменится и как это заметить. «Бессрочно» и «все сотрудники» означают, что за результат не отвечает никто и момент оценки никогда не наступает.',
+    fix: 'Цель: снизить удельный расход воды на тонну стекла на 5 процентов к 1 декабря 2027 года от базового уровня 2026 года. Показатель: удельный расход воды, кубических метров на тонну, ежемесячно по данным приборов учета. Ответственный: главный инженер.',
+    ref: 'Пункты 6.2.1 и 6.2.2 ГОСТ Р ИСО 14001-2016: цели измеряемы, где это practicable, и включают что будет сделано, какие ресурсы, кто отвечает, когда завершение и как оценивают результаты.'
+  },
+  {
+    title: 'Процедура передачи данных',
+    doc: 'Процедура взаимодействия подразделений. Фрагмент проекта документа.',
+    excerpt: 'Подразделения своевременно передают экологическую информацию в экологическую службу. Экологическая служба использует полученные данные в работе.',
+    question: 'Чего не хватает, чтобы требование было выполнимым?',
+    hint: 'Представьте, что вы начальник цеха: что именно, к какому числу, в каком формате и кому вы передаете?',
+    options: [
+      { t: 'Не указаны состав данных, срок, формат и ответственные: требование нельзя выполнить и проверить.', ok: true,
+        fb: 'Верно. Слово «своевременно» каждый понимает по-своему: без состава, срока и формата данные приходят поздно и в виде, непригодном для анализа.' },
+      { t: 'Не хватает слова «предоставляют» вместо «передают».', ok: false,
+        fb: 'Замена глагола не делает требование выполнимым. Решают состав данных, срок, формат и владелец процесса.' },
+      { t: 'Ничего не хватает: каждое подразделение само понимает, какие данные нужны.', ok: false,
+        fb: 'Именно эта надежда приводит к авралам и неполным данным: понимание у подразделений различается, а проверить его нечем.' }
+    ],
+    err: 'Общая формулировка не задает процесс: нет триггера (когда передавать), состава (что передавать), формата (в каком виде) и владельца (кто отвечает за срок). Контролировать такую процедуру невозможно.',
+    fix: 'Подразделения передают в экологическую службу до 5 числа месяца, следующего за отчетным: данные о расходе ресурсов по форме ФР-1 и об образовании и передаче отходов по форме ФР-2 в файле Excel с подписью руководителя подразделения. Ответственные за срок: руководители подразделений.',
+    ref: 'Пункт 7.4 ГОСТ Р ИСО 14001-2016: организация устанавливает внутренние коммуникации, включая что, когда и как передавать.'
+  },
+  {
+    title: 'План внедрения СЭМ',
+    doc: 'План внедрения СЭМ. Фрагмент проекта документа.',
+    excerpt: '1. Разработать и утвердить все документы СЭМ. Ответственный: эколог. Срок: 1 месяц. 2. Обучить весь персонал экологической безопасности. Ответственный: отдел кадров. Срок: по мере необходимости.',
+    question: 'К чему приведет такой план?',
+    hint: 'Оцените, выполним ли первый пункт силами одного человека и что означает срок «по мере необходимости».',
+    options: [
+      { t: 'К срыву сроков и потере управляемости: пункты объединяют разнородную работу, сроки и охват нереальны.', ok: true,
+        fb: 'Верно. «Все документы» за месяц силами одного человека невыполнимы, а «по мере необходимости» не является сроком: такой пункт нельзя ни закрыть, ни проверить.' },
+      { t: 'К перерасходу бюджета: в план не заложена стоимость обучения.', ok: false,
+        fb: 'Стоимость важна, но план ломается раньше: на уровне выполнимости пунктов и понятности сроков и результатов.' },
+      { t: 'Ни к чему плохому: план уточняется по ходу работы, это нормально.', ok: false,
+        fb: 'Уточнение по ходу нормально, но для него исходные пункты должны быть выполнимыми и проверяемыми. Здесь они такие только на бумаге.' }
+    ],
+    err: 'Пункт плана отвечает на четыре вопроса: какой результат, кто отвечает, к какому сроку, как проверяют завершение. В фрагменте первый пункт не имеет состава документов и вовлекает только эколога, хотя нужны владельцы процессов, а второй не имеет срока и охвата персонала.',
+    fix: '1. Составить перечень документов СЭМ по результатам анализа процессов. Ответственные: эколог вместе с владельцами процессов. Срок: до 15 марта. Завершение: перечень утвержден. 2. Разработать процедуру управления документацией на базе процедуры СМК. Ответственные: эколог, специалист по качеству. Срок: до 10 апреля. 3. Определить категории персонала и программу обучения. Ответственные: отдел кадров, эколог. Срок: до 30 апреля.',
+    ref: 'Пункт 6.2.2 ГОСТ Р ИСО 14001-2016: при планировании действий определяют что, ресурсы, кто, когда и как оценивают результаты.'
+  },
+  {
+    title: 'Несоответствие и корректирующие действия',
+    doc: 'Отчет о несоответствии. Фрагмент проекта документа.',
+    excerpt: 'Несоответствие: работник не соблюдал инструкцию по сортировке. Действие: работнику объявлен выговор. Действие по предотвращению повторения: провести беседу.',
+    question: 'Какая главная ошибка в реакции на несоответствие?',
+    hint: 'Спросите, почему работник действовал так: что в процессе допускало ошибку.',
+    options: [
+      { t: 'Вместо анализа причины поиск виновного: выговор не устраняет причину ошибки.', ok: true,
+        fb: 'Верно. Если инструкция непонятна или нет обучения и контроля, следующий работник повторит ошибку: воздействие на человека не меняет процесс.' },
+      { t: 'Неверно выбран вид дисциплинарного воздействия: нужен штраф.', ok: false,
+        fb: 'Более строгое воздействие не становится корректирующим действием: причина несоответствия остается в процессе.' },
+      { t: 'Ошибки нет: несоответствия персонала устраняются воздействием на персонал.', ok: false,
+        fb: 'Воздействие на персонал может быть одной из мер, но без анализа причин оно не предотвращает повторение несоответствия.' }
+    ],
+    err: 'Отчет перескакивает с «не соблюдал» на «выговор», минуя вопрос «почему». Не проверены возможные причины: устаревшая или непонятная инструкция, отсутствие обучения, обратной связи с линии, контроля на операции.',
+    fix: 'Несоответствие: в контейнере бесцветного стеклобоя обнаружен бой с остатками упаковочной пленки. Анализ причины: инструкция не описывает порядок для таких остатков, обратная связь с линии не установлена. Корректирующие действия: дополнить инструкцию, установить канал обратной связи, проверить выполнение через месяц. Ответственные: начальник линии, эколог.',
+    ref: 'Пункт 10.2 ГОСТ Р ИСО 14001-2016: при несоответствии организация реагирует, оценивает необходимость устранения причин и проверяет результативность корректирующих действий.'
+  }
+];
+
+let answers = {};
+let locked = {};
+let current = 1;
+
+function resizeIframe() {
+  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+    window.parentIFrame.size();
+  }
+}
+
+function goToScreen(id) {
+  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  resizeIframe();
+}
+
+function renderCard(n) {
+  current = n;
+  const c = CARDS[n - 1];
+  const box = document.getElementById('cardBox');
+  let html =
+    '<div class="subtitle">Карточка ' + n + ' из ' + CARDS.length + '. ' + c.title + '</div>' +
+    '<h1>Формулировки как в реальных документах</h1>' +
+    '<div class="doc"><div class="doc-head">' + c.doc + '</div><div class="doc-body">' + c.excerpt + '</div></div>' +
+    '<p class="question">' + c.question + '</p>' +
+    '<button class="btn btn-secondary" id="hintBtn" aria-expanded="false" onclick="toggleHint()">Открыть подсказку</button>' +
+    '<div class="hint-box" id="hintBox">' + c.hint + '</div>' +
+    '<div class="options" id="optsBox" style="margin-top:12px;">';
+  c.options.forEach((o, i) => {
+    html += '<button class="opt-btn" onclick="choose(' + n + ',' + i + ',this)">' + o.t + '</button>';
+  });
+  html += '</div>' +
+    '<div class="fb" id="fbBox" aria-live="polite"></div>' +
+    '<div class="analysis" id="anBox">' +
+      '<div class="err-box"><span class="box-title">Разбор ошибки</span>' + c.err + '</div>' +
+      '<div class="fix-box"><span class="box-title">Исправленная редакция</span>' + c.fix + '</div>' +
+      '<p class="ref-line">' + c.ref + '</p>' +
+    '</div>' +
+    '<div class="nav-buttons">' +
+      '<button class="btn btn-secondary" id="chgBtn" style="display:none;" onclick="changeAnswer(' + n + ')">Изменить ответ</button>' +
+      '<button class="btn btn-primary" onclick="nextCard(' + n + ')">' + (n < CARDS.length ? 'Следующая карточка' : 'К выводам') + '</button>' +
+    '</div>';
+  box.innerHTML = html;
+
+  if (locked[n] && answers[n] !== null) {
+    applyChosen(n, answers[n]);
+  }
+  resizeIframe();
+}
+
+function choose(n, i, btn) {
+  if (locked[n]) return;
+  locked[n] = true;
+  answers[n] = i;
+  applyChosen(n, i);
+  resizeIframe();
+}
+
+function applyChosen(n, i) {
+  const c = CARDS[n - 1];
+  const opts = document.querySelectorAll('#optsBox .opt-btn');
+  opts.forEach((b, k) => {
+    b.disabled = true;
+    if (k === i) b.classList.add(c.options[i].ok ? 'sel-ok' : 'sel-bad');
+    else b.classList.add('dim');
+  });
+  const fb = document.getElementById('fbBox');
+  fb.className = 'fb show ' + (c.options[i].ok ? 'ok' : 'bad');
+  fb.innerHTML = '<strong>' + (c.options[i].ok ? 'Верно' : 'Не совсем') + '</strong>' + c.options[i].fb;
+  document.getElementById('anBox').classList.add('show');
+  document.getElementById('chgBtn').style.display = 'inline-block';
+}
+
+function changeAnswer(n) {
+  locked[n] = false;
+  answers[n] = null;
+  renderCard(n);
+}
+
+function toggleHint() {
+  const box = document.getElementById('hintBox');
+  const btn = document.getElementById('hintBtn');
+  const show = !box.classList.contains('show');
+  box.classList.toggle('show', show);
+  btn.setAttribute('aria-expanded', show ? 'true' : 'false');
+  btn.textContent = show ? 'Скрыть подсказку' : 'Открыть подсказку';
+  resizeIframe();
+}
+
+function nextCard(n) {
+  if (n < CARDS.length) renderCard(n + 1);
+  else { renderFinal(); goToScreen('screen-final'); }
+}
+
+function renderFinal() {
+  const answered = CARDS.filter((c, i) => answers[i + 1] !== null && answers[i + 1] !== undefined).length;
+  const matched = CARDS.filter((c, i) => answers[i + 1] === c.options.findIndex(o => o.ok)).length;
+  document.getElementById('sumLine').textContent =
+    'Карточек разобрано: ' + answered + ' из ' + CARDS.length + '. Главную ошибку отметили с первого выбора в ' + matched + ' случаях. Это сведения о прохождении, а не оценка навыка.';
+}
+
+function restartAll() {
+  answers = {};
+  locked = {};
+  renderCard(1);
+  goToScreen('screen-cards');
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  renderCard(1);
+  resizeIframe();
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(() => resizeIframe());
+    ro.observe(document.body);
+  }
+});
+window.addEventListener('load', () => resizeIframe());
+</script>
+
+</body>
+</html>
