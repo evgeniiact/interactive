@@ -1,0 +1,698 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Конструктор области применения СЭМ</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --primary: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --gray-light: #f8fafc;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --warn-bg: #fffbeb;
+  --warn-border: #fde68a;
+  --warn-text: #92400e;
+  --bad-bg: #fef2f2;
+  --bad-border: #fecaca;
+  --bad-text: #991b1b;
+  --radius: 12px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 20px; background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--primary); font-size: 15px; line-height: 1.6;
+}
+.container { max-width: 700px; margin: 0 auto; }
+.screen { display: none; animation: fadeIn .3s ease-out; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+h1 { font-size: 22px; font-weight: 800; margin: 0 0 10px; }
+h2 { font-size: 16px; font-weight: 700; margin: 16px 0 8px; }
+h3 { font-size: 15px; font-weight: 700; margin: 0 0 8px; }
+.lead { font-size: 14px; margin: 0 0 12px; line-height: 1.6; }
+ul, ol { margin: 0 0 10px; padding-left: 20px; font-size: 13px; }
+li { margin-bottom: 5px; }
+.note-box {
+  background: var(--gray-light); border: 1px solid var(--border);
+  border-left: 4px solid var(--muted); border-radius: 0 8px 8px 0;
+  padding: 10px 14px; font-size: 13px; color: var(--muted); margin: 10px 0;
+}
+.note-box.accent { border-left-color: var(--accent); color: var(--primary); }
+.warn-box {
+  background: var(--warn-bg); border-left: 3px solid var(--warn-border);
+  border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 13px;
+  color: var(--warn-text); margin: 10px 0; line-height: 1.5;
+}
+.error-box {
+  background: var(--bad-bg); border: 1px solid var(--bad-border);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--bad-text); margin: 12px 0;
+}
+.error-box ul { margin: 6px 0 0; padding-left: 20px; }
+.error-box li { margin-bottom: 4px; }
+.notices-box {
+  background: var(--warn-bg); border: 1px solid var(--warn-border);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--warn-text); margin: 12px 0;
+}
+.notices-box ul { margin: 6px 0 0; padding-left: 20px; }
+.notices-box li { margin-bottom: 4px; }
+
+.steps-nav { display: flex; gap: 8px; margin: 14px 0 18px; flex-wrap: wrap; }
+.step-btn {
+  flex: 1 1 120px; padding: 10px 10px; border: 2px solid var(--border); border-radius: 10px;
+  background: #fff; font-family: inherit; font-size: 12px; font-weight: 600; color: var(--muted);
+  cursor: pointer; transition: all .15s; text-align: center;
+}
+.step-btn.active { border-color: var(--accent); color: var(--accent); background: #eff6ff; }
+
+.field { margin-bottom: 14px; }
+.field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
+.field .req { color: var(--bad-text); font-weight: 600; }
+.field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.field input[type="text"], .field textarea, .field select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
+  font-family: inherit; font-size: 14px; color: var(--primary); background: #fff;
+}
+.field textarea { min-height: 60px; resize: vertical; }
+.field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible,
+button:focus-visible { outline: 3px solid var(--accent-dark); outline-offset: 2px; }
+
+.nav-buttons { display: flex; gap: 10px; margin-top: 16px; flex-wrap: wrap; }
+.btn {
+  padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; font-family: inherit; transition: background .2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--primary); }
+.btn-secondary:hover { background: var(--gray-light); }
+.btn-danger { background: #fff; border: 1px solid var(--bad-border); color: var(--bad-text); }
+.btn-danger:hover { background: var(--bad-bg); }
+.btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+.btn-small {
+  padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 6px;
+  border: 1px solid var(--border); background: #fff; color: var(--primary);
+  cursor: pointer; font-family: inherit;
+}
+.btn-small:hover { background: var(--gray-light); }
+
+.counts-box {
+  background: #eff6ff; border: 1px solid #bfdbfe; color: var(--accent-dark);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; margin: 12px 0;
+}
+.counts-box ul { margin: 6px 0 0; padding-left: 20px; }
+.prev-section { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
+.prev-section p { margin: 0 0 6px; font-size: 13px; }
+.prev-section p:last-child { margin-bottom: 0; }
+.prev-empty { color: var(--muted); font-style: italic; }
+.link-btn {
+  background: none; border: none; color: var(--accent); font-size: 12px;
+  cursor: pointer; padding: 0; font-family: inherit; text-decoration: underline;
+}
+.finish-box {
+  border: 1px solid var(--border); border-left: 5px solid var(--accent);
+  border-radius: 10px; padding: 14px 16px; margin: 14px 0; background: #fff; font-size: 13px;
+}
+.finish-box ul { margin: 6px 0 8px; }
+
+@media (max-width: 560px) {
+  body { padding: 12px; }
+  h1 { font-size: 20px; }
+  .nav-buttons { flex-direction: column; }
+  .btn { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ВВОДНЫЙ ЭКРАН -->
+  <div id="screen-intro" class="screen active">
+    <h1>Конструктор области применения СЭМ</h1>
+    <p class="lead">Соберите описание области применения: организация, площадки и границы, охватываемая деятельность и связанные операции. Затем опишите, как описание проверили и где его закрепили. В конце скачайте проект в Word.</p>
+    <div class="note-box accent">Область применения отвечает на три вопроса: кто? где? какая деятельность? Понятная формулировка помогает пользоваться областью и не выяснять границы заново при каждом споре.</div>
+    <div class="note-box">Пункт 4.3 ГОСТ Р ИСО 14001-2016 требует поддерживать область применения как документированную информацию и обеспечивать ее доступность. Стандарт не требует отдельного объемного документа с названием «Руководство по СЭМ»: подходит любой удобный формат, который однозначно определяет область и позволяет поддерживать ее актуальность.</div>
+    <div class="note-box">Черновик сохраняется в вашем браузере и не передается в сеть. Названия и адреса можно заменить условными.</div>
+    <div class="warn-box" id="storageWarn" style="display:none;">Похоже, браузер не разрешает сохранять черновик. В этом режиме записи не переживут обновление страницы, поэтому скачайте документ перед выходом.</div>
+    <div class="note-box" id="restoreNote" style="display:none;">Мы нашли ваш прошлый черновик и восстановили его. Можно продолжить с того места, где вы остановились.</div>
+    <div class="nav-buttons">
+      <button class="btn btn-primary" onclick="goStep(1)">Начать работу</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 1 -->
+  <div id="screen-step1" class="screen">
+    <div class="steps-nav">
+      <button class="step-btn active" onclick="goStep(1)">1. Сведения</button>
+      <button class="step-btn" onclick="goStep(2)">2. Описание области</button>
+      <button class="step-btn" onclick="goStep(3)">3. Проверка и фиксация</button>
+      <button class="step-btn" onclick="goStep(4)">4. Предпросмотр</button>
+    </div>
+    <h1>Сведения об анализе</h1>
+    <p class="lead">Эти реквизиты попадут в начало документа. Необязательные поля можно оставить пустыми.</p>
+
+    <div class="field">
+      <label for="m-org">Предприятие или объект анализа</label>
+      <input type="text" id="m-org" oninput="onMeta('org', this.value)">
+      <div class="hint">Можно указать условное название.</div>
+    </div>
+    <div class="field">
+      <label for="m-date">Дата подготовки описания</label>
+      <input type="text" id="m-date" oninput="onMeta('date', this.value)">
+      <button class="btn-small" style="margin-top:6px;" onclick="setToday()">Подставить текущую дату</button>
+    </div>
+    <div class="field">
+      <label for="m-author">Подготовил</label>
+      <input type="text" id="m-author" oninput="onMeta('author', this.value)">
+      <div class="hint">Должность или имя. Можно оставить пустым.</div>
+    </div>
+    <div class="field">
+      <label for="m-basis">Основа работы</label>
+      <select id="m-basis" onchange="onMeta('basis', this.value)">
+        <option value="Данные моего предприятия">Данные моего предприятия</option>
+        <option value="Учебные данные">Учебные данные</option>
+      </select>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-primary" onclick="goStep(2)">Перейти к описанию области</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 2 -->
+  <div id="screen-step2" class="screen">
+    <div class="steps-nav">
+      <button class="step-btn" onclick="goStep(1)">1. Сведения</button>
+      <button class="step-btn active" onclick="goStep(2)">2. Описание области</button>
+      <button class="step-btn" onclick="goStep(3)">3. Проверка и фиксация</button>
+      <button class="step-btn" onclick="goStep(4)">4. Предпросмотр</button>
+    </div>
+    <h1>Описание области применения</h1>
+    <p class="lead">Заполните поля так, чтобы другой специалист без ваших пояснений понял, кто, где и что делает в границах системы.</p>
+    <div class="note-box">Проверяйте описание тремя вопросами: кто? где? какая деятельность? Если на какой-то вопрос нельзя ответить по тексту, поле стоит дополнить.</div>
+
+    <div class="field">
+      <label for="f-orgname">Организация или ее часть <span class="req">(обязательное поле)</span></label>
+      <input type="text" id="f-orgname" oninput="onF('orgname', this.value)">
+      <div class="hint">Название организации или подразделения, к которому относится область. Можно условное.</div>
+    </div>
+    <div class="field">
+      <label for="f-sites">Площадки и физические границы <span class="req">(обязательное поле)</span></label>
+      <textarea id="f-sites" oninput="onF('sites', this.value)"></textarea>
+      <div class="hint">Адреса, граница ограждения, одна или несколько площадок, что остается за границами.</div>
+    </div>
+    <div class="field">
+      <label for="f-activity">Охватываемая деятельность, продукция и услуги <span class="req">(обязательное поле)</span></label>
+      <textarea id="f-activity" oninput="onF('activity', this.value)"></textarea>
+      <div class="hint">Например: выпуск листового стекла, включая хранение и передачу продукции.</div>
+    </div>
+    <div class="field">
+      <label for="f-ops">Связанные операции, включенные в охват</label>
+      <textarea id="f-ops" oninput="onF('ops', this.value)"></textarea>
+      <div class="hint">Подготовка сырья и шихты, обслуживание оборудования, инженерное обеспечение, обращение с отходами, хранение.</div>
+    </div>
+    <div class="field">
+      <label for="f-excl">Исключения из области</label>
+      <textarea id="f-excl" oninput="onF('excl', this.value)"></textarea>
+      <div class="hint">Если исключений нет, оставьте пустым: в документе будет запись «исключений нет».</div>
+    </div>
+    <div class="field">
+      <label for="f-exclwhy">Обоснование исключений</label>
+      <textarea id="f-exclwhy" oninput="onF('exclwhy', this.value)"></textarea>
+      <div class="hint">Почему исключенные операции не влияют на обязательства и риски. Обоснование не должно скрывать важные операции.</div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="goStep(1)">К сведениям</button>
+      <button class="btn btn-primary" onclick="goStep(3)">Перейти к проверке и фиксации</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 3 -->
+  <div id="screen-step3" class="screen">
+    <div class="steps-nav">
+      <button class="step-btn" onclick="goStep(1)">1. Сведения</button>
+      <button class="step-btn" onclick="goStep(2)">2. Описание области</button>
+      <button class="step-btn active" onclick="goStep(3)">3. Проверка и фиксация</button>
+      <button class="step-btn" onclick="goStep(4)">4. Предпросмотр</button>
+    </div>
+    <h1>Проверка и фиксация области</h1>
+    <div class="note-box accent">
+      <strong>Что сделать с готовым проектом.</strong>
+      <ol style="margin:6px 0 0;">
+        <li>Проверьте описание вместе с участниками, которые детально знают фактическую деятельность и границы полномочий.</li>
+        <li>Спорные моменты, включения и исключения цехов, вынесите на решение уполномоченного высшего руководства.</li>
+        <li>Зафиксируйте область как документированную информацию и обеспечьте ее доступность: на сайте или по запросу закупщиков.</li>
+      </ol>
+    </div>
+
+    <div class="field">
+      <label for="f-people">Кто проверял описание</label>
+      <textarea id="f-people" oninput="onF('people', this.value)"></textarea>
+      <div class="hint">Участники рабочей группы, начальники цехов, специалисты, которые знают фактическую деятельность и границы полномочий.</div>
+    </div>
+    <div class="field">
+      <label for="f-dispute">Спорные моменты и решение руководства</label>
+      <textarea id="f-dispute" oninput="onF('dispute', this.value)"></textarea>
+      <div class="hint">Какие включения и исключения обсуждали и кто принял окончательное решение. Если спорных моментов не было, так и напишите.</div>
+    </div>
+    <div class="field">
+      <label for="f-format">Формат фиксации документа</label>
+      <select id="f-format" onchange="onF('format', this.value)">
+        <option value="">Еще не выбран</option>
+        <option value="Раздел руководства по СЭМ">Раздел руководства по СЭМ</option>
+        <option value="Отдельное положение об области применения">Отдельное положение об области применения</option>
+        <option value="Приказ с приложением, описывающим область">Приказ с приложением, описывающим область</option>
+        <option value="Описание в реестре документов и на сайте предприятия">Описание в реестре документов и на сайте предприятия</option>
+      </select>
+      <div class="hint">ГОСТ не требует отдельного объемного документа: подходит любой формат, который однозначно определяет область.</div>
+    </div>
+    <div class="field">
+      <label for="f-access">Доступность для заинтересованных сторон</label>
+      <input type="text" id="f-access" oninput="onF('access', this.value)">
+      <div class="hint">Например: размещена на сайте, высылается по запросу закупщиков, прикладывается к тендерной заявке.</div>
+    </div>
+    <div class="field">
+      <label for="f-review">Правило пересмотра области</label>
+      <input type="text" id="f-review" oninput="onF('review', this.value)">
+      <div class="hint">Когда описание пересматривают: при изменении деятельности, структуры, законодательства, после жалоб и аудитов.</div>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="goStep(2)">К описанию области</button>
+      <button class="btn btn-primary" onclick="goStep(4)">Перейти к предпросмотру</button>
+    </div>
+  </div>
+
+  <!-- ШАГ 4 -->
+  <div id="screen-step4" class="screen">
+    <div class="steps-nav">
+      <button class="step-btn" onclick="goStep(1)">1. Сведения</button>
+      <button class="step-btn" onclick="goStep(2)">2. Описание области</button>
+      <button class="step-btn" onclick="goStep(3)">3. Проверка и фиксация</button>
+      <button class="step-btn active" onclick="goStep(4)">4. Предпросмотр</button>
+    </div>
+    <h1>Предпросмотр и скачивание</h1>
+
+    <div class="counts-box" id="countsBox" aria-live="polite"></div>
+    <div class="error-box" id="errorsBox" style="display:none;" aria-live="polite"></div>
+    <div class="notices-box" id="noticesBox" style="display:none;" aria-live="polite"></div>
+
+    <div id="previewBox"></div>
+
+    <div class="finish-box">
+      <h3>Модуль 2 завершен: три основания СЭМ</h3>
+      <ul>
+        <li>Условия предприятия, пункт 4.1: внутренняя организация работы и влияние внешней среды.</li>
+        <li>Требования сторон, пункт 4.2: обязательные законы и добровольные контрактные условия, которые завод выполняет.</li>
+        <li>Область применения, пункт 4.3: территория и процессы, на которые распространяются эти правила.</li>
+      </ul>
+      <p style="margin:0;">Фундамент СЭМ заложен. В следующем модуле переходим к разделу 5 «Лидерство»: как распределить ответственность и вовлечь высшее руководство в работу системы.</p>
+    </div>
+
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="goStep(3)">Вернуться к фиксации</button>
+      <button class="btn btn-primary" id="downloadBtn" onclick="downloadDocx()">Скачать Word</button>
+      <button class="btn btn-danger" onclick="restartAll()">Начать заново</button>
+    </div>
+    <p class="hint" id="downloadNote" style="font-size:12px; color:var(--muted); margin-top:8px;"></p>
+  </div>
+
+</div>
+
+<script>
+/* ================= СОСТОЯНИЕ И ПАМЯТЬ ================= */
+const STORAGE_KEY = 'sem-scope-constructor-v1';
+const FORMAT_LABELS = { '': 'Еще не выбран' };
+
+let state = {
+  meta: { org: '', date: '', author: '', basis: 'Данные моего предприятия' },
+  f: { orgname: '', sites: '', activity: '', ops: '', excl: '', exclwhy: '', people: '', dispute: '', format: '', access: '', review: '' }
+};
+let storageOk = true;
+
+function resizeIframe() {
+  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+    window.parentIFrame.size();
+  }
+}
+
+function saveState() {
+  if (!storageOk) return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {
+    storageOk = false;
+    document.getElementById('storageWarn').style.display = 'block';
+    resizeIframe();
+  }
+}
+
+function loadState() {
+  try {
+    const raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    const data = JSON.parse(raw);
+    if (!data || typeof data !== 'object') return false;
+    state.meta = Object.assign({ org: '', date: '', author: '', basis: 'Данные моего предприятия' }, data.meta || {});
+    const f = data.f || {};
+    Object.keys(state.f).forEach(k => { state.f[k] = typeof f[k] === 'string' ? f[k] : ''; });
+    return true;
+  } catch (e) { return false; }
+}
+
+function clearStorage() {
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+}
+
+function onMeta(key, value) { state.meta[key] = value; saveState(); }
+function onF(key, value) { state.f[key] = value; saveState(); }
+
+/* ================= НАВИГАЦИЯ ================= */
+function goStep(n) {
+  ['screen-step1', 'screen-step2', 'screen-step3', 'screen-step4'].forEach(id => document.getElementById(id).classList.remove('active'));
+  document.getElementById('screen-step' + n).classList.add('active');
+  document.querySelectorAll('#screen-step' + n + ' .step-btn').forEach((b, i) => b.classList.toggle('active', i === n - 1));
+  if (n === 4) renderPreview();
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  resizeIframe();
+}
+
+function setToday() {
+  const d = new Date();
+  const s = String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
+  document.getElementById('m-date').value = s;
+  onMeta('date', s);
+}
+
+/* ================= ПРОВЕРКИ ================= */
+function validate() {
+  const missing = [];
+  if (!state.f.orgname.trim()) missing.push('организация или ее часть');
+  if (!state.f.sites.trim()) missing.push('площадки и физические границы');
+  if (!state.f.activity.trim()) missing.push('охватываемая деятельность');
+  return missing;
+}
+
+function notices() {
+  const f = state.f;
+  const list = [];
+  if (!f.ops.trim()) list.push('Связанные операции не перечислены. Проверьте, раскрывает ли их описание деятельности или ссылка на документ.');
+  if (f.excl.trim() && !f.exclwhy.trim()) list.push('Указаны исключения, но нет обоснования. Обоснование показывает, что исключенные операции не влияют на обязательства и риски.');
+  if (!f.people.trim()) list.push('Описание еще не проверено с теми, кто знает фактическую деятельность и границы полномочий.');
+  if (!f.dispute.trim()) list.push('Спорные моменты не описаны. Если их не было, зафиксируйте это в документе.');
+  if (!f.format) list.push('Формат фиксации не выбран. Подойдет любой формат, который однозначно определяет область и позволяет поддерживать актуальность.');
+  if (!f.access.trim()) list.push('Доступность области для заинтересованных сторон не описана.');
+  if (!f.review.trim()) list.push('Правило пересмотра области не указано: когда описание обновляют.');
+  return list;
+}
+
+function descFilled() {
+  const f = state.f;
+  return ['orgname', 'sites', 'activity', 'ops', 'excl', 'exclwhy'].filter(k => f[k].trim()).length;
+}
+function fixFilled() {
+  const f = state.f;
+  return ['people', 'dispute', 'format', 'access', 'review'].filter(k => String(f[k]).trim()).length;
+}
+
+/* ================= ПРЕДПРОСМОТР ================= */
+function esc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+function nl(s) { return esc(s).replace(/\n/g, '<br>'); }
+
+function renderPreview() {
+  const f = state.f;
+  document.getElementById('countsBox').innerHTML = '<strong>Что уже заполнено.</strong><ul>' +
+    '<li>Полей описания области: ' + descFilled() + ' из 6.</li>' +
+    '<li>Полей проверки и фиксации: ' + fixFilled() + ' из 5.</li></ul>';
+
+  const missing = validate();
+  const errBox = document.getElementById('errorsBox');
+  const dlBtn = document.getElementById('downloadBtn');
+  if (missing.length) {
+    errBox.style.display = 'block';
+    errBox.innerHTML = '<strong>Для сборки документа не хватает полей:</strong> ' + esc(missing.join(', ')) + '. Заполните их на шаге 2, и скачивание откроется.';
+    dlBtn.disabled = true;
+    document.getElementById('downloadNote').textContent = 'Скачивание откроется, когда будут заполнены обязательные поля описания.';
+  } else {
+    errBox.style.display = 'none';
+    dlBtn.disabled = false;
+    document.getElementById('downloadNote').textContent = 'Документ сохранится на ваше устройство по нажатию кнопки.';
+  }
+
+  const nt = notices();
+  const ntBox = document.getElementById('noticesBox');
+  if (nt.length) {
+    ntBox.style.display = 'block';
+    ntBox.innerHTML = '<strong>Что можно дописать позже.</strong><ul>' + nt.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>';
+  } else ntBox.style.display = 'none';
+
+  let html = '';
+  html += '<div class="prev-section"><h3>1. Сведения об анализе</h3>' +
+    '<p><strong>Область применения СЭМ. Проект описания.</strong></p>' +
+    '<p style="color:var(--muted); font-size:12px;">Предварительный рабочий материал. Требует проверки и обсуждения на предприятии.</p>';
+  if (state.meta.org.trim()) html += '<p><strong>Предприятие или объект:</strong> ' + nl(state.meta.org) + '</p>';
+  if (state.meta.date.trim()) html += '<p><strong>Дата подготовки:</strong> ' + esc(state.meta.date) + '</p>';
+  if (state.meta.author.trim()) html += '<p><strong>Подготовил:</strong> ' + esc(state.meta.author) + '</p>';
+  html += '<p><strong>Основа работы:</strong> ' + esc(state.meta.basis) + '</p></div>';
+
+  html += '<div class="prev-section"><h3>2. Описание области применения</h3>' +
+    '<p><strong>Организация или ее часть:</strong> ' + nl(f.orgname || '-') + '</p>' +
+    '<p><strong>Площадки и физические границы:</strong> ' + (f.sites.trim() ? nl(f.sites) : '<span class="prev-empty">не заполнено</span>') + '</p>' +
+    '<p><strong>Деятельность, продукция и услуги:</strong> ' + (f.activity.trim() ? nl(f.activity) : '<span class="prev-empty">не заполнено</span>') + '</p>' +
+    '<p><strong>Связанные операции:</strong> ' + (f.ops.trim() ? nl(f.ops) : '<span class="prev-empty">не перечислены</span>') + '</p>' +
+    '<p><strong>Исключения:</strong> ' + (f.excl.trim() ? nl(f.excl) : 'исключений нет') + '</p>' +
+    '<p><strong>Обоснование исключений:</strong> ' + (f.exclwhy.trim() ? nl(f.exclwhy) : (f.excl.trim() ? '<span class="prev-empty">не заполнено</span>' : '-')) + '</p></div>';
+
+  html += '<div class="prev-section"><h3>3. Проверка и фиксация</h3>' +
+    '<p><strong>Кто проверял описание:</strong> ' + (f.people.trim() ? nl(f.people) : '<span class="prev-empty">не заполнено</span>') + '</p>' +
+    '<p><strong>Спорные моменты и решение:</strong> ' + (f.dispute.trim() ? nl(f.dispute) : '<span class="prev-empty">не заполнено</span>') + '</p>' +
+    '<p><strong>Формат фиксации:</strong> ' + esc(f.format || FORMAT_LABELS['']) + '</p>' +
+    '<p><strong>Доступность для сторон:</strong> ' + (f.access.trim() ? nl(f.access) : '<span class="prev-empty">не заполнено</span>') + '</p>' +
+    '<p><strong>Правило пересмотра:</strong> ' + (f.review.trim() ? nl(f.review) : '<span class="prev-empty">не заполнено</span>') + '</p></div>';
+
+  html += '<div class="prev-section"><h3>4. Вопросы для уточнения</h3>';
+  if (!nt.length) html += '<p class="prev-empty">Дополнительные уточнения в этой версии не нужны.</p>';
+  else html += '<ul style="margin:0; padding-left:20px; font-size:13px;">' + nt.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>';
+  html += '</div>';
+
+  html += '<p style="font-size:12px; color:var(--muted);">Область применения поддерживают как документированную информацию и обеспечивают ее доступность для заинтересованных сторон. Документ собран учебным конструктором и не подтверждает соответствие СЭМ стандарту.</p>';
+  document.getElementById('previewBox').innerHTML = html;
+  resizeIframe();
+}
+
+/* ================= ГЕНЕРАЦИЯ DOCX ================= */
+function xmlEsc(s) {
+  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
+}
+function run(text, o) {
+  o = o || {};
+  let rpr = '';
+  if (o.b) rpr += '<w:b/>';
+  if (o.i) rpr += '<w:i/>';
+  if (o.color) rpr += '<w:color w:val="' + o.color + '"/>';
+  if (o.sz) rpr += '<w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/>';
+  return '<w:r>' + (rpr ? '<w:rPr>' + rpr + '</w:rPr>' : '') + '<w:t xml:space="preserve">' + xmlEsc(text) + '</w:t></w:r>';
+}
+function para(text, o) {
+  o = o || {};
+  let ppr = '';
+  if (o.style) ppr += '<w:pStyle w:val="' + o.style + '"/>';
+  if (o.before || o.after) ppr += '<w:spacing w:before="' + (o.before || 0) + '" w:after="' + (o.after || 0) + '"/>';
+  return '<w:p>' + (ppr ? '<w:pPr>' + ppr + '</w:pPr>' : '') + run(text, o) + '</w:p>';
+}
+function paraMulti(text, o) {
+  return String(text).split(/\r?\n/).map(l => para(l, o)).join('');
+}
+function labelPara(label, value, o) {
+  return '<w:p><w:pPr><w:spacing w:after="60"/></w:pPr>' + run(label + ': ', { b: true }) + run(value, o) + '</w:p>';
+}
+function labelParaMulti(label, value) {
+  const lines = String(value).split(/\r?\n/);
+  let xml = '<w:p><w:pPr><w:spacing w:after="60"/></w:pPr>' + run(label + ': ', { b: true }) + run(lines[0]) + '</w:p>';
+  for (let i = 1; i < lines.length; i++) xml += para(lines[i]);
+  return xml;
+}
+
+function buildDocumentXml() {
+  const f = state.f;
+  const b = [];
+  b.push(para('Область применения СЭМ. Проект описания', { style: 'Title' }));
+  b.push(para('Предварительный рабочий материал. Требует проверки и обсуждения на предприятии.', { i: true, color: '6B7280', sz: 20, after: 200 }));
+
+  b.push(para('1. Сведения об анализе', { style: 'Heading1' }));
+  if (state.meta.org.trim()) b.push(labelPara('Предприятие или объект', state.meta.org.trim()));
+  if (state.meta.date.trim()) b.push(labelPara('Дата подготовки', state.meta.date.trim()));
+  if (state.meta.author.trim()) b.push(labelPara('Подготовил', state.meta.author.trim()));
+  b.push(labelPara('Основа работы', state.meta.basis));
+
+  b.push(para('2. Описание области применения', { style: 'Heading1' }));
+  b.push(labelPara('Организация или ее часть', f.orgname.trim() || '-'));
+  b.push(labelParaMulti('Площадки и физические границы', f.sites.trim() || 'Не заполнено'));
+  b.push(labelParaMulti('Деятельность, продукция и услуги', f.activity.trim() || 'Не заполнено'));
+  b.push(labelParaMulti('Связанные операции', f.ops.trim() || 'Не перечислены'));
+  b.push(labelParaMulti('Исключения', f.excl.trim() || 'Исключений нет'));
+  if (f.excl.trim()) b.push(labelParaMulti('Обоснование исключений', f.exclwhy.trim() || 'Не заполнено'));
+
+  b.push(para('3. Проверка и фиксация', { style: 'Heading1' }));
+  b.push(labelParaMulti('Кто проверял описание', f.people.trim() || 'Не заполнено'));
+  b.push(labelParaMulti('Спорные моменты и решение руководства', f.dispute.trim() || 'Не заполнено'));
+  b.push(labelPara('Формат фиксации документа', f.format || 'Еще не выбран'));
+  b.push(labelPara('Доступность для заинтересованных сторон', f.access.trim() || 'Не заполнено'));
+  b.push(labelPara('Правило пересмотра области', f.review.trim() || 'Не заполнено'));
+
+  const nt = notices();
+  b.push(para('4. Вопросы для уточнения', { style: 'Heading1' }));
+  if (!nt.length) b.push(para('Дополнительные уточнения в этой версии не нужны.', { i: true, color: '6B7280' }));
+  nt.forEach(n => b.push(para(n, { after: 40 })));
+
+  b.push(para('Область применения поддерживают, актуализируют и применяют как документированную информацию, а также обеспечивают ее доступность для заинтересованных сторон, пункт 4.3 ГОСТ Р ИСО 14001-2016.', { i: true, color: '6B7280', sz: 20, before: 240 }));
+  b.push(para('ГОСТ Р ИСО 14001-2016 не требует оформлять область применения отдельным объемным документом с названием «Руководство по СЭМ». Подходит любой формат, который позволяет однозначно определить область и поддерживать ее актуальность.', { i: true, color: '6B7280', sz: 20 }));
+  b.push(para('Документ подготовлен с помощью учебного конструктора. Он помогает организовать описание области применения и не является подтверждением соответствия СЭМ стандарту.', { i: true, color: '6B7280', sz: 20 }));
+  b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
+    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>' +
+    b.join('') + '</w:body></w:document>';
+}
+
+const CT_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
+const RELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+const DRELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+const FOOTER_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:fldSimple w:instr=" PAGE "><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
+const STYLES_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="334155"/></w:rPr></w:style></w:styles>';
+
+/* ZIP (store) */
+const CRC_TABLE = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; }
+  return t;
+})();
+function crc32(u8) {
+  let c = 0xFFFFFFFF;
+  for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+function zipStore(files) {
+  const enc = new TextEncoder();
+  const now = new Date();
+  const dosTime = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xFFFF;
+  const dosDate = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xFFFF;
+  const locals = [], centrals = [];
+  let offset = 0;
+  files.forEach(fl => {
+    const nameB = enc.encode(fl.name);
+    const data = fl.data;
+    const crc = crc32(data);
+    const lh = new Uint8Array(30 + nameB.length);
+    const dv = new DataView(lh.buffer);
+    dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true); dv.setUint16(6, 0, true); dv.setUint16(8, 0, true);
+    dv.setUint16(10, dosTime, true); dv.setUint16(12, dosDate, true);
+    dv.setUint32(14, crc, true); dv.setUint32(18, data.length, true); dv.setUint32(22, data.length, true);
+    dv.setUint16(26, nameB.length, true); dv.setUint16(28, 0, true);
+    lh.set(nameB, 30);
+    locals.push(lh, data);
+    const ch = new Uint8Array(46 + nameB.length);
+    const cv = new DataView(ch.buffer);
+    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true); cv.setUint16(8, 0, true); cv.setUint16(10, 0, true);
+    cv.setUint16(12, dosTime, true); cv.setUint16(14, dosDate, true);
+    cv.setUint32(16, crc, true); cv.setUint32(20, data.length, true); cv.setUint32(24, data.length, true);
+    cv.setUint16(28, nameB.length, true); cv.setUint16(30, 0, true); cv.setUint16(32, 0, true);
+    cv.setUint16(34, 0, true); cv.setUint16(36, 0, true); cv.setUint32(38, 0, true); cv.setUint32(42, offset, true);
+    ch.set(nameB, 46);
+    centrals.push(ch);
+    offset += lh.length + data.length;
+  });
+  const centralSize = centrals.reduce((a, c) => a + c.length, 0);
+  const eocd = new Uint8Array(22);
+  const ev = new DataView(eocd.buffer);
+  ev.setUint32(0, 0x06054b50, true); ev.setUint16(4, 0, true); ev.setUint16(6, 0, true);
+  ev.setUint16(8, files.length, true); ev.setUint16(10, files.length, true);
+  ev.setUint32(12, centralSize, true); ev.setUint32(16, offset, true); ev.setUint16(20, 0, true);
+  let total = 0;
+  locals.forEach(p => total += p.length);
+  centrals.forEach(p => total += p.length);
+  total += 22;
+  const out = new Uint8Array(total);
+  let o = 0;
+  locals.forEach(p => { out.set(p, o); o += p.length; });
+  centrals.forEach(p => { out.set(p, o); o += p.length; });
+  out.set(eocd, o);
+  return out;
+}
+
+function downloadDocx() {
+  if (validate().length) { renderPreview(); return; }
+  const enc = new TextEncoder();
+  const files = [
+    { name: '[Content_Types].xml', data: enc.encode(CT_XML) },
+    { name: '_rels/.rels', data: enc.encode(RELS_XML) },
+    { name: 'word/document.xml', data: enc.encode(buildDocumentXml()) },
+    { name: 'word/styles.xml', data: enc.encode(STYLES_XML) },
+    { name: 'word/footer1.xml', data: enc.encode(FOOTER_XML) },
+    { name: 'word/_rels/document.xml.rels', data: enc.encode(DRELS_XML) }
+  ];
+  const bytes = zipStore(files);
+  const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'oblast-primeneniya-sem.docx';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(() => URL.revokeObjectURL(url), 4000);
+  document.getElementById('downloadNote').textContent = 'Документ скачан. Можно продолжать работу и скачать новую версию после изменений.';
+  resizeIframe();
+}
+
+/* ================= СБРОС ================= */
+function restartAll() {
+  if (!confirm('Очистить все введенные данные и удалить черновик из локальной памяти браузера?')) return;
+  clearStorage();
+  state.meta = { org: '', date: '', author: '', basis: 'Данные моего предприятия' };
+  Object.keys(state.f).forEach(k => { state.f[k] = ''; });
+  ['m-org', 'm-date', 'm-author'].forEach(id => { document.getElementById(id).value = ''; });
+  document.getElementById('m-basis').value = 'Данные моего предприятия';
+  Object.keys(state.f).forEach(k => {
+    const el = document.getElementById('f-' + k);
+    if (el) el.value = '';
+  });
+  setToday();
+  goStep(1);
+}
+
+/* ================= СТАРТ ================= */
+document.addEventListener('DOMContentLoaded', () => {
+  const restored = loadState();
+  if (restored && (state.f.orgname || state.f.sites || state.f.activity)) {
+    document.getElementById('restoreNote').style.display = 'block';
+  }
+  document.getElementById('m-org').value = state.meta.org;
+  document.getElementById('m-date').value = state.meta.date;
+  document.getElementById('m-author').value = state.meta.author;
+  document.getElementById('m-basis').value = state.meta.basis;
+  Object.keys(state.f).forEach(k => {
+    const el = document.getElementById('f-' + k);
+    if (el) el.value = state.f[k];
+  });
+  if (!state.meta.date) setToday();
+  saveState();
+  resizeIframe();
+  if ('ResizeObserver' in window) {
+    const ro = new ResizeObserver(() => resizeIframe());
+    ro.observe(document.body);
+  }
+});
+window.addEventListener('load', () => resizeIframe());
+</script>
+
+</body>
+</html>
