@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Модуль 2. Забег с решениями</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+<style>
+:root{
+  --pix:'Press Start 2P','Courier New',monospace;
+  --sky1:#9bd7ff; --sky2:#e8f7ff;
+  --grass:#4caf50; --grass-d:#2e7d32;
+  --brick:#e59055; --brick-d:#8d4a1f;
+  --green:#43a047; --green-d:#1b5e20;
+  --red:#e53935; --red-d:#b71c1c;
+  --blue:#1976d2; --yellow:#ffd93d;
+  --ink:#33302e; --paper:#fffdf5; --cream:#fff8e1;
+}
+*{box-sizing:border-box}
+html,body{margin:0;padding:0;background:transparent;font-family:Arial,Helvetica,sans-serif;color:var(--ink)}
+.wrap{width:100%;max-width:900px;margin:0 auto;padding:10px}
+.label{display:inline-flex;align-items:center;gap:8px;padding:7px 12px;border-radius:999px;
+background:#e8f5e9;border:2px solid #a5d6a7;color:var(--green-d);
+font-size:11px;font-weight:800;text-transform:uppercase;letter-spacing:.08em}
+.label::before{content:"";width:8px;height:8px;border-radius:50%;background:var(--green)}
+.title{margin:12px 0 16px;font-size:23px;line-height:1.25;font-weight:800;color:var(--green-d)}
+.cabinet{position:relative;border-radius:16px;overflow:hidden;background:var(--sky2);
+border:4px solid var(--brick-d);box-shadow:0 14px 34px rgba(93,64,28,.25)}
+
+/* ===== СТАРТ / ФИНАЛ ===== */
+.screen{padding:26px 22px;background:linear-gradient(180deg,var(--sky1),var(--sky2));text-align:center}
+.screen.hidden{display:none}
+.screen .big{font-size:44px;display:block;margin-bottom:10px}
+.screen h2{font-family:var(--pix);font-size:20px;line-height:1.5;margin:0 0 12px;color:var(--green-d)}
+.screen p{font-size:14px;line-height:1.55;color:#4e4a45;margin:0 auto 14px;max-width:560px;text-align:left}
+.screen p b{color:var(--green-d)}
+.topics{text-align:left;margin:0 auto 14px;padding:12px 14px;border-radius:10px;
+background:var(--paper);border:3px solid #a5d6a7;max-width:560px}
+.topics-title{font-family:var(--pix);font-size:11px;line-height:1.6;color:var(--blue);margin:0 0 10px}
+.t-row{display:flex;gap:9px;padding:6px 0;font-size:14px;line-height:1.4;color:#4e4a45;border-bottom:1px dashed #c8e6c9}
+.t-row:last-child{border-bottom:0}
+.t-dot{flex:0 0 8px;width:8px;height:8px;border-radius:50%;background:var(--green);margin-top:6px}
+.t-row b{color:var(--ink)}
+.t-lesson{display:block;font-size:12px;line-height:1.35;color:#7a756d;margin-top:2px}
+.t-row.done{color:var(--green-d)}
+.t-row.done b{color:var(--green-d)}
+.t-row.wait .t-dot{background:#c5c1bb}
+.t-check{flex:0 0 18px;height:18px;border-radius:5px;background:#e0e0e0;color:#757575;
+font-family:var(--pix);font-size:10px;line-height:18px;text-align:center}
+.t-row.done .t-check{background:var(--green);color:#fff}
+.big-btn{font-family:var(--pix);font-size:15px;letter-spacing:.04em;padding:14px 28px;border-radius:10px;
+cursor:pointer;color:#fff;border:3px solid var(--green-d);
+background:linear-gradient(180deg,#81c784,var(--green));box-shadow:0 5px 0 var(--green-d);transition:transform .1s,filter .1s}
+.big-btn:hover{filter:brightness(1.06)}
+.big-btn:active{transform:translateY(4px);box-shadow:0 1px 0 var(--green-d)}
+.hint{font-size:12px;color:#7a756d;margin-top:12px}
+
+/* ===== HUD ===== */
+#gamePart{display:none}
+.hud{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;
+padding:10px 14px;background:var(--cream);border-bottom:4px solid var(--brick-d);font-family:var(--pix)}
+.hud-lvl{font-size:12px;line-height:1.4;color:var(--green-d)}
+.hud-lvl span{color:var(--red)}
+.lives{position:relative;display:flex;gap:4px;align-items:center;min-height:20px}
+.leaf{width:20px;height:20px;transition:all .3s;filter:drop-shadow(0 1px 0 rgba(0,0,0,.2))}
+.leaf.lost{opacity:.2;filter:grayscale(1);transform:scale(.7)}
+.leaf-pop{position:absolute;left:50%;top:-8px;font-family:var(--pix);font-size:12px;animation:popUp .8s forwards;pointer-events:none}
+.leaf-pop.plus{color:var(--green-d)} .leaf-pop.minus{color:var(--red-d)}
+@keyframes popUp{0%{opacity:0;transform:translate(-50%,4px)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-16px)}}
+.hud-timer{display:flex;align-items:center;gap:8px}
+.bar{position:relative;width:96px;height:12px;background:#fff;border:3px solid var(--brick-d);border-radius:3px;overflow:hidden}
+.bar i{position:absolute;inset:0;transform-origin:left center;background:linear-gradient(90deg,#81c784,var(--green))}
+.bar.warn i{background:linear-gradient(90deg,#ff8a65,var(--red))}
+.hud-sec{font-size:12px;color:var(--red-d);min-width:30px;text-align:right}
+
+/* ===== СЦЕНА ===== */
+.scene{position:relative;height:290px;overflow:hidden;
+background:linear-gradient(180deg,var(--sky1) 0%,#cfeeff 60%,var(--sky2) 100%)}
+.sun{position:absolute;top:16px;right:22px;width:52px;height:52px;border-radius:50%;
+background:var(--yellow);box-shadow:0 0 0 8px rgba(255,236,179,.7),0 0 30px rgba(255,214,79,.8);z-index:1}
+.cloud{position:absolute;background:#fff;border-radius:40px;z-index:1;opacity:.95;box-shadow:0 4px 0 rgba(144,202,249,.5)}
+.cloud::before,.cloud::after{content:"";position:absolute;background:#fff;border-radius:50%}
+.cloud.c1{width:90px;height:30px;top:26px;left:12%;animation:driftC 46s linear infinite}
+.cloud.c1::before{width:36px;height:36px;top:-16px;left:16px}
+.cloud.c1::after{width:26px;height:26px;top:-10px;left:48px}
+.cloud.c2{width:70px;height:24px;top:60px;left:55%;animation:driftC 60s linear infinite}
+.cloud.c2::before{width:28px;height:28px;top:-12px;left:12px}
+.cloud.c2::after{width:20px;height:20px;top:-8px;left:38px}
+.cloud.c3{width:110px;height:32px;top:14px;left:78%;animation:driftC 74s linear infinite}
+.cloud.c3::before{width:40px;height:40px;top:-18px;left:20px}
+.cloud.c3::after{width:28px;height:28px;top:-12px;left:60px}
+@keyframes driftC{from{transform:translateX(0)}to{transform:translateX(-110vw)}}
+.hills{position:absolute;left:0;right:0;bottom:56px;height:96px;z-index:1;
+background:
+ radial-gradient(circle at 90px 100%,#81c784 0 70px,transparent 71px),
+ radial-gradient(circle at 300px 100%,#a5d6a7 0 92px,transparent 93px),
+ radial-gradient(circle at 560px 100%,#81c784 0 64px,transparent 65px),
+ radial-gradient(circle at 780px 100%,#a5d6a7 0 86px,transparent 87px);
+background-repeat:repeat-x;background-size:900px 100%}
+.pipe{position:absolute;left:10px;bottom:56px;width:46px;height:62px;z-index:2;
+background:linear-gradient(90deg,#2e7d32,#66bb6a 45%,#2e7d32);border:3px solid #1b5e20;border-radius:4px 4px 0 0}
+.pipe::before{content:"";position:absolute;top:-10px;left:-7px;right:-7px;height:14px;
+background:linear-gradient(90deg,#2e7d32,#66bb6a 45%,#2e7d32);border:3px solid #1b5e20;border-radius:4px}
+.ground{position:absolute;left:0;right:0;bottom:0;height:56px;z-index:3;background-color:var(--brick);
+background-image:
+ linear-gradient(180deg,var(--grass) 0 10px,var(--grass-d) 10px 14px,transparent 14px),
+ repeating-linear-gradient(90deg,transparent 0 34px,var(--brick-d) 34px 38px),
+ repeating-linear-gradient(0deg,transparent 0 18px,var(--brick-d) 18px 22px,transparent 22px 40px,var(--brick-d) 40px 44px);
+border-top:3px solid var(--brick-d)}
+.dust{position:absolute;left:60px;bottom:52px;width:76px;height:22px;z-index:5;pointer-events:none;opacity:0}
+.dust.on{opacity:1}
+.dust i{position:absolute;bottom:2px;width:9px;height:9px;border-radius:50%;background:rgba(141,117,92,.55)}
+.dust i:nth-child(1){left:24px;animation:puff .62s linear infinite}
+.dust i:nth-child(2){left:18px;animation:puff .62s linear infinite .2s}
+.dust i:nth-child(3){left:12px;animation:puff .62s linear infinite .41s}
+@keyframes puff{0%{opacity:.6;transform:scale(.5)}100%{opacity:0;transform:translate(-24px,-12px) scale(1.5)}}
+.hero{position:absolute;left:64px;bottom:52px;width:88px;height:88px;z-index:6}
+.hero img{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;object-position:bottom center;
+image-rendering:pixelated;opacity:0;filter:drop-shadow(2px 3px 0 rgba(93,64,28,.35))}
+.hero img.on{opacity:1}
+.hero.jumping{animation:jumpArc .92s forwards}
+@keyframes jumpArc{0%{transform:translateY(0)}13%{transform:translateY(5px)}50%{transform:translateY(-104px)}90%,100%{transform:translateY(0)}}
+.hero.falling{animation:tumble .7s forwards}
+@keyframes tumble{0%{transform:translate(0,-6px) rotate(-20deg)}60%{transform:translate(-26px,4px) rotate(4deg)}100%{transform:translate(-32px,3px) rotate(0)}}
+.obstacle{position:absolute;bottom:52px;left:900px;width:108px;height:108px;z-index:4;display:none;
+filter:drop-shadow(3px 4px 0 rgba(93,64,28,.3))}
+.obstacle svg{width:100%;height:100%}
+.obstacle.knocked svg{animation:knock .6s forwards}
+@keyframes knock{to{transform:rotate(-50deg) translate(-14px,10px)}}
+.scene.shake{animation:shake .38s}
+@keyframes shake{20%{transform:translate(-5px,2px)}40%{transform:translate(4px,-2px)}60%{transform:translate(-3px,1px)}80%{transform:translate(2px,-1px)}}
+.flash{position:absolute;inset:0;z-index:9;pointer-events:none;opacity:0}
+.flash.ok{background:radial-gradient(circle at 25% 75%,rgba(76,175,80,.35),transparent 60%);animation:fl .5s}
+.flash.bad{background:radial-gradient(circle at 25% 75%,rgba(229,57,53,.3),transparent 60%);animation:fl .5s}
+@keyframes fl{0%{opacity:1}100%{opacity:0}}
+
+/* ===== ПАНЕЛЬ КАРТОЧКИ: читаемый текст ===== */
+.panel{padding:14px 16px 16px;background:var(--paper);border-top:4px solid var(--brick-d);min-height:196px}
+.q-tag{display:inline-block;padding:4px 10px;border-radius:999px;font-family:var(--pix);font-size:10px;
+background:#e8f5e9;border:2px solid #a5d6a7;color:var(--green-d);margin-bottom:8px}
+.q-text{font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:var(--ink);margin:0}
+.f-verdict{font-family:var(--pix);font-size:14px;line-height:1.6;margin:0 0 10px;text-align:left}
+.f-verdict.ok{color:var(--green-d)} .f-verdict.bad{color:var(--red-d)}
+.f-text{font-size:14px;line-height:1.55;color:#4e4a45;margin:0 0 10px;text-align:left}
+.f-lesson{margin:0 0 12px;padding:8px 10px;border-radius:8px;background:#e8f1fd;border:2px solid #90caf9;
+color:#0d47a1;font-size:13px;line-height:1.45;text-align:left}
+.f-lesson b{color:#08306b}
+.gbtn{font-family:var(--pix);font-size:12px;letter-spacing:.04em;padding:12px 22px;border-radius:8px;cursor:pointer;
+color:#fff;border:3px solid var(--green-d);background:linear-gradient(180deg,#81c784,var(--green));box-shadow:0 4px 0 var(--green-d)}
+.gbtn:active{transform:translateY(3px);box-shadow:0 1px 0 var(--green-d)}
+
+/* ===== ОТВЕТЫ ===== */
+.answers{display:flex;gap:14px;justify-content:center;padding:14px 16px 16px;
+background:var(--cream);border-top:4px solid var(--brick-d)}
+.abtn{font-family:var(--pix);font-size:18px;letter-spacing:.06em;padding:12px 40px;border-radius:8px;cursor:pointer;color:#fff}
+.abtn.yes{border:3px solid var(--green-d);background:linear-gradient(180deg,#81c784,var(--green));box-shadow:0 5px 0 var(--green-d)}
+.abtn.no{border:3px solid var(--red-d);background:linear-gradient(180deg,#ef9a9a,var(--red));box-shadow:0 5px 0 var(--red-d)}
+.abtn:active{transform:translateY(4px);box-shadow:none}
+.abtn:disabled{cursor:default;filter:grayscale(.6) brightness(.85);box-shadow:none;transform:translateY(4px)}
+.answers.off{opacity:.35;pointer-events:none}
+
+@media (max-width:640px){
+.title{font-size:19px}
+.scene{height:250px}
+.hero{width:72px;height:72px;left:52px}
+.obstacle{width:88px;height:88px}
+.q-text{font-size:14px}
+.f-lesson{font-size:12px}
+.f-verdict{font-size:12px}
+.abtn{font-size:15px;padding:11px 30px}
+.hud-lvl{font-size:10px}.hud-sec{font-size:10px}.bar{width:70px}
+.screen h2{font-size:16px}
+}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div class="label">Модуль 2 · Вводная игра</div>
+<p class="title">Забег с решениями: семь тем модуля</p>
+
+<div class="cabinet" id="cabinet">
+
+  <!-- СТАРТ -->
+  <div class="screen" id="startScreen">
+    <span class="big">🏃</span>
+    <h2>ЗАБЕГ С РЕШЕНИЯМИ</h2>
+    <p>Семь преград — семь рабочих проблем эколога. Каждая карточка привязана к теме модуля: после ответа игра покажет, <b>в каком уроке</b> мы разберем эти нюансы.</p>
+    <div class="topics">
+      <p class="topics-title">СЕМЬ ТЕМ ЗАБЕГА</p>
+      <div class="t-row"><span class="t-dot"></span><span><b>Экологические аспекты деятельности</b><span class="t-lesson">Урок «Как выявить экологические аспекты деятельности»</span></span></div>
+      <div class="t-row"><span class="t-dot"></span><span><b>Значимость экологических аспектов</b><span class="t-lesson">Урок «Как оценить значимость экологических аспектов»</span></span></div>
+      <div class="t-row"><span class="t-dot"></span><span><b>Обязательства в СЭМ</b><span class="t-lesson">Урок «Как собрать обязательства, которые нужно учитывать в СЭМ»</span></span></div>
+      <div class="t-row"><span class="t-dot"></span><span><b>Риски и возможности</b><span class="t-lesson">Урок «Как определить риски и возможности»</span></span></div>
+      <div class="t-row"><span class="t-dot"></span><span><b>Экологическая политика</b><span class="t-lesson">Урок «Как подготовить экологическую политику»</span></span></div>
+      <div class="t-row"><span class="t-dot"></span><span><b>Экологические цели</b><span class="t-lesson">Урок «Как сформулировать экологические цели»</span></span></div>
+      <div class="t-row"><span class="t-dot"></span><span><b>План действий</b><span class="t-lesson">Урок «Как спланировать действия, ресурсы и проверку результатов»</span></span></div>
+    </div>
+    <p><b>Как устроен забег.</b> Герой бежит постоянно, преграда приближается, пока тикает таймер: на решение 30 секунд. Верно — герой перепрыгивает преграду, вы получаете плюс один листочек. Неверно или время вышло — герой спотыкается и теряет листочек. На старте один листочек, кончились — забег окончен. Вопрос живет под сценой и не закрывает картинку.</p>
+    <button class="big-btn" id="startBtn" type="button">▶ НАЧАТЬ ЗАБЕГ</button>
+    <div class="hint">3-5 минут. Ошибаться можно: листочек возвращается верным ответом.</div>
+  </div>
+
+  <!-- ИГРА -->
+  <div id="gamePart">
+    <div class="hud">
+      <div class="hud-lvl">ТЕМА <span id="lvl">1</span>/7</div>
+      <div class="lives" id="lives"></div>
+      <div class="hud-timer" id="hudTimer">
+        <div class="bar" id="bar"><i id="barFill"></i></div>
+        <div class="hud-sec"><span id="sec">30</span></div>
+      </div>
+    </div>
+
+    <div class="scene" id="scene">
+      <div class="sun"></div>
+      <div class="cloud c1"></div>
+      <div class="cloud c2"></div>
+      <div class="cloud c3"></div>
+      <div class="hills"></div>
+      <div class="pipe"></div>
+      <div class="ground"></div>
+      <div class="dust" id="dust"><i></i><i></i><i></i></div>
+      <div class="hero" id="hero">
+        <img id="f0" class="on" alt=""><img id="f1" alt=""><img id="f2" alt=""><img id="f3" alt="">
+        <img id="fj" alt=""><img id="ff" alt="">
+      </div>
+      <div class="obstacle" id="obstacle"></div>
+      <div class="flash" id="flash"></div>
+    </div>
+
+    <div class="panel" id="panel"></div>
+
+    <div class="answers" id="answers">
+      <button class="abtn yes" id="btnYes" type="button" disabled>ДА</button>
+      <button class="abtn no" id="btnNo" type="button" disabled>НЕТ</button>
+    </div>
+  </div>
+
+  <!-- ФИНАЛ -->
+  <div class="screen hidden" id="endScreen">
+    <span class="big" id="endIcon">🏁</span>
+    <h2 id="endTitle"></h2>
+    <p id="endText" style="text-align:center"></p>
+    <div class="topics">
+      <p class="topics-title">МАРШРУТ МОДУЛЯ</p>
+      <div id="endList"></div>
+    </div>
+    <button class="big-btn" id="endBtn" type="button">ПРОБЕЖАТЬ ЕЩЕ РАЗ</button>
+  </div>
+
+</div>
+</div>
+
+<script>
+(function(){
+'use strict';
+function $(id){return document.getElementById(id);}
+function uri(s){return 'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(s);}
+function resize(){try{if(window.parentIFrame&&window.parentIFrame.size)window.parentIFrame.size();}catch(e){}}
+
+/* ===== ГЕРОЙ: кадры бега, прыжок, падение ===== */
+var CORE='<rect x="14" y="4" width="18" height="6" fill="#ffd93d"/><rect x="24" y="8" width="12" height="3" fill="#f5b70a"/>'+
+'<rect x="16" y="10" width="14" height="10" fill="#ffcc99"/><rect x="26" y="13" width="3" height="3" fill="#101132"/>'+
+'<rect x="14" y="10" width="4" height="7" fill="#3a2a1a"/>'+
+'<rect x="14" y="20" width="18" height="14" fill="#43a047"/><rect x="14" y="20" width="18" height="7" fill="#ffd93d"/>'+
+'<rect x="14" y="26" width="18" height="3" fill="#ffe66d"/><rect x="14" y="32" width="18" height="2" fill="#1a1147"/>';
+var LEGS=[[[22,10],[13,7]],[[19,10],[17,10]],[[12,7],[23,10]],[[16,10],[18,10]],[[20,6],[13,6]]];
+var ARMS=[[[27,22],[12,24]],[[23,23],[16,23]],[[13,24],[26,22]],[[17,23],[22,23]],[[26,12],[12,12]]];
+function leg(l,y){return '<rect x="'+l[0]+'" y="'+y+'" width="6" height="'+l[1]+'" fill="#1976d2"/><rect x="'+(l[0]-2)+'" y="'+(y+l[1]-3)+'" width="9" height="3" fill="#5d4037"/>';}
+function arm(a){return '<rect x="'+a[0]+'" y="'+a[1]+'" width="5" height="10" fill="#43a047"/><rect x="'+a[0]+'" y="'+(a[1]+10)+'" width="4" height="3" fill="#ffcc99"/>';}
+function frameSVG(f){
+  var y=(f===4)?30:34;
+  return uri('<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><g shape-rendering="crispEdges">'+
+    arm(ARMS[f][1])+leg(LEGS[f][1],y)+CORE+leg(LEGS[f][0],y)+arm(ARMS[f][0])+'</g></svg>');
+}
+$('f0').src=frameSVG(0);$('f1').src=frameSVG(1);$('f2').src=frameSVG(2);$('f3').src=frameSVG(3);
+$('fj').src=frameSVG(4);$('ff').src=frameSVG(1);
+
+/* ===== ПРЕГРАДЫ: крупные, развернуты влево, к экологу ===== */
+var OBS=[
+'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g shape-rendering="crispEdges"><rect x="2" y="52" width="46" height="8" fill="#2b2b3d"/><rect x="6" y="50" width="38" height="4" fill="#3d3d57"/><rect x="10" y="52" width="10" height="3" fill="#7f6bff" opacity=".55"/><rect x="26" y="54" width="8" height="2" fill="#5df4ff" opacity=".45"/><g transform="rotate(-18 48 40)"><rect x="42" y="26" width="14" height="26" fill="#8d9bb5"/><rect x="42" y="26" width="14" height="4" fill="#b5c2d9"/><rect x="44" y="44" width="10" height="3" fill="#5a6a85"/></g><rect x="38" y="46" width="3" height="7" fill="#2b2b3d"/></g></svg>',
+'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g shape-rendering="crispEdges"><rect x="6" y="34" width="22" height="26" fill="#c23b3b"/><rect x="6" y="38" width="22" height="4" fill="#ffe66d"/><rect x="6" y="50" width="22" height="4" fill="#ffe66d"/><rect x="32" y="34" width="22" height="26" fill="#c23b3b"/><rect x="32" y="38" width="22" height="4" fill="#ffe66d"/><rect x="32" y="50" width="22" height="4" fill="#ffe66d"/><rect x="19" y="8" width="22" height="26" fill="#c23b3b"/><rect x="19" y="12" width="22" height="4" fill="#ffe66d"/><rect x="19" y="24" width="22" height="4" fill="#ffe66d"/><polygon points="8,44 18,38 18,50" fill="#ffe66d" stroke="#1a1147" stroke-width="2"/><rect x="14" y="42" width="3" height="5" fill="#1a1147"/></g></svg>',
+'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g shape-rendering="crispEdges"><rect x="16" y="6" width="16" height="5" fill="#1a2a6e"/><rect x="10" y="10" width="14" height="3" fill="#142057"/><rect x="18" y="11" width="12" height="10" fill="#ffcc99"/><rect x="20" y="14" width="3" height="3" fill="#101132"/><rect x="16" y="21" width="18" height="22" fill="#2a3a8e"/><rect x="22" y="25" width="2" height="2" fill="#ffe66d"/><rect x="22" y="30" width="2" height="2" fill="#ffe66d"/><rect x="6" y="24" width="12" height="4" fill="#2a3a8e"/><rect x="4" y="24" width="4" height="4" fill="#ffcc99"/><rect x="4" y="28" width="10" height="14" fill="#e8f2ff"/><rect x="6" y="31" width="6" height="2" fill="#8d9bb5"/><rect x="6" y="35" width="6" height="2" fill="#8d9bb5"/><rect x="18" y="43" width="6" height="14" fill="#142057"/><rect x="26" y="43" width="6" height="14" fill="#142057"/><rect x="14" y="56" width="10" height="4" fill="#0a0e24"/><rect x="25" y="56" width="10" height="4" fill="#0a0e24"/></g></svg>',
+'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g shape-rendering="crispEdges"><rect x="0" y="20" width="7" height="2" fill="#b5c2d9"/><rect x="0" y="24" width="7" height="2" fill="#b5c2d9"/><rect x="0" y="28" width="7" height="2" fill="#b5c2d9"/><rect x="6" y="18" width="2" height="14" fill="#b5c2d9"/><rect x="7" y="24" width="24" height="3" fill="#8d6e63"/><rect x="12" y="16" width="10" height="9" fill="#ffcc99"/><rect x="13" y="18" width="3" height="2" fill="#101132"/><rect x="12" y="14" width="10" height="3" fill="#6d4c41"/><rect x="10" y="25" width="13" height="15" fill="#c6543a"/><rect x="12" y="40" width="4" height="14" fill="#3a2a1a"/><rect x="18" y="40" width="4" height="14" fill="#3a2a1a"/><rect x="34" y="12" width="7" height="2" fill="#b5c2d9"/><rect x="34" y="16" width="7" height="2" fill="#b5c2d9"/><rect x="34" y="20" width="7" height="2" fill="#b5c2d9"/><rect x="40" y="10" width="2" height="14" fill="#b5c2d9"/><rect x="41" y="16" width="20" height="3" fill="#8d6e63"/><rect x="44" y="10" width="10" height="9" fill="#ffcc99"/><rect x="45" y="12" width="3" height="2" fill="#101132"/><rect x="42" y="19" width="13" height="14" fill="#4a7a3a"/><rect x="44" y="33" width="4" height="13" fill="#3a2a1a"/><rect x="50" y="33" width="4" height="13" fill="#3a2a1a"/></g></svg>',
+'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g shape-rendering="crispEdges"><rect x="12" y="46" width="40" height="6" fill="#dfe9ff"/><rect x="15" y="40" width="37" height="6" fill="#f4f8ff"/><rect x="12" y="34" width="40" height="6" fill="#dfe9ff"/><rect x="16" y="28" width="35" height="6" fill="#f4f8ff"/><rect x="13" y="22" width="38" height="6" fill="#dfe9ff"/><rect x="17" y="16" width="30" height="6" fill="#f4f8ff"/><rect x="20" y="18" width="16" height="2" fill="#8d9bb5"/><rect x="18" y="36" width="18" height="2" fill="#8d9bb5"/><rect x="20" y="48" width="20" height="2" fill="#8d9bb5"/><polygon points="6,12 18,6 18,9 34,9 34,15 18,15 18,18" fill="#e53935"/></g></svg>',
+'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g shape-rendering="crispEdges"><rect x="30" y="14" width="5" height="46" fill="#8d6e63"/><rect x="12" y="8" width="26" height="8" fill="#ffd93d"/><polygon points="12,8 4,12 12,16" fill="#ffd93d"/><rect x="26" y="22" width="26" height="8" fill="#5df4ff"/><polygon points="52,22 60,26 52,30" fill="#5df4ff"/><rect x="14" y="36" width="24" height="8" fill="#ff66d1"/><polygon points="14,36 6,40 14,44" fill="#ff66d1"/></g></svg>',
+'<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64"><g shape-rendering="crispEdges"><rect x="10" y="34" width="6" height="26" fill="#ffd93d"/><rect x="48" y="34" width="6" height="26" fill="#ffd93d"/><rect x="4" y="24" width="56" height="12" fill="#e8f2ff"/><rect x="4" y="24" width="10" height="12" fill="#ff4f5b"/><rect x="26" y="24" width="10" height="12" fill="#ff4f5b"/><rect x="48" y="24" width="10" height="12" fill="#ff4f5b"/><rect x="4" y="21" width="56" height="3" fill="#b5c2d9"/><rect x="24" y="6" width="16" height="14" fill="#ffd93d" stroke="#1a1147" stroke-width="2"/><polygon points="28,13 34,9 34,12 38,12 38,14 34,14 34,17" fill="#1a1147"/></g></svg>'
+];
+
+/* ===== ТЕМЫ, УРОКИ, ВОПРОСЫ И ПОЯСНЕНИЯ ===== */
+var Q=[
+{topic:'Экологические аспекты деятельности',
+ lesson:'Как выявить экологические аспекты деятельности',
+ q:'У склада из бочки вытекло масло и попало на землю. Нужно ли включить такой разлив в перечень экологических аспектов предприятия вместе с выбросами и отходами?',
+ a:true,
+ help:'Перечень аспектов помогает увидеть все воздействия сразу: разливы, выбросы, стоки, отходы, шум. Когда разлив попал в перечень, у него появляются ответственный и контроль, а не сюрприз на проверке.'},
+{topic:'Значимость экологических аспектов',
+ lesson:'Как оценить значимость экологических аспектов',
+ q:'На заводе составили перечень из 40 экологических аспектов. Верно ли, что все они одинаково значимы и ресурсы нужно направлять на каждый поровну?',
+ a:false,
+ help:'Оценка значимости помогает не распыляться: критерии масштаба, частоты, требований закона и ожиданий сторон отделяют главное от второстепенного, и ресурсы идут на важное.'},
+{topic:'Обязательства в СЭМ',
+ lesson:'Как собрать обязательства, которые нужно учитывать в СЭМ',
+ q:'На предприятие приехал инспектор. Верно ли, что к обязательствам в СЭМ относятся не только законы, но и условия разрешений, договоров и добровольных обязательств предприятия?',
+ a:true,
+ help:'Единый реестр обязательств помогает держать в поле зрения все требования: законы, разрешения, договоры, добровольные обязательства. Проверка перестает быть авралом.'},
+{topic:'Риски и возможности',
+ lesson:'Как определить риски и возможности',
+ q:'Жители пожаловались на запах от завода. Верно ли, что для СЭМ это только риск и жалоба не может стать возможностью для улучшений?',
+ a:false,
+ help:'СЭМ учит видеть в событии обе стороны: риск и возможность. Жалоба помогает найти слабое место и наладить процесс, а не только грозит проверкой.'},
+{topic:'Экологическая политика',
+ lesson:'Как подготовить экологическую политику',
+ q:'Директор попросил закрепить в одном документе главные обязательства предприятия в сфере окружающей среды и направление работы. Верно ли, что такой документ это экологическая политика?',
+ a:true,
+ help:'Политика закрепляет обязательства и направление работы в одном документе. Она помогает согласовать действия руководства и цехов и задает правила игры для всех.'},
+{topic:'Экологические цели',
+ lesson:'Как сформулировать экологические цели',
+ q:'На заводе записали цель «снизить воздействие на окружающую среду» без показателя и срока. Верно ли, что такой формулировки достаточно для СЭМ?',
+ a:false,
+ help:'Измеримая цель с показателем и сроком помогает понять, к чему идем и как проверить результат. Без них цель остается декларацией.'},
+{topic:'План действий',
+ lesson:'Как спланировать действия, ресурсы и проверку результатов',
+ q:'Цель поставлена, но непонятно, кто, какими ресурсами и к какому сроку ее выполнит. Верно ли, что СЭМ требует план действий с ответственными, ресурсами, сроками и проверкой результата?',
+ a:true,
+ help:'План с ответственными, ресурсами, сроками и проверкой превращает цель в рабочую задачу. Так цель достигается, а не остается на бумаге.'}
+];
+
+/* ===== СОСТОЯНИЕ ===== */
+var TIME=30000, HIT_X=150;
+var idx=0, lives=1, locked=true, running=false;
+var qStart=0, obsFrom=0, obsTo=0, obsDur=0, obsT0=0, obsX=0, obsActive=false;
+var frameI=0, frameT=0, timers=[];
+var hero=$('hero'), obstacle=$('obstacle'), panel=$('panel');
+
+function later(fn,ms){timers.push(setTimeout(fn,ms));}
+function clearTimers(){timers.forEach(clearTimeout);timers=[];}
+function showFrame(n){['f0','f1','f2','f3','fj','ff'].forEach(function(id){$(id).classList.remove('on');});$(n).classList.add('on');}
+
+function drawLives(delta){
+  var html='';
+  var n=Math.max(lives,0);
+  if(n===0){html='<svg class="leaf lost" viewBox="0 0 24 24"><path fill="#43a047" d="M17 8C8 10 5.9 16.2 3.8 21.3l1.9.7.9-2.3c.5.2 1 .3 1.4.3C19 20 22 3 22 3c-1 2-8 2.3-13 3.3S2 11.5 2 13.5s1.8 3.8 1.8 3.8C7 8 17 8 17 8z"/></svg>';}
+  for(var i=0;i<n;i++){
+    html+='<svg class="leaf" viewBox="0 0 24 24"><path fill="#43a047" d="M17 8C8 10 5.9 16.2 3.8 21.3l1.9.7.9-2.3c.5.2 1 .3 1.4.3C19 20 22 3 22 3c-1 2-8 2.3-13 3.3S2 11.5 2 13.5s1.8 3.8 1.8 3.8C7 8 17 8 17 8z"/></svg>';
+  }
+  $('lives').innerHTML=html;
+  if(delta){
+    var p=document.createElement('span');
+    p.className='leaf-pop '+(delta>0?'plus':'minus');
+    p.textContent=(delta>0?'+1':'-1');
+    $('lives').appendChild(p);
+    later(function(){if(p.parentNode)p.parentNode.removeChild(p);},850);
+  }
+}
+
+/* ===== ЦИКЛ ===== */
+function loop(ts){
+  requestAnimationFrame(loop);
+  if(!running)return;
+  if(ts-frameT>110){
+    frameT=ts;
+    if(!hero.classList.contains('jumping')&&!hero.classList.contains('falling')){
+      frameI=(frameI+1)%4; showFrame('f'+frameI);
+    }
+  }
+  if(obsActive){
+    var p=Math.min(1,(ts-obsT0)/obsDur);
+    obsX=obsFrom+(obsTo-obsFrom)*p;
+    obstacle.style.left=obsX.toFixed(1)+'px';
+  }
+  if(!locked){
+    var left=Math.max(0,TIME-(ts-qStart));
+    $('sec').textContent=Math.ceil(left/1000);
+    $('barFill').style.transform='scaleX('+(left/TIME).toFixed(4)+')';
+    $('bar').classList.toggle('warn',left/TIME<.32);
+    if(left<=0){locked=true;resolve(null);}
+  }
+}
+requestAnimationFrame(loop);
+
+/* ===== ВОПРОС ===== */
+function askQuestion(){
+  $('lvl').textContent=idx+1;
+  var item=Q[idx];
+  panel.innerHTML='<span class="q-tag">'+item.topic+'</span><p class="q-text">'+item.q+'</p>';
+  obstacle.innerHTML=OBS[idx];
+  obstacle.classList.remove('knocked');
+  obstacle.style.display='block';
+  obsFrom=$('scene').clientWidth+40; obsTo=HIT_X; obsDur=TIME;
+  obstacle.style.left=obsFrom+'px';
+  obsActive=true; obsT0=performance.now(); qStart=obsT0; obsX=obsFrom;
+  locked=false;
+  $('btnYes').disabled=false; $('btnNo').disabled=false;
+  $('sec').textContent='30'; $('barFill').style.transform='scaleX(1)'; $('bar').classList.remove('warn');
+  resize();
+}
+
+/* ===== ОТВЕТ ===== */
+function answer(val){if(locked)return; locked=true; resolve(val);}
+
+function resolve(val){
+  $('btnYes').disabled=true; $('btnNo').disabled=true;
+  var item=Q[idx], correct=(val!==null&&val===item.a);
+  $('flash').className='flash '+(correct?'ok':'bad');
+  later(function(){$('flash').className='flash';},520);
+  var dist=Math.max(1,obsX-HIT_X);
+  obsFrom=obsX; obsTo=HIT_X; obsDur=Math.max(220,Math.min(520,dist*1.5));
+  obsT0=performance.now(); obsActive=true;
+
+  if(correct){
+    lives++; drawLives(+1);
+    later(function(){
+      hero.classList.remove('falling');
+      hero.classList.add('jumping'); showFrame('fj');
+    },Math.max(0,obsDur-330));
+    later(function(){
+      hero.classList.remove('jumping'); showFrame('f0');
+    },Math.max(0,obsDur-330)+930);
+    later(function(){
+      obsFrom=obsX; obsTo=-140; obsDur=420; obsT0=performance.now();
+      later(function(){obsActive=false;obstacle.style.display='none';showFeedback(item,correct);},460);
+    },obsDur+160);
+  } else {
+    lives--; drawLives(-1);
+    later(function(){
+      obsActive=false;
+      obstacle.classList.add('knocked');
+      $('scene').classList.add('shake');
+      later(function(){$('scene').classList.remove('shake');},420);
+      hero.classList.remove('jumping');
+      hero.classList.add('falling'); showFrame('ff');
+      later(function(){
+        hero.classList.remove('falling'); showFrame('f0');
+        showFeedback(item,correct);
+      },720);
+    },obsDur);
+  }
+}
+
+/* ===== КОММЕНТАРИЙ: вердикт + польза СЭМ + урок ===== */
+function showFeedback(item,correct){
+  panel.innerHTML=
+    '<p class="f-verdict '+(correct?'ok':'bad')+'">'+(correct?'ВЕРНО!':'НЕ СОВСЕМ. ВЕРНЫЙ ОТВЕТ: '+(item.a?'ДА':'НЕТ'))+'</p>'+
+    '<p class="f-text">'+item.help+'</p>'+
+    '<p class="f-lesson">Эти нюансы разберем в уроке <b>«'+item.lesson+'»</b></p>'+
+    '<button class="gbtn" id="nextBtn" type="button">'+(idx>=Q.length-1?'ЗАВЕРШИТЬ':'ПРОДОЛЖИТЬ')+'</button>';
+  $('nextBtn').addEventListener('click',function(){
+    idx++;
+    if(lives<=0){showEnd(false);return;}
+    if(idx>=Q.length){showEnd(true);return;}
+    obstacle.style.display='none';
+    askQuestion();
+  });
+  resize();
+}
+
+/* ===== ФИНАЛ ===== */
+function showEnd(win){
+  running=false; clearTimers();
+  obstacle.style.display='none';
+  $('gamePart').style.display='none';
+  var es=$('endScreen'); es.classList.remove('hidden');
+  $('endIcon').textContent=win?'🏁':'';
+  $('endTitle').textContent=win?'МАРШРУТ ПРОЙДЕН':'ЗАБЕГ ОКОНЧЕН';
+  $('endTitle').style.color=win?'var(--green-d)':'var(--red-d)';
+  $('endText').textContent=win
+    ?'Вы прошли все семь тем модуля и увидели, где каждая из них раскрывается в программе. Дальше уроки дают готовые инструменты: перечни, критерии, реестры, шаблоны политики, целей и плана.'
+    :'Листочки кончились. Это поражение в забеге, а не оценка знаний: темы, до которых вы дошли, уже открыты, остальные дождутся следующей попытки.';
+  var html='';
+  Q.forEach(function(item,i){
+    var done=i<idx;
+    html+='<div class="t-row '+(done?'done':'wait')+'">'+
+      (done?'<span class="t-check">✓</span>':'<span class="t-dot"></span>')+
+      '<span><b>'+item.topic+'</b><span class="t-lesson">Урок «'+item.lesson+'»</span></span></div>';
+  });
+  $('endList').innerHTML=html;
+  resize();
+}
+
+/* ===== СТАРТ / РЕСТАРТ ===== */
+function begin(){
+  clearTimers();
+  idx=0; lives=1; locked=true; running=true;
+  $('endScreen').classList.add('hidden');
+  $('startScreen').classList.add('hidden');
+  $('gamePart').style.display='block';
+  hero.classList.remove('falling','jumping'); showFrame('f0'); frameI=0;
+  $('dust').classList.add('on');
+  $('answers').classList.remove('off');
+  drawLives(0);
+  askQuestion();
+}
+$('startBtn').addEventListener('click',begin);
+$('endBtn').addEventListener('click',begin);
+$('btnYes').addEventListener('click',function(){answer(true);});
+$('btnNo').addEventListener('click',function(){answer(false);});
+window.addEventListener('load',resize);
+})();
+</script>
+<script src="iframeResizer.contentWindow.min.js"></script>
+</body>
+</html>
