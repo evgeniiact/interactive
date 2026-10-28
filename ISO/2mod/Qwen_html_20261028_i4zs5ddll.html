@@ -1,0 +1,540 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Спринт: операция, аспект, воздействие</title>
+<style>
+:root {
+  --bg:#ffffff; --primary:#1e293b; --muted:#64748b; --border:#e2e8f0;
+  --gray:#f8fafc; --accent:#2563eb; --accent-d:#1d4ed8;
+  --ok-bg:#f0fdf4; --ok-bd:#86efac; --ok-tx:#166534;
+  --warn-bg:#fff7ed; --warn-bd:#fdba74; --warn-tx:#9a3412;
+  --r:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:14px;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--primary);font-size:14px;line-height:1.5}
+body.no-anim *{transition:none!important;animation:none!important}
+.container{max-width:640px;margin:0 auto}
+.screen{display:none;animation:fadeIn .25s ease-out}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+h1{font-size:19px;font-weight:800;margin:0 0 6px}
+.lead{font-size:13px;margin:0 0 8px}
+.note-box{background:var(--gray);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:0 8px 8px 0;padding:8px 12px;font-size:12px;color:var(--muted);margin:8px 0}
+
+/* HUD */
+.hud{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin-bottom:8px;font-size:12px;font-weight:700;color:var(--muted)}
+.hud .streak{color:var(--warn-tx)}
+.hud .bar{flex:1 1 90px;height:6px;background:var(--border);border-radius:6px;overflow:hidden}
+.hud .bar i{display:block;height:100%;width:0;background:var(--accent);border-radius:6px;transition:width .25s}
+.anim-toggle{display:flex;align-items:center;gap:5px;font-weight:500;margin-left:auto}
+.anim-toggle input{width:15px;height:15px;margin:0}
+
+/* карточка */
+.card-box{border:2px solid var(--border);border-radius:var(--r);padding:14px 12px;text-align:center;background:#fff;transition:border-color .15s,background .15s;margin-bottom:10px}
+.card-box.flash-ok{border-color:var(--ok-bd);background:var(--ok-bg)}
+.card-box.flash-bad{border-color:var(--warn-bd);background:var(--warn-bg)}
+.card-tag{display:inline-block;font-size:10px;font-weight:700;letter-spacing:.4px;text-transform:uppercase;color:var(--accent);background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:1px 8px;margin-bottom:6px}
+.card-text{font-size:17px;font-weight:700;line-height:1.3}
+.ans-row{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.ans-btn{border:2px solid var(--border);border-radius:10px;background:#fff;padding:9px 6px;cursor:pointer;font-family:inherit;display:flex;flex-direction:column;gap:2px;align-items:center;transition:border-color .12s,background .12s}
+.ans-btn:hover:not(:disabled){border-color:var(--accent)}
+.ans-btn .a-label{font-size:15px;font-weight:800}
+.ans-btn .a-hint{font-size:10px;color:var(--muted)}
+.ans-btn.flash-ok{border-color:var(--ok-tx);background:var(--ok-bg)}
+.ans-btn.flash-bad{border-color:var(--warn-tx);background:var(--warn-bg)}
+.ans-btn:disabled{cursor:default;opacity:.85}
+
+/* цепочка */
+.slots{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin-bottom:10px}
+.slot{border:2px dashed var(--border);border-radius:10px;min-height:74px;padding:6px;display:flex;flex-direction:column;gap:4px;background:var(--gray)}
+.slot .s-label{font-size:10px;font-weight:800;color:var(--muted);text-transform:uppercase;letter-spacing:.4px}
+.slot .s-value{font-size:12px;font-weight:600}
+.slot.filled{border-style:solid;border-color:var(--ok-bd);background:var(--ok-bg)}
+.slot.next{border-color:var(--accent)}
+.hand{display:flex;gap:8px;flex-wrap:wrap}
+.hand-btn{border:2px solid var(--border);border-radius:10px;background:#fff;padding:10px;font-family:inherit;font-size:13px;font-weight:700;color:var(--primary);cursor:pointer;flex:1 1 160px;text-align:left;transition:border-color .12s,background .12s}
+.hand-btn:hover{border-color:var(--accent)}
+.hand-btn.flash-bad{border-color:var(--warn-tx);background:var(--warn-bg)}
+
+/* разбор */
+.rev-list{display:flex;flex-direction:column;gap:6px;margin:8px 0}
+.rev-row{border:1px solid var(--border);border-left:4px solid var(--border);border-radius:8px;padding:7px 10px;font-size:12px;background:#fff;cursor:pointer;display:flex;gap:8px;align-items:flex-start;flex-wrap:wrap}
+.rev-row:hover{background:var(--gray)}
+.rev-row.ok{border-left-color:var(--ok-tx)}
+.rev-row.bad{border-left-color:var(--warn-tx)}
+.rev-mark{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.3px;padding:1px 7px;border-radius:20px;border:1px solid;white-space:nowrap;margin-top:1px}
+.rev-mark.ok{background:var(--ok-bg);color:var(--ok-tx);border-color:var(--ok-bd)}
+.rev-mark.bad{background:var(--warn-bg);color:var(--warn-tx);border-color:var(--warn-bd)}
+.rev-text{flex:1 1 200px;font-weight:600}
+.rev-ans{width:100%;color:var(--muted);font-size:11px}
+.rev-area{font-size:10px;color:var(--muted);text-transform:uppercase;letter-spacing:.3px;margin-top:2px}
+
+/* поповер */
+.pop{position:fixed;z-index:50;max-width:290px;background:var(--primary);color:#fff;font-size:12px;line-height:1.45;padding:9px 11px;border-radius:9px;box-shadow:0 6px 20px rgba(15,23,42,.35);display:none;pointer-events:none}
+.pop.show{display:block}
+.pop strong{display:block;margin-bottom:3px;color:#bbf7d0}
+.pop.bad strong{color:#fed7aa}
+
+/* кнопки */
+.nav-buttons{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+.btn{padding:10px 16px;border-radius:9px;font-size:13px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:background .2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-d)}
+.btn-secondary{background:#fff;border:2px solid var(--border);color:var(--primary)}
+.btn-secondary:hover{border-color:var(--accent)}
+.btn-big{width:100%;padding:13px;font-size:15px}
+button:focus-visible,.rev-row:focus-visible{outline:3px solid var(--accent-d);outline-offset:2px}
+
+.supports{display:grid;grid-template-columns:1fr 1fr 1fr;gap:6px;margin:8px 0}
+.support{border:1px solid var(--border);border-radius:9px;padding:7px 9px;background:var(--gray);font-size:11px}
+.support strong{display:block;color:var(--accent);font-size:12px;margin-bottom:1px}
+.summary-line{background:#eff6ff;border:1px solid #bfdbfe;color:var(--accent-d);border-radius:9px;padding:9px 12px;font-size:12px;font-weight:700;margin:0 0 8px}
+.phase-note{display:none;background:#eff6ff;border:1px solid #bfdbfe;color:var(--accent-d);border-radius:9px;padding:7px 10px;font-size:12px;font-weight:600;margin:0 0 8px}
+.phase-note.show{display:block}
+
+@media (max-width:560px){
+  body{padding:10px}
+  .ans-row,.slots,.supports{grid-template-columns:1fr}
+  .card-text{font-size:16px}
+  .nav-buttons{flex-direction:column}
+  .btn{width:100%}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ИНТРО -->
+  <div id="screen-intro" class="screen active">
+    <h1>Спринт: операция, аспект, воздействие</h1>
+    <p class="lead">Попробуйте различить три записи без таблицы перед глазами. Операция отвечает на вопрос «что делают?». Аспект показывает, как работа взаимодействует со средой. Воздействие описывает, что меняется в среде.</p>
+    <p class="lead">Прочитайте карточку и выберите категорию. Разбор откроется после раунда: темп не сбивается. По желанию доступны дополнительные раунды на 30 разборов.</p>
+    <div class="note-box">Все примеры являются учебными условиями разных участков производства, а не установленными характеристиками завода.</div>
+    <button class="btn btn-primary btn-big" onclick="startRun()">Начать спринт</button>
+  </div>
+
+  <!-- ИГРА -->
+  <div id="screen-game" class="screen">
+    <div class="hud">
+      <span id="roundLabel">Раунд 1</span>
+      <span id="doneLabel">Разобрано 0 из 6</span>
+      <span class="bar"><i id="doneBar"></i></span>
+      <span class="streak" id="streakLabel">Серия: 0</span>
+      <label class="anim-toggle"><input type="checkbox" id="animToggle" checked onchange="setAnim(this.checked)"> Анимация</label>
+    </div>
+    <div class="phase-note" id="phaseNote"></div>
+
+    <div id="cardZone">
+      <div class="card-box" id="cardBox">
+        <span class="card-tag" id="cardTag"></span>
+        <div class="card-text" id="cardText"></div>
+      </div>
+      <div class="ans-row" role="group" aria-label="Категории">
+        <button class="ans-btn" id="btn-op" onclick="onCat('op',this)"><span class="a-label">Операция</span><span class="a-hint">Что делают?</span></button>
+        <button class="ans-btn" id="btn-as" onclick="onCat('as',this)"><span class="a-label">Аспект</span><span class="a-hint">Как взаимодействуют со средой?</span></button>
+        <button class="ans-btn" id="btn-im" onclick="onCat('im',this)"><span class="a-label">Воздействие</span><span class="a-hint">Что меняется в среде?</span></button>
+      </div>
+    </div>
+
+    <div id="chainZone" style="display:none">
+      <p class="lead"><strong>Соберите цепочку:</strong> сначала работа, затем взаимодействие со средой, затем изменение среды. Нажимайте карточки по очереди, они займут поля.</p>
+      <div class="slots" id="slotsBox"></div>
+      <div class="hand" id="handBox"></div>
+    </div>
+  </div>
+
+  <!-- РАЗБОР РАУНДА -->
+  <div id="screen-review" class="screen">
+    <h1 id="revTitle">Разбор раунда</h1>
+    <div class="rev-list" id="revList"></div>
+    <p class="lead" style="color:var(--muted);font-size:12px;">Наведите курсор или нажмите на строку, чтобы увидеть пояснение.</p>
+    <div class="nav-buttons" id="revBtns"></div>
+  </div>
+
+  <!-- ФИНАЛ -->
+  <div id="screen-final" class="screen">
+    <h1>Итоги спринта</h1>
+    <div class="summary-line" id="sumLine"></div>
+    <p class="lead">Вы различили работу, взаимодействие и изменение среды. Теперь попробуйте найти такую связку в описании участка. Начнем с пересыпания сырья.</p>
+    <div class="supports">
+      <div class="support"><strong>Операция</strong>Что делают?</div>
+      <div class="support"><strong>Аспект</strong>Как взаимодействуют со средой?</div>
+      <div class="support"><strong>Воздействие</strong>Что меняется в среде?</div>
+    </div>
+    <div class="nav-buttons" id="finalBtns">
+      <button class="btn btn-primary" onclick="continueLesson()">Продолжить урок</button>
+      <button class="btn btn-secondary" id="extraBtn" onclick="startExtraRound()">Доп раунд</button>
+      <button class="btn btn-secondary" onclick="startRun()">Повторить спринт</button>
+    </div>
+    <p class="lead" id="finalNote" style="display:none;"></p>
+  </div>
+
+</div>
+
+<div class="pop" id="pop" role="tooltip"></div>
+
+<script>
+/* ========== ДАННЫЕ ========== */
+var CATS = { op:'Операция', as:'Аспект', im:'Воздействие' };
+var PAIR = {
+  'op-as':'Вы назвали работу. Аспект покажет, как эта работа взаимодействует со средой.',
+  'op-im':'Здесь сказано, что делают на участке. Изменение воздуха, воды или другой части среды пока не описано.',
+  'as-op':'Здесь уже названо взаимодействие со средой, а не только работа на участке.',
+  'as-im':'Здесь названо взаимодействие. Воздействие отвечает на следующий вопрос: что из-за этого меняется в среде?',
+  'im-op':'Здесь описана не работа участка, а изменение окружающей среды.',
+  'im-as':'Здесь назван результат для среды. Аспект покажет, какое взаимодействие с ним связано.'
+};
+var BASE = [
+  {t:'Пересыпают сырье',c:'op',a:'Шихта',e:'Вы назвали работу на участке. Пока не сказали, как она взаимодействует со средой.'},
+  {t:'Выбрасывают пыль в атмосферный воздух',c:'as',a:'Шихта',e:'Вы назвали взаимодействие со средой. Пыль поступает из процесса в атмосферный воздух.'},
+  {t:'Загрязняется атмосферный воздух',c:'im',a:'Шихта',e:'Вы назвали изменение воздуха, связанное с выбросом пыли.'},
+  {t:'Забирают воду из водного объекта',c:'as',a:'Водоснабжение',e:'Вы назвали взаимодействие с природным ресурсом. Воду изымают из водного объекта.'},
+  {t:'Промывают тару',c:'op',a:'Водоснабжение',e:'Вы назвали работу. Для разбора аспекта выясните, откуда поступает вода и куда уходит после промывки.'},
+  {t:'Уменьшается количество воды в водном объекте',c:'im',a:'Водоснабжение',e:'Вы назвали изменение водного объекта, связанное с забором воды.'}
+];
+var EXTRA = [
+  {t:'Дробят стеклобой перед подачей в печь',c:'op',a:'Стеклобой',e:'Дробление стеклобоя это работа участка подготовки. Пыль и шум назовет аспект.'},
+  {t:'Выделяют пыль и шум при дроблении стеклобоя',c:'as',a:'Стеклобой',e:'Выделение пыли и шума при дроблении это взаимодействие с воздухом и акустической средой.'},
+  {t:'Повышается уровень пыли и шума у участка дробления',c:'im',a:'Стеклобой',e:'Повышение уровня пыли и шума у участка это изменение среды.'},
+  {t:'Подают природный газ в печи варки',c:'op',a:'Газоснабжение',e:'Подача газа в печи это операция производства. Продукты сгорания назовет аспект.'},
+  {t:'Выделяют оксиды азота с дымовыми газами печей',c:'as',a:'Газоснабжение',e:'Выделение оксидов азота с дымовыми газами это взаимодействие с атмосферным воздухом.'},
+  {t:'Растет концентрация оксидов азота в воздухе у завода',c:'im',a:'Газоснабжение',e:'Рост концентрации оксидов азота в воздухе это изменение, связанное с работой печей.'},
+  {t:'Промывают оборотную систему охлаждения',c:'op',a:'Охлаждение',e:'Промывка системы это работа обслуживания. Куда уходит вода, назовет аспект.'},
+  {t:'Сбрасывают промывочную воду на очистные сооружения',c:'as',a:'Охлаждение',e:'Сброс промывочной воды на очистные это взаимодействие с водой и сооружениями.'},
+  {t:'Меняется нагрузка на очистные и качество воды в сбросе',c:'im',a:'Охлаждение',e:'Изменение нагрузки на сооружения и качества воды в сбросе это изменение среды.'},
+  {t:'Упаковывают листы стекла в полимерную пленку',c:'op',a:'Упаковка',e:'Упаковка листов это работа участка готовой продукции. Отходы опишет аспект.'},
+  {t:'Образуют обрезки пленки и упаковочные отходы',c:'as',a:'Упаковка',e:'Образование обрезков пленки и упаковочных отходов это взаимодействие с отходами.'},
+  {t:'Растет объем отходов, передаваемых на переработку',c:'im',a:'Упаковка',e:'Рост объема отходов на переработку это изменение потоков отходов.'},
+  {t:'Перемещают стеклобой по площадке погрузчиком',c:'op',a:'Транспорт',e:'Перемещение стеклобоя погрузчиком это транспортная операция. Выбросы и проливы назовет аспект.'},
+  {t:'Выделяют выхлопные газы и проливают ГСМ при перевозке',c:'as',a:'Транспорт',e:'Выделение выхлопных газов и проливы ГСМ это взаимодействие с воздухом и почвой.'},
+  {t:'Загрязняется воздух и поверхность почвы вдоль маршрута',c:'im',a:'Транспорт',e:'Загрязнение воздуха и почвы вдоль маршрута это изменение, связанное с перевозкой.'},
+  {t:'Хранят компоненты шихты на открытой площадке',c:'op',a:'Хранение',e:'Хранение компонентов шихты это складская операция. Пыление назовет аспект.'},
+  {t:'Пылят компоненты шихты при ветре и перегрузке',c:'as',a:'Хранение',e:'Пыление компонентов при ветре и перегрузке это взаимодействие с воздухом и почвой.'},
+  {t:'Ухудшается качество воздуха и пылевое покрытие на площадке',c:'im',a:'Хранение',e:'Ухудшение качества воздуха и пылевое покрытие на площадке это изменение среды.'},
+  {t:'Подрядчик меняет футеровку печи',c:'op',a:'Подрядчики',e:'Замена футеровки это работа подрядчика на печи. Отходы опишет аспект.'},
+  {t:'Образуют бой огнеупоров и строительные отходы при работах',c:'as',a:'Подрядчики',e:'Образование боя огнеупоров и строительных отходов это взаимодействие с отходами.'},
+  {t:'Растет объем промышленных отходов, требующих вывоза',c:'im',a:'Подрядчики',e:'Рост объема промышленных отходов это изменение, требующее решения по вывозу.'},
+  {t:'Ведут подачу сжатого воздуха на линии',c:'op',a:'Энергия',e:'Подача сжатого воздуха это операция компрессорной. Потребление и шум назовет аспект.'},
+  {t:'Потребляют электроэнергию и выделяют шум компрессорной',c:'as',a:'Энергия',e:'Потребление электроэнергии и выделение шума это взаимодействие с ресурсом и акустической средой.'},
+  {t:'Растет шумовая нагрузка у площадки компрессорной',c:'im',a:'Энергия',e:'Рост шумовой нагрузки у площадки компрессорной это изменение среды.'},
+  {t:'Сортируют производственные отходы на площадке накопления',c:'op',a:'Отходы',e:'Сортировка на площадке накопления это работа с отходами. Разделение фракций назовет аспект.'},
+  {t:'Разделяют вторичные фракции из общей массы отходов',c:'as',a:'Отходы',e:'Разделение вторичных фракций из общей массы это взаимодействие с потоками отходов.'},
+  {t:'Снижается объем отходов, направляемых на полигон',c:'im',a:'Отходы',e:'Снижение объема отходов на полигон это положительное изменение среды.'},
+  {t:'Проводят анализы проб воды в лаборатории',c:'op',a:'Лаборатория',e:'Анализы проб воды это работа лаборатории. Реактивы и отходы назовет аспект.'},
+  {t:'Используют реактивы и образуют химические отходы малых объемов',c:'as',a:'Лаборатория',e:'Использование реактивов и образование химических отходов это взаимодействие с отходами и водой.'},
+  {t:'Появляются специфические химические отходы, требующие особого обращения',c:'im',a:'Лаборатория',e:'Появление специфических химических отходов это изменение, требующее особого обращения.'}
+];
+var CHAIN = [
+  {id:'c1',t:'Пересыпают сырье',c:'op',e:'Пересыпание сырья это работа на участке. С нее начинается цепочка.'},
+  {id:'c2',t:'Выбрасывают пыль в атмосферный воздух',c:'as',e:'Выброс пыли при пересыпании это взаимодействие со средой: пыль поступает в воздух.'},
+  {id:'c3',t:'Загрязняется атмосферный воздух',c:'im',e:'Загрязнение воздуха это изменение среды, связанное с поступлением пыли.'}
+];
+
+/* ========== СОСТОЯНИЕ ========== */
+var animOn = true;
+var S = null;
+var POPS = {};
+var popPinned = false, popTarget = null;
+
+function newState(){
+  return {
+    phase:'cards', roundType:'base',
+    queue:[], ptr:0, retry:[], inRetry:false,
+    roundCards:[], done:0, streak:0, best:0,
+    locked:false, firstTry:true,
+    extraPool:[], extraRounds:0,
+    chainHand:[], chainSlots:[null,null,null], chainWrong:[], chainDone:false,
+    totals:{cards:0, firstOk:0, rounds:0}
+  };
+}
+function shuffle(a){a=a.slice();for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}return a;}
+function delayMs(){return animOn?550:220;}
+function resizeIframe(){ if(window.parentIFrame && typeof window.parentIFrame.size==='function') window.parentIFrame.size(); }
+function setAnim(on){ animOn=on; document.body.classList.toggle('no-anim',!on); }
+function show(id){
+  ['screen-intro','screen-game','screen-review','screen-final'].forEach(function(s){document.getElementById(s).classList.remove('active');});
+  document.getElementById(id).classList.add('active');
+  hidePop();
+  window.scrollTo({top:0,behavior:'smooth'});
+  resizeIframe();
+}
+
+/* ========== СТАРТ И РАУНДЫ ========== */
+function startRun(){
+  S = newState();
+  S.extraPool = shuffle(EXTRA);
+  document.getElementById('finalNote').style.display='none';
+  document.getElementById('finalBtns').style.display='flex';
+  startBaseRound();
+}
+function startBaseRound(){
+  S.roundType='base';
+  S.queue = BASE.slice(0,3).concat(shuffle(BASE.slice(3)));
+  S.retry=[]; S.inRetry=false;
+  beginCardsRound('Раунд 1');
+}
+function startExtraRound(){
+  if(!S) startRunStateOnly();
+  if(!S.extraPool.length) return;
+  S.roundType='extra';
+  S.extraRounds++;
+  S.queue = S.extraPool.splice(0,6);
+  S.retry=[]; S.inRetry=false;
+  beginCardsRound('Доп раунд ' + S.extraRounds);
+}
+function startRunStateOnly(){ S = newState(); S.extraPool = shuffle(EXTRA); }
+
+function beginCardsRound(label){
+  S.phase='cards'; S.ptr=0; S.roundCards=[]; S.done=0; S.firstTry=true; S.locked=false;
+  document.getElementById('roundLabel').textContent = label;
+  document.getElementById('cardZone').style.display='block';
+  document.getElementById('chainZone').style.display='none';
+  hidePhaseNote();
+  show('screen-game');
+  presentCard();
+}
+function hidePhaseNote(){ document.getElementById('phaseNote').classList.remove('show'); }
+function showPhaseNote(t){ var n=document.getElementById('phaseNote'); n.textContent=t; n.classList.add('show'); }
+
+function updateHud(){
+  document.getElementById('doneLabel').textContent='Разобрано '+S.done+' из '+S.queue.length;
+  document.getElementById('doneBar').style.width=Math.round(S.done/S.queue.length*100)+'%';
+  document.getElementById('streakLabel').textContent='Серия: '+S.streak;
+}
+
+function presentCard(){
+  var card = S.queue[S.ptr];
+  S.locked=false; S.firstTry=true;
+  document.getElementById('cardTag').textContent = card.a;
+  document.getElementById('cardText').textContent = card.t;
+  var box=document.getElementById('cardBox'); box.className='card-box';
+  ['op','as','im'].forEach(function(c){ var b=document.getElementById('btn-'+c); b.disabled=false; b.className='ans-btn'; });
+  updateHud();
+  resizeIframe();
+}
+
+function onCat(cat, btn){
+  if(!S || S.locked || S.phase!=='cards') return;
+  S.locked=true;
+  var card=S.queue[S.ptr];
+  var ok = cat===card.c;
+  S.roundCards.push({card:card, chosen:cat, ok:ok, firstTry:S.firstTry && ok});
+  S.totals.cards++;
+  if(ok){
+    S.done++;
+    if(S.firstTry){ S.streak++; if(S.streak>S.best)S.best=S.streak; S.totals.firstOk++; }
+  } else {
+    S.streak=0;
+    if(S.roundType==='base' && !S.inRetry) S.retry.push(card);
+    S.firstTry=false;
+  }
+  btn.classList.add(ok?'flash-ok':'flash-bad');
+  document.getElementById('cardBox').classList.add(ok?'flash-ok':'flash-bad');
+  ['op','as','im'].forEach(function(c){ document.getElementById('btn-'+c).disabled=true; });
+  updateHud();
+  setTimeout(function(){
+    S.ptr++;
+    if(S.ptr < S.queue.length){ presentCard(); return; }
+    if(S.roundType==='base' && !S.inRetry && S.retry.length){
+      S.inRetry=true; S.queue=S.retry; S.retry=[]; S.ptr=0; S.done=0;
+      showPhaseNote('Закрепление: карточки с ошибками возвращаются один раз.');
+      presentCard();
+      return;
+    }
+    openRoundReview();
+  }, delayMs());
+}
+
+/* ========== ЦЕПОЧКА ========== */
+function startChain(){
+  S.phase='chain';
+  S.chainHand=shuffle(CHAIN); S.chainSlots=[null,null,null]; S.chainWrong=[]; S.chainDone=false;
+  document.getElementById('roundLabel').textContent='Раунд 2: цепочка';
+  document.getElementById('cardZone').style.display='none';
+  document.getElementById('chainZone').style.display='block';
+  hidePhaseNote();
+  renderChain();
+  show('screen-game');
+}
+function renderChain(){
+  var sb=document.getElementById('slotsBox'); sb.innerHTML='';
+  var nextIdx=-1;
+  for(var k=0;k<3;k++){ if(!S.chainSlots[k]){ nextIdx=k; break; } }
+  ['op','as','im'].forEach(function(cat,i){
+    var d=document.createElement('div');
+    d.className='slot'+(S.chainSlots[i]?' filled':'')+(i===nextIdx?' next':'');
+    d.innerHTML='<span class="s-label">'+CATS[cat]+'</span><span class="s-value">'+(S.chainSlots[i]?S.chainSlots[i].t:'Поле '+(i+1))+'</span>';
+    sb.appendChild(d);
+  });
+  var hb=document.getElementById('handBox'); hb.innerHTML='';
+  S.chainHand.forEach(function(c){
+    if(S.chainSlots.indexOf(c)!==-1) return;
+    var b=document.createElement('button');
+    b.className='hand-btn'; b.type='button'; b.textContent=c.t;
+    b.onclick=function(){ pickChain(c,b); };
+    hb.appendChild(b);
+  });
+  updateHudChain();
+  resizeIframe();
+}
+function updateHudChain(){
+  var filled=S.chainSlots.filter(Boolean).length;
+  document.getElementById('doneLabel').textContent='Цепочка: '+filled+' из 3';
+  document.getElementById('doneBar').style.width=Math.round(filled/3*100)+'%';
+  document.getElementById('streakLabel').textContent='Серия: '+S.streak;
+}
+function pickChain(card, btn){
+  if(!S || S.phase!=='chain' || S.chainDone) return;
+  var idx=-1;
+  for(var k=0;k<3;k++){ if(!S.chainSlots[k]){ idx=k; break; } }
+  if(idx===-1) return;
+  var need=['op','as','im'][idx];
+  if(card.c===need){
+    S.chainSlots[idx]=card;
+    renderChain();
+    if(S.chainSlots[0]&&S.chainSlots[1]&&S.chainSlots[2]){
+      S.chainDone=true;
+      setTimeout(openChainReview, delayMs());
+    }
+  } else {
+    var key=card.id+'-'+need;
+    var exists=S.chainWrong.some(function(w){return w.card.id+'-'+w.need===key;});
+    if(!exists) S.chainWrong.push({card:card, need:need});
+    S.streak=0; updateHudChain();
+    btn.classList.add('flash-bad');
+    setTimeout(function(){ btn.classList.remove('flash-bad'); }, animOn?350:120);
+  }
+}
+
+/* ========== РАЗБОРЫ ========== */
+var popSeq=0;
+function addPop(html){ popSeq++; var k='p'+popSeq; POPS[k]=html; return k; }
+
+function openRoundReview(){
+  S.phase='review'; S.totals.rounds++;
+  document.getElementById('revTitle').textContent = (S.roundType==='base' ? 'Разбор раунда 1' : 'Разбор доп раунда ' + S.extraRounds);
+  POPS={}; popSeq=0; popPinned=false; popTarget=null;
+  var list=document.getElementById('revList'); list.innerHTML='';
+  S.roundCards.forEach(function(r){
+    var popHtml;
+    if(r.ok){ popHtml='<strong>Верно: '+CATS[r.card.c]+'.</strong>'+r.card.e; }
+    else { popHtml='<strong>Ваш ответ: '+CATS[r.chosen]+'. Верно: '+CATS[r.card.c]+'.</strong>'+PAIR[r.chosen+'-'+r.card.c]+' '+r.card.e; }
+    var k=addPop(popHtml);
+    var row=document.createElement('div');
+    row.className='rev-row '+(r.ok?'ok':'bad');
+    row.tabIndex=0; row.dataset.pop=k;
+    row.innerHTML='<span class="rev-mark '+(r.ok?'ok':'bad')+'">'+(r.ok?'верно':'ошибка')+'</span>'+
+      '<span class="rev-text">'+r.card.t+'<span class="rev-area">'+r.card.a+'</span></span>'+
+      (r.ok?'':'<span class="rev-ans">Ваш ответ: '+CATS[r.chosen]+' · Верно: '+CATS[r.card.c]+'</span>');
+    list.appendChild(row);
+  });
+  var btns=document.getElementById('revBtns'); btns.innerHTML='';
+  if(S.roundType==='base'){
+    btns.innerHTML='<button class="btn btn-primary" onclick="startChain()">Дальше: цепочка</button>';
+  } else {
+    var html='<button class="btn btn-primary" onclick="goFinal()">К итогам</button>';
+    if(S.extraPool.length) html+='<button class="btn btn-secondary" onclick="startExtraRound()">Еще доп раунд ('+S.extraPool.length+')</button>';
+    btns.innerHTML=html;
+  }
+  show('screen-review');
+}
+
+function openChainReview(){
+  S.phase='review';
+  document.getElementById('revTitle').textContent='Разбор цепочки';
+  POPS={}; popSeq=0; popPinned=false; popTarget=null;
+  var list=document.getElementById('revList'); list.innerHTML='';
+  CHAIN.forEach(function(c,i){
+    var k=addPop('<strong>Шаг '+(i+1)+': '+CATS[c.c]+'.</strong>'+c.e);
+    var row=document.createElement('div');
+    row.className='rev-row ok'; row.tabIndex=0; row.dataset.pop=k;
+    row.innerHTML='<span class="rev-mark ok">шаг '+(i+1)+'</span><span class="rev-text">'+c.t+'</span>';
+    list.appendChild(row);
+  });
+  S.chainWrong.forEach(function(w){
+    var k=addPop('<strong>Карточка «'+w.card.t+'» в поле «'+CATS[w.need]+'».</strong>'+PAIR[w.card.c+'-'+w.need]);
+    var row=document.createElement('div');
+    row.className='rev-row bad'; row.tabIndex=0; row.dataset.pop=k;
+    row.innerHTML='<span class="rev-mark bad">ошибка</span><span class="rev-text">'+w.card.t+'<span class="rev-ans">Поле: '+CATS[w.need]+' · Категория карточки: '+CATS[w.card.c]+'</span></span>';
+    list.appendChild(row);
+  });
+  document.getElementById('revBtns').innerHTML='<button class="btn btn-primary" onclick="goFinal()">К итогам</button>';
+  show('screen-review');
+}
+
+/* ========== ПОПОВЕР ========== */
+var popEl=document.getElementById('pop');
+function showPopFor(row){
+  var k=row.dataset.pop; if(!k||!POPS[k]) return;
+  popEl.innerHTML=POPS[k];
+  popEl.className='pop show'+(row.classList.contains('bad')?' bad':'');
+  var r=row.getBoundingClientRect();
+  popEl.style.left='0px'; popEl.style.top='0px';
+  var pw=popEl.offsetWidth, ph=popEl.offsetHeight;
+  var x=Math.min(Math.max(8,r.left), window.innerWidth-pw-8);
+  var y=r.bottom+6;
+  if(y+ph>window.innerHeight-8) y=r.top-ph-6;
+  if(y<8) y=8;
+  popEl.style.left=x+'px'; popEl.style.top=y+'px';
+  popTarget=row;
+}
+function hidePop(){ if(!popPinned){ popEl.className='pop'; popTarget=null; } }
+document.addEventListener('mouseover',function(e){ var row=e.target.closest?e.target.closest('.rev-row'):null; if(row&&!popPinned) showPopFor(row); });
+document.addEventListener('mouseout',function(e){ var row=e.target.closest?e.target.closest('.rev-row'):null; if(row&&!popPinned) hidePop(); });
+document.addEventListener('click',function(e){
+  var row=e.target.closest?e.target.closest('.rev-row'):null;
+  if(row){
+    if(popPinned&&popTarget===row){ popPinned=false; hidePop(); }
+    else { popPinned=true; showPopFor(row); }
+  } else if(popPinned && !(e.target.closest && e.target.closest('.pop'))) {
+    popPinned=false; popEl.className='pop'; popTarget=null;
+  }
+});
+document.addEventListener('focusin',function(e){ var row=e.target.closest?e.target.closest('.rev-row'):null; if(row&&!popPinned) showPopFor(row); });
+document.addEventListener('focusout',function(e){ if(!popPinned) hidePop(); });
+window.addEventListener('scroll',function(){ if(!popPinned) hidePop(); else if(popTarget) showPopFor(popTarget); },{passive:true});
+
+/* ========== ФИНАЛ ========== */
+function goFinal(){
+  S.phase='final';
+  var chainTxt = S.chainWrong.length ? 'цепочка собрана с ошибками ('+S.chainWrong.length+')' : 'цепочка собрана без ошибок';
+  document.getElementById('sumLine').textContent =
+    'Карточек отвечено: '+S.totals.cards+'. С первой попытки верно: '+S.totals.firstOk+'. Лучшая серия: '+S.best+'. '+chainTxt+'. Доп раундов: '+S.extraRounds+'.';
+  var eb=document.getElementById('extraBtn');
+  if(S.extraPool.length){ eb.style.display='inline-block'; eb.textContent='Доп раунд (осталось '+S.extraPool.length+')'; }
+  else { eb.style.display='none'; }
+  show('screen-final');
+}
+function continueLesson(){
+  document.getElementById('finalBtns').style.display='none';
+  var n=document.getElementById('finalNote');
+  n.textContent='Спринт завершен в этом сеансе. Вернитесь к уроку: дальше разбираем связку на описании участка пересыпания сырья.';
+  n.style.display='block';
+  resizeIframe();
+}
+
+/* ========== КЛАВИАТУРА ========== */
+document.addEventListener('keydown',function(e){
+  if(!S) return;
+  var tag=(e.target.tagName||'').toUpperCase();
+  if(tag==='INPUT'||tag==='TEXTAREA') return;
+  if(S.phase==='cards'&&(e.key==='1'||e.key==='2'||e.key==='3')){
+    var map={1:'op',2:'as',3:'im'};
+    var b=document.getElementById('btn-'+map[e.key]);
+    if(b&&!b.disabled) onCat(map[e.key],b);
+  }
+});
+
+document.addEventListener('DOMContentLoaded',function(){
+  resizeIframe();
+  if('ResizeObserver' in window){ var ro=new ResizeObserver(function(){resizeIframe();}); ro.observe(document.body); }
+});
+window.addEventListener('load',function(){resizeIframe();});
+</script>
+
+</body>
+</html>
