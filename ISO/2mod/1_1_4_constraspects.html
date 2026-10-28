@@ -4,14 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
-<title>Конструктор цепочки: процесс - аспект - воздействие</title>
+<title>Конструктор первичных записей об экологических аспектах</title>
 <style>
 :root {
   --bg:#ffffff; --primary:#1e293b; --muted:#64748b; --border:#e2e8f0;
   --gray-light:#f8fafc; --accent:#2563eb; --accent-dark:#1d4ed8;
   --warn-bg:#fffbeb; --warn-border:#fde68a; --warn-text:#92400e;
   --bad-bg:#fef2f2; --bad-border:#fecaca; --bad-text:#991b1b;
-  --ok-bg:#f0fdf4; --ok-border:#bbf7d0; --ok-text:#166534;
   --radius:12px;
 }
 *{box-sizing:border-box}
@@ -20,49 +19,39 @@ body{margin:0;padding:20px;background:var(--bg);font-family:system-ui,-apple-sys
 .screen{display:none;animation:fadeIn .3s ease-out}
 .screen.active{display:block}
 @keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-h1{font-size:22px;font-weight:800;margin:0 0 10px}
-h3{font-size:15px;font-weight:700;margin:0 0 8px}
+h1{font-size:22px;font-weight:800;margin:0 0 8px}
+h2{font-size:16px;font-weight:700;margin:16px 0 8px}
 .lead{font-size:14px;margin:0 0 12px;line-height:1.6}
-.subtitle{font-size:12px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;font-weight:700;margin-bottom:8px}
 .note-box{background:var(--gray-light);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--muted);margin:10px 0}
 .note-box.accent{border-left-color:var(--accent);color:var(--primary)}
+.warn-box{background:var(--warn-bg);border-left:3px solid var(--warn-border);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--warn-text);margin:10px 0;line-height:1.5}
 .error-box{background:var(--bad-bg);border:1px solid var(--bad-border);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--bad-text);margin:12px 0}
 .error-box ul{margin:6px 0 0;padding-left:20px}
 .error-box li{margin-bottom:4px}
 .notices-box{background:var(--warn-bg);border:1px solid var(--warn-border);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--warn-text);margin:12px 0}
 .notices-box ul{margin:6px 0 0;padding-left:20px}
 .notices-box li{margin-bottom:4px}
+.storage-warn{display:none}
+.storage-warn.show{display:block}
 
-/* выбор режима */
 .mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
 .mode-card{border:2px solid var(--border);border-radius:var(--radius);padding:16px;background:#fff;cursor:pointer;font-family:inherit;text-align:left;transition:border-color .15s}
 .mode-card:hover{border-color:var(--accent)}
-.mode-card h3{margin:0 0 6px;font-size:16px;color:var(--accent)}
+.mode-card h3{margin:0 0 6px;color:var(--accent);font-size:16px}
 .mode-card p{margin:0;font-size:13px;color:var(--muted)}
-.mode-card:focus-visible{outline:3px solid var(--accent-dark);outline-offset:2px}
 
-/* цепочка */
-.chain{display:flex;align-items:stretch;gap:8px;margin:12px 0;flex-wrap:wrap}
-.chain-box{flex:1 1 160px;border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#fff;font-size:13px;line-height:1.45}
-.chain-box .cb-label{display:block;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--accent);margin-bottom:4px}
-.chain-box.empty .cb-text{color:var(--muted);font-style:italic}
-.chain-arrow{align-self:center;font-weight:800;color:var(--muted);font-size:18px}
-
-/* поля */
 .field{margin-bottom:12px}
 .field label{display:block;font-size:13px;font-weight:700;margin-bottom:4px}
 .field .req{color:var(--bad-text);font-weight:600}
 .field .hint{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
 .field textarea{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;color:var(--primary);background:#fff;min-height:52px;resize:vertical}
 .field textarea:focus{outline:3px solid var(--accent-dark);outline-offset:2px}
-.field textarea:disabled{background:var(--gray-light);color:var(--muted);font-style:italic}
 .field input[type="text"]{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px}
 .flag-row{display:flex;gap:8px;align-items:center;margin-top:6px;font-size:12px;color:var(--muted)}
 .flag-row input{width:16px;height:16px;margin:0}
-.field-view{border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#fff;font-size:13px;margin-bottom:8px}
-.field-view .fv-label{display:block;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--accent);margin-bottom:3px}
+.extra-block{border-left:3px solid var(--border);padding-left:12px;margin:10px 0}
+.extra-block[hidden]{display:none}
 
-/* вкладки */
 .tabs-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;margin:14px 0 0}
 .tab-btn{border:1px solid var(--border);border-radius:10px 10px 0 0;padding:9px 12px;background:var(--gray-light);color:var(--muted);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;max-width:220px}
 .tab-btn .tab-name{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px}
@@ -76,7 +65,11 @@ h3{font-size:15px;font-weight:700;margin:0 0 8px}
 .btn-small{padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--primary);cursor:pointer;font-family:inherit}
 .btn-small:hover{background:var(--gray-light)}
 
-/* предпросмотр */
+.edu-cond{border:1px solid var(--border);border-left:5px solid var(--accent);border-radius:10px;padding:12px 14px;background:#fff;font-size:14px;margin:10px 0}
+.cmp-table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+.cmp-table th,.cmp-table td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+.cmp-table th{background:var(--gray-light);font-weight:700}
+
 .prev-section{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin-bottom:14px}
 .prev-section p{margin:0 0 6px;font-size:13px}
 .prev-section p:last-child{margin-bottom:0}
@@ -84,6 +77,7 @@ h3{font-size:15px;font-weight:700;margin:0 0 8px}
 .prev-table th,.prev-table td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top}
 .prev-table th{background:var(--gray-light);width:34%;font-weight:600}
 .prev-empty{color:var(--muted);font-style:italic}
+.status-line{display:block;color:var(--warn-text);font-size:12px;margin-top:3px}
 
 .nav-buttons{display:flex;gap:10px;margin-top:16px;flex-wrap:wrap}
 .btn{padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:background .2s}
@@ -99,8 +93,7 @@ button:focus-visible{outline:3px solid var(--accent-dark);outline-offset:2px}
 @media (max-width:600px){
   body{padding:12px}
   h1{font-size:20px}
-  .mode-grid,.chain{grid-template-columns:1fr;flex-direction:column}
-  .chain-arrow{transform:rotate(90deg);align-self:center}
+  .mode-grid{grid-template-columns:1fr}
   .nav-buttons{flex-direction:column}
   .btn{width:100%}
 }
@@ -112,41 +105,55 @@ button:focus-visible{outline:3px solid var(--accent-dark);outline-offset:2px}
 
   <!-- ВЫБОР РЕЖИМА -->
   <div id="screen-intro" class="screen active">
-    <h1>Конструктор цепочки: процесс - аспект - воздействие</h1>
-    <p class="lead">Соберите связку «операция - аспект - воздействие» и скачайте черновик в Word. Выберите режим: разобрать учебный пример или описать свою площадку.</p>
+    <h1>Конструктор первичных записей об экологических аспектах</h1>
+    <p class="lead">Разберите одну или несколько операций. Запишите аспекты, связанные воздействия и вопросы для уточнения. Скачайте черновик, чтобы обсудить его с коллегами и продолжить работу в следующем уроке.</p>
     <div class="mode-grid" role="group" aria-label="Выбор режима">
       <button type="button" class="mode-card" onclick="chooseMode('edu')">
         <h3>Учебный завод</h3>
-        <p>Доступна карточка пересыпания сырья. Посмотрите заполненную цепочку и скачайте пример.</p>
+        <p>Карточка пересыпания сырья: заполните три поля и сравните с примером или откройте готовый пример.</p>
       </button>
       <button type="button" class="mode-card" onclick="chooseMode('own')">
         <h3>Мое предприятие</h3>
         <p>Пустые поля для собственных сведений. Условия учебного примера в этот режим не переносятся.</p>
       </button>
     </div>
-    <div class="note-box" id="restoreNote" style="display:none;">Найден сохраненный черновик режима «Мое предприятие». Данные восстановлены, учебный пример в них не добавлен.</div>
-    <div class="note-box">Данные режимов хранятся раздельно: учебный пример не попадает в черновик вашего предприятия и наоборот.</div>
+    <div class="note-box">Черновик сохраняется в этом браузере, если его настройки разрешают локальное хранилище. На другом устройстве записи могут быть недоступны. Скачайте Word, чтобы сохранить отдельную копию.</div>
+    <div class="warn-box storage-warn" id="warnIntro">Браузер не сохранил черновик. Скачайте Word перед закрытием страницы.</div>
+    <div class="note-box" id="restoreNote" style="display:none;">Найден сохраненный черновик режима «Мое предприятие». Данные восстановлены.</div>
   </div>
 
   <!-- УЧЕБНЫЙ РЕЖИМ -->
   <div id="screen-edu" class="screen">
-    <div class="subtitle">Режим: учебный завод</div>
-    <h1>Карточка примера: пересыпание сырья</h1>
-    <div class="chain" id="eduChain"></div>
-    <div id="eduFields"></div>
-    <div class="note-box">Пример относится к учебным условиям, а не к характеристикам реального предприятия. В режиме «Мое предприятие» эти поля пусты.</div>
-    <div class="nav-buttons">
-      <button type="button" class="btn btn-primary" onclick="downloadDocx('edu')">Скачать пример (Word)</button>
-      <button type="button" class="btn btn-secondary" onclick="chooseMode('own')">К моему предприятию</button>
-      <button type="button" class="btn btn-secondary" onclick="showScreen('screen-intro')">К выбору режима</button>
+    <div id="eduTaskView">
+      <h1>Учебный завод: соберите связку сами</h1>
+      <div class="edu-cond">Учебный завод выпускает листовое стекло на одной площадке. По учебному условию при пересыпании сырья часть пыли поступает в атмосферный воздух. Другие выходы в карточке не описаны.</div>
+      <div class="field"><label for="edu-oper">Операция</label><textarea id="edu-oper" oninput="setEdu('oper', this.value)"></textarea><div class="hint">Что делают на участке?</div></div>
+      <div class="field"><label for="edu-aspect">Аспект</label><textarea id="edu-aspect" oninput="setEdu('aspect', this.value)"></textarea><div class="hint">Как работа взаимодействует со средой?</div></div>
+      <div class="field"><label for="edu-impact">Воздействие</label><textarea id="edu-impact" oninput="setEdu('impact', this.value)"></textarea><div class="hint">Что меняется в среде?</div></div>
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-primary" onclick="compareEdu()">Сравнить с примером</button>
+        <button type="button" class="btn btn-secondary" onclick="showEduExample(false)">Открыть готовый пример</button>
+        <button type="button" class="btn btn-secondary" onclick="showScreen('screen-intro')">К выбору режима</button>
+      </div>
+    </div>
+
+    <div id="eduExampleView" style="display:none">
+      <h1>Учебный завод: пример записи</h1>
+      <div id="eduCompareBox"></div>
+      <div id="eduFullBox"></div>
+      <div class="note-box">Пример относится к учебным условиям, а не к характеристикам реального предприятия.</div>
+      <div class="nav-buttons">
+        <button type="button" class="btn btn-primary" onclick="downloadDocx('edu')">Скачать пример (Word)</button>
+        <button type="button" class="btn btn-secondary" onclick="showEduTask()">Вернуться к заданию</button>
+      </div>
     </div>
   </div>
 
   <!-- СВОЙ РЕЖИМ -->
   <div id="screen-own" class="screen">
-    <div class="subtitle">Режим: мое предприятие</div>
     <h1>Цепочки вашего предприятия</h1>
-    <p class="lead">Каждая цепочка живет на своей вкладке. Опишите операцию, взаимодействие со средой и изменение среды. Если сведений нет, отметьте «Требует уточнения» и запишите вопрос.</p>
+    <p class="lead">Каждая цепочка живет на своей вкладке с постоянным номером. Сначала соберите связку «операция - аспект - воздействие», затем дополните описание остальными сведениями.</p>
+    <div class="warn-box storage-warn" id="warnOwn">Браузер не сохранил черновик. Скачайте Word перед закрытием страницы.</div>
     <div class="field" style="max-width:340px;">
       <label for="own-author">Подготовил (необязательно)</label>
       <input type="text" id="own-author" oninput="onAuthor(this.value)">
@@ -162,8 +169,8 @@ button:focus-visible{outline:3px solid var(--accent-dark);outline-offset:2px}
   <!-- ПРЕДПРОСМОТР -->
   <div id="screen-preview" class="screen">
     <h1>Предпросмотр черновика</h1>
-    <div class="error-box" id="errorsBox" style="display:none;" aria-live="polite"></div>
-    <div class="notices-box" id="noticesBox" style="display:none;" aria-live="polite"></div>
+    <div class="error-box" id="errorsBox" style="display:none" aria-live="polite"></div>
+    <div class="notices-box" id="noticesBox" style="display:none" aria-live="polite"></div>
     <div id="previewBox"></div>
     <div class="nav-buttons">
       <button type="button" class="btn btn-secondary" onclick="showScreen('screen-own')">Вернуться к цепочкам</button>
@@ -177,35 +184,47 @@ button:focus-visible{outline:3px solid var(--accent-dark);outline-offset:2px}
 
 <script>
 /* ================= ДАННЫЕ ================= */
-var FIELDS = [
-  ['scope','Рассматриваемая область применения','Укажите область или ссылку на ее проект.'],
+var FIELDS_B1 = [
   ['oper','Операция или стадия','Назовите отдельную работу, а не только подразделение.'],
-  ['inout','Входы и выходы','Что используют, что получают и что остается?'],
-  ['cond','Условия','Когда возникает описанное взаимодействие?'],
   ['aspect','Аспект','Как работа взаимодействует или может взаимодействовать со средой?'],
   ['impact','Воздействие','Какое изменение среды с этим связано?'],
-  ['control','Управление или влияние','Какие решения предприятие принимает само или на что может повлиять?'],
-  ['basis','Основание','Откуда получены сведения?'],
+  ['basis','Источник сведений','Откуда получены сведения: документ, данные учета, пояснение ответственного.'],
   ['clarify','Что уточнить и где','Какой вопрос остается и кто поможет ответить?']
 ];
+var FIELDS_B2 = [
+  ['scope','Рассматриваемая область применения','Укажите область или ссылку на ее проект.'],
+  ['inout','Входы и выходы','Что используют, что получают и что остается?'],
+  ['cond','Условия','Когда возникает описанное взаимодействие?'],
+  ['control','Управление или влияние','Какие решения предприятие принимает само или на что может повлиять?']
+];
 var FLAGGABLE = ['scope','inout','cond','aspect','impact','control','basis'];
-var EMPTY_FIELDS = ['scope','inout','cond','aspect','impact','control','basis'];
+var LABELS = {};
+FIELDS_B1.concat(FIELDS_B2).forEach(function(f){ LABELS[f[0]] = f[1]; });
+LABELS.summary = 'Проект формулировки записи';
 
-var EDU_CARD = {
-  scope: 'Проект области применения: производство листового стекла, участок подготовки шихты.',
-  oper: 'Пересыпание сырья при подготовке шихты.',
-  inout: 'Используют: песок, соду, стеклобой. Получают: подготовленную шихту для загрузки в печь. Остается: пыль на участке пересыпки, ее количество и состав пока не указаны.',
-  cond: 'Взаимодействие возникает при операциях пересыпки: выгрузка из биг-бэгов, передача по транспортеру, загрузка в смеситель.',
+var EDU = {
+  scope: 'Учебный завод выпускает листовое стекло на одной площадке. В примере рассматриваем пересыпание сырья.',
+  oper: 'Пересыпание сырья.',
+  inout: 'Используют сырье. По учебному условию при пересыпании часть пыли поступает в атмосферный воздух. Другие выходы в карточке не описаны.',
+  cond: 'Обычная работа по учебной карточке. При каких действиях усиливается пыление, пока неизвестно.',
   aspect: 'Выброс пыли в атмосферный воздух при пересыпании сырья.',
-  impact: 'Загрязнение атмосферного воздуха: рост концентрации пыли на участке пересыпки.',
+  impact: 'Загрязнение атмосферного воздуха.',
   control: 'Предприятие устанавливает порядок работы на своем участке.',
-  basis: 'Технологическая схема участка и пояснение руководителя участка (учебное описание).',
-  clarify: 'Какие сведения о количестве и составе выброса пыли доступны и при каких действиях возникает пыление: помогут ответить руководитель участка и служба производственного контроля.'
+  basis: 'Учебная карточка. Поступление пыли в атмосферный воздух задано условием.',
+  clarify: 'Спросите руководителя участка, когда возникает пыление и какие меры применяют. Уточните, где доступны сведения о количестве и составе выброса.',
+  summary: ''
 };
 
-var STORAGE_KEY = 'sem-chain-constructor-v1';
-var state = { mode: null, author: '', cards: [], nextNum: 1, activeId: null };
-var bodiesById = {};
+var STORAGE_KEY = 'sem-aspect-records-v3';
+var state = {
+  mode: null,
+  author: '',
+  edu: { oper: '', aspect: '', impact: '' },
+  cards: [],
+  nextNum: 1,
+  activeId: null
+};
+var bodiesByNum = {};
 var storageOk = true;
 
 /* ================= СЛУЖЕБНЫЕ ================= */
@@ -213,31 +232,34 @@ function resizeIframe(){
   if (window.parentIFrame && typeof window.parentIFrame.size === 'function') window.parentIFrame.size();
 }
 function showScreen(id){
-  var ids = ['screen-intro','screen-edu','screen-own','screen-preview'];
-  for (var i=0;i<ids.length;i++){
-    var el = document.getElementById(ids[i]);
+  ['screen-intro','screen-edu','screen-own','screen-preview'].forEach(function(s){
+    var el = document.getElementById(s);
     if (el) el.classList.remove('active');
-  }
-  var target = document.getElementById(id);
-  if (target) target.classList.add('active');
+  });
+  var t = document.getElementById(id);
+  if (t) t.classList.add('active');
   window.scrollTo({top:0, behavior:'smooth'});
   resizeIframe();
 }
-function esc(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function nl(s){ return esc(s).replace(/\n/g,'<br>'); }
 function today(){
   var d = new Date();
   return String(d.getDate()).padStart(2,'0') + '.' + String(d.getMonth()+1).padStart(2,'0') + '.' + d.getFullYear();
 }
-
-/* ================= ПАМЯТЬ ================= */
+function showStorageWarn(){
+  var els = document.querySelectorAll('.storage-warn');
+  for (var i=0;i<els.length;i++) els[i].classList.add('show');
+  resizeIframe();
+}
 function saveOwn(){
   if (!storageOk) return;
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify({ author: state.author, cards: state.cards, nextNum: state.nextNum, activeId: state.activeId }));
-  } catch (e) { storageOk = false; }
+  } catch (e) {
+    storageOk = false;
+    showStorageWarn();
+  }
 }
 function loadOwn(){
   try {
@@ -251,111 +273,126 @@ function loadOwn(){
     state.cards = [];
     for (var i=0;i<d.cards.length;i++){
       var c = d.cards[i];
-      if (!c || !c.id) continue;
+      if (!c || !c.num) continue;
       var f = {}, g = {};
-      for (var k=0;k<FIELDS.length;k++){ var key = FIELDS[k][0]; f[key] = (c.f && typeof c.f[key] === 'string') ? c.f[key] : ''; }
-      for (var m=0;m<FLAGGABLE.length;m++){ var fk = FLAGGABLE[m]; g[fk] = !!(c.flags && c.flags[fk]); }
-      state.cards.push({ id: String(c.id), f: f, flags: g });
+      Object.keys(LABELS).forEach(function(k){ f[k] = (c.f && typeof c.f[k] === 'string') ? c.f[k] : ''; });
+      FLAGGABLE.forEach(function(k){ g[k] = !!(c.flags && c.flags[k]); });
+      state.cards.push({ num: Number(c.num), id: String(c.id || ''), f: f, flags: g, extraOpen: !!c.extraOpen });
     }
     return state.cards.length > 0;
   } catch (e) { return false; }
 }
+function testStorage(){
+  try {
+    localStorage.setItem(STORAGE_KEY + '-test', '1');
+    localStorage.removeItem(STORAGE_KEY + '-test');
+  } catch (e) {
+    storageOk = false;
+    showStorageWarn();
+  }
+}
 function clearOwn(){
   try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+}
+function findCard(id){
+  for (var i=0;i<state.cards.length;i++){ if (state.cards[i].id === id) return state.cards[i]; }
+  return null;
 }
 
 /* ================= РЕЖИМЫ ================= */
 function chooseMode(m){
   state.mode = m;
   if (m === 'edu'){
-    renderEdu();
+    showEduTask();
     showScreen('screen-edu');
     return;
   }
   if (!state.cards.length) addCard(true);
-  var authorInput = document.getElementById('own-author');
-  if (authorInput) authorInput.value = state.author;
+  var ai = document.getElementById('own-author');
+  if (ai) ai.value = state.author;
   refreshTabs();
   showScreen('screen-own');
 }
-function onAuthor(v){
-  state.author = v;
-  saveOwn();
-}
+function onAuthor(v){ state.author = v; saveOwn(); }
+function setEdu(k, v){ state.edu[k] = v; }
 
 /* ================= УЧЕБНЫЙ РЕЖИМ ================= */
-function chainHtml(oper, aspect, impact){
-  function box(label, text){
-    var empty = (!text || text === 'Не указано');
-    return '<div class="chain-box' + (empty ? ' empty' : '') + '"><span class="cb-label">' + label + '</span><span class="cb-text">' + esc(text) + '</span></div>';
+function showEduTask(){
+  document.getElementById('eduTaskView').style.display = 'block';
+  document.getElementById('eduExampleView').style.display = 'none';
+  document.getElementById('edu-oper').value = state.edu.oper;
+  document.getElementById('edu-aspect').value = state.edu.aspect;
+  document.getElementById('edu-impact').value = state.edu.impact;
+  resizeIframe();
+}
+function showEduExample(withCompare){
+  document.getElementById('eduTaskView').style.display = 'none';
+  document.getElementById('eduExampleView').style.display = 'block';
+  var cmp = '';
+  if (withCompare){
+    var rows = [['oper','Операция'],['aspect','Аспект'],['impact','Воздействие']];
+    cmp = '<h2>Ваш вариант и пример</h2><table class="cmp-table"><thead><tr><th>Поле</th><th>Ваш ответ</th><th>Пример</th></tr></thead><tbody>';
+    for (var i=0;i<rows.length;i++){
+      var mine = (state.edu[rows[i][0]] || '').trim();
+      cmp += '<tr><th>' + rows[i][1] + '</th><td>' + (mine ? esc(mine) : '<span class="prev-empty">не заполнено</span>') + '</td><td>' + esc(EDU[rows[i][0]]) + '</td></tr>';
+    }
+    cmp += '</tbody></table><p class="lead" style="font-size:13px;color:var(--muted);">Сравнение не оценивает ответ: оно показывает, где формулировка примера точнее связывает операцию, взаимодействие и изменение среды.</p>';
   }
-  return box('Операция', oper) +
-    '<div class="chain-arrow" aria-hidden="true">→</div>' +
-    box('Аспект', aspect) +
-    '<div class="chain-arrow" aria-hidden="true">→</div>' +
-    box('Воздействие', impact);
-}
-function cardChainArgs(c){
-  return [
-    c.f.oper.trim() || 'Не указано',
-    c.flags.aspect ? 'Требует уточнения' : (c.f.aspect.trim() || 'Не указано'),
-    c.flags.impact ? 'Требует уточнения' : (c.f.impact.trim() || 'Не указано')
-  ];
-}
-function renderEdu(){
-  document.getElementById('eduChain').innerHTML = chainHtml(EDU_CARD.oper, EDU_CARD.aspect, EDU_CARD.impact);
-  var html = '';
-  for (var i=0;i<FIELDS.length;i++){
-    html += '<div class="field-view"><span class="fv-label">' + FIELDS[i][1] + '</span>' + esc(EDU_CARD[FIELDS[i][0]]) + '</div>';
+  document.getElementById('eduCompareBox').innerHTML = cmp;
+  var full = '<h2>Пример записи целиком</h2><table class="prev-table"><tbody>';
+  var order = [['scope','Рассматриваемая область применения'],['oper','Операция'],['inout','Входы и выходы'],['cond','Условия'],['aspect','Аспект'],['impact','Воздействие'],['control','Управление или влияние'],['basis','Источник сведений'],['clarify','Что уточнить и где']];
+  for (var k=0;k<order.length;k++){
+    full += '<tr><th>' + order[k][1] + '</th><td>' + esc(EDU[order[k][0]]) + '</td></tr>';
   }
-  document.getElementById('eduFields').innerHTML = html;
+  full += '</tbody></table>';
+  document.getElementById('eduFullBox').innerHTML = full;
+  resizeIframe();
 }
+function compareEdu(){ showEduExample(true); }
 
 /* ================= СВОЙ РЕЖИМ: ВКЛАДКИ ================= */
+function cardIdLabel(num){ return 'Ц' + String(num).padStart(2,'0'); }
 function refreshTabs(){
   var bar = document.getElementById('tabsBar');
   var box = document.getElementById('panelsBox');
   if (!bar || !box) return;
   bar.innerHTML = '';
-
   var i, c;
   for (i=0;i<state.cards.length;i++){
     c = state.cards[i];
-    if (!bodiesById[c.id]){
+    if (!bodiesByNum[c.num]){
       var bodyEl = buildBody(c);
-      bodiesById[c.id] = bodyEl;
+      bodiesByNum[c.num] = bodyEl;
       box.appendChild(bodyEl);
     }
   }
-  Object.keys(bodiesById).forEach(function(id){
+  Object.keys(bodiesByNum).forEach(function(n){
     var exists = false;
-    for (var k=0;k<state.cards.length;k++){ if (state.cards[k].id === id){ exists = true; break; } }
-    if (!exists){ bodiesById[id].remove(); delete bodiesById[id]; }
+    for (var k=0;k<state.cards.length;k++){ if (String(state.cards[k].num) === n) { exists = true; break; } }
+    if (!exists){ bodiesByNum[n].remove(); delete bodiesByNum[n]; }
   });
-
   var oldPh = document.getElementById('emptyPlaceholder');
   if (oldPh) oldPh.remove();
   var activeExists = false;
   for (i=0;i<state.cards.length;i++){ if (state.cards[i].id === state.activeId) activeExists = true; }
   if (!activeExists) state.activeId = state.cards.length ? state.cards[0].id : null;
-
   for (i=0;i<state.cards.length;i++){
     c = state.cards[i];
-    var tab = document.createElement('button');
-    tab.type = 'button';
-    tab.className = 'tab-btn';
-    tab.id = 'tab-' + c.id;
-    tab.setAttribute('role','tab');
-    tab.setAttribute('aria-controls','panel-' + c.id);
-    tab.setAttribute('aria-selected', c.id === state.activeId ? 'true' : 'false');
-    tab.onclick = (function(id){ return function(){ activateTab(id); }; })(c.id);
+    var t = document.createElement('button');
+    t.type = 'button';
+    t.className = 'tab-btn';
+    t.id = 'tab-' + c.num;
+    t.setAttribute('role','tab');
+    t.setAttribute('aria-controls','panel-' + c.num);
+    t.setAttribute('aria-selected', c.id === state.activeId ? 'true' : 'false');
+    t.onclick = (function(id){ return function(){ activateTab(id); }; })(c.id);
     var nm = document.createElement('span');
     nm.className = 'tab-name';
-    nm.id = 'tabname-' + c.id;
+    nm.id = 'tabname-' + c.num;
     nm.textContent = c.f.oper.trim() ? c.f.oper.trim() : 'цепочка ' + c.id;
-    tab.appendChild(document.createTextNode(c.id + ' '));
-    tab.appendChild(nm);
-    bar.appendChild(tab);
+    t.appendChild(document.createTextNode(c.id + ' '));
+    t.appendChild(nm);
+    bar.appendChild(t);
   }
   var addBtn = document.createElement('button');
   addBtn.type = 'button';
@@ -363,7 +400,6 @@ function refreshTabs(){
   addBtn.textContent = 'Добавить цепочку';
   addBtn.onclick = function(){ addCard(false); };
   bar.appendChild(addBtn);
-
   if (!state.cards.length){
     var ph = document.createElement('div');
     ph.className = 'note-box';
@@ -376,8 +412,8 @@ function refreshTabs(){
 function applyActive(){
   for (var i=0;i<state.cards.length;i++){
     var c = state.cards[i];
-    var p = bodiesById[c.id];
-    var t = document.getElementById('tab-' + c.id);
+    var p = bodiesByNum[c.num];
+    var t = document.getElementById('tab-' + c.num);
     if (p) p.hidden = (c.id !== state.activeId);
     if (t) t.setAttribute('aria-selected', c.id === state.activeId ? 'true' : 'false');
   }
@@ -389,211 +425,238 @@ function activateTab(id){
   resizeIframe();
 }
 function addCard(first){
-  var id = 'Ц' + String(state.nextNum).padStart(2,'0');
+  var num = state.nextNum;
   state.nextNum++;
   var f = {}, g = {};
-  for (var i=0;i<FIELDS.length;i++) f[FIELDS[i][0]] = '';
-  for (var k=0;k<FLAGGABLE.length;k++) g[FLAGGABLE[k]] = false;
-  state.cards.push({ id: id, f: f, flags: g });
-  state.activeId = id;
+  Object.keys(LABELS).forEach(function(k){ f[k] = ''; });
+  FLAGGABLE.forEach(function(k){ g[k] = false; });
+  var c = { num: num, id: cardIdLabel(num), f: f, flags: g, extraOpen: false };
+  state.cards.push(c);
+  state.activeId = c.id;
   refreshTabs();
   saveOwn();
   if (!first){
-    var inp = document.getElementById('f-' + id + '-oper');
-    if (inp) inp.focus();
+    var el = document.getElementById('f-' + num + '-oper');
+    if (el) el.focus();
   }
   resizeIframe();
 }
-function deleteCard(id){
+function deleteCard(num){
   var c = null;
-  for (var i=0;i<state.cards.length;i++){ if (state.cards[i].id === id) c = state.cards[i]; }
+  for (var i=0;i<state.cards.length;i++){ if (state.cards[i].num === num) c = state.cards[i]; }
   if (!c) return;
   var filled = false;
-  for (var k=0;k<FIELDS.length;k++){ if (c.f[FIELDS[k][0]].trim()){ filled = true; break; } }
-  if (filled && !confirm('Удалить цепочку ' + id + '? Введенные данные будут потеряны.')) return;
-  state.cards = state.cards.filter(function(x){ return x.id !== id; });
-  if (state.activeId === id) state.activeId = state.cards.length ? state.cards[0].id : null;
+  Object.keys(LABELS).forEach(function(k){ if (c.f[k] && c.f[k].trim()) filled = true; });
+  if (filled && !confirm('Удалить цепочку ' + c.id + '? Введенные данные будут потеряны.')) return;
+  state.cards = state.cards.filter(function(x){ return x.num !== num; });
+  if (state.activeId === c.id) state.activeId = state.cards.length ? state.cards[0].id : null;
   refreshTabs();
   saveOwn();
   resizeIframe();
 }
 
 /* ================= КАРТОЧКА ================= */
+function fieldHtml(c, key, label, hint){
+  var h = '<div class="field"><label for="f-' + c.num + '-' + key + '">' + label + (key === 'oper' ? ' <span class="req">(обязательное поле)</span>' : '') + '</label>' +
+    '<textarea id="f-' + c.num + '-' + key + '"></textarea><div class="hint">' + hint + '</div>';
+  if (FLAGGABLE.indexOf(key) >= 0){
+    h += '<div class="flag-row"><input type="checkbox" id="g-' + c.num + '-' + key + '"><label for="g-' + c.num + '-' + key + '" style="font-weight:500;">Часть сведений еще уточняется.</label></div>';
+  }
+  if (key === 'clarify'){
+    h += '<div class="hint">Если отметили несколько полей, запишите вопрос к каждому. Например, «Условия - когда усиливается пыление? Источник сведений - где найти результаты контроля?».</div>';
+  }
+  h += '</div>';
+  return h;
+}
 function buildBody(c){
   var panel = document.createElement('div');
   panel.className = 'tab-panel';
-  panel.id = 'panel-' + c.id;
+  panel.id = 'panel-' + c.num;
   panel.setAttribute('role','tabpanel');
-  panel.setAttribute('aria-labelledby','tab-' + c.id);
+  panel.setAttribute('aria-labelledby','tab-' + c.num);
 
   var head = document.createElement('div');
   head.className = 'panel-head';
-  var strong = document.createElement('strong');
-  strong.textContent = 'Цепочка ' + c.id;
+  var st = document.createElement('strong');
+  st.textContent = 'Цепочка ' + c.id;
   var del = document.createElement('button');
   del.type = 'button';
   del.className = 'btn-small';
   del.textContent = 'Удалить цепочку';
-  del.onclick = function(){ deleteCard(c.id); };
-  head.appendChild(strong);
+  del.onclick = function(){ deleteCard(c.num); };
+  head.appendChild(st);
   head.appendChild(del);
   panel.appendChild(head);
 
-  var chain = document.createElement('div');
-  chain.className = 'chain';
-  chain.id = 'chain-' + c.id;
-  panel.appendChild(chain);
-
   var body = document.createElement('div');
   var html = '';
-  for (var i=0;i<FIELDS.length;i++){
-    var key = FIELDS[i][0];
-    html += '<div class="field"><label for="f-' + c.id + '-' + key + '">' + FIELDS[i][1] +
-      (key === 'oper' ? ' <span class="req">(обязательное поле)</span>' : '') + '</label>' +
-      '<textarea id="f-' + c.id + '-' + key + '"></textarea>' +
-      '<div class="hint">' + FIELDS[i][2] + '</div>';
-    if (FLAGGABLE.indexOf(key) >= 0){
-      html += '<div class="flag-row"><input type="checkbox" id="g-' + c.id + '-' + key + '">' +
-        '<label for="g-' + c.id + '-' + key + '" style="font-weight:500;">Требует уточнения: сведения неизвестны, запишу вопрос в конце</label></div>';
-    }
-    html += '</div>';
-  }
+  FIELDS_B1.forEach(function(f){ html += fieldHtml(c, f[0], f[1], f[2]); });
+  html += '<div class="nav-buttons" style="margin:6px 0 12px"><button type="button" class="btn-small" id="extraBtn-' + c.num + '" onclick="toggleExtra(' + c.num + ')">Дополнить описание</button></div>';
+  html += '<div class="extra-block" id="extra-' + c.num + '">';
+  FIELDS_B2.forEach(function(f){ html += fieldHtml(c, f[0], f[1], f[2]); });
+  html += '</div>';
+  html += fieldHtml(c, 'summary', LABELS.summary, 'Соберите связное описание: какая операция, какое взаимодействие со средой и какое изменение среды связаны. Этот текст можно перенести в документ предприятия.');
   body.innerHTML = html;
   panel.appendChild(body);
 
-  for (var k=0;k<FIELDS.length;k++){
-    (function(key){
-      var ta = body.querySelector('[id="f-' + c.id + '-' + key + '"]');
-      if (!ta) return;
-      ta.value = c.f[key];
-      ta.addEventListener('input', function(e){
-        c.f[key] = e.target.value;
-        if (key === 'oper'){
-          var nm = document.getElementById('tabname-' + c.id);
-          if (nm) nm.textContent = c.f.oper.trim() ? c.f.oper.trim() : 'цепочка ' + c.id;
-        }
-        if (key === 'oper' || key === 'aspect' || key === 'impact') renderChainInto(c);
-        saveOwn();
-      });
-    })(FIELDS[k][0]);
-  }
-  for (var m=0;m<FLAGGABLE.length;m++){
-    (function(key){
-      var cb = body.querySelector('[id="g-' + c.id + '-' + key + '"]');
-      if (!cb) return;
-      cb.checked = !!c.flags[key];
+  Object.keys(LABELS).forEach(function(key){
+    var ta = body.querySelector('[id="f-' + c.num + '-' + key + '"]');
+    if (!ta) return;
+    ta.value = c.f[key] || '';
+    ta.addEventListener('input', function(e){
+      c.f[key] = e.target.value;
+      if (key === 'oper'){
+        var nm = document.getElementById('tabname-' + c.num);
+        if (nm) nm.textContent = c.f.oper.trim() ? c.f.oper.trim() : 'цепочка ' + c.id;
+      }
+      saveOwn();
+    });
+  });
+  FLAGGABLE.forEach(function(key){
+    var cb = body.querySelector('[id="g-' + c.num + '-' + key + '"]');
+    if (!cb) return;
+    cb.checked = !!c.flags[key];
+    syncDisabled(c, key, body);
+    cb.addEventListener('change', function(e){
+      c.flags[key] = e.target.checked;
       syncDisabled(c, key, body);
-      cb.addEventListener('change', function(e){
-        c.flags[key] = e.target.checked;
-        syncDisabled(c, key, body);
-        if (key === 'aspect' || key === 'impact') renderChainInto(c);
-        saveOwn();
-        resizeIframe();
-      });
-    })(FLAGGABLE[m]);
-  }
-  renderChainInto(c, chain);
+      saveOwn();
+      resizeIframe();
+    });
+  });
+  syncExtra(c);
   return panel;
 }
 function syncDisabled(c, key, root){
   var scope = root || document;
-  var ta = scope.querySelector('[id="f-' + c.id + '-' + key + '"]');
-  var cb = scope.querySelector('[id="g-' + c.id + '-' + key + '"]');
+  var ta = scope.querySelector('[id="f-' + c.num + '-' + key + '"]');
+  var cb = scope.querySelector('[id="g-' + c.num + '-' + key + '"]');
   if (ta && cb) ta.disabled = cb.checked;
 }
-function renderChainInto(c, el){
-  var target = el || document.getElementById('chain-' + c.id);
-  if (!target) return;
-  var a = cardChainArgs(c);
-  target.innerHTML = chainHtml(a[0], a[1], a[2]);
+function toggleExtra(num){
+  var c = null;
+  for (var i=0;i<state.cards.length;i++){ if (state.cards[i].num === num) c = state.cards[i]; }
+  if (!c) return;
+  c.extraOpen = !c.extraOpen;
+  syncExtra(c);
+  saveOwn();
+  resizeIframe();
+}
+function extraHasContent(c){
+  var has = false;
+  FIELDS_B2.forEach(function(f){
+    if ((c.f[f[0]] && c.f[f[0]].trim()) || c.flags[f[0]]) has = true;
+  });
+  return has;
+}
+function syncExtra(c){
+  var box = document.getElementById('extra-' + c.num);
+  var btn = document.getElementById('extraBtn-' + c.num);
+  if (!box || !btn) return;
+  var open = c.extraOpen || extraHasContent(c);
+  box.hidden = !open;
+  btn.textContent = open ? 'Скрыть дополнительные поля' : 'Дополнить описание';
 }
 
 /* ================= ПРОВЕРКИ ================= */
-function validateOwn(){
-  var errors = [];
-  for (var i=0;i<state.cards.length;i++){
-    var c = state.cards[i];
-    if (!c.f.oper.trim()) errors.push('Цепочка ' + c.id + ': не названа операция или стадия, цепочку не собрать.');
-  }
-  return errors;
+function validate(){
+  var errs = [];
+  state.cards.forEach(function(c){
+    if (!c.f.oper.trim()) errs.push('Цепочка ' + c.id + ': не названа операция или стадия, запись не собирается.');
+  });
+  return errs;
 }
-function noticesOwn(){
+function markedFields(c){
+  return FLAGGABLE.filter(function(k){ return c.flags[k]; });
+}
+function fieldRender(c, key){
+  var val = (c.f[key] || '').trim();
+  var flag = !!c.flags[key];
+  if (val && flag) return { main: val, status: 'Статус - требует уточнения.' };
+  if (val) return { main: val, status: '' };
+  if (flag) return { main: 'Требует уточнения.', status: '' };
+  return { main: 'Не указано.', status: '' };
+}
+function notices(){
   var list = [];
-  for (var i=0;i<state.cards.length;i++){
-    var c = state.cards[i];
-    for (var k=0;k<FLAGGABLE.length;k++){
-      var key = FLAGGABLE[k];
-      var label = fieldLabel(key);
-      if (c.flags[key] && !c.f.clarify.trim()){
-        list.push('Цепочка ' + c.id + ': поле «' + label + '» помечено «Требует уточнения». Добавьте вопрос и того, кто поможет ответить, в поле «Что уточнить и где».');
-      } else if (!c.flags[key] && !c.f[key].trim()){
+  state.cards.forEach(function(c){
+    FLAGGABLE.forEach(function(key){
+      if (!c.f[key].trim() && !c.flags[key]){
         if (key === 'aspect'){
-          list.push('Цепочка ' + c.id + ': поле «Аспект» не заполнено. Это пробел в данных, а не вывод об отсутствии аспекта: заполните поле или отметьте «Требует уточнения».');
+          list.push('Цепочка ' + c.id + ': поле «Аспект» не заполнено. Это пробел в данных, а не вывод об отсутствии аспекта. Заполните или отметьте «Часть сведений еще уточняется».');
         } else {
-          list.push('Цепочка ' + c.id + ': поле «' + label + '» не заполнено. Добавьте сведения или отметьте «Требует уточнения».');
+          list.push('Цепочка ' + c.id + ': поле «' + LABELS[key] + '» не заполнено. Добавьте сведения или отметьте «Часть сведений еще уточняется».');
         }
       }
+    });
+    if (markedFields(c).length && !c.f.clarify.trim()){
+      list.push('Цепочка ' + c.id + ': есть поля со статусом «уточняется». Запишите вопрос к каждому в поле «Что уточнить и где».');
     }
-  }
+    if (!c.f.summary.trim()){
+      list.push('Цепочка ' + c.id + ': формулировка записи не подготовлена. Соберите связное описание из операции, аспекта и воздействия.');
+    }
+  });
   return list;
 }
-function questionsOwn(){
+function questionsList(){
   var list = [];
-  for (var i=0;i<state.cards.length;i++){
-    var c = state.cards[i];
-    if (c.f.clarify.trim()) list.push({ id: c.id, text: c.f.clarify.trim() });
-    for (var k=0;k<FLAGGABLE.length;k++){
-      var key = FLAGGABLE[k];
-      if (c.flags[key] && !c.f.clarify.trim()) list.push({ id: c.id, text: 'Поле «' + fieldLabel(key) + '» помечено «Требует уточнения», вопрос еще не записан.' });
-    }
-    if (!c.flags.aspect && !c.f.aspect.trim()) list.push({ id: c.id, text: 'Поле «Аспект» не заполнено: решите, каких сведений не хватает и кто поможет их получить.' });
-  }
+  state.cards.forEach(function(c){
+    if (c.f.clarify.trim()) list.push(c.id + ': ' + c.f.clarify.trim());
+    markedFields(c).forEach(function(k){
+      list.push(c.id + ': поле «' + LABELS[k] + '» - статус «требует уточнения».');
+    });
+  });
   return list;
-}
-function fieldLabel(key){
-  for (var i=0;i<FIELDS.length;i++){ if (FIELDS[i][0] === key) return FIELDS[i][1]; }
-  return key;
-}
-function fieldValue(c, key){
-  if (c.flags[key]) return 'Требует уточнения.';
-  if (c.f[key].trim()) return c.f[key].trim();
-  return 'Не указано.';
 }
 
 /* ================= ПРЕДПРОСМОТР ================= */
+function chainBlockHtml(c){
+  var html = '<div class="prev-section"><h3 style="margin:0 0 8px;">' + c.id + '. ' + esc(c.f.oper.trim() || 'Операция не названа') + '</h3>';
+  html += '<p><strong>Формулировка:</strong> ' + (c.f.summary.trim() ? nl(c.f.summary) : '<span class="prev-empty">не подготовлена</span>') + '</p>';
+  html += '<p><strong>Связка:</strong> ' + esc(c.f.oper.trim() || 'операция не названа') + ' → ' + esc(c.f.aspect.trim() || 'аспект не указан') + ' → ' + esc(c.f.impact.trim() || 'воздействие не указано') + '</p>';
+  html += '<table class="prev-table"><tbody>';
+  [['scope','Рассматриваемая область применения'],['oper','Операция или стадия'],['inout','Входы и выходы'],['cond','Условия'],['aspect','Аспект'],['impact','Воздействие']].forEach(function(r){
+    var fr = fieldRender(c, r[0]);
+    html += '<tr><th>' + r[1] + '</th><td>' + esc(fr.main) + (fr.status ? '<span class="status-line">' + esc(fr.status) + '</span>' : '') + '</td></tr>';
+  });
+  html += '</tbody></table></div>';
+  return html;
+}
+function basisBlockHtml(c){
+  var html = '<div class="prev-section"><h3 style="margin:0 0 8px;">' + c.id + '. Основания и проверка</h3><table class="prev-table"><tbody>';
+  [['basis','Источник сведений'],['control','Управление или влияние'],['clarify','Что уточнить и где']].forEach(function(r){
+    var fr = fieldRender(c, r[0]);
+    html += '<tr><th>' + r[1] + '</th><td>' + esc(fr.main) + (fr.status ? '<span class="status-line">' + esc(fr.status) + '</span>' : '') + '</td></tr>';
+  });
+  html += '</tbody></table>';
+  var mk = markedFields(c);
+  if (mk.length){
+    html += '<p><strong>Поля со статусом «требует уточнения»:</strong> ' + esc(mk.map(function(k){ return LABELS[k]; }).join(', ')) + '.</p>';
+  }
+  html += '</div>';
+  return html;
+}
 function openPreview(){
   renderPreview();
   showScreen('screen-preview');
 }
-function chainSectionHtml(c, num){
-  var a = cardChainArgs(c);
-  var html = '<div class="prev-section"><h3>Цепочка ' + num + '. ' + esc(c.f.oper.trim() || 'Операция не названа') + '</h3>';
-  html += '<div class="chain">' + chainHtml(a[0], a[1], a[2]) + '</div>';
-  html += '<table class="prev-table"><tbody>';
-  for (var i=0;i<FIELDS.length;i++){
-    html += '<tr><th>' + FIELDS[i][1] + '</th><td>' + esc(fieldValue(c, FIELDS[i][0])) + '</td></tr>';
-  }
-  html += '</tbody></table></div>';
-  return html;
-}
 function renderPreview(){
+  var errs = validate();
   var errBox = document.getElementById('errorsBox');
-  var dlBtn = document.getElementById('downloadBtn');
-  var errors = validateOwn();
-  if (errors.length || !state.cards.length){
+  var dl = document.getElementById('downloadBtn');
+  if (errs.length || !state.cards.length){
     errBox.style.display = 'block';
-    errBox.innerHTML = '<strong>Для сборки документа не хватает основы цепочки.</strong><ul>' +
-      errors.map(function(e){ return '<li>' + esc(e) + '</li>'; }).join('') +
+    errBox.innerHTML = '<strong>Для сборки документа не хватает основы записей.</strong><ul>' +
+      errs.map(function(e){ return '<li>' + esc(e) + '</li>'; }).join('') +
       (!state.cards.length ? '<li>Добавьте хотя бы одну цепочку.</li>' : '') + '</ul>';
-    dlBtn.disabled = true;
-    document.getElementById('downloadNote').textContent = 'Скачивание откроется, когда у каждой цепочки будет названа операция или стадия.';
+    dl.disabled = true;
+    document.getElementById('downloadNote').textContent = 'Скачивание откроется, когда у каждой цепочки будет названа операция.';
   } else {
     errBox.style.display = 'none';
-    dlBtn.disabled = false;
+    dl.disabled = false;
     document.getElementById('downloadNote').textContent = 'Документ сохранится на ваше устройство по нажатию кнопки.';
   }
-
-  var nt = noticesOwn();
+  var nt = notices();
   var ntBox = document.getElementById('noticesBox');
   if (nt.length){
     ntBox.style.display = 'block';
@@ -601,21 +664,19 @@ function renderPreview(){
   } else {
     ntBox.style.display = 'none';
   }
-
-  var html = '<div class="prev-section"><p><strong>Цепочка «процесс - аспект - воздействие». Проект описания.</strong></p>' +
-    '<p style="color:var(--muted);font-size:12px;">Режим: данные предприятия. Дата: ' + today() +
-    (state.author.trim() ? '. Подготовил: ' + esc(state.author.trim()) : '') +
-    '. Цепочек: ' + state.cards.length + '.</p>' +
-    '<p style="color:var(--muted);font-size:12px;">Предварительный рабочий материал. Требует проверки и обсуждения на предприятии.</p></div>';
-  for (var i=0;i<state.cards.length;i++){
-    html += chainSectionHtml(state.cards[i], i+1);
-  }
-  var qs = questionsOwn();
-  html += '<div class="prev-section"><h3>Вопросы для уточнения</h3>';
-  if (!qs.length) html += '<p class="prev-empty">Дополнительных вопросов в этой версии нет.</p>';
-  else for (var k=0;k<qs.length;k++) html += '<p><strong>Цепочка ' + qs[k].id + ':</strong> ' + nl(qs[k].text) + '</p>';
+  var markedCount = state.cards.filter(function(c){ return markedFields(c).length > 0; }).length;
+  var sumCount = state.cards.filter(function(c){ return c.f.summary.trim(); }).length;
+  var html = '<div class="note-box accent">Цепочек: ' + state.cards.length + '. Цепочек с полями со статусом «уточняется»: ' + markedCount + '. Формулировок подготовлено: ' + sumCount + '.</div>';
+  html += '<h2>Часть 1. Проект записей об аспектах</h2>';
+  state.cards.forEach(function(c){ html += chainBlockHtml(c); });
+  html += '<h2>Часть 2. Основания, результаты проверки и открытые вопросы</h2>';
+  state.cards.forEach(function(c){ html += basisBlockHtml(c); });
+  var qs = questionsList();
+  html += '<div class="prev-section"><h3 style="margin:0 0 8px;">Открытые вопросы</h3>';
+  if (!qs.length) html += '<p class="prev-empty">Вы пока не записали вопросы для уточнения.</p>';
+  else qs.forEach(function(q){ html += '<p>' + nl(q) + '</p>'; });
   html += '</div>';
-  html += '<p style="font-size:12px;color:var(--muted);">Пустое поле не означает отсутствие аспекта или воздействия: оно означает, что сведения еще не указаны. Цепочка описывает связь работы со средой и не подменяет оценку значимости аспектов, рисков и обязательств.</p>';
+  html += '<p style="font-size:12px;color:var(--muted);">Пустое поле не означает отсутствие аспекта или воздействия: оно означает, что сведения еще не указаны. Запись об аспекте и воздействии описывает связь операции со средой и не подменяет оценку значимости, рисков и обязательств. Документ собран учебным конструктором и не подтверждает соответствие СЭМ стандарту.</p>';
   document.getElementById('previewBox').innerHTML = html;
   resizeIframe();
 }
@@ -628,19 +689,17 @@ function restartOwn(){
   state.cards = [];
   state.nextNum = 1;
   state.activeId = null;
-  bodiesById = {};
+  bodiesByNum = {};
   var box = document.getElementById('panelsBox');
   if (box) box.innerHTML = '';
-  var authorInput = document.getElementById('own-author');
-  if (authorInput) authorInput.value = '';
+  var ai = document.getElementById('own-author');
+  if (ai) ai.value = '';
   addCard(true);
   showScreen('screen-own');
 }
 
 /* ================= DOCX ================= */
-function xmlEsc(s){
-  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');
-}
+function xmlEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;'); }
 function run(t,o){
   o = o || {};
   var rpr = '';
@@ -663,54 +722,79 @@ function paraMulti(t,o){
 function cell(w, xml, fill){
   return '<w:tc><w:tcPr><w:tcW w:w="' + w + '" w:type="dxa"/>' + (fill ? '<w:shd w:val="clear" w:color="auto" w:fill="' + fill + '"/>' : '') + '<w:vAlign w:val="top"/></w:tcPr>' + (xml || '<w:p/>') + '</w:tc>';
 }
+function cellParas(fr,o){
+  var xml = paraMulti(fr.main,o);
+  if (fr.status) xml += para(fr.status,{i:true,color:'92400E',sz:20});
+  return xml;
+}
+function rowOf(label,fr){
+  return '<w:tr>' + cell(2800, para(label,{b:true,sz:20}), 'F8FAFC') + cell(6838, cellParas(fr,{sz:20})) + '</w:tr>';
+}
 var TBL = '<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
 var CMAR = '<w:tblCellMar><w:top w:w="80" w:type="dxa"/><w:left w:w="100" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:right w:w="100" w:type="dxa"/></w:tblCellMar>';
-function table(ws, rowsXml){
-  var total = ws[0] + ws[1];
-  return '<w:tbl><w:tblPr><w:tblW w:w="' + total + '" w:type="dxa"/>' + TBL + CMAR + '<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="' + ws[0] + '"/><w:gridCol w:w="' + ws[1] + '"/></w:tblGrid>' + rowsXml + '</w:tbl>';
+function table2(rowsXml){
+  return '<w:tbl><w:tblPr><w:tblW w:w="9638" w:type="dxa"/>' + TBL + CMAR + '<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="2800"/><w:gridCol w:w="6838"/></w:tblGrid>' + rowsXml + '</w:tbl>';
 }
-function chainValues(mode, c){
-  if (mode === 'edu') return [EDU_CARD.oper, EDU_CARD.aspect, EDU_CARD.impact];
-  return cardChainArgs(c);
+function buildChains(mode){
+  if (mode === 'edu') return [{ id: 'Ц01', f: EDU, flags: {} }];
+  return state.cards.map(function(c){ return { id: c.id, f: c.f, flags: c.flags, num: c.num }; });
 }
 function buildDocumentXml(mode){
   var b = [];
-  b.push(para('Цепочка «процесс - аспект - воздействие». Проект описания', { style:'Title' }));
-  b.push(para('Предварительный рабочий материал. Требует проверки и обсуждения на предприятии.', { i:true, color:'6B7280', sz:20, after:200 }));
-
-  b.push(para('1. Сведения о подготовке', { style:'Heading1' }));
-  b.push(para(mode === 'edu'
-    ? 'Режим подготовки: учебный пример. Карточка описывает учебные условия, а не характеристики реального предприятия.'
-    : 'Режим подготовки: данные предприятия.'));
+  b.push(para('Первичные записи об экологических аспектах. Проект', {style:'Title'}));
+  b.push(para('Предварительный рабочий материал. Требует проверки и обсуждения на предприятии.', {i:true,color:'6B7280',sz:20,after:200}));
+  b.push(para('1. Сведения о подготовке', {style:'Heading1'}));
+  b.push(para(mode === 'edu' ? 'Режим: учебный пример. Запись описывает учебные условия, а не характеристики реального предприятия.' : 'Режим: данные предприятия.'));
   b.push(para('Дата: ' + today()));
   if (mode === 'own' && state.author.trim()) b.push(para('Подготовил: ' + state.author.trim()));
-  var chains = (mode === 'edu') ? [{ id:'1', f:EDU_CARD, flags:{} }] : state.cards;
-  b.push(para('Цепочек в документе: ' + chains.length));
+  var chains = buildChains(mode);
+  b.push(para('Записей в документе: ' + chains.length));
 
-  b.push(para('2. Цепочки', { style:'Heading1' }));
-  for (var i=0;i<chains.length;i++){
-    var c = chains[i];
-    var vals = chainValues(mode, c);
-    b.push(para('Цепочка ' + (i+1) + '. ' + (mode === 'edu' ? EDU_CARD.oper : (c.f.oper.trim() || 'Операция не названа')), { style:'Heading2' }));
-    b.push(para('Связка: ' + vals[0] + ' → ' + vals[1] + ' → ' + vals[2], { b:true, after:100 }));
-    var rowsXml = '';
-    for (var k=0;k<FIELDS.length;k++){
-      var key = FIELDS[k][0];
-      var val = (mode === 'edu') ? EDU_CARD[key] : fieldValue(c, key);
-      rowsXml += '<w:tr>' + cell(2800, para(FIELDS[k][1], { b:true, sz:20 }), 'F8FAFC') + cell(6838, paraMulti(val, { sz:20 })) + '</w:tr>';
+  b.push(para('2. Проект записей об аспектах', {style:'Heading1'}));
+  chains.forEach(function(c){
+    var card = (mode === 'own') ? findCard(c.id) : null;
+    b.push(para(c.id + '. ' + (c.f.oper.trim() || 'Операция не названа'), {style:'Heading2'}));
+    if (mode === 'own' && c.f.summary && c.f.summary.trim()){
+      b.push(para('Формулировка: ' + c.f.summary.trim(), {after:60}));
     }
-    b.push(table([2800,6838], rowsXml));
-    b.push(para('', { after:120 }));
-  }
+    b.push(para('Связка: ' + (c.f.oper.trim() || 'операция не названа') + ' → ' + (c.f.aspect.trim() || 'аспект не указан') + ' → ' + (c.f.impact.trim() || 'воздействие не указано'), {b:true,after:100}));
+    var rows = '';
+    [['scope','Рассматриваемая область применения'],['oper','Операция или стадия'],['inout','Входы и выходы'],['cond','Условия'],['aspect','Аспект'],['impact','Воздействие']].forEach(function(r){
+      var fr = (mode === 'edu') ? { main: c.f[r[0]] || '', status: '' } : fieldRender(card, r[0]);
+      rows += rowOf(r[1], fr);
+    });
+    b.push(table2(rows));
+    b.push(para('', {after:120}));
+  });
 
-  b.push(para('3. Вопросы для уточнения', { style:'Heading1' }));
-  var qs = (mode === 'edu') ? [{ id:'1', text: EDU_CARD.clarify }] : questionsOwn();
-  if (!qs.length) b.push(para('Дополнительных вопросов в этой версии нет.', { i:true, color:'6B7280' }));
-  for (var q=0;q<qs.length;q++) b.push(para('Цепочка ' + qs[q].id + ': ' + qs[q].text, { after:60 }));
+  b.push(para('3. Основания, результаты проверки и открытые вопросы', {style:'Heading1'}));
+  chains.forEach(function(c){
+    var card = (mode === 'own') ? findCard(c.id) : null;
+    b.push(para(c.id + '. Основания и проверка', {style:'Heading2'}));
+    var rows = '';
+    [['basis','Источник сведений'],['control','Управление или влияние'],['clarify','Что уточнить и где']].forEach(function(r){
+      var fr = (mode === 'edu') ? { main: c.f[r[0]] || '', status: '' } : fieldRender(card, r[0]);
+      rows += rowOf(r[1], fr);
+    });
+    b.push(table2(rows));
+    if (card){
+      var mk = markedFields(card);
+      if (mk.length){
+        b.push(para('Поля со статусом «требует уточнения»: ' + mk.map(function(k){ return LABELS[k]; }).join(', ') + '.', {i:true,color:'92400E',sz:20,after:100}));
+      }
+    }
+    b.push(para('', {after:80}));
+  });
 
-  b.push(para('Пустое поле не означает отсутствие аспекта или воздействия: оно означает, что сведения еще не указаны.', { i:true, color:'6B7280', sz:20, before:240 }));
-  b.push(para('Цепочка «процесс - аспект - воздействие» описывает связь работы со средой и не подменяет оценку значимости аспектов, рисков и принятых обязательств.', { i:true, color:'6B7280', sz:20 }));
-  b.push(para('Документ подготовлен с помощью учебного конструктора и не является подтверждением соответствия СЭМ стандарту.', { i:true, color:'6B7280', sz:20 }));
+  var qs = (mode === 'edu') ? [EDU.clarify] : questionsList();
+  b.push(para('Открытые вопросы:', {b:true,after:60}));
+  if (!qs.length) b.push(para('Вы пока не записали вопросы для уточнения.', {i:true,color:'6B7280'}));
+  qs.forEach(function(q){ b.push(para(q, {after:40})); });
+
+  b.push(para('Пустое поле не означает отсутствие аспекта или воздействия: оно означает, что сведения еще не указаны.', {i:true,color:'6B7280',sz:20,before:240}));
+  b.push(para('Запись об аспекте и воздействии описывает связь операции со средой и не подменяет оценку значимости, рисков и принятых обязательств.', {i:true,color:'6B7280',sz:20}));
+  if (mode === 'edu') b.push(para('Пример относится к учебным условиям и не является характеристикой реального предприятия.', {i:true,color:'6B7280',sz:20}));
+  b.push(para('Документ подготовлен с помощью учебного конструктора и не является подтверждением соответствия СЭМ стандарту.', {i:true,color:'6B7280',sz:20}));
   b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
     '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>' +
@@ -760,7 +844,8 @@ function zipStore(files){
     ch.set(nb,46); centrals.push(ch);
     offset += lh.length + data.length;
   });
-  var cs = 0; centrals.forEach(function(p){ cs += p.length; });
+  var cs = 0;
+  centrals.forEach(function(p){ cs += p.length; });
   var eocd = new Uint8Array(22), ev = new DataView(eocd.buffer);
   ev.setUint32(0,0x06054b50,true); ev.setUint16(4,0,true); ev.setUint16(6,0,true);
   ev.setUint16(8,files.length,true); ev.setUint16(10,files.length,true);
@@ -778,8 +863,8 @@ function zipStore(files){
 
 function downloadDocx(mode){
   if (mode === 'own'){
-    var errors = validateOwn();
-    if (errors.length || !state.cards.length){
+    var errs = validate();
+    if (errs.length || !state.cards.length){
       renderPreview();
       showScreen('screen-preview');
       return;
@@ -787,19 +872,19 @@ function downloadDocx(mode){
   }
   var enc = new TextEncoder();
   var files = [
-    { name:'[Content_Types].xml', data: enc.encode(CT_XML) },
-    { name:'_rels/.rels', data: enc.encode(RELS_XML) },
-    { name:'word/document.xml', data: enc.encode(buildDocumentXml(mode)) },
-    { name:'word/styles.xml', data: enc.encode(STYLES_XML) },
-    { name:'word/footer1.xml', data: enc.encode(FOOTER_XML) },
-    { name:'word/_rels/document.xml.rels', data: enc.encode(DRELS_XML) }
+    { name: '[Content_Types].xml', data: enc.encode(CT_XML) },
+    { name: '_rels/.rels', data: enc.encode(RELS_XML) },
+    { name: 'word/document.xml', data: enc.encode(buildDocumentXml(mode)) },
+    { name: 'word/styles.xml', data: enc.encode(STYLES_XML) },
+    { name: 'word/footer1.xml', data: enc.encode(FOOTER_XML) },
+    { name: 'word/_rels/document.xml.rels', data: enc.encode(DRELS_XML) }
   ];
   var bytes = zipStore(files);
-  var blob = new Blob([bytes], { type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  var blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
   var url = URL.createObjectURL(blob);
   var a = document.createElement('a');
   a.href = url;
-  a.download = (mode === 'edu') ? 'primer-tsepochki-process-aspekt-vozdeistvie.docx' : 'tsepochki-process-aspekt-vozdeistvie.docx';
+  a.download = (mode === 'edu') ? 'primer-zapisi-aspekt-vozdeistvie.docx' : 'pervichnye-zapisi-aspektov.docx';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -811,6 +896,7 @@ function downloadDocx(mode){
 
 /* ================= СТАРТ ================= */
 document.addEventListener('DOMContentLoaded', function(){
+  testStorage();
   var restored = loadOwn();
   if (restored){
     var rn = document.getElementById('restoreNote');
