@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Диагностика цеха составления шихты: интерактивная схема</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --primary: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --line: #94a3b8;
+  --gray-light: #f8fafc;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Courier New", monospace;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 20px; background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--primary); font-size: 15px; line-height: 1.6;
+}
+.container { max-width: 760px; margin: 0 auto; }
+.lead { font-size: 14px; margin: 0 0 8px; }
+.hint-line { font-size: 12px; color: var(--muted); margin: 0 0 12px; }
+
+.scheme-top {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; margin: 0 0 12px; flex-wrap: wrap;
+}
+.counter {
+  font-size: 13px; font-weight: 700; color: var(--accent-dark);
+  background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 20px; padding: 4px 12px;
+}
+.btn-small {
+  padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 6px;
+  border: 1px solid var(--border); background: #fff; color: var(--primary);
+  cursor: pointer; font-family: inherit;
+}
+.btn-small:hover { background: var(--gray-light); }
+
+/* Сетка схемы */
+.scheme {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  grid-template-areas:
+    "n1 h1 n2 h2 n3"
+    "v1 .  v2 .  v3"
+    "a1 .  a2 .  a3";
+  gap: 8px 10px;
+  align-items: stretch;
+}
+.n1 { grid-area: n1; } .n2 { grid-area: n2; } .n3 { grid-area: n3; }
+.h1 { grid-area: h1; } .h2 { grid-area: h2; }
+.v1 { grid-area: v1; } .v2 { grid-area: v2; } .v3 { grid-area: v3; }
+.a1 { grid-area: a1; } .a2 { grid-area: a2; } .a3 { grid-area: a3; }
+
+/* Блок процесса */
+.node {
+  width: 100%; border: 1.5px solid var(--line); border-radius: 8px;
+  background: #fff; padding: 12px 14px; cursor: pointer; text-align: left;
+  font-family: var(--mono); color: var(--primary);
+  transition: border-color .15s, background .15s, box-shadow .15s;
+  display: block;
+}
+.node:hover { border-color: var(--accent); box-shadow: 0 2px 8px rgba(37,99,235,.12); }
+.node.active { border-color: var(--accent); background: #eff6ff; }
+.node-title {
+  display: block; font-size: 11px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--muted); margin-bottom: 6px;
+}
+.node.active .node-title { color: var(--accent-dark); }
+.node-text { display: block; font-size: 14px; line-height: 1.45; }
+
+/* Стрелки */
+.h-arrow {
+  align-self: center; color: var(--line); font-family: var(--mono);
+  font-size: 16px; font-weight: 700; letter-spacing: 3px; white-space: nowrap;
+  padding: 0 2px; user-select: none;
+}
+.v-arrow {
+  justify-self: center; align-self: stretch; width: 2px; min-height: 26px;
+  border-left: 2px dashed var(--line); position: relative; margin: 2px 0;
+}
+.v-arrow::after {
+  content: "▼"; position: absolute; bottom: -8px; left: 50%; transform: translateX(-50%);
+  color: var(--line); font-size: 10px; line-height: 1;
+}
+
+/* Скрытый аспект */
+.aspect { min-height: 86px; }
+.aspect-placeholder {
+  border: 1.5px dashed var(--line); border-radius: 8px; padding: 10px 12px;
+  font-family: var(--mono); font-size: 12px; color: var(--muted);
+  background: var(--gray-light); min-height: 86px;
+  display: flex; align-items: center; justify-content: center; text-align: center;
+}
+.aspect-card {
+  display: none; border: 1.5px solid var(--accent); border-left: 5px solid var(--accent);
+  border-radius: 8px; padding: 10px 12px; background: #eff6ff;
+  font-family: var(--mono); font-size: 13px; line-height: 1.5; color: var(--primary);
+  animation: fadeIn .3s ease-out;
+}
+.aspect.open .aspect-card { display: block; }
+.aspect.open .aspect-placeholder { display: none; }
+.aspect-label {
+  display: block; font-size: 11px; font-weight: 700; letter-spacing: .8px;
+  text-transform: uppercase; color: var(--accent-dark); margin-bottom: 4px;
+}
+@keyframes fadeIn { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+
+/* Вывод */
+.summary {
+  display: none; margin-top: 14px; border: 1px solid var(--border);
+  border-left: 4px solid var(--accent); border-radius: 0 8px 8px 0;
+  background: var(--gray-light); padding: 12px 14px; font-size: 13px; line-height: 1.55;
+}
+.summary.show { display: block; animation: fadeIn .3s ease-out; }
+.summary p { margin: 0; }
+
+button:focus-visible { outline: 3px solid var(--accent-dark); outline-offset: 2px; }
+
+@media (max-width: 640px) {
+  body { padding: 12px; }
+  .scheme {
+    grid-template-columns: 1fr;
+    grid-template-areas:
+      "n1" "v1" "a1" "h1"
+      "n2" "v2" "a2" "h2"
+      "n3" "v3" "a3";
+  }
+  .h-arrow { transform: rotate(90deg); justify-self: center; padding: 6px 0; letter-spacing: 2px; }
+  .v-arrow { min-height: 22px; }
+  .aspect, .aspect-placeholder { min-height: 74px; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <p class="lead">Проведите диагностику цеха составления шихты по этой схеме:</p>
+  <p class="hint-line">Нажимайте на блоки схемы, чтобы открыть скрытые аспекты. Повторное нажатие скрывает аспект.</p>
+
+  <div class="scheme-top">
+    <span class="counter" id="counter" aria-live="polite">Открыто аспектов: 0 из 3</span>
+    <button type="button" class="btn-small" onclick="resetScheme()">Сбросить</button>
+  </div>
+
+  <div class="scheme" role="group" aria-label="Схема процесса: вход, технологический узел, выход">
+
+    <button type="button" class="node n1" id="node1" aria-expanded="false" aria-controls="asp1" onclick="toggleNode(1)">
+      <span class="node-title">Вход процесса</span>
+      <span class="node-text">Сырье из силосов</span>
+    </button>
+    <div class="h-arrow h1" aria-hidden="true">→ → →</div>
+    <button type="button" class="node n2" id="node2" aria-expanded="false" aria-controls="asp2" onclick="toggleNode(2)">
+      <span class="node-title">Технологический узел</span>
+      <span class="node-text">Цех составления шихты</span>
+    </button>
+    <div class="h-arrow h2" aria-hidden="true">→ → →</div>
+    <button type="button" class="node n3" id="node3" aria-expanded="false" aria-controls="asp3" onclick="toggleNode(3)">
+      <span class="node-title">Выход процесса</span>
+      <span class="node-text">Готовая шихта для печи</span>
+    </button>
+
+    <div class="v-arrow v1" aria-hidden="true"></div>
+    <div class="v-arrow v2" aria-hidden="true"></div>
+    <div class="v-arrow v3" aria-hidden="true"></div>
+
+    <div class="aspect a1" id="asp1">
+      <div class="aspect-placeholder">Скрытый аспект: не открыт</div>
+      <div class="aspect-card">
+        <span class="aspect-label">Скрытый аспект:</span>
+        Просыпки соды и песка при взвешивании
+      </div>
+    </div>
+    <div class="aspect a2" id="asp2">
+      <div class="aspect-placeholder">Скрытый аспект: не открыт</div>
+      <div class="aspect-card">
+        <span class="aspect-label">Скрытый аспект:</span>
+        Конденсат при подаче пара
+      </div>
+    </div>
+    <div class="aspect a3" id="asp3">
+      <div class="aspect-placeholder">Скрытый аспект: не открыт</div>
+      <div class="aspect-card">
+        <span class="aspect-label">Скрытый аспект:</span>
+        Твердые отходы (отбраковка шихты и просыпки)
+      </div>
+    </div>
+
+  </div>
+
+  <div class="summary" id="summary">
+    <p><strong>Диагностика завершена: найдены все три скрытых аспекта цеха.</strong> Аспект входа связан с взвешиванием сырья, аспект узла с подачей пара, аспект выхода с обращением с отбраковкой и просыпками. Занесите аспекты в реестр: по каждому укажите воздействие, что нужно уточнить и кто поможет ответить.</p>
+  </div>
+
+</div>
+
+<script>
+function resizeIframe() {
+  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+    window.parentIFrame.size();
+  }
+}
+
+function openCount() {
+  return document.querySelectorAll('.aspect.open').length;
+}
+
+function toggleNode(n) {
+  var asp = document.getElementById('asp' + n);
+  var node = document.getElementById('node' + n);
+  var open = asp.classList.toggle('open');
+  node.setAttribute('aria-expanded', open ? 'true' : 'false');
+  node.classList.toggle('active', open);
+  updateState();
+}
+
+function resetScheme() {
+  [1, 2, 3].forEach(function (n) {
+    document.getElementById('asp' + n).classList.remove('open');
+    var node = document.getElementById('node' + n);
+    node.classList.remove('active');
+    node.setAttribute('aria-expanded', 'false');
+  });
+  updateState();
+}
+
+function updateState() {
+  var c = openCount();
+  document.getElementById('counter').textContent = 'Открыто аспектов: ' + c + ' из 3';
+  document.getElementById('summary').classList.toggle('show', c === 3);
+  resizeIframe();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  updateState();
+  resizeIframe();
+  if ('ResizeObserver' in window) {
+    var ro = new ResizeObserver(function () { resizeIframe(); });
+    ro.observe(document.body);
+  }
+});
+window.addEventListener('load', function () { resizeIframe(); });
+</script>
+
+</body>
+</html>
