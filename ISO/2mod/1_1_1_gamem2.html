@@ -46,10 +46,16 @@ background:var(--paper);border:3px solid #a5d6a7;max-width:560px}
 .t-lesson{display:block;font-size:12px;line-height:1.35;color:#7a756d;margin-top:2px}
 .t-row.done{color:var(--green-d)}
 .t-row.done b{color:var(--green-d)}
-.t-row.wait .t-dot{background:#c5c1bb}
 .t-check{flex:0 0 18px;height:18px;border-radius:5px;background:#e0e0e0;color:#757575;
 font-family:var(--pix);font-size:10px;line-height:18px;text-align:center}
 .t-row.done .t-check{background:var(--green);color:#fff}
+.next-block{margin:0 auto 16px;padding:10px 12px;border-radius:8px;background:#e8f5e9;
+border:2px solid #a5d6a7;color:#2e7d32;font-size:13px;line-height:1.5;text-align:left;max-width:520px}
+.mode-switch{display:flex;gap:10px;justify-content:center;align-items:center;flex-wrap:wrap;margin:0 0 14px}
+.mode-label{font-family:var(--pix);font-size:10px;color:#7a756d}
+.mode-btn{font-family:var(--pix);font-size:11px;line-height:1.4;padding:10px 14px;border-radius:8px;cursor:pointer;
+border:3px solid #a5d6a7;background:#fff;color:var(--green-d);transition:all .15s}
+.mode-btn.selected{border-color:var(--green-d);background:#e8f5e9;box-shadow:0 3px 0 var(--green-d)}
 .big-btn{font-family:var(--pix);font-size:15px;letter-spacing:.04em;padding:14px 28px;border-radius:10px;
 cursor:pointer;color:#fff;border:3px solid var(--green-d);
 background:linear-gradient(180deg,#81c784,var(--green));box-shadow:0 5px 0 var(--green-d);transition:transform .1s,filter .1s}
@@ -63,17 +69,18 @@ background:linear-gradient(180deg,#81c784,var(--green));box-shadow:0 5px 0 var(-
 padding:10px 14px;background:var(--cream);border-bottom:4px solid var(--brick-d);font-family:var(--pix)}
 .hud-lvl{font-size:12px;line-height:1.4;color:var(--green-d)}
 .hud-lvl span{color:var(--red)}
-.lives{position:relative;display:flex;gap:4px;align-items:center;min-height:20px}
-.leaf{width:20px;height:20px;transition:all .3s;filter:drop-shadow(0 1px 0 rgba(0,0,0,.2))}
-.leaf.lost{opacity:.2;filter:grayscale(1);transform:scale(.7)}
-.leaf-pop{position:absolute;left:50%;top:-8px;font-family:var(--pix);font-size:12px;animation:popUp .8s forwards;pointer-events:none}
-.leaf-pop.plus{color:var(--green-d)} .leaf-pop.minus{color:var(--red-d)}
+.score{position:relative;display:flex;align-items:center;gap:7px;font-size:12px;color:var(--green-d)}
+.score .leaf{width:18px;height:18px;filter:drop-shadow(0 1px 0 rgba(0,0,0,.2))}
+.score-pop{position:absolute;left:50%;top:-12px;font-family:var(--pix);font-size:12px;animation:popUp .9s forwards;pointer-events:none}
+.score-pop.plus{color:var(--green-d)} .score-pop.minus{color:var(--red-d)}
+.score-pop.zero{color:#0d47a1;font-size:10px;white-space:nowrap}
 @keyframes popUp{0%{opacity:0;transform:translate(-50%,4px)}25%{opacity:1}100%{opacity:0;transform:translate(-50%,-16px)}}
-.hud-timer{display:flex;align-items:center;gap:8px}
+.hud-right{display:flex;align-items:center;gap:8px}
+.bar-label{font-size:10px;color:#7a756d}
 .bar{position:relative;width:96px;height:12px;background:#fff;border:3px solid var(--brick-d);border-radius:3px;overflow:hidden}
-.bar i{position:absolute;inset:0;transform-origin:left center;background:linear-gradient(90deg,#81c784,var(--green))}
-.bar.warn i{background:linear-gradient(90deg,#ff8a65,var(--red))}
+.bar i{position:absolute;inset:0;transform-origin:left center;background:linear-gradient(90deg,#81c784,var(--green));transition:transform .4s}
 .hud-sec{font-size:12px;color:var(--red-d);min-width:30px;text-align:right}
+.mode-chip{font-size:10px;padding:4px 8px;border-radius:999px;background:#e8f5e9;border:2px solid #a5d6a7;color:var(--green-d)}
 
 /* ===== СЦЕНА ===== */
 .scene{position:relative;height:290px;overflow:hidden;
@@ -127,8 +134,12 @@ image-rendering:pixelated;opacity:0;filter:drop-shadow(2px 3px 0 rgba(93,64,28,.
 .obstacle{position:absolute;bottom:52px;left:900px;width:108px;height:108px;z-index:4;display:none;
 filter:drop-shadow(3px 4px 0 rgba(93,64,28,.3))}
 .obstacle svg{width:100%;height:100%}
+.obstacle.wobble svg{animation:wob .5s ease-in-out infinite}
+@keyframes wob{0%,100%{transform:rotate(-1.5deg)}50%{transform:rotate(1.5deg)}}
 .obstacle.knocked svg{animation:knock .6s forwards}
 @keyframes knock{to{transform:rotate(-50deg) translate(-14px,10px)}}
+.obstacle.fadeout{animation:fadeOb .6s forwards}
+@keyframes fadeOb{from{opacity:1}to{opacity:0}}
 .scene.shake{animation:shake .38s}
 @keyframes shake{20%{transform:translate(-5px,2px)}40%{transform:translate(4px,-2px)}60%{transform:translate(-3px,1px)}80%{transform:translate(2px,-1px)}}
 .flash{position:absolute;inset:0;z-index:9;pointer-events:none;opacity:0}
@@ -136,13 +147,13 @@ filter:drop-shadow(3px 4px 0 rgba(93,64,28,.3))}
 .flash.bad{background:radial-gradient(circle at 25% 75%,rgba(229,57,53,.3),transparent 60%);animation:fl .5s}
 @keyframes fl{0%{opacity:1}100%{opacity:0}}
 
-/* ===== ПАНЕЛЬ КАРТОЧКИ: читаемый текст ===== */
+/* ===== ПАНЕЛЬ КАРТОЧКИ ===== */
 .panel{padding:14px 16px 16px;background:var(--paper);border-top:4px solid var(--brick-d);min-height:196px}
 .q-tag{display:inline-block;padding:4px 10px;border-radius:999px;font-family:var(--pix);font-size:10px;
 background:#e8f5e9;border:2px solid #a5d6a7;color:var(--green-d);margin-bottom:8px}
-.q-text{font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:1.55;color:var(--ink);margin:0}
+.q-text{font-size:15px;line-height:1.55;color:var(--ink);margin:0}
 .f-verdict{font-family:var(--pix);font-size:14px;line-height:1.6;margin:0 0 10px;text-align:left}
-.f-verdict.ok{color:var(--green-d)} .f-verdict.bad{color:var(--red-d)}
+.f-verdict.ok{color:var(--green-d)} .f-verdict.bad{color:var(--red-d)} .f-verdict.mid{color:#0d47a1}
 .f-text{font-size:14px;line-height:1.55;color:#4e4a45;margin:0 0 10px;text-align:left}
 .f-lesson{margin:0 0 12px;padding:8px 10px;border-radius:8px;background:#e8f1fd;border:2px solid #90caf9;
 color:#0d47a1;font-size:13px;line-height:1.45;text-align:left}
@@ -184,7 +195,10 @@ background:var(--cream);border-top:4px solid var(--brick-d)}
 
   <!-- СТАРТ -->
   <div class="screen" id="startScreen">
-    <p>Семь преград — семь рабочих проблем эколога. Каждая карточка привязана к теме модуля: после ответа игра покажет, <b>в каком уроке</b> мы разберем эти нюансы.</p>
+    <span class="big">🏃</span>
+    <h2>ЗАБЕГ С РЕШЕНИЯМИ</h2>
+    <p>В модуле вы пройдете путь от сведений о работе завода до проектов целей и плана действий.</p>
+    <p>Познакомьтесь с этим маршрутом в игре. Прочитайте семь рабочих ситуаций, выберите ответы и посмотрите, в каких уроках разберете каждый вопрос. Если тема пока незнакома, попробуйте предположить ответ. Пояснение поможет разобраться.</p>
     <div class="topics">
       <p class="topics-title">СЕМЬ ТЕМ ЗАБЕГА</p>
       <div class="t-row"><span class="t-dot"></span><span><b>Экологические аспекты деятельности</b><span class="t-lesson">Урок «Как выявить экологические аспекты деятельности»</span></span></div>
@@ -195,18 +209,30 @@ background:var(--cream);border-top:4px solid var(--brick-d)}
       <div class="t-row"><span class="t-dot"></span><span><b>Экологические цели</b><span class="t-lesson">Урок «Как сформулировать экологические цели»</span></span></div>
       <div class="t-row"><span class="t-dot"></span><span><b>План действий</b><span class="t-lesson">Урок «Как спланировать действия, ресурсы и проверку результатов»</span></span></div>
     </div>
-    <p><b>Как устроен забег.</b> Герой бежит постоянно, преграда приближается, пока тикает таймер: на решение 30 секунд. Верно — герой перепрыгивает преграду. Неверно или время вышло — герой спотыкается и теряет листочек.</p>
+    <p><b>Как устроен забег.</b> Герой бежит постоянно, преграда приближается и останавливается на дистанции: игра ждет ваш ответ столько, сколько нужно. Верно — герой перепрыгивает преграду, вы получаете игровой балл. Неверно — герой спотыкается и теряет балл, ниже нуля баллы не опускаются. Баллы не заканчивают забег: все семь тем доступны в любом случае. После ответа игра ждет вашу кнопку: читайте пояснение спокойно.</p>
+    <p><b>Скоростной режим по желанию:</b> 30 секунд на вопрос. Если время выйдет, это не ошибка: герой продолжит бежать, а игра покажет «Разберем вместе» и пояснение.</p>
+    <div class="mode-switch">
+      <span class="mode-label">РЕЖИМ ОТВЕТА:</span>
+      <button class="mode-btn selected" id="modeCalm" type="button">Без таймера</button>
+      <button class="mode-btn" id="modeSpeed" type="button">Скоростной: 30 сек</button>
+    </div>
     <button class="big-btn" id="startBtn" type="button">▶ НАЧАТЬ ЗАБЕГ</button>
+    <div class="hint">3-5 минут. Ошибки не закрывают темы: они открывают разбор.</div>
   </div>
 
   <!-- ИГРА -->
   <div id="gamePart">
     <div class="hud">
       <div class="hud-lvl">ТЕМА <span id="lvl">1</span>/7</div>
-      <div class="lives" id="lives"></div>
-      <div class="hud-timer" id="hudTimer">
-        <div class="bar" id="bar"><i id="barFill"></i></div>
-        <div class="hud-sec"><span id="sec">30</span></div>
+      <div class="score" id="scoreBox" title="Игровые баллы">
+        <svg class="leaf" viewBox="0 0 24 24"><path fill="#43a047" d="M17 8C8 10 5.9 16.2 3.8 21.3l1.9.7.9-2.3c.5.2 1 .3 1.4.3C19 20 22 3 22 3c-1 2-8 2.3-13 3.3S2 11.5 2 13.5s1.8 3.8 1.8 3.8C7 8 17 8 17 8z"/></svg>
+        БАЛЛЫ: <span id="scoreVal">0</span>
+      </div>
+      <div class="hud-right" id="hudTimer">
+        <span class="bar-label">БАЛЛЫ</span>
+        <div class="bar" id="bar"><i id="barFill" style="transform:scaleX(0)"></i></div>
+        <span class="mode-chip" id="modeChip">БЕЗ ТАЙМЕРА</span>
+        <div class="hud-sec" id="secBox" style="display:none"><span id="sec">30</span></div>
       </div>
     </div>
 
@@ -244,6 +270,7 @@ background:var(--cream);border-top:4px solid var(--brick-d)}
       <p class="topics-title">МАРШРУТ МОДУЛЯ</p>
       <div id="endList"></div>
     </div>
+    <p class="next-block">Вы познакомились с задачами модуля. Теперь начнем с первой. На примере пересыпания сырья разберем, что называют экологическим аспектом и как связать его с воздействием на окружающую среду.</p>
     <button class="big-btn" id="endBtn" type="button">ПРОБЕЖАТЬ ЕЩЕ РАЗ</button>
   </div>
 
@@ -292,7 +319,7 @@ var Q=[
  lesson:'Как выявить экологические аспекты деятельности',
  q:'У склада из бочки вытекло масло и попало на землю. Нужно ли включить такой разлив в перечень экологических аспектов предприятия вместе с выбросами и отходами?',
  a:true,
- help:'Перечень аспектов помогает увидеть все воздействия сразу: разливы, выбросы, стоки, отходы, шум. Когда разлив попал в перечень, у него появляются ответственный и контроль, а не сюрприз на проверке.'},
+ help:'Зафиксируйте попадание масла на землю и связанное воздействие на почву. Эта запись поможет дальше оценить аспект и определить действия. Сам по себе перечень не заменяет действия на участке.'},
 {topic:'Значимость экологических аспектов',
  lesson:'Как оценить значимость экологических аспектов',
  q:'На заводе составили перечень из 40 экологических аспектов. Верно ли, что все они одинаково значимы и ресурсы нужно направлять на каждый поровну?',
@@ -302,12 +329,12 @@ var Q=[
  lesson:'Как собрать обязательства, которые нужно учитывать в СЭМ',
  q:'На предприятие приехал инспектор. Верно ли, что к обязательствам в СЭМ относятся не только законы, но и условия разрешений, договоров и добровольных обязательств предприятия?',
  a:true,
- help:'Единый реестр обязательств помогает держать в поле зрения все требования: законы, разрешения, договоры, добровольные обязательства. Проверка перестает быть авралом.'},
+ help:'Единый реестр обязательств помогает держать в поле зрения все требования: законы, разрешения, договоры, добровольные обязательства. Список применимых требований поможет проверить, что учтено, а какие сведения еще предстоит собрать. В уроке разберете, как связать требование с конкретной работой предприятия.'},
 {topic:'Риски и возможности',
  lesson:'Как определить риски и возможности',
  q:'Жители пожаловались на запах от завода. Верно ли, что для СЭМ это только риск и жалоба не может стать возможностью для улучшений?',
  a:false,
- help:'СЭМ учит видеть в событии обе стороны: риск и возможность. Жалоба помогает найти слабое место и наладить процесс, а не только грозит проверкой.'},
+ help:'По жалобе выясните, что произошло и связан ли запах с работой предприятия. Затем разберите возможные последствия. Если найдете способ улучшить работу, опишите и эту возможность. Источник запаха заранее не назначайте.'},
 {topic:'Экологическая политика',
  lesson:'Как подготовить экологическую политику',
  q:'Директор попросил закрепить в одном документе главные обязательства предприятия в сфере окружающей среды и направление работы. Верно ли, что такой документ это экологическая политика?',
@@ -315,19 +342,24 @@ var Q=[
  help:'Политика закрепляет обязательства и направление работы в одном документе. Она помогает согласовать действия руководства и цехов и задает правила игры для всех.'},
 {topic:'Экологические цели',
  lesson:'Как сформулировать экологические цели',
- q:'На заводе записали цель «снизить воздействие на окружающую среду» без показателя и срока. Верно ли, что такой формулировки достаточно для СЭМ?',
+ q:'На заводе записали цель «снизить воздействие на окружающую среду». По этой записи понятно, что именно изменится и как проверить результат?',
  a:false,
- help:'Измеримая цель с показателем и сроком помогает понять, к чему идем и как проверить результат. Без них цель остается декларацией.'},
+ help:'Уточните, что именно изменится и как вы установите результат. В уроке о целях разберем, какие показатели и способы оценки подойдут.'},
 {topic:'План действий',
  lesson:'Как спланировать действия, ресурсы и проверку результатов',
  q:'Цель поставлена, но непонятно, кто, какими ресурсами и к какому сроку ее выполнит. Верно ли, что СЭМ требует план действий с ответственными, ресурсами, сроками и проверкой результата?',
  a:true,
- help:'План с ответственными, ресурсами, сроками и проверкой превращает цель в рабочую задачу. Так цель достигается, а не остается на бумаге.'}
+ help:'План с ответственными, ресурсами, сроками и проверкой превращает цель в рабочую задачу. Такой план помогает организовать работу и проверить результат.'}
 ];
 
 /* ===== СОСТОЯНИЕ ===== */
-var TIME=30000, HIT_X=150;
-var idx=0, lives=1, locked=true, running=false;
+var SCORE_MAX=7;
+var TIME_SPEED=30000;        // скоростной режим
+var APPROACH_CALM=9000;      // подход преграды до стоп-линии в режиме без таймера
+var HIT_X=150;               // точка контакта с героем
+var HOLD_X=330;              // стоп-линия в режиме без таймера
+var score=0, timedMode=false;
+var idx=0, locked=true, running=false;
 var qStart=0, obsFrom=0, obsTo=0, obsDur=0, obsT0=0, obsX=0, obsActive=false;
 var frameI=0, frameT=0, timers=[];
 var hero=$('hero'), obstacle=$('obstacle'), panel=$('panel');
@@ -335,21 +367,25 @@ var hero=$('hero'), obstacle=$('obstacle'), panel=$('panel');
 function later(fn,ms){timers.push(setTimeout(fn,ms));}
 function clearTimers(){timers.forEach(clearTimeout);timers=[];}
 function showFrame(n){['f0','f1','f2','f3','fj','ff'].forEach(function(id){$(id).classList.remove('on');});$(n).classList.add('on');}
+function plural(n,f){n=Math.abs(n)%100;var d=n%10;if(n>10&&n<20)return f[2];if(d>1&&d<5)return f[1];if(d===1)return f[0];return f[2];}
 
-function drawLives(delta){
-  var html='';
-  var n=Math.max(lives,0);
-  if(n===0){html='<svg class="leaf lost" viewBox="0 0 24 24"><path fill="#43a047" d="M17 8C8 10 5.9 16.2 3.8 21.3l1.9.7.9-2.3c.5.2 1 .3 1.4.3C19 20 22 3 22 3c-1 2-8 2.3-13 3.3S2 11.5 2 13.5s1.8 3.8 1.8 3.8C7 8 17 8 17 8z"/></svg>';}
-  for(var i=0;i<n;i++){
-    html+='<svg class="leaf" viewBox="0 0 24 24"><path fill="#43a047" d="M17 8C8 10 5.9 16.2 3.8 21.3l1.9.7.9-2.3c.5.2 1 .3 1.4.3C19 20 22 3 22 3c-1 2-8 2.3-13 3.3S2 11.5 2 13.5s1.8 3.8 1.8 3.8C7 8 17 8 17 8z"/></svg>';
-  }
-  $('lives').innerHTML=html;
-  if(delta){
-    var p=document.createElement('span');
-    p.className='leaf-pop '+(delta>0?'plus':'minus');
-    p.textContent=(delta>0?'+1':'-1');
-    $('lives').appendChild(p);
-    later(function(){if(p.parentNode)p.parentNode.removeChild(p);},850);
+/* ===== БАЛЛЫ: граница 0..7, без отрицательного счета ===== */
+function pop(text,cls){
+  var s=document.createElement('span');
+  s.className='score-pop '+cls;
+  s.textContent=text;
+  $('scoreBox').appendChild(s);
+  later(function(){if(s.parentNode)s.parentNode.removeChild(s);},950);
+}
+function addScore(d){
+  var before=score;
+  score=Math.max(0,Math.min(SCORE_MAX,score+d));
+  $('scoreVal').textContent=score;
+  $('barFill').style.transform='scaleX('+(score/SCORE_MAX).toFixed(3)+')';
+  if(d>0){pop('+1','plus');}
+  else if(d<0){
+    if(before===0){pop('Разберем вместе','zero');}   // списания нет и не показываем
+    else{pop('-1','minus');}
   }
 }
 
@@ -367,13 +403,15 @@ function loop(ts){
     var p=Math.min(1,(ts-obsT0)/obsDur);
     obsX=obsFrom+(obsTo-obsFrom)*p;
     obstacle.style.left=obsX.toFixed(1)+'px';
+    if(p>=1){
+      obsActive=false;
+      /* в скоростном режиме приход преграды без ответа = «разберем вместе», без наказания */
+      if(timedMode&&!locked){locked=true;resolve(null,true);}
+    }
   }
-  if(!locked){
-    var left=Math.max(0,TIME-(ts-qStart));
+  if(!locked&&timedMode){
+    var left=Math.max(0,TIME_SPEED-(ts-qStart));
     $('sec').textContent=Math.ceil(left/1000);
-    $('barFill').style.transform='scaleX('+(left/TIME).toFixed(4)+')';
-    $('bar').classList.toggle('warn',left/TIME<.32);
-    if(left<=0){locked=true;resolve(null);}
   }
 }
 requestAnimationFrame(loop);
@@ -384,31 +422,56 @@ function askQuestion(){
   var item=Q[idx];
   panel.innerHTML='<span class="q-tag">'+item.topic+'</span><p class="q-text">'+item.q+'</p>';
   obstacle.innerHTML=OBS[idx];
-  obstacle.classList.remove('knocked');
+  obstacle.classList.remove('knocked','fadeout');
+  obstacle.classList.add('wobble');
   obstacle.style.display='block';
-  obsFrom=$('scene').clientWidth+40; obsTo=HIT_X; obsDur=TIME;
+  obsFrom=$('scene').clientWidth+40;
+  if(timedMode){
+    obsTo=HIT_X; obsDur=TIME_SPEED;
+    $('secBox').style.display='block'; $('modeChip').style.display='none';
+    $('sec').textContent='30';
+  } else {
+    obsTo=HOLD_X; obsDur=APPROACH_CALM;
+    $('secBox').style.display='none'; $('modeChip').style.display='inline-block';
+  }
   obstacle.style.left=obsFrom+'px';
   obsActive=true; obsT0=performance.now(); qStart=obsT0; obsX=obsFrom;
   locked=false;
   $('btnYes').disabled=false; $('btnNo').disabled=false;
-  $('sec').textContent='30'; $('barFill').style.transform='scaleX(1)'; $('bar').classList.remove('warn');
   resize();
 }
 
 /* ===== ОТВЕТ ===== */
-function answer(val){if(locked)return; locked=true; resolve(val);}
+function answer(val){if(locked)return; locked=true; resolve(val,false);}
 
-function resolve(val){
+function resolve(val,timedOut){
   $('btnYes').disabled=true; $('btnNo').disabled=true;
-  var item=Q[idx], correct=(val!==null&&val===item.a);
-  $('flash').className='flash '+(correct?'ok':'bad');
-  later(function(){$('flash').className='flash';},520);
+  var item=Q[idx];
+  var kind=timedOut?'mid':((val!==null&&val===item.a)?'ok':'bad');
+  if(kind==='ok')addScore(1);
+  if(kind==='bad')addScore(-1);
+
+  if(kind==='mid'){
+    /* истечение времени: нейтральная остановка, без вспышки, тряски и падения */
+    obsActive=false;
+    obstacle.classList.remove('wobble');
+    obstacle.classList.add('fadeout');
+    later(function(){
+      obstacle.classList.remove('fadeout');
+      obstacle.style.display='none';
+      showFeedback(item,'mid');
+    },650);
+    return;
+  }
+
+  /* преграда доезжает до героя только в случаях верного или неверного ответа */
   var dist=Math.max(1,obsX-HIT_X);
   obsFrom=obsX; obsTo=HIT_X; obsDur=Math.max(220,Math.min(520,dist*1.5));
   obsT0=performance.now(); obsActive=true;
+  $('flash').className='flash '+(kind==='ok'?'ok':'bad');
+  later(function(){$('flash').className='flash';},520);
 
-  if(correct){
-    lives++; drawLives(+1);
+  if(kind==='ok'){
     later(function(){
       hero.classList.remove('falling');
       hero.classList.add('jumping'); showFrame('fj');
@@ -418,12 +481,12 @@ function resolve(val){
     },Math.max(0,obsDur-330)+930);
     later(function(){
       obsFrom=obsX; obsTo=-140; obsDur=420; obsT0=performance.now();
-      later(function(){obsActive=false;obstacle.style.display='none';showFeedback(item,correct);},460);
+      later(function(){obsActive=false;obstacle.style.display='none';showFeedback(item,'ok');},460);
     },obsDur+160);
   } else {
-    lives--; drawLives(-1);
     later(function(){
       obsActive=false;
+      obstacle.classList.remove('wobble');
       obstacle.classList.add('knocked');
       $('scene').classList.add('shake');
       later(function(){$('scene').classList.remove('shake');},420);
@@ -431,23 +494,27 @@ function resolve(val){
       hero.classList.add('falling'); showFrame('ff');
       later(function(){
         hero.classList.remove('falling'); showFrame('f0');
-        showFeedback(item,correct);
+        obstacle.style.display='none';
+        showFeedback(item,'bad');
       },720);
     },obsDur);
   }
 }
 
-/* ===== КОММЕНТАРИЙ: вердикт + польза СЭМ + урок ===== */
-function showFeedback(item,correct){
+/* ===== ПОЯСНЕНИЕ ===== */
+function showFeedback(item,kind){
+  var verdict;
+  if(kind==='ok')verdict='ВЕРНО!';
+  else if(kind==='bad')verdict='НЕ СОВСЕМ. ВЕРНЫЙ ОТВЕТ: '+(item.a?'ДА':'НЕТ');
+  else verdict='РАЗБЕРЕМ ВМЕСТЕ. ВЕРНЫЙ ОТВЕТ: '+(item.a?'ДА':'НЕТ');
   panel.innerHTML=
-    '<p class="f-verdict '+(correct?'ok':'bad')+'">'+(correct?'ВЕРНО!':'ВЕРНЫЙ ОТВЕТ: '+(item.a?'ДА':'НЕТ'))+'</p>'+
+    '<p class="f-verdict '+kind+'">'+verdict+'</p>'+
     '<p class="f-text">'+item.help+'</p>'+
     '<p class="f-lesson">Эти нюансы разберем в уроке <b>«'+item.lesson+'»</b></p>'+
     '<button class="gbtn" id="nextBtn" type="button">'+(idx>=Q.length-1?'ЗАВЕРШИТЬ':'ПРОДОЛЖИТЬ')+'</button>';
   $('nextBtn').addEventListener('click',function(){
     idx++;
-    if(lives<=0){showEnd(false);return;}
-    if(idx>=Q.length){showEnd(true);return;}
+    if(idx>=Q.length){showEnd();return;}
     obstacle.style.display='none';
     askQuestion();
   });
@@ -455,39 +522,45 @@ function showFeedback(item,correct){
 }
 
 /* ===== ФИНАЛ ===== */
-function showEnd(win){
+function showEnd(){
   running=false; clearTimers();
   obstacle.style.display='none';
   $('gamePart').style.display='none';
   var es=$('endScreen'); es.classList.remove('hidden');
-  $('endIcon').textContent=win?'🏁':'';
-  $('endTitle').textContent=win?'МАРШРУТ ПРОЙДЕН':'ЗАБЕГ ОКОНЧЕН';
-  $('endTitle').style.color=win?'var(--green-d)':'var(--red-d)';
-  $('endText').textContent=win
-    ?'Вы прошли все семь тем модуля и увидели, где каждая из них раскрывается в программе. Дальше в уроках подготовите перечни, шаблоны и чек-листы для своего предприятия.'
-    :'Листочки кончились. Попробуйте еще раз.';
+  $('endIcon').textContent='🏁';
+  $('endTitle').textContent='МАРШРУТ ПРОЙДЕН';
+  $('endTitle').style.color='var(--green-d)';
+  $('endText').innerHTML='Вы прошли все семь тем модуля. Ваш результат: <b>'+score+' '+plural(score,['балл','балла','баллов'])+
+    '</b>. Баллы — элемент игры, а не оценка знаний: каждая тема раскроется в своем уроке.';
   var html='';
-  Q.forEach(function(item,i){
-    var done=i<idx;
-    html+='<div class="t-row '+(done?'done':'wait')+'">'+
-      (done?'<span class="t-check">✓</span>':'<span class="t-dot"></span>')+
-      '<span><b>'+item.topic+'</b><span class="t-lesson">Урок «'+item.lesson+'»</span></span></div>';
+  Q.forEach(function(item){
+    html+='<div class="t-row done"><span class="t-check">✓</span><span><b>'+item.topic+
+      '</b><span class="t-lesson">Урок «'+item.lesson+'»</span></span></div>';
   });
   $('endList').innerHTML=html;
   resize();
 }
 
+/* ===== РЕЖИМ ОТВЕТА ===== */
+function updMode(){
+  $('modeCalm').classList.toggle('selected',!timedMode);
+  $('modeSpeed').classList.toggle('selected',timedMode);
+}
+$('modeCalm').addEventListener('click',function(){timedMode=false;updMode();});
+$('modeSpeed').addEventListener('click',function(){timedMode=true;updMode();});
+
 /* ===== СТАРТ / РЕСТАРТ ===== */
 function begin(){
   clearTimers();
-  idx=0; lives=1; locked=true; running=true;
+  idx=0; score=0; locked=true; running=true;
+  $('scoreVal').textContent='0';
+  $('barFill').style.transform='scaleX(0)';
   $('endScreen').classList.add('hidden');
   $('startScreen').classList.add('hidden');
   $('gamePart').style.display='block';
   hero.classList.remove('falling','jumping'); showFrame('f0'); frameI=0;
   $('dust').classList.add('on');
   $('answers').classList.remove('off');
-  drawLives(0);
   askQuestion();
 }
 $('startBtn').addEventListener('click',begin);
