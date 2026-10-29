@@ -1,0 +1,812 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Конструктор оценки значимости экологических аспектов</title>
+<style>
+:root {
+  --bg:#ffffff; --primary:#1e293b; --muted:#64748b; --border:#e2e8f0;
+  --gray-light:#f8fafc; --accent:#2563eb; --accent-dark:#1d4ed8;
+  --ok-bg:#f0fdf4; --ok-bd:#bbf7d0; --ok-tx:#166534;
+  --warn-bg:#fffbeb; --warn-bd:#fde68a; --warn-tx:#92400e;
+  --bad-bg:#fef2f2; --bad-bd:#fecaca; --bad-tx:#991b1b;
+  --radius:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--primary);font-size:15px;line-height:1.6}
+.container{max-width:760px;margin:0 auto}
+.screen{display:none;animation:fadeIn .3s ease-out}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:22px;font-weight:800;margin:0 0 8px}
+h2{font-size:16px;font-weight:700;margin:16px 0 8px}
+h3{font-size:14px;font-weight:700;margin:0 0 6px}
+.lead{font-size:14px;margin:0 0 12px;line-height:1.6}
+.note-box{background:var(--gray-light);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--muted);margin:10px 0}
+.note-box.accent{border-left-color:var(--accent);color:var(--primary)}
+.warn-box{background:var(--warn-bg);border-left:3px solid var(--warn-bd);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--warn-tx);margin:10px 0;line-height:1.5}
+.error-box{background:var(--bad-bg);border:1px solid var(--bad-bd);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--bad-tx);margin:12px 0}
+.error-box ul{margin:6px 0 0;padding-left:20px}
+.error-box li{margin-bottom:4px}
+.notices-box{background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--warn-tx);margin:12px 0}
+.notices-box ul{margin:6px 0 0;padding-left:20px}
+.notices-box li{margin-bottom:4px}
+.storage-warn{display:none}
+.storage-warn.show{display:block}
+.import-msg{display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;font-size:13px;color:var(--accent-dark);margin:10px 0}
+.import-msg.show{display:block}
+
+.mode-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:14px 0}
+.mode-card{border:2px solid var(--border);border-radius:var(--radius);padding:16px;background:#fff;cursor:pointer;font-family:inherit;text-align:left;transition:border-color .15s}
+.mode-card:hover{border-color:var(--accent)}
+.mode-card h3{margin:0 0 6px;color:var(--accent)}
+.mode-card p{margin:0;font-size:13px;color:var(--muted)}
+
+/* учебный режим */
+.facts-card{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;background:var(--gray-light);padding:10px 14px;margin:10px 0;font-size:13px}
+.facts-card ul{margin:4px 0 0;padding-left:18px}
+.facts-card li{margin-bottom:4px}
+.q-line{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin:8px 0;background:#fff;font-size:13.5px}
+.q-line .q-text{font-weight:600;margin:0 0 8px}
+.q-btns{display:flex;gap:8px;flex-wrap:wrap}
+.chip-done{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--ok-bd);background:var(--ok-bg);color:var(--ok-tx);border-radius:20px;padding:4px 12px;font-size:12px;font-weight:700;margin:0 6px 6px 0}
+.result-panel{border:1px solid var(--ok-bd);border-left:5px solid var(--ok-tx);border-radius:10px;background:var(--ok-bg);padding:12px 14px;margin:10px 0;font-size:13.5px}
+.result-panel.retry{border-color:var(--warn-bd);border-left-color:var(--warn-tx);background:var(--warn-bg);color:var(--warn-tx)}
+.result-panel p{margin:0 0 6px}
+.result-panel p:last-child{margin:0}
+.rank-badge{display:inline-block;font-size:13px;font-weight:800;border-radius:8px;padding:4px 12px;color:#fff;background:var(--accent-dark);margin-right:8px}
+.sig-tag{display:inline-block;font-size:12px;font-weight:800;border-radius:20px;padding:3px 10px;border:1px solid}
+.sig-tag.sig{background:var(--ok-bg);color:var(--ok-tx);border-color:var(--ok-bd)}
+.sig-tag.ins{background:var(--gray-light);color:var(--muted);border-color:var(--border)}
+.sig-tag.watch{background:var(--warn-bg);color:var(--warn-tx);border-color:var(--warn-bd)}
+
+/* свой режим */
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:4px}
+.field .req{color:var(--bad-tx);font-weight:600}
+.field .hint{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+.field input[type="text"],.field textarea,.field select{width:100%;padding:10px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;color:var(--primary);background:#fff}
+.field textarea{min-height:52px;resize:vertical}
+.field select:disabled{background:var(--gray-light);color:var(--muted)}
+.field input:focus-visible,.field textarea:focus-visible,.field select:focus-visible,button:focus-visible{outline:3px solid var(--accent-dark);outline-offset:2px}
+.q-block{border:1px solid var(--border);border-radius:10px;padding:10px 12px;margin:8px 0;background:#fff}
+.q-block.disabled{opacity:.55}
+.q-block .q-text{font-size:13.5px;font-weight:600;margin:0 0 6px}
+.rank-chip{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:800;border:1px solid;margin:4px 0}
+.rank-chip.sig{background:var(--ok-bg);color:var(--ok-tx);border-color:var(--ok-bd)}
+.rank-chip.ins{background:var(--gray-light);color:var(--muted);border-color:var(--border)}
+.rank-chip.watch{background:var(--warn-bg);color:var(--warn-tx);border-color:var(--warn-bd)}
+.rank-chip.na{background:var(--warn-bg);color:var(--warn-tx);border-color:var(--warn-bd)}
+
+.tabs-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;margin:14px 0 0}
+.tab-btn{border:1px solid var(--border);border-radius:10px 10px 0 0;padding:9px 12px;background:var(--gray-light);color:var(--muted);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;max-width:210px}
+.tab-btn .tab-name{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px}
+.tab-btn[aria-selected="true"]{background:#fff;color:var(--accent);border-color:var(--accent)}
+.tab-add{border:1px dashed var(--accent);color:var(--accent);background:#fff;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.tab-add:hover{background:#eff6ff}
+.tab-panel{border:1px solid var(--border);border-radius:0 10px 10px 10px;padding:16px;background:#fff;margin-top:-1px}
+.tab-panel[hidden]{display:none}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.panel-head strong{font-size:15px}
+.btn-small{padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--primary);cursor:pointer;font-family:inherit}
+.btn-small:hover{background:var(--gray-light)}
+
+table.reg{width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0}
+table.reg th,table.reg td{border:1px solid var(--border);padding:7px 8px;text-align:left;vertical-align:top}
+table.reg th{background:var(--gray-light);font-weight:700}
+table.reg td.rank{font-weight:800;text-align:center}
+.scroll-x{overflow-x:auto}
+.scroll-x table.reg{min-width:640px}
+
+.nav-buttons{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:background .2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-dark)}
+.btn-secondary{background:#fff;border:1px solid var(--border);color:var(--primary)}
+.btn-secondary:hover{background:var(--gray-light)}
+.btn-danger{background:#fff;border:1px solid var(--bad-bd);color:var(--bad-tx)}
+.btn-danger:hover{background:var(--bad-bg)}
+.btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
+
+@media (max-width:600px){
+  body{padding:12px}
+  h1{font-size:20px}
+  .mode-grid{grid-template-columns:1fr}
+  .nav-buttons{flex-direction:column}
+  .btn{width:100%}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ИНТРО -->
+  <div id="screen-intro" class="screen active">
+    <h1>Конструктор оценки значимости экологических аспектов</h1>
+    <p class="lead">Оцените аспекты по четырем рангам и соберите реестр значимости: процесс, аспект, воздействие, ранг и вывод. Ранг выводится из ответов на вопросы о требованиях, их выполнении и специальных мерах.</p>
+    <div class="mode-grid" role="group" aria-label="Выбор режима">
+      <button type="button" class="mode-card" onclick="chooseMode('edu')">
+        <h3>Учебный завод</h3>
+        <p>Четыре аспекта стекольного завода: ответьте на вопросы ранжирования по фактам карточек и соберите учебный реестр значимости.</p>
+      </button>
+      <button type="button" class="mode-card" onclick="chooseMode('own')">
+        <h3>Мое предприятие</h3>
+        <p>Свой реестр: импортируйте записи из конструктора аспектов или создайте строки вручную, поставьте ранги и скачайте реестр в Word.</p>
+      </button>
+    </div>
+    <div class="note-box accent">Импорт работает в том же браузере, где вы собирали первичные записи: конструктор читает локальный черновик конструктора аспектов и переносит связки «процесс - аспект - воздействие» вместе с источником. Ранговые вопросы остаются для ответа здесь.</div>
+    <div class="note-box">Черновик реестра значимости сохраняется в этом браузере, если его настройки разрешают локальное хранилище. На другом устройстве записи могут быть недоступны. Скачайте Word, чтобы сохранить отдельную копию.</div>
+    <div class="warn-box storage-warn" id="warnIntro">Браузер не сохранил черновик. Скачайте Word перед закрытием страницы.</div>
+    <div class="note-box" id="restoreNote" style="display:none;">Найден сохраненный черновик реестра значимости. Данные восстановлены.</div>
+    <div class="note-box" id="importHintNote" style="display:none;">Найден черновик конструктора аспектов в этом браузере: в режиме «Мое предприятие» доступна кнопка импорта.</div>
+  </div>
+
+  <!-- УЧЕБНЫЙ РЕЖИМ -->
+  <div id="screen-edu" class="screen">
+    <div id="eduRowView"></div>
+    <div id="eduFinalView" style="display:none"></div>
+  </div>
+
+  <!-- СВОЙ РЕЖИМ -->
+  <div id="screen-own" class="screen">
+    <h1>Реестр значимости вашего предприятия</h1>
+    <p class="lead">Каждая строка реестра живет на своей вкладке. Заполните связку и ответьте на вопросы ранжирования: ранг и значимость конструктор выведет сам. Черновик сохраняется автоматически.</p>
+    <div class="warn-box storage-warn" id="warnOwn">Браузер не сохранил черновик. Скачайте Word перед закрытием страницы.</div>
+    <div class="nav-buttons" style="margin-top:0">
+      <button class="btn btn-secondary" onclick="importAspects()">Импорт из конструктора аспектов</button>
+      <button class="btn btn-secondary" onclick="showScreen('screen-intro')">К выбору режима</button>
+    </div>
+    <div class="import-msg" id="importMsg" aria-live="polite"></div>
+    <div class="field" style="max-width:340px;display:inline-block;margin-right:10px;">
+      <label for="m-org">Предприятие (необязательно)</label>
+      <input type="text" id="m-org" oninput="onMeta('org', this.value)">
+    </div>
+    <div class="field" style="max-width:150px;display:inline-block;vertical-align:top;">
+      <label for="m-date">Дата</label>
+      <input type="text" id="m-date" oninput="onMeta('date', this.value)">
+    </div>
+    <div class="field" style="max-width:190px;display:inline-block;vertical-align:top;">
+      <label for="m-author">Подготовил (необязательно)</label>
+      <input type="text" id="m-author" oninput="onMeta('author', this.value)">
+    </div>
+    <div class="tabs-bar" id="tabsBar" role="tablist" aria-label="Строки реестра"></div>
+    <div id="panelsBox"></div>
+    <div class="nav-buttons">
+      <button class="btn btn-primary" onclick="openPreview()">Предпросмотр и скачивание</button>
+    </div>
+  </div>
+
+  <!-- ПРЕДПРОСМОТР -->
+  <div id="screen-preview" class="screen">
+    <h1>Предпросмотр реестра значимости</h1>
+    <div class="error-box" id="errorsBox" style="display:none" aria-live="polite"></div>
+    <div class="notices-box" id="noticesBox" style="display:none" aria-live="polite"></div>
+    <div id="previewBox"></div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="showScreen('screen-own')">Вернуться к реестру</button>
+      <button class="btn btn-primary" id="downloadBtn" onclick="downloadDocx()">Скачать Word</button>
+      <button class="btn btn-danger" onclick="restartOwn()">Очистить черновик</button>
+    </div>
+    <p id="downloadNote" style="font-size:12px;color:var(--muted);margin-top:8px;"></p>
+  </div>
+
+</div>
+
+<script>
+/* ================= ДАННЫЕ И ЛОГИКА РАНГОВ ================= */
+var RANK_NOTES = {
+  1: 'Требования установлены, но не выполняются. Значимый аспект: приоритетные действия, цель и программа улучшений.',
+  2: 'Требования выполняются благодаря специальным мерам. Значимый аспект: меры держат в рабочем состоянии и контролируют.',
+  3: 'Незначимый аспект: требует наблюдения и учета сигналов.',
+  4: 'Требования не установлены, сигналов нет. Незначимый аспект: специальных действий не требуется, возврат при изменениях.'
+};
+function deriveRank(q){
+  if(q.q1==='yes'){
+    if(q.q2==='no') return {rank:1, path:'req-no'};
+    if(q.q2==='yes'){
+      if(q.q3==='yes') return {rank:2, path:'measures-yes'};
+      if(q.q3==='no') return {rank:3, path:'measures-no'};
+      return null;
+    }
+    return null;
+  }
+  if(q.q1==='no'){
+    if(q.q4==='yes') return {rank:3, path:'signals-yes'};
+    if(q.q4==='no') return {rank:4, path:'signals-no'};
+    return null;
+  }
+  return null;
+}
+function sigInfo(d){
+  if(!d) return {cls:'na', label:'Значимость не определена'};
+  if(d.rank===1||d.rank===2) return {cls:'sig', label:'Значимый'};
+  if(d.rank===3) return d.path==='signals-yes' ? {cls:'watch', label:'Не значимый, требует наблюдения'} : {cls:'ins', label:'Не значимый'};
+  return {cls:'ins', label:'Не значимый'};
+}
+function rankNote(d){
+  if(!d) return '';
+  if(d.rank===3 && d.path==='signals-yes') return 'Требования не установлены, но есть сигналы: указание надзора, жалобы или регулярное воздействие. Наладьте учет и наблюдение, чтобы подтвердить незначимость; при новых сигналах пересмотрите ранг.';
+  if(d.rank===3) return 'Требования выполняются без специальных мер. Наблюдайте: при изменении процесса, требований или появлении сигналов пересмотрите ранг.';
+  return RANK_NOTES[d.rank];
+}
+function missingRankQuestions(q){
+  var list=[];
+  if(!q.q1 || q.q1==='unknown') list.push('установлены ли требования');
+  else if(q.q1==='yes'){
+    if(!q.q2 || q.q2==='unknown') list.push('выполняются ли требования в полном объеме');
+    else if(q.q2==='yes' && (!q.q3 || q.q3==='unknown')) list.push('обеспечивается ли выполнение специальными мерами');
+  } else {
+    if(!q.q4 || q.q4==='unknown') list.push('указывают ли другие факторы на значимость');
+  }
+  return list;
+}
+
+var QT = {
+  q1: 'Требования к воздействию установлены: нормативы, разрешения, условия договора?',
+  q2: 'Требования выполняются в полном объеме по последним данным?',
+  q3: 'Выполнение обеспечивают специальные меры: оборудование, контроль, процедуры?',
+  q4: 'Другие факторы указывают на значимость: надзор, жалобы, регулярное воздействие за пределами площадки?'
+};
+
+var EDU = [
+  { process:'Варка стекла', aspect:'Сжигание природного газа в печи', impact:'Выбросы NOx, SO2, CO в атмосферный воздух',
+    facts:['Установлены нормативы допустимых выбросов для печи.','Последний инструментальный контроль: выбросы в пределах нормативов.','Соблюдение держится на работе газоочистки, замене фильтров по графику и контроле параметров.'],
+    correct:{q1:'yes',q2:'yes',q3:'yes'}, rank:2,
+    missNote:'По фактам карточки: нормативы установлены (да), контроль показывает соблюдение (да), соблюдение держится на газоочистке и контроле (да). Этот путь приводит к рангу 2.' },
+  { process:'Освещение территории', aspect:'Потребление электроэнергии на освещение', impact:'Косвенные выбросы при генерации электроэнергии',
+    facts:['Нормативов и разрешительных требований к потреблению электроэнергии на освещение нет.','Жалоб жителей и указаний надзора на освещенность не поступало.','Корпоративная политика упоминает энергосбережение, но требования и цели не установлены.'],
+    correct:{q1:'no',q4:'no'}, rank:4,
+    missNote:'По фактам карточки: требований нет (нет), сигналов в виде жалоб или указаний тоже нет (нет). Этот путь приводит к рангу 4.' },
+  { process:'Пересыпка шихты', aspect:'Образование просыпей и пыление при пересыпке', impact:'Загрязнение почвы и поступление пыли в воздух',
+    facts:['Нормативы образования отходов для просыпей шихты не установлены.','При проверке надзор указал на отсутствие учета количества просыпей.','При сильном ветре пыль периодически выносится за пределы площадки.'],
+    correct:{q1:'no',q4:'yes'}, rank:3,
+    missNote:'По фактам карточки: требований нет (нет), но есть сигналы: указание надзора об учете и вынос пыли за площадку (да). Этот путь приводит к рангу 3 с наблюдением.' },
+  { process:'Водоотведение', aspect:'Сброс производственных сточных вод в городскую канализацию', impact:'Загрязнение водных объектов сверх пределов договора',
+    facts:['Договор с Водоканалом устанавливает предельные концентрации по взвешенным веществам, нефтепродуктам и pH.','Последний анализ: превышение по нефтепродуктам в 1,5 раза.','Водоканал выставил претензию; очистные сооружения работают, но требуют ремонта.'],
+    correct:{q1:'yes',q2:'no'}, rank:1,
+    missNote:'По фактам карточки: требования договора установлены (да), но есть превышение и претензия (нет). Этот путь приводит к рангу 1.' }
+];
+
+/* ================= СОСТОЯНИЕ ================= */
+var STORAGE_KEY = 'sem-significance-registry-v1';
+var ASPECT_KEYS = ['sem-aspect-records-v3','sem-aspect-records-v2','sem-aspect-records-v1'];
+var state = { meta:{org:'',date:'',author:''}, rows:[], nextNum:1, activeId:null, imported:[] };
+var eduState = { i:0, answers:{} };
+var bodiesById = {};
+var storageOk = true;
+
+function resizeIframe(){ if(window.parentIFrame && typeof window.parentIFrame.size==='function') window.parentIFrame.size(); }
+function showScreen(id){
+  ['screen-intro','screen-edu','screen-own','screen-preview'].forEach(function(s){ document.getElementById(s).classList.remove('active'); });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  resizeIframe();
+}
+function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function nl(s){ return esc(s).replace(/\n/g,'<br>'); }
+function today(){ var d=new Date(); return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear(); }
+function showStorageWarn(){ var els=document.querySelectorAll('.storage-warn'); for(var i=0;i<els.length;i++) els[i].classList.add('show'); resizeIframe(); }
+
+/* ================= ПАМЯТЬ ================= */
+function saveOwn(){
+  if(!storageOk) return;
+  try{ localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+  catch(e){ storageOk=false; showStorageWarn(); }
+}
+function loadOwn(){
+  try{
+    var raw=localStorage.getItem(STORAGE_KEY);
+    if(!raw) return false;
+    var d=JSON.parse(raw);
+    if(!d || !Array.isArray(d.rows)) return false;
+    state.meta=Object.assign({org:'',date:'',author:''}, d.meta||{});
+    state.nextNum=Number(d.nextNum)||1;
+    state.activeId=d.activeId||null;
+    state.imported=Array.isArray(d.imported)?d.imported:[];
+    state.rows=[];
+    d.rows.forEach(function(r){
+      if(!r||!r.id) return;
+      state.rows.push({
+        id:String(r.id), num:Number(r.num)||0,
+        process:String(r.process||''), aspect:String(r.aspect||''), impact:String(r.impact||''),
+        source:String(r.source||''), note:String(r.note||''), imported:!!r.imported,
+        q:{ q1:validQ(r.q&&r.q.q1), q2:validQ(r.q&&r.q.q2), q3:validQ(r.q&&r.q.q3), q4:validQ(r.q&&r.q.q4) }
+      });
+    });
+    return state.rows.length>0;
+  }catch(e){ return false; }
+}
+function validQ(v){ return (v==='yes'||v==='no'||v==='unknown')?v:''; }
+function testStorage(){
+  try{ localStorage.setItem(STORAGE_KEY+'-test','1'); localStorage.removeItem(STORAGE_KEY+'-test'); }
+  catch(e){ storageOk=false; showStorageWarn(); }
+}
+function onMeta(k,v){ state.meta[k]=v; saveOwn(); }
+
+/* ================= ИМПОРТ ИЗ КОНСТРУКТОРА АСПЕКТОВ ================= */
+function readAspectDraft(){
+  for(var k=0;k<ASPECT_KEYS.length;k++){
+    try{
+      var raw=localStorage.getItem(ASPECT_KEYS[k]);
+      if(!raw) continue;
+      var d=JSON.parse(raw);
+      var arr=d.rows||d.cards||d.chains||d.parties||[];
+      var items=[];
+      arr.forEach(function(it,idx){
+        var f=it&&it.f?it.f:it||{};
+        var process=f.process||f.oper||f.operation||'';
+        var aspect=f.aspect||'';
+        var impact=f.impact||f.effect||'';
+        var source=f.basis||f.source||'';
+        if(!String(process).trim() && !String(aspect).trim()) return;
+        items.push({ sid: it&&it.id ? String(it.id) : ('idx-'+k+'-'+idx),
+          process:String(process), aspect:String(aspect), impact:String(impact), source:String(source) });
+      });
+      if(items.length) return items;
+    }catch(e){}
+  }
+  return null;
+}
+function rowSignature(p,a,i){ return (p+'|'+a+'|'+i).toLowerCase().replace(/\s+/g,' '); }
+function importAspects(){
+  var msg=document.getElementById('importMsg');
+  var items=readAspectDraft();
+  if(!items){
+    msg.className='import-msg show';
+    msg.textContent='Сохраненный черновик конструктора аспектов в этом браузере не найден. Импорт работает, когда оба конструктора открыты в одном браузере: сначала соберите первичные записи, затем вернитесь сюда.';
+    resizeIframe(); return;
+  }
+  var existing={};
+  state.rows.forEach(function(r){ existing[rowSignature(r.process,r.aspect,r.impact)]=true; });
+  state.imported.forEach(function(sid){ existing['sid:'+sid]=true; });
+  var added=0;
+  items.forEach(function(it){
+    if(existing['sid:'+it.sid]) return;
+    var sig=rowSignature(it.process,it.aspect,it.impact);
+    if(existing[sig]) return;
+    existing[sig]=true; existing['sid:'+it.sid]=true;
+    var num=state.nextNum; state.nextNum++;
+    var row={ id:'A'+String(num).padStart(2,'0'), num:num,
+      process:it.process, aspect:it.aspect, impact:it.impact, source:it.source, note:'', imported:true,
+      q:{q1:'',q2:'',q3:'',q4:''} };
+    state.rows.push(row);
+    state.imported.push(it.sid);
+    added++;
+  });
+  if(!added){
+    msg.className='import-msg show';
+    msg.textContent='Новых цепочек для импорта нет: все записи черновика аспектов уже перенесены в этот реестр.';
+  } else {
+    state.activeId=state.rows[state.rows.length-1].id;
+    msg.className='import-msg show';
+    msg.textContent='Импортировано цепочек: '+added+'. Связки и источники перенесены, ранговые вопросы остались без ответов: откройте строки и проставьте ответы.';
+  }
+  refreshTabs();
+  saveOwn();
+  resizeIframe();
+}
+
+/* ================= РЕЖИМЫ ================= */
+function chooseMode(m){
+  if(m==='edu'){ eduState={i:0,answers:{}}; renderEdu(); showScreen('screen-edu'); }
+  else{
+    if(!state.rows.length) addRow(true);
+    document.getElementById('m-org').value=state.meta.org;
+    document.getElementById('m-date').value=state.meta.date||today();
+    document.getElementById('m-author').value=state.meta.author;
+    if(!state.meta.date){ state.meta.date=today(); }
+    refreshTabs();
+    showScreen('screen-own');
+  }
+}
+
+/* ================= УЧЕБНЫЙ РЕЖИМ ================= */
+function eduQuestionsOrder(ans){
+  var order=['q1'];
+  if(ans.q1==='yes'){ order.push('q2'); if(ans.q2==='yes') order.push('q3'); }
+  if(ans.q1==='no') order.push('q4');
+  return order;
+}
+function renderEdu(){
+  var rowView=document.getElementById('eduRowView');
+  var finView=document.getElementById('eduFinalView');
+  if(eduState.i>=EDU.length){
+    rowView.style.display='none'; finView.style.display='block';
+    var html='<h1>Учебный реестр значимости собран</h1>'+
+      '<p class="lead">Так выглядит реестр значимости: связка, ранг и вывод по каждому аспекту. На предприятии такой реестр становится основанием для обязательств и плана действий.</p>'+
+      '<div class="scroll-x"><table class="reg"><thead><tr><th>Процесс</th><th>Аспект</th><th>Воздействие</th><th>Ранг</th><th>Значимость</th></tr></thead><tbody>';
+    EDU.forEach(function(r){
+      var d={rank:r.rank, path:r.rank===3?'signals-yes':'x'};
+      var s=sigInfo(d);
+      html+='<tr><td>'+esc(r.process)+'</td><td>'+esc(r.aspect)+'</td><td>'+esc(r.impact)+'</td><td class="rank">'+r.rank+'</td><td>'+s.label+'</td></tr>';
+    });
+    html+='</tbody></table></div>'+
+      '<div class="note-box accent">Ранги 1 и 2 значимые: по ним планируют цели и действия или держат операционный контроль. Ранги 3 и 4 незначимые, при этом ранг 3 остается под наблюдением и учетом сигналов.</div>'+
+      '<div class="nav-buttons"><button class="btn btn-secondary" onclick="chooseMode(\'edu\')">Пройти заново</button><button class="btn btn-primary" onclick="chooseMode(\'own\')">Собрать реестр предприятия</button></div>';
+    finView.innerHTML=html;
+    resizeIframe(); return;
+  }
+  finView.style.display='none'; rowView.style.display='block';
+  var r=EDU[eduState.i];
+  var ans=eduState.answers;
+  var d=deriveRank(ans);
+  var order=eduQuestionsOrder(ans);
+  var html2='<span class="sig-tag ins" style="margin-bottom:8px;display:inline-block;">Аспект '+(eduState.i+1)+' из '+EDU.length+'</span>'+
+    '<h1>Учебный завод: оценка значимости</h1>'+
+    '<div class="facts-card"><strong>'+esc(r.process)+': '+esc(r.aspect)+'</strong><ul>'+r.facts.map(function(f){return '<li>'+esc(f)+'</li>';}).join('')+'</ul></div>';
+  order.forEach(function(qid){
+    var val=ans[qid];
+    if(val){
+      html2+='<div class="chip-done">'+QT[qid]+' Ответ: '+(val==='yes'?'да':(val==='no'?'нет':'неизвестно'))+'</div>';
+    } else {
+      html2+='<div class="q-line"><p class="q-text">'+QT[qid]+'</p><div class="q-btns">'+
+        '<button class="btn btn-primary" onclick="eduAnswer(\''+qid+'\',\'yes\')">Да</button>'+
+        '<button class="btn btn-secondary" onclick="eduAnswer(\''+qid+'\',\'no\')">Нет</button></div></div>';
+    }
+  });
+  if(d){
+    var s=sigInfo(d);
+    var match = d.rank===r.rank;
+    html2+='<div class="result-panel'+(match?'':' retry')+'">'+
+      '<p><span class="rank-badge">Ранг '+d.rank+'</span><span class="sig-tag '+s.cls+'">'+s.label+'</span></p>'+
+      '<p>'+esc(rankNote(d))+'</p>'+
+      (match
+        ? '<p>Вывод совпадает с разбором карточки: '+esc(r.process)+' - ранг '+r.rank+'.</p>'
+        : '<p>'+esc(r.missNote)+'</p>')+
+      '</div>'+
+      '<div class="nav-buttons">'+
+      (match?'':'<button class="btn btn-secondary" onclick="eduRetry()">Ответить заново</button>')+
+      '<button class="btn btn-primary" onclick="eduNext()">'+(eduState.i<EDU.length-1?'Следующий аспект':'К учебному реестру')+'</button>'+
+      '</div>';
+  }
+  html2+='<div class="nav-buttons"><button class="btn btn-secondary" onclick="showScreen(\'screen-intro\')">К выбору режима</button></div>';
+  rowView.innerHTML=html2;
+  resizeIframe();
+}
+function eduAnswer(qid,val){ eduState.answers[qid]=val; renderEdu(); }
+function eduRetry(){ eduState.answers={}; renderEdu(); }
+function eduNext(){ eduState.i++; eduState.answers={}; renderEdu(); }
+
+/* ================= СВОЙ РЕЖИМ: ВКЛАДКИ ================= */
+function refreshTabs(){
+  var bar=document.getElementById('tabsBar'), box=document.getElementById('panelsBox');
+  bar.innerHTML='';
+  state.rows.forEach(function(r){
+    if(!bodiesById[r.id]){ var b=buildRowBody(r); bodiesById[r.id]=b; box.appendChild(b); }
+  });
+  Object.keys(bodiesById).forEach(function(id){
+    var exists=state.rows.some(function(r){return r.id===id;});
+    if(!exists){ bodiesById[id].remove(); delete bodiesById[id]; }
+  });
+  var old=document.getElementById('emptyPlaceholder'); if(old) old.remove();
+  if(!state.rows.some(function(r){return r.id===state.activeId;})) state.activeId=state.rows.length?state.rows[0].id:null;
+  state.rows.forEach(function(r){
+    var t=document.createElement('button');
+    t.type='button'; t.className='tab-btn'; t.id='tab-'+r.id;
+    t.setAttribute('role','tab'); t.setAttribute('aria-controls','panel-'+r.id);
+    t.setAttribute('aria-selected', r.id===state.activeId?'true':'false');
+    t.onclick=function(){ activateTab(r.id); };
+    var nm=document.createElement('span'); nm.className='tab-name'; nm.id='tabname-'+r.id;
+    nm.textContent=r.process.trim()?r.process.trim():'строка '+r.id;
+    t.appendChild(document.createTextNode(r.id+' '));
+    t.appendChild(nm);
+    if(r.imported){ var im=document.createElement('span'); im.textContent='имп'; im.style.fontSize='10px'; im.style.color='var(--muted)'; t.appendChild(im); }
+    bar.appendChild(t);
+  });
+  var add=document.createElement('button');
+  add.type='button'; add.className='tab-add'; add.textContent='Добавить строку';
+  add.onclick=function(){ addRow(false); };
+  bar.appendChild(add);
+  if(!state.rows.length){
+    var ph=document.createElement('div'); ph.className='note-box'; ph.id='emptyPlaceholder';
+    ph.textContent='Строк пока нет. Нажмите "Добавить строку" или импортируйте записи из конструктора аспектов.';
+    box.appendChild(ph);
+  }
+  applyActive();
+}
+function applyActive(){
+  state.rows.forEach(function(r){
+    var p=bodiesById[r.id], t=document.getElementById('tab-'+r.id);
+    if(p) p.hidden = r.id!==state.activeId;
+    if(t) t.setAttribute('aria-selected', r.id===state.activeId?'true':'false');
+  });
+}
+function activateTab(id){ state.activeId=id; applyActive(); saveOwn(); resizeIframe(); }
+function addRow(first){
+  var num=state.nextNum; state.nextNum++;
+  var r={ id:'A'+String(num).padStart(2,'0'), num:num, process:'', aspect:'', impact:'', source:'', note:'', imported:false, q:{q1:'',q2:'',q3:'',q4:''} };
+  state.rows.push(r); state.activeId=r.id;
+  refreshTabs(); saveOwn();
+  if(!first){ var el=document.getElementById('f-'+r.id+'-process'); if(el) el.focus(); }
+  resizeIframe();
+}
+function deleteRow(id){
+  var r=null; state.rows.forEach(function(x){ if(x.id===id) r=x; });
+  if(!r) return;
+  var filled=r.process||r.aspect||r.impact||r.source||r.note;
+  if(filled && !confirm('Удалить строку '+r.id+'? Введенные данные будут потеряны.')) return;
+  state.rows=state.rows.filter(function(x){return x.id!==id;});
+  if(state.activeId===id) state.activeId=state.rows.length?state.rows[0].id:null;
+  refreshTabs(); saveOwn(); resizeIframe();
+}
+
+function buildRowBody(r){
+  var panel=document.createElement('div');
+  panel.className='tab-panel'; panel.id='panel-'+r.id;
+  panel.setAttribute('role','tabpanel'); panel.setAttribute('aria-labelledby','tab-'+r.id);
+  var head=document.createElement('div'); head.className='panel-head';
+  var st=document.createElement('strong'); st.textContent='Строка '+r.id+(r.imported?' (импортирована из конструктора аспектов)':'');
+  var del=document.createElement('button'); del.type='button'; del.className='btn-small'; del.textContent='Удалить строку';
+  del.onclick=function(){ deleteRow(r.id); };
+  head.appendChild(st); head.appendChild(del); panel.appendChild(head);
+
+  var body=document.createElement('div');
+  var html='';
+  html+='<div class="field"><label for="f-'+r.id+'-process">Процесс / операция <span class="req">(обязательное поле)</span></label><input type="text" id="f-'+r.id+'-process"><div class="hint">Например: варка стекла, пересыпка шихты, водоотведение.</div></div>';
+  html+='<div class="field"><label for="f-'+r.id+'-aspect">Аспект <span class="req">(обязательное поле)</span></label><input type="text" id="f-'+r.id+'-aspect"><div class="hint">Как работа взаимодействует со средой: выброс, сброс, потребление ресурса, образование отхода.</div></div>';
+  html+='<div class="field"><label for="f-'+r.id+'-impact">Воздействие <span class="req">(обязательное поле)</span></label><input type="text" id="f-'+r.id+'-impact"><div class="hint">Что меняется в среде: загрязнение воздуха, воды, почвы, изменение объема ресурса.</div></div>';
+  html+='<div class="field"><label for="f-'+r.id+'-source">Источник и основание</label><textarea id="f-'+r.id+'-source"></textarea><div class="hint">Норматив, договор, данные контроля, пояснение ответственного. Например: ПДВ от 15.03.2026, договор с Водоканалом N 123.</div></div>';
+  ['q1','q2','q3','q4'].forEach(function(qid){
+    html+='<div class="q-block" id="qb-'+r.id+'-'+qid+'"><p class="q-text">'+QT[qid]+'</p>'+
+      '<select id="q-'+r.id+'-'+qid+'"><option value="">Еще не отвечено</option><option value="yes">Да</option><option value="no">Нет</option><option value="unknown">Пока неизвестно</option></select></div>';
+  });
+  html+='<div class="field"><label>Ранг и значимость</label><div id="rank-'+r.id+'"></div></div>';
+  html+='<div class="field"><label for="f-'+r.id+'-note">Примечание или что уточнить</label><textarea id="f-'+r.id+'-note"></textarea><div class="hint">Если ответ помечен как неизвестно, запишите, какие сведения и у кого запросить.</div></div>';
+  body.innerHTML=html;
+  panel.appendChild(body);
+
+  ['process','aspect','impact','source','note'].forEach(function(key){
+    var el=body.querySelector('[id="f-'+r.id+'-'+key+'"]');
+    el.value=r[key];
+    el.addEventListener('input',function(e){
+      r[key]=e.target.value;
+      if(key==='process'){ var nm=document.getElementById('tabname-'+r.id); if(nm) nm.textContent=r.process.trim()?r.process.trim():'строка '+r.id; }
+      saveOwn();
+    });
+  });
+  ['q1','q2','q3','q4'].forEach(function(qid){
+    var sel=body.querySelector('[id="q-'+r.id+'-'+qid+'"]');
+    sel.value=r.q[qid];
+    sel.addEventListener('change',function(e){
+      r.q[qid]=e.target.value;
+      if(qid==='q1'){
+        if(r.q.q1!=='yes'){ r.q.q2=''; r.q.q3=''; }
+        if(r.q.q1!=='no'){ r.q.q4=''; }
+      }
+      if(qid==='q2' && r.q.q2!=='yes'){ r.q.q3=''; }
+      ['q1','q2','q3','q4'].forEach(function(k2){ body.querySelector('[id="q-'+r.id+'-'+k2+'"]').value=r.q[k2]; });
+      syncRow(r);
+      saveOwn();
+    });
+  });
+  syncRow(r, body);
+  return panel;
+}
+function syncRow(r, root){
+  var scope=root||document;
+  var reach=['q1'];
+  if(r.q.q1==='yes'){ reach.push('q2'); if(r.q.q2==='yes') reach.push('q3'); }
+  if(r.q.q1==='no') reach.push('q4');
+  ['q1','q2','q3','q4'].forEach(function(qid){
+    var blk=scope.querySelector('[id="qb-'+r.id+'-'+qid+'"]');
+    var sel=scope.querySelector('[id="q-'+r.id+'-'+qid+'"]');
+    if(!blk||!sel) return;
+    var on=reach.indexOf(qid)>=0;
+    sel.disabled=!on;
+    blk.classList.toggle('disabled', !on);
+  });
+  var chip=scope.querySelector('[id="rank-'+r.id+'"]');
+  if(chip){
+    var d=deriveRank(r.q);
+    var s=sigInfo(d);
+    if(d){
+      chip.innerHTML='<span class="rank-chip '+s.cls+'">Ранг '+d.rank+' - '+s.label+'</span><div class="hint" style="margin-top:6px;">'+esc(rankNote(d))+'</div>';
+    } else {
+      var miss=missingRankQuestions(r.q);
+      chip.innerHTML='<span class="rank-chip na">Ранг не определен</span><div class="hint" style="margin-top:6px;">Ответьте на вопрос: '+esc(miss.join('; '))+'.</div>';
+    }
+  }
+}
+
+/* ================= ПРОВЕРКИ И ПРЕДПРОСМОТР ================= */
+function validate(){
+  var errs=[];
+  state.rows.forEach(function(r){
+    var miss=[];
+    if(!r.process.trim()) miss.push('процесс / операция');
+    if(!r.aspect.trim()) miss.push('аспект');
+    if(!r.impact.trim()) miss.push('воздействие');
+    if(miss.length) errs.push('Строка '+r.id+': не заполнено - '+miss.join(', ')+'.');
+  });
+  return errs;
+}
+function notices(){
+  var list=[];
+  state.rows.forEach(function(r){
+    var d=deriveRank(r.q);
+    if(!d){
+      list.push('Строка '+r.id+': ранг не определен. Ответьте на вопросы ранжирования или отметьте неизвестное и запишите, что уточнить.');
+    }
+    if(!r.source.trim()) list.push('Строка '+r.id+': не указан источник и основание. Добавьте норматив, договор, данные контроля или пояснение ответственного.');
+  });
+  return list;
+}
+function regTableHtml(){
+  var html='<div class="scroll-x"><table class="reg"><thead><tr><th>N</th><th>Процесс / операция</th><th>Аспект</th><th>Воздействие</th><th>Ранг</th><th>Значимость</th><th>Источник и основание</th></tr></thead><tbody>';
+  state.rows.forEach(function(r){
+    var d=deriveRank(r.q); var s=sigInfo(d);
+    html+='<tr><td>'+r.id+'</td><td>'+esc(r.process.trim()||'-')+'</td><td>'+esc(r.aspect.trim()||'-')+'</td><td>'+esc(r.impact.trim()||'-')+'</td><td class="rank">'+(d?d.rank:'-')+'</td><td>'+s.label+'</td><td>'+esc(r.source.trim()||'-')+'</td></tr>';
+  });
+  html+='</tbody></table></div>';
+  return html;
+}
+function openPreview(){ renderPreview(); showScreen('screen-preview'); }
+function renderPreview(){
+  var errs=validate();
+  var errBox=document.getElementById('errorsBox');
+  var dl=document.getElementById('downloadBtn');
+  if(errs.length||!state.rows.length){
+    errBox.style.display='block';
+    errBox.innerHTML='<strong>Для сборки реестра не хватает обязательных полей.</strong><ul>'+errs.map(function(e){return '<li>'+esc(e)+'</li>';}).join('')+(!state.rows.length?'<li>Добавьте хотя бы одну строку или импортируйте записи.</li>':'')+'</ul>';
+    dl.disabled=true;
+    document.getElementById('downloadNote').textContent='Скачивание откроется, когда в каждой строке будут процесс, аспект и воздействие.';
+  } else {
+    errBox.style.display='none'; dl.disabled=false;
+    document.getElementById('downloadNote').textContent='Документ сохранится на ваше устройство по нажатию кнопки.';
+  }
+  var nt=notices();
+  var ntBox=document.getElementById('noticesBox');
+  if(nt.length){ ntBox.style.display='block'; ntBox.innerHTML='<strong>Что дополнить.</strong><ul>'+nt.map(function(n){return '<li>'+esc(n)+'</li>';}).join('')+'</ul>'; }
+  else ntBox.style.display='none';
+
+  var scored=state.rows.filter(function(r){ return deriveRank(r.q); }).length;
+  var sig=state.rows.filter(function(r){ var d=deriveRank(r.q); return d&&(d.rank===1||d.rank===2); }).length;
+  var html='<div class="note-box accent">Строк в реестре: '+state.rows.length+'. Строк с определенным рангом: '+scored+'. Значимых аспектов (ранги 1 и 2): '+sig+'.</div>';
+  html+='<h2>Реестр значимости</h2>'+regTableHtml();
+  var undet=state.rows.filter(function(r){ return !deriveRank(r.q); });
+  if(undet.length){
+    html+='<h2>Строки без определенного ранга</h2><ul style="font-size:13px;margin:0 0 10px;padding-left:20px;">';
+    undet.forEach(function(r){
+      html+='<li>'+r.id+' ('+esc(r.process.trim()||'процесс не назван')+'): остались вопросы - '+esc(missingRankQuestions(r.q).join('; '))+'.</li>';
+    });
+    html+='</ul>';
+  }
+  html+='<div class="note-box">Ранги 1 и 2 значимые: по ним планируют цели, действия и операционный контроль. Ранги 3 и 4 незначимые, при этом ранг 3 остается под наблюдением и учетом сигналов. Реестр значимости станет основой для определения обязательств и планирования действий. Документ собран учебным конструктором и не подтверждает соответствие СЭМ стандарту.</div>';
+  document.getElementById('previewBox').innerHTML=html;
+  resizeIframe();
+}
+
+function restartOwn(){
+  if(!confirm('Очистить черновик реестра значимости и удалить его из локальной памяти?')) return;
+  try{ localStorage.removeItem(STORAGE_KEY); }catch(e){}
+  state={ meta:{org:'',date:today(),author:''}, rows:[], nextNum:1, activeId:null, imported:state.imported };
+  bodiesById={};
+  document.getElementById('panelsBox').innerHTML='';
+  addRow(true);
+  showScreen('screen-own');
+}
+
+/* ================= DOCX ================= */
+function xmlEsc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;'); }
+function run(t,o){ o=o||{}; var r=''; if(o.b)r+='<w:b/>'; if(o.i)r+='<w:i/>'; if(o.color)r+='<w:color w:val="'+o.color+'"/>'; if(o.sz)r+='<w:sz w:val="'+o.sz+'"/><w:szCs w:val="'+o.sz+'"/>'; return '<w:r>'+(r?'<w:rPr>'+r+'</w:rPr>':'')+'<w:t xml:space="preserve">'+xmlEsc(t)+'</w:t></w:r>'; }
+function para(t,o){ o=o||{}; var p=''; if(o.style)p+='<w:pStyle w:val="'+o.style+'"/>'; if(o.before||o.after)p+='<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after||0)+'"/>'; return '<w:p>'+(p?'<w:pPr>'+p+'</w:pPr>':'')+run(t,o)+'</w:p>'; }
+function paraMulti(t,o){ return String(t).split(/\r?\n/).map(function(l){ return para(l,o); }).join(''); }
+function cell(w,xml,fill){ return '<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(fill?'<w:shd w:val="clear" w:color="auto" w:fill="'+fill+'"/>':'')+'<w:vAlign w:val="top"/></w:tcPr>'+(xml||'<w:p/>')+'</w:tc>'; }
+var TBL='<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
+var CMAR='<w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar>';
+var RW=[800,2500,2500,2500,700,2200,3370];
+function regTableXml(){
+  var head='<w:tr>'+cell(RW[0],para('N',{b:true,sz:18}),'F8FAFC')+cell(RW[1],para('Процесс / операция',{b:true,sz:18}),'F8FAFC')+cell(RW[2],para('Аспект',{b:true,sz:18}),'F8FAFC')+cell(RW[3],para('Воздействие',{b:true,sz:18}),'F8FAFC')+cell(RW[4],para('Ранг',{b:true,sz:18}),'F8FAFC')+cell(RW[5],para('Значимость',{b:true,sz:18}),'F8FAFC')+cell(RW[6],para('Источник и основание',{b:true,sz:18}),'F8FAFC')+'</w:tr>';
+  var body='';
+  state.rows.forEach(function(r){
+    var d=deriveRank(r.q); var s=sigInfo(d);
+    body+='<w:tr>'+cell(RW[0],para(r.id,{sz:18}))+cell(RW[1],paraMulti(r.process.trim()||'-',{sz:18}))+cell(RW[2],paraMulti(r.aspect.trim()||'-',{sz:18}))+cell(RW[3],paraMulti(r.impact.trim()||'-',{sz:18}))+cell(RW[4],para(d?String(d.rank):'-',{sz:18,b:true}))+cell(RW[5],para(s.label,{sz:18}))+cell(RW[6],paraMulti(r.source.trim()||'-',{sz:18}))+'</w:tr>';
+  });
+  return '<w:tbl><w:tblPr><w:tblW w:w="14570" w:type="dxa"/>'+TBL+CMAR+'<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+RW.map(function(w){return '<w:gridCol w:w="'+w+'"/>';}).join('')+'</w:tblGrid>'+head+body+'</w:tbl>';
+}
+function buildDocumentXml(){
+  var b=[];
+  b.push(para('Реестр экологических аспектов с оценкой значимости. Проект',{style:'Title'}));
+  b.push(para('Предварительный рабочий материал. Требует проверки и обсуждения на предприятии.',{i:true,color:'6B7280',sz:20,after:200}));
+  b.push(para('1. Сведения о подготовке',{style:'Heading1'}));
+  if(state.meta.org.trim()) b.push(para('Предприятие: '+state.meta.org.trim()));
+  b.push(para('Дата: '+(state.meta.date.trim()||today())));
+  if(state.meta.author.trim()) b.push(para('Подготовил: '+state.meta.author.trim()));
+  b.push(para('Строк в реестре: '+state.rows.length));
+  b.push(para('2. Реестр значимости',{style:'Heading1'}));
+  b.push(regTableXml());
+  var undet=state.rows.filter(function(r){ return !deriveRank(r.q); });
+  b.push(para('3. Строки без определенного ранга',{style:'Heading1'}));
+  if(!undet.length) b.push(para('Все строки получили ранг и оценку значимости.',{i:true,color:'6B7280'}));
+  undet.forEach(function(r){
+    b.push(para(r.id+' ('+(r.process.trim()||'процесс не назван')+'): остались вопросы - '+missingRankQuestions(r.q).join('; ')+'.',{after:40}));
+    if(r.note.trim()) b.push(para('Примечание: '+r.note.trim(),{after:40}));
+  });
+  b.push(para('Ранги 1 и 2 значимые: по ним планируют цели, действия и операционный контроль специальных мер. Ранги 3 и 4 незначимые, при этом ранг 3 остается под наблюдением и учетом сигналов.',{i:true,color:'6B7280',sz:20,before:240}));
+  b.push(para('Реестр значимости станет основой для определения принятых обязательств и планирования действий. Ранги пересматривают при изменении требований, процессов и сигналов.',{i:true,color:'6B7280',sz:20}));
+  b.push(para('Документ подготовлен с помощью учебного конструктора и не является подтверждением соответствия СЭМ стандарту.',{i:true,color:'6B7280',sz:20}));
+  b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>'+b.join('')+'</w:body></w:document>';
+}
+var CT_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
+var RELS_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+var DRELS_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+var FOOTER_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:fldSimple w:instr=" PAGE "><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
+var STYLES_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="334155"/></w:rPr></w:style></w:styles>';
+
+var CRC_TABLE=(function(){ var t=new Uint32Array(256); for(var n=0;n<256;n++){ var c=n; for(var k=0;k<8;k++) c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1); t[n]=c>>>0; } return t; })();
+function crc32(u8){ var c=0xFFFFFFFF; for(var i=0;i<u8.length;i++) c=CRC_TABLE[(c^u8[i])&0xFF]^(c>>>8); return (c^0xFFFFFFFF)>>>0; }
+function zipStore(files){
+  var enc=new TextEncoder(), now=new Date();
+  var dt=((now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1))&0xFFFF;
+  var dd=(((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate())&0xFFFF;
+  var locals=[],centrals=[],offset=0;
+  files.forEach(function(f){
+    var nb=enc.encode(f.name), data=f.data, crc=crc32(data);
+    var lh=new Uint8Array(30+nb.length), dv=new DataView(lh.buffer);
+    dv.setUint32(0,0x04034b50,true); dv.setUint16(4,20,true); dv.setUint16(6,0,true); dv.setUint16(8,0,true);
+    dv.setUint16(10,dt,true); dv.setUint16(12,dd,true);
+    dv.setUint32(14,crc,true); dv.setUint32(18,data.length,true); dv.setUint32(22,data.length,true);
+    dv.setUint16(26,nb.length,true); dv.setUint16(28,0,true);
+    lh.set(nb,30); locals.push(lh,data);
+    var ch=new Uint8Array(46+nb.length), cv=new DataView(ch.buffer);
+    cv.setUint32(0,0x02014b50,true); cv.setUint16(4,20,true); cv.setUint16(6,20,true); cv.setUint16(8,0,true); cv.setUint16(10,0,true);
+    cv.setUint16(12,dt,true); cv.setUint16(14,dd,true);
+    cv.setUint32(16,crc,true); cv.setUint32(20,data.length,true); cv.setUint32(24,data.length,true);
+    cv.setUint16(28,nb.length,true); cv.setUint16(30,0,true); cv.setUint16(32,0,true);
+    cv.setUint16(34,0,true); cv.setUint16(36,0,true); cv.setUint32(38,0,true); cv.setUint32(42,offset,true);
+    ch.set(nb,46); centrals.push(ch);
+    offset+=lh.length+data.length;
+  });
+  var cs=0; centrals.forEach(function(p){ cs+=p.length; });
+  var eocd=new Uint8Array(22), ev=new DataView(eocd.buffer);
+  ev.setUint32(0,0x06054b50,true); ev.setUint16(4,0,true); ev.setUint16(6,0,true);
+  ev.setUint16(8,files.length,true); ev.setUint16(10,files.length,true);
+  ev.setUint32(12,cs,true); ev.setUint32(16,offset,true); ev.setUint16(20,0,true);
+  var total=0; locals.forEach(function(p){ total+=p.length; }); centrals.forEach(function(p){ total+=p.length; }); total+=22;
+  var out=new Uint8Array(total), o=0;
+  locals.forEach(function(p){ out.set(p,o); o+=p.length; });
+  centrals.forEach(function(p){ out.set(p,o); o+=p.length; });
+  out.set(eocd,o);
+  return out;
+}
+function downloadDocx(){
+  var errs=validate();
+  if(errs.length||!state.rows.length){ renderPreview(); showScreen('screen-preview'); return; }
+  var enc=new TextEncoder();
+  var files=[
+    {name:'[Content_Types].xml',data:enc.encode(CT_XML)},
+    {name:'_rels/.rels',data:enc.encode(RELS_XML)},
+    {name:'word/document.xml',data:enc.encode(buildDocumentXml())},
+    {name:'word/styles.xml',data:enc.encode(STYLES_XML)},
+    {name:'word/footer1.xml',data:enc.encode(FOOTER_XML)},
+    {name:'word/_rels/document.xml.rels',data:enc.encode(DRELS_XML)}
+  ];
+  var bytes=zipStore(files);
+  var blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+  var url=URL.createObjectURL(blob);
+  var a=document.createElement('a');
+  a.href=url; a.download='reestr-znachimosti-aspektov.docx';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function(){ URL.revokeObjectURL(url); },4000);
+  document.getElementById('downloadNote').textContent='Запрос на скачивание отправлен. Проверьте сохранение файла.';
+  resizeIframe();
+}
+
+/* ================= СТАРТ ================= */
+document.addEventListener('DOMContentLoaded', function(){
+  testStorage();
+  var restored=loadOwn();
+  if(restored) document.getElementById('restoreNote').style.display='block';
+  if(readAspectDraft()) document.getElementById('importHintNote').style.display='block';
+  resizeIframe();
+  if('ResizeObserver' in window){ var ro=new ResizeObserver(function(){ resizeIframe(); }); ro.observe(document.body); }
+});
+window.addEventListener('load', function(){ resizeIframe(); });
+</script>
+
+</body>
+</html>
