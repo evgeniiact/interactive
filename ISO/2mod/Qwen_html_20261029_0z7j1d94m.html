@@ -1,0 +1,385 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Оценка значимости экологического аспекта: интерактивная схема</title>
+<style>
+:root {
+  --bg:#ffffff; --primary:#1e293b; --muted:#64748b; --border:#e2e8f0;
+  --gray-light:#f8fafc; --accent:#2563eb; --accent-dark:#1d4ed8;
+  --ok-bg:#f0fdf4; --ok-bd:#bbf7d0; --ok-tx:#166534;
+  --warn-bg:#fffbeb; --warn-bd:#fde68a; --warn-tx:#92400e;
+  --radius:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--primary);font-size:15px;line-height:1.6}
+.container{max-width:760px;margin:0 auto}
+.head-row{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+h1{font-size:21px;font-weight:800;margin:0 0 8px}
+.lead{font-size:14px;margin:0 0 10px;line-height:1.55}
+.info-btn{
+  flex:0 0 auto;width:28px;height:28px;border-radius:50%;
+  border:2px solid var(--warn-bd);background:var(--warn-bg);color:var(--warn-tx);
+  font-size:16px;font-weight:800;cursor:pointer;font-family:inherit;line-height:1;
+  display:flex;align-items:center;justify-content:center;margin-top:2px;
+}
+.info-btn:hover{background:#fef3c7}
+.info-btn[aria-expanded="true"]{background:var(--warn-tx);color:#fff;border-color:var(--warn-tx)}
+.disc-pop{
+  display:none;background:var(--warn-bg);border:1px solid var(--warn-bd);
+  border-radius:10px;padding:10px 14px;font-size:12.5px;line-height:1.5;color:var(--warn-tx);margin:0 0 10px;
+}
+.disc-pop.show{display:block}
+
+/* схема */
+.scheme-scroll{overflow-x:auto;margin:10px 0;border:1px solid var(--border);border-radius:var(--radius);background:#fff;padding:6px}
+.scheme-scroll svg{min-width:620px;width:100%;height:auto;display:block}
+.node rect,.node polygon,.node ellipse{fill:#fff;stroke:#94a3b8;stroke-width:1.5;transition:fill .25s,stroke .25s,opacity .25s}
+.node text{fill:#1e293b;font-family:inherit}
+.node .t{font-size:12.5px;font-weight:700}
+.node .ts{font-size:10.5px;font-weight:700}
+.node .h{font-size:9.5px;fill:#64748b}
+.node.diamond text{font-size:11.5px;font-weight:700}
+.node.oval text{font-size:12px;font-weight:700}
+.node.lit rect,.node.lit polygon,.node.lit ellipse{stroke:var(--accent);fill:#eff6ff}
+.node.active rect,.node.active polygon{stroke:var(--accent-dark);stroke-width:2.4;fill:#eff6ff}
+.node.hit ellipse{stroke:var(--ok-tx);stroke-width:2.4;fill:var(--ok-bg)}
+.node.dim{opacity:.38}
+.edge path{stroke:#94a3b8;stroke-width:1.8;fill:none;transition:stroke .25s}
+.edge polygon{fill:#94a3b8;transition:fill .25s}
+.edge .elab{font-size:10.5px;fill:#64748b;font-family:inherit}
+.edge.lit path{stroke:var(--accent);stroke-width:2.6}
+.edge.lit polygon{fill:var(--accent)}
+.edge.lit .elab{fill:var(--accent-dark);font-weight:700}
+
+/* карточка шага */
+.step-card{border:1px solid var(--border);border-left:5px solid var(--accent);border-radius:10px;padding:14px 16px;background:#fff;margin:10px 0}
+.step-card h2{font-size:16px;margin:0 0 6px}
+.step-card p{margin:0 0 8px;font-size:13.5px}
+.step-card .q{font-weight:700;font-size:14.5px;margin-bottom:8px}
+.step-card.result{border-left-color:var(--ok-tx)}
+.step-card.result.insig{border-left-color:var(--muted)}
+.ex-row{margin:0 0 8px}
+.btn-mini{
+  padding:5px 12px;font-size:12px;font-weight:600;border-radius:6px;
+  border:1px solid var(--border);background:#fff;color:var(--accent);cursor:pointer;font-family:inherit;
+}
+.btn-mini:hover{background:#eff6ff}
+.btn-mini[aria-expanded="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ex-box{
+  display:none;background:var(--gray-light);border:1px solid var(--border);
+  border-left:3px solid var(--accent);border-radius:0 8px 8px 0;
+  padding:9px 12px;font-size:12.5px;line-height:1.5;color:var(--primary);margin:0 0 10px;
+}
+.ex-box.show{display:block}
+.verdict{display:inline-block;font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;padding:3px 10px;border-radius:20px;border:1px solid;margin-bottom:8px}
+.verdict.sig{background:var(--ok-bg);color:var(--ok-tx);border-color:var(--ok-bd)}
+.verdict.ins{background:var(--gray-light);color:var(--muted);border-color:var(--border)}
+.path-line{font-size:12.5px;color:var(--muted);background:var(--gray-light);border-radius:8px;padding:8px 10px;margin-top:10px}
+
+.nav-buttons{display:flex;gap:10px;margin-top:10px;flex-wrap:wrap}
+.btn{padding:10px 22px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:background .2s}
+.btn-yes{background:var(--accent);color:#fff}
+.btn-yes:hover{background:var(--accent-dark)}
+.btn-no{background:#fff;border:2px solid var(--border);color:var(--primary)}
+.btn-no:hover{border-color:var(--accent)}
+.btn-secondary{background:#fff;border:1px solid var(--border);color:var(--primary);font-weight:600}
+.btn-secondary:hover{background:var(--gray-light)}
+button:focus-visible{outline:3px solid var(--accent-dark);outline-offset:2px}
+
+@media (max-width:560px){
+  body{padding:12px}
+  h1{font-size:18px}
+  .nav-buttons{flex-direction:column}
+  .btn{width:100%}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="head-row">
+    <h1>Оценка значимости экологического аспекта</h1>
+    <button class="info-btn" id="discBtn" aria-expanded="false" aria-controls="discPop" onclick="toggleDisc()" aria-label="Важная пометка о схеме" title="Важная пометка о схеме">!</button>
+  </div>
+  <div class="disc-pop" id="discPop" role="note">Схема повторяет один из вариантов процедуры оценки значимости: требования, выполнение, специальные меры, другие факторы. Вывод схемы это основание для обсуждения и записи в реестр аспектов, а не автоматическая оценка: при новых данных путь проходят заново.</div>
+  <p class="lead">Пройдите по схеме и ответьте на четыре вопроса. Схема подсветит ваш путь и покажет, к какому выводу он приводит: аспект значимый или незначимый, и что делать дальше.</p>
+
+  <div class="scheme-scroll">
+    <svg viewBox="0 0 780 660" role="img" aria-label="Схема оценки значимости экологического аспекта: четыре шага с решениями да и нет и два вывода">
+      <!-- рёбра -->
+      <g class="edge" id="e1"><path d="M380,78 L380,90"/><polygon points="375,82 385,82 380,90"/></g>
+      <g class="edge" id="eYes1"><path d="M380,166 L380,182"/><polygon points="375,174 385,174 380,182"/><text class="elab" x="390" y="178">да</text></g>
+      <g class="edge" id="eNo1"><path d="M470,128 L650,128 L650,182"/><polygon points="645,174 655,174 650,182"/><text class="elab" x="480" y="120">нет</text></g>
+      <g class="edge" id="e4"><path d="M650,252 L650,264"/><polygon points="645,256 655,256 650,264"/></g>
+      <g class="edge" id="eR2D2"><path d="M380,252 L380,264"/><polygon points="375,256 385,256 380,264"/></g>
+      <g class="edge" id="eYes2"><path d="M380,340 L380,356"/><polygon points="375,348 385,348 380,356"/><text class="elab" x="390" y="352">да</text></g>
+      <g class="edge" id="eNo2"><path d="M290,302 L205,302"/><polygon points="213,297 213,307 205,302"/><text class="elab" x="238" y="292">нет</text></g>
+      <g class="edge" id="eG"><path d="M130,337 L130,610 L140,610"/><polygon points="132,605 132,615 140,610"/></g>
+      <g class="edge" id="eR3D3"><path d="M380,426 L380,438"/><polygon points="375,430 385,430 380,438"/></g>
+      <g class="edge" id="eYes3"><path d="M380,514 L380,560 L250,560 L250,570"/><polygon points="245,562 255,562 250,570"/><text class="elab" x="392" y="540">да</text></g>
+      <g class="edge" id="eNo3"><path d="M470,476 L560,476 L560,570"/><polygon points="555,562 565,562 560,570"/><text class="elab" x="498" y="466">нет</text></g>
+      <g class="edge" id="eYes4"><path d="M650,340 L650,545 L300,545 L300,574"/><polygon points="295,566 305,566 300,574"/><text class="elab" x="662" y="352">да</text></g>
+      <g class="edge" id="eNo4"><path d="M740,302 L762,302 L762,610 L670,610"/><polygon points="678,605 678,615 670,610"/><text class="elab" x="746" y="292">нет</text></g>
+
+      <!-- узлы -->
+      <g class="node" id="n-r1">
+        <rect x="250" y="8" width="260" height="70" rx="9"/>
+        <text class="t" x="380" y="28" text-anchor="middle">Шаг 1. Проверьте, есть ли</text>
+        <text class="t" x="380" y="44" text-anchor="middle">установленные требования</text>
+        <text class="h" x="380" y="58" text-anchor="middle">Предельные значения, запреты, обязанности:</text>
+        <text class="h" x="380" y="70" text-anchor="middle">ПДВ, НДС, нормативы образования отходов</text>
+      </g>
+      <g class="node diamond" id="n-d1">
+        <polygon points="380,90 470,128 380,166 290,128"/>
+        <text x="380" y="124" text-anchor="middle">Требования</text>
+        <text x="380" y="140" text-anchor="middle">установлены?</text>
+      </g>
+      <g class="node" id="n-r2">
+        <rect x="250" y="182" width="260" height="70" rx="9"/>
+        <text class="t" x="380" y="202" text-anchor="middle">Шаг 2. Оцените, выполняются</text>
+        <text class="t" x="380" y="218" text-anchor="middle">ли требования</text>
+        <text class="h" x="380" y="232" text-anchor="middle">Данные мониторинга, отчеты,</text>
+        <text class="h" x="380" y="244" text-anchor="middle">результаты измерений</text>
+      </g>
+      <g class="node diamond" id="n-d2">
+        <polygon points="380,264 470,302 380,340 290,302"/>
+        <text x="380" y="298" text-anchor="middle">Требования выполнены</text>
+        <text x="380" y="314" text-anchor="middle">в полном объеме?</text>
+      </g>
+      <g class="node" id="n-g">
+        <rect x="55" y="267" width="150" height="70" rx="8"/>
+        <text class="ts" x="130" y="288" text-anchor="middle">Установите экологические</text>
+        <text class="ts" x="130" y="304" text-anchor="middle">цели и задачи, разработайте</text>
+        <text class="ts" x="130" y="320" text-anchor="middle">и реализуйте программу</text>
+      </g>
+      <g class="node" id="n-r3">
+        <rect x="250" y="356" width="260" height="70" rx="9"/>
+        <text class="t" x="380" y="376" text-anchor="middle">Шаг 3. Проверьте, за счет чего</text>
+        <text class="t" x="380" y="392" text-anchor="middle">обеспечивается выполнение</text>
+        <text class="h" x="380" y="406" text-anchor="middle">Специальные меры: очистные сооружения,</text>
+        <text class="h" x="380" y="418" text-anchor="middle">фильтры, инструкции, контроль</text>
+      </g>
+      <g class="node diamond" id="n-d3">
+        <polygon points="380,438 470,476 380,514 290,476"/>
+        <text x="380" y="472" text-anchor="middle">Специальные меры</text>
+        <text x="380" y="488" text-anchor="middle">обеспечивают выполнение?</text>
+      </g>
+      <g class="node" id="n-r4">
+        <rect x="520" y="182" width="260" height="70" rx="9"/>
+        <text class="t" x="650" y="202" text-anchor="middle">Шаг 4. Оцените другие</text>
+        <text class="t" x="650" y="218" text-anchor="middle">факторы</text>
+        <text class="h" x="650" y="232" text-anchor="middle">Масштаб воздействия, интересы жителей,</text>
+        <text class="h" x="650" y="244" text-anchor="middle">репутационные риски, корпоративная политика</text>
+      </g>
+      <g class="node diamond" id="n-d4">
+        <polygon points="650,264 740,302 650,340 560,302"/>
+        <text x="650" y="298" text-anchor="middle">Другие факторы указывают</text>
+        <text x="650" y="314" text-anchor="middle">на значимость?</text>
+      </g>
+      <g class="node oval" id="n-osig">
+        <ellipse cx="250" cy="610" rx="110" ry="40"/>
+        <text x="250" y="604" text-anchor="middle">Значимый</text>
+        <text x="250" y="622" text-anchor="middle">экологический аспект</text>
+      </g>
+      <g class="node oval" id="n-oins">
+        <ellipse cx="560" cy="610" rx="110" ry="40"/>
+        <text x="560" y="604" text-anchor="middle">Незначимый</text>
+        <text x="560" y="622" text-anchor="middle">экологический аспект</text>
+      </g>
+    </svg>
+  </div>
+
+  <div class="nav-buttons" style="margin-top:0">
+    <button class="btn btn-secondary" onclick="restart()">Сбросить путь</button>
+  </div>
+
+  <div id="stepPanel" aria-live="polite"></div>
+</div>
+
+<script>
+var STEPS = {
+  1: {
+    title: 'Шаг 1. Есть ли установленные требования?',
+    body: 'Ищите предельные значения, запреты и обязанности. Примеры: ПДВ для выбросов, НДС для сбросов, нормативы образования отходов, требования к обращению с опасными отходами.',
+    q: 'Для аспекта установлены требования?',
+    nodes: ['n-r1','n-d1'], edges: ['e1'],
+    ex: 'Пример: для выброса пыли при пересыпании сырья установлены ПДВ и требования разрешения — требования установлены, отвечайте «да». Для шума офисной техники нормативов и других обязанностей нет — требований нет, отвечайте «нет» и переходите к шагу 4.',
+    yes: { step: 2 }, no: { step: 4 }
+  },
+  2: {
+    title: 'Шаг 2. Выполняются ли требования?',
+    body: 'Запросите данные мониторинга, отчеты и результаты измерений. Сравните фактические показатели с установленными требованиями.',
+    q: 'Требования выполнены в полном объеме?',
+    nodes: ['n-r2','n-d2'], edges: ['eR2D2'],
+    ex: 'Пример: по данным производственного контроля пыль на участке пересыпки не превышает ПДВ — отвечайте «да». Концентрация никеля в сточных водах выше установленного норматива — отвечайте «нет», аспект значимый.',
+    yes: { step: 3 }, no: { result: 'sig2' }
+  },
+  3: {
+    title: 'Шаг 3. За счет чего обеспечивается выполнение?',
+    body: 'Проверьте, держится ли выполнение на специальных мерах: очистных сооружениях, фильтрах, инструкциях, контроле. Спросите: если меры убрать, требования продолжат выполняться?',
+    q: 'Выполнение обеспечивают специальные меры?',
+    nodes: ['n-r3','n-d3'], edges: ['eR3D3'],
+    ex: 'Пример: соблюдение ПДВ держится на работе газоочистки, замене фильтров и графике контроля — специальные меры есть, отвечайте «да». Норматив образования отходов соблюдается потому, что объем отходов изначально мал, мер для этого не требуется — отвечайте «нет».',
+    yes: { result: 'sig3' }, no: { result: 'ins3' }
+  },
+  4: {
+    title: 'Шаг 4. Указывают ли другие факторы на значимость?',
+    body: 'Отсутствие установленных требований еще не вывод. Оцените масштаб воздействия, интересы местных жителей, репутационные риски и корпоративную политику.',
+    q: 'Другие факторы указывают на значимость?',
+    nodes: ['n-r4','n-d4'], edges: ['e4'],
+    ex: 'Пример: для потребления бумаги в офисе требований нет, масштаб малый, а корпоративная политика переводит документооборот в электронный вид — факторы не указывают на значимость, отвечайте «нет». Для шума вентиляционной установки требований нет, но жители соседних домов регулярно фиксируют его в обращениях — фактор указывает на значимость, отвечайте «да».',
+    yes: { result: 'sig4' }, no: { result: 'ins4' }
+  }
+};
+
+var RESULTS = {
+  sig2: { sig: true, oval: 'n-osig', dim: 'n-oins', edges: ['eNo2','eG'],
+    note: 'Требования установлены, но выполняются не в полном объеме. Аспект значимый: установите экологические цели и задачи, разработайте и реализуйте программу улучшений. Запишите аспект в реестр как значимый.' },
+  sig3: { sig: true, oval: 'n-osig', dim: 'n-oins', edges: ['eYes3'],
+    note: 'Требования выполняются благодаря специальным мерам: очистным сооружениям, фильтрам, инструкциям, контролю. Аспект значимый: держите эти меры в рабочем состоянии и включите их в мониторинг и проверки. Если меры убрать, выполнение сорвется.' },
+  sig4: { sig: true, oval: 'n-osig', dim: 'n-oins', edges: ['eYes4'],
+    note: 'Установленных требований нет, но другие факторы указывают на значимость: масштаб воздействия, интересы жителей, репутационные риски или корпоративная политика. Аспект значимый: зафиксируйте факторы и рассмотрите цели и действия.' },
+  ins3: { sig: false, oval: 'n-oins', dim: 'n-osig', edges: ['eNo3'],
+    note: 'Требования выполняются в полном объеме без специальных мер. Аспект незначимый: держите его под наблюдением и пересмотрите оценку при изменении процесса, требований или после инцидентов.' },
+  ins4: { sig: false, oval: 'n-oins', dim: 'n-osig', edges: ['eNo4'],
+    note: 'Установленных требований нет, и другие факторы не указывают на значимость. Аспект незначимый: держите его под наблюдением и возвращайтесь к оценке при изменениях на предприятии или во внешней среде.' }
+};
+
+var state = null;
+
+function freshState() {
+  return { step: 1, result: null, answers: [], litNodes: ['n-r1','n-d1'], litEdges: ['e1'] };
+}
+
+function resizeIframe() {
+  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') window.parentIFrame.size();
+}
+
+function applyHighlight() {
+  document.querySelectorAll('.node').forEach(function (n) {
+    n.classList.remove('lit','active','hit','dim');
+  });
+  document.querySelectorAll('.edge').forEach(function (e) {
+    e.classList.remove('lit');
+  });
+  state.litNodes.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.add('lit');
+  });
+  state.litEdges.forEach(function (id) {
+    var el = document.getElementById(id);
+    if (el) el.classList.add('lit');
+  });
+  if (state.step && !state.result) {
+    STEPS[state.step].nodes.forEach(function (id) {
+      var el = document.getElementById(id);
+      if (el) el.classList.add('active');
+    });
+  }
+  if (state.result) {
+    var r = RESULTS[state.result];
+    var ov = document.getElementById(r.oval);
+    if (ov) { ov.classList.add('hit'); ov.classList.remove('lit'); }
+    var dm = document.getElementById(r.dim);
+    if (dm) dm.classList.add('dim');
+  }
+}
+
+function pathLine() {
+  var parts = state.answers.map(function (a) { return 'Шаг ' + a.step + ': ' + (a.val ? 'да' : 'нет'); });
+  if (state.result) parts.push('Вывод: ' + (RESULTS[state.result].sig ? 'значимый аспект' : 'незначимый аспект'));
+  return parts.join(' → ');
+}
+
+function toggleDisc() {
+  var pop = document.getElementById('discPop');
+  var btn = document.getElementById('discBtn');
+  var show = !pop.classList.contains('show');
+  pop.classList.toggle('show', show);
+  btn.setAttribute('aria-expanded', show ? 'true' : 'false');
+  resizeIframe();
+}
+
+function toggleEx() {
+  var box = document.getElementById('exBox');
+  var btn = document.getElementById('exBtn');
+  if (!box || !btn) return;
+  var show = !box.classList.contains('show');
+  box.classList.toggle('show', show);
+  btn.setAttribute('aria-expanded', show ? 'true' : 'false');
+  btn.textContent = show ? 'Скрыть пример' : 'Пример';
+  resizeIframe();
+}
+
+function renderPanel() {
+  var box = document.getElementById('stepPanel');
+  if (state.result) {
+    var r = RESULTS[state.result];
+    box.innerHTML =
+      '<div class="step-card result' + (r.sig ? '' : ' insig') + '">' +
+      '<span class="verdict ' + (r.sig ? 'sig' : 'ins') + '">' + (r.sig ? 'Значимый аспект' : 'Незначимый аспект') + '</span>' +
+      '<p style="font-size:13.5px;margin:0 0 10px;">' + r.note + '</p>' +
+      '<div class="path-line">Ваш путь: ' + pathLine() + '</div>' +
+      '<div class="nav-buttons"><button class="btn btn-yes" onclick="restart()">Пройти заново</button></div>' +
+      '</div>';
+  } else {
+    var s = STEPS[state.step];
+    box.innerHTML =
+      '<div class="step-card">' +
+      '<h2>' + s.title + '</h2>' +
+      '<p>' + s.body + '</p>' +
+      '<div class="ex-row"><button class="btn-mini" id="exBtn" aria-expanded="false" aria-controls="exBox" onclick="toggleEx()">Пример</button></div>' +
+      '<div class="ex-box" id="exBox">' + s.ex + '</div>' +
+      '<p class="q">' + s.q + '</p>' +
+      '<div class="nav-buttons">' +
+      '<button class="btn btn-yes" onclick="answer(true)">Да</button>' +
+      '<button class="btn btn-no" onclick="answer(false)">Нет</button>' +
+      '</div></div>';
+  }
+  resizeIframe();
+}
+
+function answer(val) {
+  if (!state || state.result) return;
+  var s = STEPS[state.step];
+  state.answers.push({ step: state.step, val: val });
+  var next = val ? s.yes : s.no;
+  if (next.step) {
+    if (state.step === 1 && val) { state.litEdges.push('eYes1'); state.litNodes.push('n-r2','n-d2'); }
+    if (state.step === 1 && !val) { state.litEdges.push('eNo1','e4'); state.litNodes.push('n-r4','n-d4'); }
+    if (state.step === 2 && val) { state.litEdges.push('eYes2'); state.litNodes.push('n-r3','n-d3'); }
+    state.step = next.step;
+  }
+  if (next.result) {
+    state.result = next.result;
+    var r = RESULTS[next.result];
+    r.edges.forEach(function (e) { state.litEdges.push(e); });
+  }
+  applyHighlight();
+  renderPanel();
+}
+
+function restart() {
+  state = freshState();
+  applyHighlight();
+  renderPanel();
+}
+
+document.addEventListener('DOMContentLoaded', function () {
+  state = freshState();
+  applyHighlight();
+  renderPanel();
+  resizeIframe();
+  if ('ResizeObserver' in window) {
+    var ro = new ResizeObserver(function () { resizeIframe(); });
+    ro.observe(document.body);
+  }
+});
+window.addEventListener('load', function () { resizeIframe(); });
+</script>
+
+</body>
+</html>
