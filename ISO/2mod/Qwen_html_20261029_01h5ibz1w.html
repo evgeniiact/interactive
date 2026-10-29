@@ -1,0 +1,416 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Практика: оценка значимости аспектов стекольного завода</title>
+<style>
+:root {
+  --bg:#ffffff; --primary:#1e293b; --muted:#64748b; --border:#e2e8f0;
+  --gray-light:#f8fafc; --accent:#2563eb; --accent-dark:#1d4ed8;
+  --ok-bg:#f0fdf4; --ok-bd:#bbf7d0; --ok-tx:#166534;
+  --warn-bg:#fff7ed; --warn-bd:#fdba74; --warn-tx:#9a3412;
+  --watch-bg:#fffbeb; --watch-bd:#fde68a; --watch-tx:#92400e;
+  --radius:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--primary);font-size:15px;line-height:1.6}
+.container{max-width:720px;margin:0 auto}
+.screen{display:none;animation:fadeIn .3s ease-out}
+.screen.active{display:block}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:21px;font-weight:800;margin:0 0 8px}
+h2{font-size:16px;font-weight:700;margin:16px 0 8px}
+.lead{font-size:14px;margin:0 0 12px;line-height:1.6}
+.note-box{background:var(--gray-light);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--muted);margin:10px 0}
+
+/* ранги-справка */
+.rank-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:12px 0}
+.rank-card{border:1px solid var(--border);border-radius:10px;padding:10px 12px;background:#fff;font-size:12.5px;line-height:1.45}
+.rank-card b{display:flex;align-items:center;gap:8px;font-size:13px;margin-bottom:4px}
+.rank-num{display:inline-flex;align-items:center;justify-content:center;width:22px;height:22px;border-radius:6px;background:var(--gray-light);border:1px solid var(--border);font-size:12px;font-weight:800;color:var(--accent);flex-shrink:0}
+
+/* кейс */
+.case-head{display:flex;align-items:baseline;gap:10px;flex-wrap:wrap;margin-bottom:6px}
+.case-counter{font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--accent);background:#eff6ff;border:1px solid #bfdbfe;border-radius:20px;padding:2px 10px}
+.case-title{font-size:17px;font-weight:800}
+.facts-card{border:1px solid var(--border);border-radius:var(--radius);background:var(--gray-light);padding:12px 14px;margin:10px 0}
+.facts-card h3{margin:0 0 6px;font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted)}
+.facts-card ul{margin:0;padding-left:18px;font-size:13.5px}
+.facts-card li{margin-bottom:4px}
+.path-box{display:flex;gap:6px;flex-wrap:wrap;margin:8px 0;min-height:26px}
+.chip{font-size:11.5px;font-weight:700;border-radius:20px;padding:3px 10px;border:1px solid var(--ok-bd);background:var(--ok-bg);color:var(--ok-tx)}
+.q-card{border:1px solid var(--border);border-left:5px solid var(--accent);border-radius:10px;padding:14px 16px;background:#fff;margin:10px 0}
+.q-card .q-text{font-size:15px;font-weight:700;margin:0 0 12px}
+.q-btns{display:flex;gap:10px;flex-wrap:wrap}
+.btn{padding:10px 22px;border-radius:8px;font-size:14px;font-weight:700;cursor:pointer;border:none;font-family:inherit;transition:background .2s}
+.btn-yes{background:var(--accent);color:#fff}
+.btn-yes:hover{background:var(--accent-dark)}
+.btn-no{background:#fff;border:2px solid var(--border);color:var(--primary)}
+.btn-no:hover{border-color:var(--accent)}
+.btn-secondary{background:#fff;border:1px solid var(--border);color:var(--primary);font-weight:600}
+.btn-secondary:hover{background:var(--gray-light)}
+.btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
+.fb{display:none;border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.5;margin:10px 0;background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn-tx)}
+.fb.show{display:block}
+.fb strong{display:block;margin-bottom:3px}
+.result-card{display:none;border:1px solid var(--ok-bd);border-left:5px solid var(--ok-tx);border-radius:10px;padding:14px 16px;background:var(--ok-bg);margin:10px 0;font-size:13.5px;line-height:1.55}
+.result-card.show{display:block}
+.result-top{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:8px}
+.rank-badge{font-size:14px;font-weight:800;color:#fff;background:var(--accent-dark);border-radius:8px;padding:4px 12px}
+.sig-chip{font-size:11.5px;font-weight:800;letter-spacing:.3px;text-transform:uppercase;border-radius:20px;padding:3px 10px;border:1px solid}
+.sig-chip.sig{background:var(--ok-bg);color:var(--ok-tx);border-color:var(--ok-bd)}
+.sig-chip.nosig{background:var(--gray-light);color:var(--muted);border-color:var(--border)}
+.sig-chip.watch{background:var(--watch-bg);color:var(--watch-tx);border-color:var(--watch-bd)}
+.result-card p{margin:0 0 8px}
+.result-card p:last-child{margin:0}
+.nav-buttons{display:flex;gap:10px;margin-top:12px;flex-wrap:wrap}
+
+/* итоги */
+.sum-table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+.sum-table th,.sum-table td{border:1px solid var(--border);padding:7px 9px;text-align:left;vertical-align:top}
+.sum-table th{background:var(--gray-light);font-weight:700}
+details.mistake{border:1px solid var(--border);border-radius:10px;background:#fff;margin-bottom:8px;overflow:hidden}
+details.mistake summary{cursor:pointer;padding:11px 14px;font-size:13.5px;font-weight:700;list-style:none;display:flex;justify-content:space-between;gap:10px;align-items:center}
+details.mistake summary::-webkit-details-marker{display:none}
+details.mistake summary::after{content:"＋";color:var(--muted);font-weight:800}
+details.mistake[open] summary::after{content:"－"}
+details.mistake[open] summary{background:var(--gray-light)}
+.mistake-body{padding:0 14px 12px;font-size:13px;line-height:1.55}
+.mistake-body p{margin:0 0 7px}
+.mistake-body p:last-child{margin:0}
+.mistake-body .cons{color:var(--warn-tx)}
+.mistake-body .sol{color:var(--ok-tx)}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--accent-dark);outline-offset:2px}
+
+@media (max-width:560px){
+  body{padding:12px}
+  h1{font-size:19px}
+  .rank-grid{grid-template-columns:1fr}
+  .q-btns,.nav-buttons{flex-direction:column}
+  .btn{width:100%}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ИНТРО -->
+  <div id="screen-intro" class="screen active">
+    <h1>Практика: оцените значимость аспектов стекольного завода</h1>
+    <p class="lead">Перед вами четыре аспекта из перечня завода. Значимость оцениваем по четырехранговой системе: не на глаз, а по цепочке критериев. Каждый вопрос дерева опирается на факты карточки, цепочка сама выводит к рангу и выводу о значимости.</p>
+    <div class="rank-grid">
+      <div class="rank-card"><b><span class="rank-num">1</span>Ранг 1</b>Требования установлены, но не выполняются. Значимый аспект, приоритетные действия.</div>
+      <div class="rank-card"><b><span class="rank-num">2</span>Ранг 2</b>Требования установлены и выполняются благодаря специальным мерам. Значимый аспект, меры поддерживают.</div>
+      <div class="rank-card"><b><span class="rank-num">3</span>Ранг 3</b>Выполняются без специальных мер либо требования не установлены, но есть сигналы. Незначимый, требует наблюдения и учета.</div>
+      <div class="rank-card"><b><span class="rank-num">4</span>Ранг 4</b>Требования не установлены и сигналов нет. Незначимый аспект.</div>
+    </div>
+    <div class="note-box">Если ошибетесь на шаге, тренажер подскажет, какой факт карточки перечитать, и даст ответить снова. Прогресс живет в текущем сеансе.</div>
+    <div class="nav-buttons">
+      <button class="btn btn-yes" onclick="startPractice()">Начать оценку</button>
+    </div>
+  </div>
+
+  <!-- КЕЙСЫ -->
+  <div id="screen-case" class="screen">
+    <div class="case-head">
+      <span class="case-counter" id="caseCounter"></span>
+      <span class="case-title" id="caseTitle"></span>
+    </div>
+    <div class="facts-card">
+      <h3>Исходные данные</h3>
+      <ul id="factsList"></ul>
+    </div>
+    <div class="path-box" id="pathBox" aria-live="polite"></div>
+    <div class="q-card" id="qCard">
+      <p class="q-text" id="qText"></p>
+      <div class="q-btns">
+        <button class="btn btn-yes" id="btnYes" onclick="answer('yes')">Да</button>
+        <button class="btn btn-no" id="btnNo" onclick="answer('no')">Нет</button>
+      </div>
+    </div>
+    <div class="fb" id="fbBox" aria-live="polite"></div>
+    <div class="result-card" id="resultCard" aria-live="polite"></div>
+    <div class="nav-buttons" id="caseNav" style="display:none">
+      <button class="btn btn-yes" id="nextBtn" onclick="nextCase()"></button>
+    </div>
+  </div>
+
+  <!-- ИТОГИ -->
+  <div id="screen-results" class="screen">
+    <h1>Итоги оценки</h1>
+    <div id="sumLine" class="note-box" style="border-left-color:var(--accent);color:var(--primary);"></div>
+    <table class="sum-table" id="sumTable"></table>
+    <h2>Частые ошибки при оценке значимости</h2>
+    <div id="mistakesBox"></div>
+    <div class="note-box">Значимость не назначают один раз навсегда. Пересматривайте оценку при изменениях: новый норматив, изменение технологии, жалоба, предписание, авария у соседей. И не реже одного раза в год.</div>
+    <div class="nav-buttons">
+      <button class="btn btn-yes" onclick="startPractice()">Пройти заново</button>
+      <button class="btn btn-secondary" onclick="showScreen('screen-intro')">К справке по рангам</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ========== ДЕРЕВО КРИТЕРИЕВ ========== */
+var NODES = {
+  q1: { text: 'Установлены ли требования к аспекту: нормативы, разрешения, условия договора?' },
+  q2: { text: 'Выполняются ли требования в полном объеме по последним данным?' },
+  q3: { text: 'Обеспечивается ли выполнение специальными мерами: оборудованием, контролем, процедурами, записями?' },
+  q4: { text: 'Есть ли сигналы, требующие внимания: указание надзора, жалобы, регулярное воздействие за пределами площадки?' }
+};
+var NODE_SHORT = {
+  q1: 'Требования установлены',
+  q2: 'Требования выполняются',
+  q3: 'Выполнение на специальных мерах',
+  q4: 'Сигналы есть'
+};
+
+/* ========== КЕЙСЫ ========== */
+var CASES = [
+  {
+    title: 'Сжигание природного газа в стекловаренной печи',
+    facts: [
+      'Установлен проект ПДВ с нормативами по NOx, SO2, CO.',
+      'По результатам последнего инструментального контроля выбросы в пределах нормативов.',
+      'Для соблюдения нормативов работает система газоочистки с каталитическим нейтрализатором.',
+      'Требуется ежеквартальный контроль, ведение журнала, ежегодная инвентаризация.'
+    ],
+    path: [ { node: 'q1', ans: 'yes' }, { node: 'q2', ans: 'yes' }, { node: 'q3', ans: 'yes' } ],
+    rank: 2,
+    explain: 'Требования ПДВ выполняются, но только благодаря специальным мерам: работе газоочистки, контролю и записям. Если нейтрализатор выйдет из строя или персонал перестанет контролировать параметры, начнутся нарушения.',
+    action: 'Поддерживайте систему в рабочем состоянии, документируйте процедуры, планируйте замену фильтров и контроль.',
+    wrong: {
+      q1: 'Требования установлены: проект ПДВ с нормативами по NOx, SO2 и CO это разрешительная документация с закрепленными нормативами.',
+      q2: 'Последний инструментальный контроль показал выбросы в пределах нормативов: требования выполняются, превышений нет.',
+      q3: 'Выполнение держится не само по себе: газоочистка с нейтрализатором, ежеквартальный контроль, журнал и инвентаризация и есть специальные меры.'
+    }
+  },
+  {
+    title: 'Потребление электроэнергии на освещение территории',
+    facts: [
+      'Нормативов на потребление электроэнергии нет.',
+      'Освещение включается автоматически в темное время суток.',
+      'Жалоб от местных жителей на освещенность нет.',
+      'В корпоративной политике есть намерение снижать энергопотребление, но конкретных целей пока нет.'
+    ],
+    path: [ { node: 'q1', ans: 'no' }, { node: 'q4', ans: 'no' } ],
+    rank: 4,
+    explain: 'Требования не установлены: потребление электроэнергии это косвенное воздействие, нормативов нет. Политика упоминает энергосбережение, но конкретных целей и обязательств пока нет.',
+    action: 'Сейчас специальные действия не требуются. Вернитесь к аспекту, когда появятся цели, требования или сигналы.',
+    wrong: {
+      q1: 'Установленных требований нет: нормативов на потребление электроэнергии не существует. Намерение в корпоративной политике не требование, целей и обязательств оно не создает.',
+      q4: 'Сигналов нет: жалоб на освещенность не поступало, освещение работает автоматически, воздействие косвенное. Намерение политики не сигнал, требующий учета.'
+    }
+  },
+  {
+    title: 'Образование просыпей шихты при пересыпке компонентов',
+    facts: [
+      'Нормативы образования отходов по шихте не утверждены.',
+      'Просыпи образуются регулярно, собираются вручную и возвращаются в процесс.',
+      'При сильном ветре часть пыли выносится за пределы цеха.',
+      'Жалоб от соседей не было, но при проверке Росприроднадзор указал на отсутствие учета количества просыпей.'
+    ],
+    path: [ { node: 'q1', ans: 'no' }, { node: 'q4', ans: 'yes' } ],
+    rank: 3,
+    explain: 'Требования формально не установлены: нормативов по шихте нет, просыпи возвращаются в процесс без специальных мер. Но есть сигнал: указание надзора об отсутствии учета и регулярный вынос пыли за пределы цеха при ветре.',
+    action: 'Наладьте учет количества просыпей, чтобы подтвердить незначимость. Наблюдайте: при жалобах или усилении контроля надзора ранг может измениться.',
+    wrong: {
+      q1: 'Установленных нормативов образования отходов по шихте нет. Указание надзора это не норматив, а сигнал для пересмотра и учета.',
+      q4: 'Сигналы есть: Росприроднадзор указал на отсутствие учета количества просыпей, а при сильном ветре пыль выносится за пределы цеха, то есть воздействие регулярно выходит за площадку.'
+    }
+  },
+  {
+    title: 'Сброс производственных сточных вод в городскую канализацию',
+    facts: [
+      'Есть договор с Водоканалом с предельными концентрациями по взвешенным веществам, нефтепродуктам, pH.',
+      'По результатам последнего анализа превышение по нефтепродуктам в 1,5 раза.',
+      'Очистные сооружения работают, но требуют ремонта.',
+      'Водоканал выставил претензию о превышении.'
+    ],
+    path: [ { node: 'q1', ans: 'yes' }, { node: 'q2', ans: 'no' } ],
+    rank: 1,
+    explain: 'Требования договора с Водоканалом установлены и не выполняются: превышение по нефтепродуктам в 1,5 раза, выставлена претензия. Это приоритет номер один.',
+    action: 'Срочные действия: выяснить причину, отремонтировать очистные, усилить контроль, установить цель по снижению концентраций. Иначе возможны санкции Водоканала и надзора.',
+    wrong: {
+      q1: 'Требования установлены: договор с Водоканалом с предельными концентрациями по взвешенным веществам, нефтепродуктам и pH это договорные требования.',
+      q2: 'Требования не выполняются: анализ показал превышение по нефтепродуктам в 1,5 раза, Водоканал выставил претензию.'
+    }
+  }
+];
+
+var MISTAKES = [
+  { t: 'Оценка «на глазок» без критериев',
+    c: 'Вы смотрите на аспект и решаете: это важно, это не важно. Через месяц другой специалист оценит иначе. Итог: несогласованность, споры, пропуск реальных рисков.',
+    s: 'Запишите критерии до оценки и применяйте их ко всем аспектам одинаково. В этой практике критерии и есть четыре вопроса цепочки.' },
+  { t: 'Признать все аспекты значимыми',
+    c: 'Страх что-то упустить заставляет помечать значимыми 80 процентов аспектов. Итог: распыление ресурсов, невозможность установить реальные приоритеты, формализация системы.',
+    s: 'Используйте ранги. Ранги 1 и 2 значимые. Ранги 3 и 4 незначимые, при этом за рангом 3 остается наблюдение и учет.' },
+  { t: 'Игнорировать нештатные и аварийные ситуации',
+    c: 'Оценена только нормальная работа. Аспект «разлив масла при аварии» признан незначимым, потому что аварий не было. Итог: при реальной аварии нет плана, загрязнение среды, штрафы.',
+    s: 'Оценивайте аспекты для всех условий: нормальных, нештатных и аварийных.' },
+  { t: 'Не пересматривать оценку при изменениях',
+    c: 'Аспекты оценены один раз и забыты. Появился новый норматив, изменилась технология, поступила жалоба. Итог: реестр устарел, вы управляете не теми аспектами.',
+    s: 'Пересматривайте значимость при изменениях и не реже одного раза в год.' }
+];
+
+/* ========== СОСТОЯНИЕ ========== */
+var state = null;
+
+function newState() {
+  return { i: 0, step: 0, firstTry: true, wrong: 0, done: false, results: [] };
+}
+
+function resizeIframe() {
+  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') window.parentIFrame.size();
+}
+function showScreen(id) {
+  ['screen-intro','screen-case','screen-results'].forEach(function (s) {
+    document.getElementById(s).classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  resizeIframe();
+}
+
+/* ========== ХОД ПРАКТИКИ ========== */
+function startPractice() {
+  state = newState();
+  showScreen('screen-case');
+  renderCase();
+}
+
+function renderCase() {
+  var c = CASES[state.i];
+  state.step = 0;
+  state.firstTry = true;
+  state.wrong = 0;
+  state.done = false;
+  document.getElementById('caseCounter').textContent = 'Аспект ' + (state.i + 1) + ' из ' + CASES.length;
+  document.getElementById('caseTitle').textContent = c.title;
+  document.getElementById('factsList').innerHTML = c.facts.map(function (f) { return '<li>' + f + '</li>'; }).join('');
+  document.getElementById('pathBox').innerHTML = '';
+  document.getElementById('fbBox').className = 'fb';
+  document.getElementById('fbBox').innerHTML = '';
+  document.getElementById('resultCard').className = 'result-card';
+  document.getElementById('resultCard').innerHTML = '';
+  document.getElementById('caseNav').style.display = 'none';
+  document.getElementById('qCard').style.display = 'block';
+  setQuestion(c.path[0].node);
+  resizeIframe();
+}
+
+function setQuestion(node) {
+  document.getElementById('qText').textContent = NODES[node].text;
+  document.getElementById('btnYes').disabled = false;
+  document.getElementById('btnNo').disabled = false;
+}
+
+function addChip(node, val) {
+  var box = document.getElementById('pathBox');
+  var s = document.createElement('span');
+  s.className = 'chip';
+  s.textContent = NODE_SHORT[node] + ': ' + (val === 'yes' ? 'да' : 'нет');
+  box.appendChild(s);
+}
+
+function answer(val) {
+  if (!state || state.done) return;
+  var c = CASES[state.i];
+  var step = c.path[state.step];
+  if (val === step.ans) {
+    addChip(step.node, val);
+    document.getElementById('fbBox').className = 'fb';
+    state.step++;
+    if (state.step >= c.path.length) {
+      showLeaf();
+    } else {
+      setQuestion(c.path[state.step].node);
+    }
+  } else {
+    state.firstTry = false;
+    state.wrong++;
+    var fb = document.getElementById('fbBox');
+    fb.innerHTML = '<strong>Перечитайте факты карточки</strong>' + c.wrong[step.node] + ' Ответьте на вопрос еще раз.';
+    fb.className = 'fb show';
+  }
+  resizeIframe();
+}
+
+function sigInfo(rank) {
+  if (rank <= 2) return { cls: 'sig', label: 'Значимый аспект' };
+  if (rank === 3) return { cls: 'watch', label: 'Не значимый, требует наблюдения' };
+  return { cls: 'nosig', label: 'Не значимый' };
+}
+
+function showLeaf() {
+  var c = CASES[state.i];
+  var s = sigInfo(c.rank);
+  document.getElementById('qCard').style.display = 'none';
+  document.getElementById('fbBox').className = 'fb';
+  var card = document.getElementById('resultCard');
+  card.innerHTML =
+    '<div class="result-top"><span class="rank-badge">Ранг ' + c.rank + '</span>' +
+    '<span class="sig-chip ' + s.cls + '">' + s.label + '</span></div>' +
+    '<p><strong>Вывод.</strong> ' + c.explain + '</p>' +
+    '<p><strong>Что делать.</strong> ' + c.action + '</p>';
+  card.className = 'result-card show';
+  state.done = true;
+  var nav = document.getElementById('caseNav');
+  nav.style.display = 'flex';
+  document.getElementById('nextBtn').textContent = (state.i < CASES.length - 1) ? 'Следующий аспект' : 'К итогам оценки';
+  resizeIframe();
+}
+
+function nextCase() {
+  state.results.push({ i: state.i, firstTry: state.firstTry, wrong: state.wrong });
+  state.i++;
+  if (state.i < CASES.length) {
+    renderCase();
+  } else {
+    showResults();
+  }
+}
+
+/* ========== ИТОГИ ========== */
+function showResults() {
+  var indep = state.results.filter(function (r) { return r.firstTry; }).length;
+  document.getElementById('sumLine').innerHTML =
+    '<strong>Цепочка критериев пройдена по четырем аспектам.</strong> Без подсказок цепочку прошли ' + indep + ' раза из ' + CASES.length +
+    '. Ранги 1 и 2 значимые: по ним нужны действия и цели. Ранги 3 и 4 незначимые, при этом ранг 3 остается под наблюдением и учетом.';
+
+  var rows = '<thead><tr><th>Аспект</th><th>Ранг</th><th>Значимость</th><th>Как получено</th></tr></thead><tbody>';
+  state.results.forEach(function (r) {
+    var c = CASES[r.i];
+    var s = sigInfo(c.rank);
+    rows += '<tr><td>' + c.title + '</td><td>' + c.rank + '</td><td>' + s.label + '</td><td>' +
+      (r.firstTry ? 'цепочка пройдена без подсказок' : 'подсказок на шагах: ' + r.wrong) + '</td></tr>';
+  });
+  rows += '</tbody>';
+  document.getElementById('sumTable').innerHTML = rows;
+
+  document.getElementById('mistakesBox').innerHTML = MISTAKES.map(function (m) {
+    return '<details class="mistake"><summary>' + m.t + '</summary><div class="mistake-body">' +
+      '<p class="cons"><strong>К чему приводит.</strong> ' + m.c + '</p>' +
+      '<p class="sol"><strong>Решение.</strong> ' + m.s + '</p></div></details>';
+  }).join('');
+
+  showScreen('screen-results');
+}
+
+/* ========== СТАРТ ========== */
+document.addEventListener('DOMContentLoaded', function () {
+  resizeIframe();
+  if ('ResizeObserver' in window) {
+    var ro = new ResizeObserver(function () { resizeIframe(); });
+    ro.observe(document.body);
+  }
+});
+window.addEventListener('load', function () { resizeIframe(); });
+</script>
+
+</body>
+</html>
