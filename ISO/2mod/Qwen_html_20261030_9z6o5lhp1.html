@@ -1,0 +1,959 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Конструктор первичных записей об экологических аспектах</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --primary: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --gray: #f8fafc;
+  --accent: #2563eb;
+  --accent-d: #1d4ed8;
+  --ok: #16a34a;
+  --ok-bg: #f0fdf4;
+  --ok-bd: #bbf7d0;
+  --warn: #ea580c;
+  --warn-bg: #fff7ed;
+  --warn-bd: #fed7aa;
+  --bad: #991b1b;
+  --bad-bg: #fef2f2;
+  --bad-bd: #fecaca;
+  --r: 12px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 20px; background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--primary); font-size: 15px; line-height: 1.6;
+}
+.container { max-width: 720px; margin: 0 auto; }
+.screen { display: none; }
+.screen.active { display: block; animation: fadeIn .3s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+h1 { font-size: 22px; font-weight: 800; margin: 0 0 8px; }
+h2 { font-size: 16px; font-weight: 700; margin: 16px 0 8px; }
+.lead { font-size: 14px; margin: 0 0 12px; color: var(--muted); }
+.note-box {
+  background: var(--gray); border: 1px solid var(--border);
+  border-left: 4px solid var(--muted); border-radius: 0 8px 8px 0;
+  padding: 10px 14px; font-size: 13px; color: var(--muted); margin: 10px 0;
+}
+.note-box.accent { border-left-color: var(--accent); color: var(--primary); }
+.warn-box {
+  background: var(--warn-bg); border-left: 3px solid var(--warn-bd);
+  border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 13px;
+  color: var(--warn); margin: 10px 0;
+}
+.error-box {
+  background: var(--bad-bg); border: 1px solid var(--bad-bd);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--bad); margin: 12px 0;
+}
+.error-box ul, .notices-box ul { margin: 6px 0 0; padding-left: 20px; }
+.notices-box {
+  background: var(--warn-bg); border: 1px solid var(--warn-bd);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--warn); margin: 12px 0;
+}
+.error-box li, .notices-box li { margin-bottom: 4px; }
+.storage-warn { display: none; }
+.storage-warn.show { display: block; }
+.save-line { font-size: 12px; color: var(--muted); margin: 4px 0; }
+
+.mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
+.mode-card {
+  border: 2px solid var(--border); border-radius: var(--r); padding: 16px;
+  background: #fff; cursor: pointer; font-family: inherit; text-align: left;
+  transition: border-color .15s;
+}
+.mode-card:hover { border-color: var(--accent); }
+.mode-card h3 { margin: 0 0 6px; color: var(--accent); font-size: 15px; }
+.mode-card p { margin: 0; font-size: 13px; color: var(--muted); }
+
+.field { margin-bottom: 12px; }
+.field-header {
+  display: flex; align-items: baseline; justify-content: space-between;
+  gap: 8px; margin-bottom: 4px; flex-wrap: wrap;
+}
+.field label { font-size: 13px; font-weight: 700; }
+.field .req { color: var(--bad); font-weight: 600; font-size: 12px; }
+.field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
+.field input, .field textarea, .field select {
+  width: 100%; padding: 10px 12px; border: 1px solid var(--border);
+  border-radius: 8px; font-family: inherit; font-size: 14px; background: #fff;
+}
+.field textarea { min-height: 56px; resize: vertical; }
+.field input:focus, .field textarea:focus, .field select:focus {
+  outline: 3px solid var(--accent-d); outline-offset: 2px;
+}
+.btn-example {
+  padding: 4px 10px; font-size: 11px; font-weight: 600;
+  border: 1px solid var(--border); background: #fff; color: var(--accent);
+  border-radius: 6px; cursor: pointer; white-space: nowrap;
+}
+.btn-example:hover { background: var(--gray); }
+.btn-example[aria-expanded="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
+.example-box {
+  display: none; background: var(--ok-bg); border-left: 3px solid var(--ok);
+  border-radius: 0 8px 8px 0; padding: 10px 12px; margin-top: 6px;
+  font-size: 12.5px; color: var(--primary); line-height: 1.5;
+}
+.example-box.show { display: block; }
+.example-box strong { color: var(--ok); font-size: 11px; display: block; margin-bottom: 4px; }
+
+details.block {
+  border: 1px solid var(--border); border-radius: var(--r);
+  margin: 12px 0; background: #fff; overflow: hidden;
+}
+details.block > summary {
+  cursor: pointer; padding: 12px 16px; font-size: 14px; font-weight: 700;
+  list-style: none; display: flex; justify-content: space-between; align-items: center;
+  background: var(--gray);
+}
+details.block > summary::-webkit-details-marker { display: none; }
+details.block > summary::after {
+  content: "＋"; color: var(--muted); font-weight: 800; font-size: 18px;
+}
+details.block[open] > summary::after { content: "－"; }
+details.block[open] > summary { background: #eef2ff; border-bottom: 1px solid var(--border); }
+.block-body { padding: 14px 16px; }
+
+.flag-row {
+  display: flex; gap: 8px; align-items: center; margin: 8px 0;
+  padding: 8px 12px; background: var(--warn-bg); border-radius: 8px;
+  font-size: 12px; color: var(--warn);
+}
+.flag-row input { width: 16px; height: 16px; margin: 0; }
+
+.tabs-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; margin: 14px 0 0; }
+.tab-btn {
+  border: 1px solid var(--border); border-radius: 10px 10px 0 0;
+  padding: 9px 12px; background: var(--gray); color: var(--muted);
+  font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
+  display: inline-flex; align-items: center; gap: 6px; max-width: 210px;
+}
+.tab-btn .tab-name {
+  font-weight: 500; overflow: hidden; text-overflow: ellipsis;
+  white-space: nowrap; max-width: 130px;
+}
+.tab-btn[aria-selected="true"] { background: #fff; color: var(--accent); border-color: var(--accent); }
+.tab-add {
+  border: 1px dashed var(--accent); color: var(--accent); background: #fff;
+  border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+}
+.tab-add:hover { background: #eff6ff; }
+.tab-panel {
+  border: 1px solid var(--border); border-radius: 0 10px 10px 10px;
+  padding: 16px; background: #fff; margin-top: -1px;
+}
+.tab-panel[hidden] { display: none; }
+.panel-head {
+  display: flex; justify-content: space-between; align-items: center;
+  gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
+}
+.panel-head strong { font-size: 15px; }
+.btn-small {
+  padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 6px;
+  border: 1px solid var(--border); background: #fff; color: var(--primary);
+  cursor: pointer; font-family: inherit;
+}
+.btn-small:hover { background: var(--gray); }
+
+.nav-buttons { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.btn {
+  padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; font-family: inherit; transition: background .2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-d); }
+.btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--primary); }
+.btn-secondary:hover { background: var(--gray); }
+.btn-danger { background: #fff; border: 1px solid var(--bad-bd); color: var(--bad); }
+.btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
+
+.edu-facts {
+  border: 1px solid var(--border); border-left: 4px solid var(--accent);
+  border-radius: 0 10px 10px 0; background: var(--gray); padding: 10px 14px;
+  font-size: 13px; margin: 10px 0;
+}
+.edu-facts ul { margin: 4px 0 0; padding-left: 18px; }
+.edu-facts li { margin-bottom: 4px; }
+
+.scroll-x { overflow-x: auto; }
+.scroll-x table.reg { min-width: 680px; }
+table.reg { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 10px 0; }
+table.reg th, table.reg td {
+  border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top;
+}
+table.reg th { background: var(--gray); font-weight: 700; }
+
+details.det {
+  border: 1px solid var(--border); border-radius: 10px; background: #fff; margin-bottom: 8px;
+}
+details.det > summary {
+  cursor: pointer; padding: 10px 14px; font-size: 13px; font-weight: 700;
+  list-style: none; display: flex; justify-content: space-between; gap: 8px;
+}
+details.det > summary::-webkit-details-marker { display: none; }
+details.det > summary::after { content: "＋"; color: var(--muted); font-weight: 800; }
+details.det[open] > summary::after { content: "－"; }
+details.det[open] > summary { background: var(--gray); }
+.det-body { padding: 0 14px 12px; font-size: 13px; }
+.det-body p { margin: 0 0 6px; }
+
+button:focus-visible, summary:focus-visible {
+  outline: 3px solid var(--accent-d); outline-offset: 2px;
+}
+
+@media (max-width: 600px) {
+  body { padding: 12px; }
+  h1 { font-size: 20px; }
+  .mode-grid { grid-template-columns: 1fr; }
+  .nav-buttons { flex-direction: column; }
+  .btn { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ВВОДНЫЙ ЭКРАН -->
+  <div id="screen-intro" class="screen active">
+    <h1>Конструктор первичных записей об экологических аспектах</h1>
+    <p class="lead">Разберите одну или несколько операций. Запишите аспекты, связанные воздействия и вопросы для уточнения. Скачайте черновик, чтобы обсудить его с коллегами и продолжить работу в следующем уроке.</p>
+    <div class="mode-grid" role="group" aria-label="Выбор режима">
+      <button type="button" class="mode-card" onclick="chooseMode('edu')">
+        <h3>Учебный завод</h3>
+        <p>Карточка пересыпания сырья: заполните три поля и сравните с примером или откройте готовый пример.</p>
+      </button>
+      <button type="button" class="mode-card" onclick="chooseMode('own')">
+        <h3>Мое предприятие</h3>
+        <p>Пустые поля для собственных сведений. Условия учебного примера в этот режим не переносятся.</p>
+      </button>
+    </div>
+    <div class="note-box accent">
+      <strong>Как связаны уроки.</strong> В этом уроке вы собираете первичные записи об аспектах. В следующем уроке оцените их значимость по рангам и критериям.
+    </div>
+    <div class="note-box">Черновик сохраняется в этом браузере, если его настройки разрешают локальное хранилище. На другом устройстве записи могут быть недоступны. Скачайте Word, чтобы сохранить отдельную копию.</div>
+    <div class="warn-box storage-warn" id="warnIntro">Браузер не сохранил черновик. Скачайте Word перед закрытием страницы.</div>
+    <div class="note-box" id="restoreNote" style="display:none">Найден сохраненный черновик режима «Мое предприятие». Данные восстановлены.</div>
+  </div>
+
+  <!-- УЧЕБНЫЙ РЕЖИМ -->
+  <div id="screen-edu" class="screen">
+    <div id="eduBox"></div>
+  </div>
+
+  <!-- СВОЙ РЕЖИМ -->
+  <div id="screen-own" class="screen">
+    <h1>Первичные записи вашего предприятия</h1>
+    <p class="lead">Каждая запись на своей вкладке. Опишите операцию, аспект и воздействие, затем дополните сведениями. Черновик сохраняется автоматически.</p>
+    <div class="warn-box storage-warn" id="warnOwn">Браузер не сохранил черновик. Скачайте Word перед закрытием страницы.</div>
+    <div class="save-line" id="saveStatus"></div>
+    <div class="nav-buttons" style="margin-top:0">
+      <button class="btn btn-secondary" onclick="showScreen('screen-intro')">К выбору режимов</button>
+    </div>
+    <div class="field" style="max-width:320px;display:inline-block;margin-right:8px">
+      <label for="m-org">Предприятие (необязательно)</label>
+      <input type="text" id="m-org" oninput="onMeta('org',this.value)">
+    </div>
+    <div class="field" style="max-width:150px;display:inline-block;margin-right:8px">
+      <label for="m-date">Дата</label>
+      <input type="text" id="m-date" oninput="onMeta('date',this.value)">
+    </div>
+    <div class="field" style="max-width:200px;display:inline-block">
+      <label for="m-author">Автор (необязательно)</label>
+      <input type="text" id="m-author" oninput="onMeta('author',this.value)">
+    </div>
+    <div class="tabs-bar" id="tabsBar" role="tablist" aria-label="Записи"></div>
+    <div id="panelsBox"></div>
+    <div class="nav-buttons">
+      <button class="btn btn-primary" onclick="openPreview()">Предпросмотр и скачивание</button>
+    </div>
+  </div>
+
+  <!-- ПРЕДПРОСМОТР -->
+  <div id="screen-preview" class="screen">
+    <h1>Предпросмотр черновика</h1>
+    <div class="error-box" id="errorsBox" style="display:none" aria-live="polite"></div>
+    <div class="notices-box" id="noticesBox" style="display:none" aria-live="polite"></div>
+    <div id="previewBox"></div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="showScreen('screen-own')">Вернуться к записям</button>
+      <button class="btn btn-primary" id="downloadBtn" onclick="downloadDocx()">Скачать Word</button>
+      <button class="btn btn-danger" onclick="restartOwn()">Полная очистка</button>
+    </div>
+    <p id="downloadNote" style="font-size:12px;color:var(--muted);margin-top:8px"></p>
+  </div>
+
+</div>
+
+<script>
+/* ========== КОНСТАНТЫ ========== */
+var STORAGE_KEY = 'sem-aspect-records-v3';
+var EXAMPLES = {
+  operation: 'Например: пересыпание сырья, варка стекла, водоотведение, уборка территории',
+  aspect: 'Например: выброс пыли в атмосферный воздух, сброс сточных вод, потребление электроэнергии, образование отходов',
+  impact: 'Например: загрязнение атмосферного воздуха, загрязнение водных объектов, косвенные выбросы при генерации электроэнергии',
+  context: 'Например: производство листового стекла на площадке завода',
+  sourceInfo: 'Например: используют сырье (песок, сода, стеклобой), получают готовую продукцию, остается пыль и отходы',
+  conditions: 'Например: обычная работа, при сильном ветре пыль выносится за пределы цеха',
+  mgmtContext: 'Например: предприятие устанавливает порядок работы на участке, контролирует выбросы',
+  source: 'Например: технологическая схема, пояснение руководителя участка, данные производственного контроля',
+  missing: 'Например: уточнить количество и состав выброса пыли, узнать когда возникает пыление',
+  note: 'Любые дополнительные сведения, которые важно сохранить',
+  nextStep: 'Например: запросить данные у руководителя участка, провести замеры, согласовать с экологом'
+};
+
+var EDU_CARD = {
+  operation: 'Пересыпание сырья',
+  aspect: 'Выброс пыли в атмосферный воздух',
+  impact: 'Загрязнение атмосферного воздуха',
+  context: 'Учебный завод выпускает листовое стекло на одной площадке. В примере рассматриваем участок подготовки шихты.',
+  sourceInfo: 'Используют сырье. По учебному условию при пересыпании часть пыли поступает в атмосферный воздух. Другие выходы в карточке не описаны.',
+  conditions: 'Обычная работа по учебной карточке. При каких действиях усиливается пыление, пока неизвестно.',
+  mgmtContext: 'Предприятие устанавливает порядок работы на своем участке.',
+  source: 'Учебная карточка. Поступление пыли в атмосферный воздух задано условием.',
+  missing: 'Спросите руководителя участка, когда возникает пыление и какие меры применяют. Уточните, где доступны сведения о количестве и составе выброса.',
+  note: '',
+  nextStep: 'Запросить данные у руководителя участка'
+};
+
+/* ========== СОСТОЯНИЕ ========== */
+var state = {
+  meta: { org: '', date: '', author: '' },
+  cards: [],
+  nextNum: 1,
+  activeId: null
+};
+var bodiesById = {};
+var storageOk = true;
+
+/* ========== УТИЛИТЫ ========== */
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
+function nl(s) { return esc(s).replace(/\n/g, '<br>'); }
+function today() {
+  var d = new Date();
+  return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
+}
+function resizeIframe() {
+  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') window.parentIFrame.size();
+}
+function showScreen(id) {
+  ['screen-intro', 'screen-edu', 'screen-own', 'screen-preview'].forEach(function(s) {
+    $(s).classList.remove('active');
+  });
+  $(id).classList.add('active');
+  var h = $(id).querySelector('h1');
+  if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  resizeIframe();
+}
+function showStorageWarn() {
+  var w = document.querySelectorAll('.storage-warn');
+  for (var i = 0; i < w.length; i++) w[i].classList.add('show');
+  resizeIframe();
+}
+function toggleExample(btn) {
+  var box = btn.parentElement.nextElementSibling;
+  var show = !box.classList.contains('show');
+  box.classList.toggle('show', show);
+  btn.setAttribute('aria-expanded', show ? 'true' : 'false');
+  btn.textContent = show ? 'Скрыть пример' : 'Пример';
+  resizeIframe();
+}
+
+/* ========== ПАМЯТЬ ========== */
+function saveOwn() {
+  if (!storageOk) return;
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+    var d = new Date();
+    $('saveStatus').textContent = 'Черновик сохранен в этом браузере в ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + '.';
+  } catch (e) {
+    storageOk = false;
+    showStorageWarn();
+  }
+}
+
+function loadOwn() {
+  try {
+    var raw = localStorage.getItem(STORAGE_KEY);
+    if (!raw) return false;
+    var d = JSON.parse(raw);
+    if (!d || !Array.isArray(d.cards)) return false;
+    state.meta = Object.assign({ org: '', date: '', author: '' }, d.meta || {});
+    state.nextNum = Number(d.nextNum) || 1;
+    state.activeId = d.activeId || null;
+    state.cards = [];
+    d.cards.forEach(function(c) {
+      if (!c || !c.id) return;
+      var card = {
+        id: String(c.id),
+        num: Number(c.num) || 0,
+        f: {
+          operation: c.f && c.f.operation || '',
+          aspect: c.f && c.f.aspect || '',
+          impact: c.f && c.f.impact || '',
+          context: c.f && c.f.context || '',
+          sourceInfo: c.f && c.f.sourceInfo || '',
+          conditions: c.f && c.f.conditions || '',
+          mgmtContext: c.f && c.f.mgmtContext || '',
+          source: c.f && c.f.source || '',
+          missing: c.f && c.f.missing || '',
+          note: c.f && c.f.note || '',
+          nextStep: c.f && c.f.nextStep || ''
+        },
+        flags: c.flags || {},
+        extraOpen: !!c.extraOpen
+      };
+      state.cards.push(card);
+    });
+    return state.cards.length > 0;
+  } catch (e) { return false; }
+}
+
+function testStorage() {
+  try {
+    localStorage.setItem(STORAGE_KEY + '-t', '1');
+    localStorage.removeItem(STORAGE_KEY + '-t');
+  } catch (e) {
+    storageOk = false;
+    showStorageWarn();
+  }
+}
+
+function onMeta(k, v) {
+  state.meta[k] = v;
+  saveOwn();
+}
+
+/* ========== РЕЖИМЫ ========== */
+function chooseMode(m) {
+  if (m === 'edu') {
+    renderEdu();
+    showScreen('screen-edu');
+  } else {
+    if (!state.cards.length) addCard(true);
+    if (!state.meta.date) state.meta.date = today();
+    $('m-org').value = state.meta.org;
+    $('m-date').value = state.meta.date;
+    $('m-author').value = state.meta.author;
+    refreshTabs();
+    showScreen('screen-own');
+  }
+}
+
+/* ========== УЧЕБНЫЙ РЕЖИМ ========== */
+function renderEdu() {
+  var box = $('eduBox');
+  var h = '<div class="nav-buttons" style="margin-top:0"><button class="btn btn-secondary" onclick="showScreen(\'screen-intro\')">К выбору режимов</button></div>';
+  h += '<h1>Учебный завод: карточка пересыпания сырья</h1>';
+  h += '<div class="edu-facts"><strong>Условие задания</strong><ul>';
+  h += '<li>Учебный завод выпускает листовое стекло на одной площадке.</li>';
+  h += '<li>По учебному условию при пересыпании сырья часть пыли поступает в атмосферный воздух.</li>';
+  h += '<li>Другие выходы в карточке не описаны.</li>';
+  h += '</ul></div>';
+  
+  h += '<div class="field"><div class="field-header"><label>Операция</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<input type="text" id="edu-operation" value="' + esc(EDU_CARD.operation) + '" readonly>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.operation) + '</div>';
+  h += '<div class="hint">Что делают на участке?</div></div>';
+  
+  h += '<div class="field"><div class="field-header"><label>Аспект</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<input type="text" id="edu-aspect" value="' + esc(EDU_CARD.aspect) + '" readonly>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.aspect) + '</div>';
+  h += '<div class="hint">Как работа взаимодействует со средой?</div></div>';
+  
+  h += '<div class="field"><div class="field-header"><label>Воздействие</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<input type="text" id="edu-impact" value="' + esc(EDU_CARD.impact) + '" readonly>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.impact) + '</div>';
+  h += '<div class="hint">Что меняется в окружающей среде?</div></div>';
+  
+  h += '<details class="block"><summary>Дополнительные сведения</summary><div class="block-body">';
+  h += '<div class="field"><div class="field-header"><label>Область применения</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<textarea readonly>' + esc(EDU_CARD.context) + '</textarea>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.context) + '</div></div>';
+  
+  h += '<div class="field"><div class="field-header"><label>Входы и выходы</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<textarea readonly>' + esc(EDU_CARD.sourceInfo) + '</textarea>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.sourceInfo) + '</div></div>';
+  
+  h += '<div class="field"><div class="field-header"><label>Условия</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<textarea readonly>' + esc(EDU_CARD.conditions) + '</textarea>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.conditions) + '</div></div>';
+  
+  h += '<div class="field"><div class="field-header"><label>Управление или влияние</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<textarea readonly>' + esc(EDU_CARD.mgmtContext) + '</textarea>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.mgmtContext) + '</div></div>';
+  
+  h += '<div class="field"><div class="field-header"><label>Основание</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<textarea readonly>' + esc(EDU_CARD.source) + '</textarea>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.source) + '</div></div>';
+  
+  h += '<div class="field"><div class="field-header"><label>Что уточнить</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<textarea readonly>' + esc(EDU_CARD.missing) + '</textarea>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.missing) + '</div></div>';
+  h += '</details>';
+  
+  h += '<div class="note-box accent">Пример относится к учебным условиям, а не к характеристикам реального предприятия.</div>';
+  h += '<div class="nav-buttons">';
+  h += '<button class="btn btn-primary" onclick="downloadEduDocx()">Скачать пример (Word)</button>';
+  h += '<button class="btn btn-secondary" onclick="chooseMode(\'own\')">К своему предприятию</button>';
+  h += '</div>';
+  
+  box.innerHTML = h;
+  resizeIframe();
+}
+
+function downloadEduDocx() {
+  var html = '<h1>Пример первичной записи об экологическом аспекте</h1>';
+  html += '<p><strong>Операция:</strong> ' + esc(EDU_CARD.operation) + '</p>';
+  html += '<p><strong>Аспект:</strong> ' + esc(EDU_CARD.aspect) + '</p>';
+  html += '<p><strong>Воздействие:</strong> ' + esc(EDU_CARD.impact) + '</p>';
+  html += '<p><strong>Область применения:</strong> ' + esc(EDU_CARD.context) + '</p>';
+  html += '<p><strong>Входы и выходы:</strong> ' + esc(EDU_CARD.sourceInfo) + '</p>';
+  html += '<p><strong>Условия:</strong> ' + esc(EDU_CARD.conditions) + '</p>';
+  html += '<p><strong>Управление или влияние:</strong> ' + esc(EDU_CARD.mgmtContext) + '</p>';
+  html += '<p><strong>Основание:</strong> ' + esc(EDU_CARD.source) + '</p>';
+  html += '<p><strong>Что уточнить:</strong> ' + esc(EDU_CARD.missing) + '</p>';
+  html += '<p style="margin-top:20px;font-size:12px;color:#666;">Пример относится к учебным условиям, а не к характеристикам реального предприятия.</p>';
+  
+  var blob = new Blob([html], { type: 'application/msword' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url;
+  a.download = 'primer-zapisi-ob-aspekte.doc';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 1000);
+}
+
+/* ========== СВОЙ РЕЖИМ ========== */
+function newCard(num) {
+  return {
+    id: 'Ц' + String(num).padStart(2, '0'),
+    num: num,
+    f: {
+      operation: '', aspect: '', impact: '',
+      context: '', sourceInfo: '', conditions: '', mgmtContext: '',
+      source: '', missing: '', note: '', nextStep: ''
+    },
+    flags: {},
+    extraOpen: false
+  };
+}
+
+function refreshTabs() {
+  var bar = $('tabsBar'), box = $('panelsBox');
+  bar.innerHTML = '';
+  state.cards.forEach(function(c) {
+    if (!bodiesById[c.id]) {
+      var b = buildCardBody(c);
+      bodiesById[c.id] = b;
+      box.appendChild(b);
+    }
+  });
+  Object.keys(bodiesById).forEach(function(id) {
+    var exists = state.cards.some(function(c) { return c.id === id; });
+    if (!exists) { bodiesById[id].remove(); delete bodiesById[id]; }
+  });
+  if (!state.cards.some(function(c) { return c.id === state.activeId; })) {
+    state.activeId = state.cards.length ? state.cards[0].id : null;
+  }
+  state.cards.forEach(function(c) {
+    var t = document.createElement('button');
+    t.type = 'button';
+    t.className = 'tab-btn';
+    t.id = 'tab-' + c.id;
+    t.setAttribute('role', 'tab');
+    t.setAttribute('aria-controls', 'panel-' + c.id);
+    t.setAttribute('aria-selected', c.id === state.activeId ? 'true' : 'false');
+    t.onclick = function() { state.activeId = c.id; applyActive(); saveOwn(); resizeIframe(); };
+    var nm = document.createElement('span');
+    nm.className = 'tab-name';
+    nm.id = 'tabname-' + c.id;
+    nm.textContent = c.f.operation.trim() ? c.f.operation.trim() : 'запись ' + c.id;
+    t.appendChild(document.createTextNode(c.id + ' '));
+    t.appendChild(nm);
+    bar.appendChild(t);
+  });
+  var add = document.createElement('button');
+  add.type = 'button';
+  add.className = 'tab-add';
+  add.textContent = 'Добавить запись';
+  add.onclick = function() { addCard(false); };
+  bar.appendChild(add);
+  applyActive();
+}
+
+function applyActive() {
+  state.cards.forEach(function(c) {
+    var p = bodiesById[c.id], t = $('tab-' + c.id);
+    if (p) p.hidden = c.id !== state.activeId;
+    if (t) t.setAttribute('aria-selected', c.id === state.activeId ? 'true' : 'false');
+  });
+}
+
+function addCard(first) {
+  var num = state.nextNum++;
+  var c = newCard(num);
+  state.cards.push(c);
+  state.activeId = c.id;
+  refreshTabs();
+  saveOwn();
+  if (!first) {
+    var el = $('f-' + c.id + '-operation');
+    if (el) el.focus();
+  }
+  resizeIframe();
+}
+
+function deleteCard(id) {
+  var c = null;
+  state.cards.forEach(function(x) { if (x.id === id) c = x; });
+  if (!c) return;
+  var filled = Object.keys(c.f).some(function(k) { return c.f[k] && c.f[k].trim(); });
+  if (filled && !confirm('Удалить запись ' + c.id + '? Введенные данные будут потеряны.')) return;
+  state.cards = state.cards.filter(function(x) { return x.id !== id; });
+  if (state.activeId === id) state.activeId = state.cards.length ? state.cards[0].id : null;
+  refreshTabs();
+  saveOwn();
+  resizeIframe();
+}
+
+function buildCardBody(c) {
+  var panel = document.createElement('div');
+  panel.className = 'tab-panel';
+  panel.id = 'panel-' + c.id;
+  panel.setAttribute('role', 'tabpanel');
+  panel.setAttribute('aria-labelledby', 'tab-' + c.id);
+
+  var head = document.createElement('div');
+  head.className = 'panel-head';
+  var left = document.createElement('strong');
+  left.textContent = 'Запись ' + c.id;
+  var del = document.createElement('button');
+  del.type = 'button';
+  del.className = 'btn-small';
+  del.textContent = 'Удалить запись';
+  del.onclick = function() { deleteCard(c.id); };
+  head.appendChild(left);
+  head.appendChild(del);
+  panel.appendChild(head);
+
+  var body = document.createElement('div');
+  var h = '';
+
+  h += '<div class="field"><div class="field-header"><label for="f-' + c.id + '-operation">Операция <span class="req">(обязательное поле)</span></label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<input type="text" id="f-' + c.id + '-operation" value="' + esc(c.f.operation) + '">';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.operation) + '</div>';
+  h += '<div class="hint">Что делают на участке? Назовите конкретную работу.</div></div>';
+
+  h += '<div class="field"><div class="field-header"><label for="f-' + c.id + '-aspect">Аспект <span class="req">(обязательное поле)</span></label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<input type="text" id="f-' + c.id + '-aspect" value="' + esc(c.f.aspect) + '">';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.aspect) + '</div>';
+  h += '<div class="hint">Как работа взаимодействует со средой?</div></div>';
+
+  h += '<div class="field"><div class="field-header"><label for="f-' + c.id + '-impact">Воздействие <span class="req">(обязательное поле)</span></label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<input type="text" id="f-' + c.id + '-impact" value="' + esc(c.f.impact) + '">';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.impact) + '</div>';
+  h += '<div class="hint">Что меняется в окружающей среде?</div></div>';
+
+  h += '<details class="block"><summary>Дополнить описание</summary><div class="block-body">';
+  
+  h += '<div class="field"><div class="field-header"><label for="f-' + c.id + '-context">Область применения</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<textarea id="f-' + c.id + '-context">' + esc(c.f.context) + '</textarea>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.context) + '</div>';
+  h += '<div class="hint">Укажите область или ссылку на ее проект.</div></div>';
+
+  h += '<div class="field"><div class="field-header"><label for="f-' + c.id + '-sourceInfo">Входы и выходы</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<textarea id="f-' + c.id + '-sourceInfo">' + esc(c.f.sourceInfo) + '</textarea>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.sourceInfo) + '</div>';
+  h += '<div class="hint">Что используют, что получают и что остается?</div></div>';
+
+  h += '<div class="field"><div class="field-header"><label for="f-' + c.id + '-conditions">Условия</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<textarea id="f-' + c.id + '-conditions">' + esc(c.f.conditions) + '</textarea>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.conditions) + '</div>';
+  h += '<div class="hint">Когда возникает описанное взаимодействие?</div></div>';
+
+  h += '<div class="field"><div class="field-header"><label for="f-' + c.id + '-mgmtContext">Управление или влияние</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<textarea id="f-' + c.id + '-mgmtContext">' + esc(c.f.mgmtContext) + '</textarea>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.mgmtContext) + '</div>';
+  h += '<div class="hint">Какие решения предприятие принимает само или на что может повлиять?</div></div>';
+
+  h += '<div class="field"><div class="field-header"><label for="f-' + c.id + '-source">Основание</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<textarea id="f-' + c.id + '-source">' + esc(c.f.source) + '</textarea>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.source) + '</div>';
+  h += '<div class="hint">Откуда получены сведения?</div></div>';
+
+  h += '<div class="field"><div class="field-header"><label for="f-' + c.id + '-missing">Что уточнить и где</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<textarea id="f-' + c.id + '-missing">' + esc(c.f.missing) + '</textarea>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.missing) + '</div>';
+  h += '<div class="hint">Какой вопрос остается и кто поможет ответить?</div></div>';
+
+  h += '<div class="field"><div class="field-header"><label for="f-' + c.id + '-note">Примечания</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<textarea id="f-' + c.id + '-note">' + esc(c.f.note) + '</textarea>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.note) + '</div></div>';
+
+  h += '<div class="field"><div class="field-header"><label for="f-' + c.id + '-nextStep">Следующий шаг</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
+  h += '<textarea id="f-' + c.id + '-nextStep">' + esc(c.f.nextStep) + '</textarea>';
+  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.nextStep) + '</div>';
+  h += '<div class="hint">Что нужно сделать дальше?</div></div>';
+
+  h += '</details>';
+
+  body.innerHTML = h;
+  panel.appendChild(body);
+
+  ['operation', 'aspect', 'impact', 'context', 'sourceInfo', 'conditions', 'mgmtContext', 'source', 'missing', 'note', 'nextStep'].forEach(function(key) {
+    var el = body.querySelector('[id="f-' + c.id + '-' + key + '"]');
+    if (el) {
+      el.addEventListener('input', function(e) {
+        c.f[key] = e.target.value;
+        if (key === 'operation') {
+          var nm = $('tabname-' + c.id);
+          if (nm) nm.textContent = c.f.operation.trim() ? c.f.operation.trim() : 'запись ' + c.id;
+        }
+        saveOwn();
+      });
+    }
+  });
+
+  return panel;
+}
+
+/* ========== ПРЕДПРОСМОТР ========== */
+function openPreview() {
+  renderPreview();
+  showScreen('screen-preview');
+}
+
+function renderPreview() {
+  var errs = [];
+  state.cards.forEach(function(c) {
+    if (!c.f.operation.trim() || !c.f.aspect.trim() || !c.f.impact.trim()) {
+      errs.push('Запись ' + c.id + ': не заполнены операция, аспект или воздействие.');
+    }
+  });
+  var errBox = $('errorsBox');
+  errBox.style.display = errs.length ? 'block' : 'none';
+  if (errs.length) errBox.innerHTML = '<strong>Незавершенные записи.</strong><ul>' + errs.map(function(e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul>';
+
+  $('downloadBtn').disabled = !state.cards.length;
+  $('downloadNote').textContent = state.cards.length ? 'Допускается выгрузка незавершенного черновика.' : 'Добавьте хотя бы одну запись.';
+
+  var nt = [];
+  state.cards.forEach(function(c) {
+    if (!c.f.source.trim()) nt.push('Запись ' + c.id + ': не указано основание. Добавьте источник сведений.');
+    if (!c.f.missing.trim() && !c.f.note.trim()) nt.push('Запись ' + c.id + ': не указаны вопросы для уточнения или примечания.');
+  });
+  var ntBox = $('noticesBox');
+  ntBox.style.display = nt.length ? 'block' : 'none';
+  if (nt.length) ntBox.innerHTML = '<strong>Что дополнить.</strong><ul>' + nt.map(function(n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>';
+
+  var h = '<div class="note-box accent">Всего записей: ' + state.cards.length + '.</div>';
+
+  h += '<h2>Сводный реестр</h2>';
+  h += '<div class="scroll-x"><table class="reg"><thead><tr><th>ID</th><th>Операция</th><th>Аспект</th><th>Воздействие</th><th>Основание</th><th>Что уточнить</th></tr></thead><tbody>';
+  state.cards.forEach(function(c) {
+    h += '<tr><td>' + c.id + '</td><td>' + esc(c.f.operation || '-') + '</td><td>' + esc(c.f.aspect || '-') + '</td><td>' + esc(c.f.impact || '-') + '</td><td>' + esc(c.f.source || '-') + '</td><td>' + esc(c.f.missing || '-') + '</td></tr>';
+  });
+  h += '</tbody></table></div>';
+
+  h += '<h2>Подробности записей</h2>';
+  state.cards.forEach(function(c) {
+    h += '<details class="det"><summary>' + c.id + '. ' + esc(c.f.operation || 'Операция не указана') + '</summary><div class="det-body">';
+    h += '<p><strong>Аспект:</strong> ' + esc(c.f.aspect || '-') + '</p>';
+    h += '<p><strong>Воздействие:</strong> ' + esc(c.f.impact || '-') + '</p>';
+    h += '<p><strong>Область применения:</strong> ' + esc(c.f.context || '-') + '</p>';
+    h += '<p><strong>Входы и выходы:</strong> ' + esc(c.f.sourceInfo || '-') + '</p>';
+    h += '<p><strong>Условия:</strong> ' + esc(c.f.conditions || '-') + '</p>';
+    h += '<p><strong>Управление или влияние:</strong> ' + esc(c.f.mgmtContext || '-') + '</p>';
+    h += '<p><strong>Основание:</strong> ' + esc(c.f.source || '-') + '</p>';
+    h += '<p><strong>Что уточнить:</strong> ' + esc(c.f.missing || '-') + '</p>';
+    h += '<p><strong>Примечания:</strong> ' + esc(c.f.note || '-') + '</p>';
+    h += '<p><strong>Следующий шаг:</strong> ' + esc(c.f.nextStep || '-') + '</p>';
+    h += '</div></details>';
+  });
+
+  h += '<div class="note-box">Документ содержит первичные записи об экологических аспектах. В следующем уроке оцените значимость каждого аспекта по рангам и критериям.</div>';
+
+  $('previewBox').innerHTML = h;
+  resizeIframe();
+}
+
+function restartOwn() {
+  if (!confirm('Полная очистка: удалить все данные?')) return;
+  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
+  state = { meta: { org: '', date: today(), author: '' }, cards: [], nextNum: 1, activeId: null };
+  bodiesById = {};
+  $('panelsBox').innerHTML = '';
+  $('m-org').value = '';
+  $('m-date').value = state.meta.date;
+  $('m-author').value = '';
+  addCard(true);
+  showScreen('screen-own');
+}
+
+/* ========== DOCX ========== */
+function xmlEsc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); }
+function run(t, o) {
+  o = o || {};
+  var r = '';
+  if (o.b) r += '<w:b/>';
+  if (o.i) r += '<w:i/>';
+  if (o.color) r += '<w:color w:val="' + o.color + '"/>';
+  if (o.sz) r += '<w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/>';
+  return '<w:r>' + (r ? '<w:rPr>' + r + '</w:rPr>' : '') + '<w:t xml:space="preserve">' + xmlEsc(t) + '</w:t></w:r>';
+}
+function para(t, o) {
+  o = o || {};
+  var p = '';
+  if (o.style) p += '<w:pStyle w:val="' + o.style + '"/>';
+  if (o.before || o.after) p += '<w:spacing w:before="' + (o.before || 0) + '" w:after="' + (o.after || 0) + '"/>';
+  return '<w:p>' + (p ? '<w:pPr>' + p + '</w:pPr>' : '') + run(t, o) + '</w:p>';
+}
+function paraMulti(t, o) { return String(t == null ? '' : t).split(/\r?\n/).map(function(l) { return para(l, o); }).join(''); }
+function cell(w, x, f) {
+  return '<w:tc><w:tcPr><w:tcW w:w="' + w + '" w:type="dxa"/>' + (f ? '<w:shd w:val="clear" w:color="auto" w:fill="' + f + '"/>' : '') + '<w:vAlign w:val="top"/></w:tcPr>' + (x || '<w:p/>') + '</w:tc>';
+}
+var TBL = '<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
+var CMAR = '<w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar>';
+var RW = [600, 1500, 1500, 1500, 1500, 1500];
+
+function buildDoc() {
+  var b = [];
+  b.push(para('Первичные записи об экологических аспектах. Проект', { style: 'Title' }));
+  b.push(para('Статус: учебный черновик. Дата: ' + (state.meta.date || today()) + '. Автор: ' + (state.meta.author || 'не указан') + '. Предприятие: ' + (state.meta.org || 'не указано') + '.', { i: true, color: '6B7280', sz: 20, after: 120 }));
+  b.push(para('В следующем уроке оцените значимость каждого аспекта по рангам и критериям.', { after: 200 }));
+
+  b.push(para('1. Сводный реестр', { style: 'Heading1' }));
+  var rows = '<w:tr>' + ['ID', 'Операция', 'Аспект', 'Воздействие', 'Основание', 'Что уточнить'].map(function(t, i) {
+    return cell(RW[i], para(t, { b: true, sz: 18 }), 'F8FAFC');
+  }).join('') + '</w:tr>';
+  state.cards.forEach(function(c) {
+    rows += '<w:tr>' + cell(RW[0], para(c.id, { sz: 18 })) + cell(RW[1], paraMulti(c.f.operation || '-', { sz: 18 })) + cell(RW[2], paraMulti(c.f.aspect || '-', { sz: 18 })) + cell(RW[3], paraMulti(c.f.impact || '-', { sz: 18 })) + cell(RW[4], paraMulti(c.f.source || '-', { sz: 18 })) + cell(RW[5], paraMulti(c.f.missing || '-', { sz: 18 })) + '</w:tr>';
+  });
+  b.push('<w:tbl><w:tblPr><w:tblW w:w="9600" w:type="dxa"/>' + TBL + CMAR + '<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>' + RW.map(function(w) { return '<w:gridCol w:w="' + w + '"/>'; }).join('') + '</w:tblGrid>' + rows + '</w:tbl>');
+
+  b.push(para('2. Подробности записей', { style: 'Heading1' }));
+  state.cards.forEach(function(c) {
+    b.push(para(c.id + '. ' + (c.f.operation || 'Операция не указана'), { style: 'Heading2' }));
+    b.push(para('Аспект: ' + (c.f.aspect || '-') + '. Воздействие: ' + (c.f.impact || '-') + '.', { after: 60 }));
+    b.push(para('Область применения: ' + (c.f.context || '-') + '.', { after: 60 }));
+    b.push(para('Входы и выходы: ' + (c.f.sourceInfo || '-') + '.', { after: 60 }));
+    b.push(para('Условия: ' + (c.f.conditions || '-') + '.', { after: 60 }));
+    b.push(para('Управление или влияние: ' + (c.f.mgmtContext || '-') + '.', { after: 60 }));
+    b.push(para('Основание: ' + (c.f.source || '-') + '.', { after: 60 }));
+    b.push(para('Что уточнить: ' + (c.f.missing || '-') + '.', { after: 60 }));
+    b.push(para('Примечания: ' + (c.f.note || '-') + '. Следующий шаг: ' + (c.f.nextStep || '-') + '.', { after: 60 }));
+  });
+
+  b.push(para('Документ содержит первичные записи об экологических аспектах. В следующем уроке оцените значимость каждого аспекта.', { i: true, color: '6B7280', sz: 20, before: 240 }));
+  b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>' + b.join('') + '</w:body></w:document>';
+}
+
+var CT_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
+var RELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+var DRELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+var FOOTER_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:fldSimple w:instr=" PAGE "><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
+var STYLES_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="334155"/></w:rPr></w:style></w:styles>';
+
+var CRC_TABLE = (function() {
+  var t = new Uint32Array(256);
+  for (var n = 0; n < 256; n++) {
+    var c = n;
+    for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+    t[n] = c >>> 0;
+  }
+  return t;
+})();
+
+function crc32(u) {
+  var c = 0xFFFFFFFF;
+  for (var i = 0; i < u.length; i++) c = CRC_TABLE[(c ^ u[i]) & 0xFF] ^ (c >>> 8);
+  return (c ^ 0xFFFFFFFF) >>> 0;
+}
+
+function zipStore(files) {
+  var enc = new TextEncoder(), now = new Date();
+  var dt = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xFFFF;
+  var dd = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xFFFF;
+  var loc = [], cen = [], off = 0;
+  files.forEach(function(f) {
+    var nb = enc.encode(f.name), data = f.data, crc = crc32(data);
+    var lh = new Uint8Array(30 + nb.length), dv = new DataView(lh.buffer);
+    dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true); dv.setUint16(6, 0, true); dv.setUint16(8, 0, true);
+    dv.setUint16(10, dt, true); dv.setUint16(12, dd, true);
+    dv.setUint32(14, crc, true); dv.setUint32(18, data.length, true); dv.setUint32(22, data.length, true);
+    dv.setUint16(26, nb.length, true); dv.setUint16(28, 0, true);
+    lh.set(nb, 30); loc.push(lh, data);
+    var ch = new Uint8Array(46 + nb.length), cv = new DataView(ch.buffer);
+    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true); cv.setUint16(8, 0, true); cv.setUint16(10, 0, true);
+    cv.setUint16(12, dt, true); cv.setUint16(14, dd, true);
+    cv.setUint32(16, crc, true); cv.setUint32(20, data.length, true); cv.setUint32(24, data.length, true);
+    cv.setUint16(28, nb.length, true); cv.setUint16(30, 0, true); cv.setUint16(32, 0, true);
+    cv.setUint16(34, 0, true); cv.setUint16(36, 0, true); cv.setUint32(38, 0, true); cv.setUint32(42, off, true);
+    ch.set(nb, 46); cen.push(ch);
+    off += lh.length + data.length;
+  });
+  var cs = 0; cen.forEach(function(p) { cs += p.length; });
+  var eo = new Uint8Array(22), ev = new DataView(eo.buffer);
+  ev.setUint32(0, 0x06054b50, true); ev.setUint16(4, 0, true); ev.setUint16(6, 0, true);
+  ev.setUint16(8, files.length, true); ev.setUint16(10, files.length, true);
+  ev.setUint32(12, cs, true); ev.setUint32(16, off, true); ev.setUint16(20, 0, true);
+  var tot = 0; loc.forEach(function(p) { tot += p.length; }); cen.forEach(function(p) { tot += p.length; }); tot += 22;
+  var out = new Uint8Array(tot), o = 0;
+  loc.forEach(function(p) { out.set(p, o); o += p.length; });
+  cen.forEach(function(p) { out.set(p, o); o += p.length; });
+  out.set(eo, o);
+  return out;
+}
+
+function downloadDocx() {
+  if (!state.cards.length) { renderPreview(); return; }
+  var enc = new TextEncoder();
+  var files = [
+    { name: '[Content_Types].xml', data: enc.encode(CT_XML) },
+    { name: '_rels/.rels', data: enc.encode(RELS_XML) },
+    { name: 'word/document.xml', data: enc.encode(buildDoc()) },
+    { name: 'word/styles.xml', data: enc.encode(STYLES_XML) },
+    { name: 'word/footer1.xml', data: enc.encode(FOOTER_XML) },
+    { name: 'word/_rels/document.xml.rels', data: enc.encode(DRELS_XML) }
+  ];
+  var bytes = zipStore(files);
+  var blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  a.href = url; a.download = 'pervichnye-zapisi-ob-aspektah.docx';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
+  $('downloadNote').textContent = 'Запрос на скачивание отправлен. Проверьте сохранение файла.';
+  resizeIframe();
+}
+
+/* ========== СТАРТ ========== */
+document.addEventListener('DOMContentLoaded', function() {
+  testStorage();
+  var restored = loadOwn();
+  if (restored) $('restoreNote').style.display = 'block';
+  resizeIframe();
+  if ('ResizeObserver' in window) {
+    var ro = new ResizeObserver(function() { resizeIframe(); });
+    ro.observe(document.body);
+  }
+});
+window.addEventListener('load', function() { resizeIframe(); });
+</script>
+
+</body>
+</html>
