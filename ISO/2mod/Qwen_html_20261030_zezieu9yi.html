@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Где может сорваться результат: тренажёр по рискам и возможностям</title>
+<style>
+:root {
+  --bg:#ffffff; --primary:#1e293b; --muted:#64748b; --border:#e2e8f0;
+  --gray:#f8fafc; --accent:#2563eb; --accent-d:#1d4ed8;
+  --ok:#16a34a; --ok-bg:#f0fdf4; --ok-bd:#bbf7d0;
+  --warn:#ea580c; --warn-bg:#fff7ed; --warn-bd:#fed7aa;
+  --bad:#991b1b; --bad-bg:#fef2f2; --bad-bd:#fecaca;
+  --r:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--primary);font-size:15px;line-height:1.6}
+.container{max-width:720px;margin:0 auto}
+.screen{display:none}.screen.active{display:block;animation:fadeIn .3s ease-out}
+@keyframes fadeIn{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:22px;font-weight:800;margin:0 0 8px}
+h2{font-size:17px;font-weight:700;margin:16px 0 10px}
+h3{font-size:15px;font-weight:700;margin:0 0 6px}
+.lead{font-size:14px;margin:0 0 12px;line-height:1.6;color:var(--muted)}
+.note-box{background:var(--gray);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--muted);margin:10px 0}
+.note-box.accent{border-left-color:var(--accent);color:var(--primary)}
+.warn-box{background:var(--warn-bg);border-left:3px solid var(--warn-bd);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--warn);margin:10px 0}
+
+/* Стартовый экран с кейсами */
+.case-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.case-card{border:2px solid var(--border);border-radius:var(--r);padding:14px;background:#fff;cursor:pointer;font-family:inherit;text-align:left;transition:border-color .15s,background .15s}
+.case-card:hover{border-color:var(--accent);background:var(--gray)}
+.case-card.done{border-color:var(--ok-bd);background:var(--ok-bg)}
+.case-card.done::after{content:"✓";float:right;color:var(--ok);font-weight:800}
+.case-card .case-num{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--accent);background:var(--gray);border:1px solid var(--border);border-radius:20px;padding:2px 8px;margin-bottom:6px}
+.case-card h3{margin:0 0 4px;font-size:14px;color:var(--primary)}
+.case-card p{margin:0;font-size:12px;color:var(--muted)}
+
+/* Шапка кейса */
+.case-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.case-title{font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.4px}
+.case-subtitle{font-size:12px;color:var(--muted);margin-top:2px}
+.btn-conditions{padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--primary);cursor:pointer;font-family:inherit}
+.btn-conditions:hover{background:var(--gray)}
+
+/* Карточка условий */
+.conditions-card{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;background:var(--gray);padding:12px 14px;font-size:13px;margin:10px 0}
+.conditions-card strong{display:block;font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.conditions-card ul{margin:6px 0 0;padding-left:18px}
+.conditions-card li{margin-bottom:4px}
+.conditions-note{font-size:11px;color:var(--muted);margin-top:8px;font-style:italic}
+
+/* Вопрос */
+.question-box{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:12px 0}
+.question-box .q-label{font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.question-box .q-text{font-size:14px;font-weight:600;margin:0}
+
+/* Подсказка */
+.hint-box{background:var(--info-bg,#eff6ff);border:1px solid var(--info-bd,#bfdbfe);border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--info-text,#1e40af);margin:10px 0}
+.hint-box strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+
+/* Варианты */
+.options{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.option-btn{display:block;width:100%;text-align:left;border:2px solid var(--border);border-radius:10px;background:#fff;padding:12px 14px;font-family:inherit;font-size:13.5px;line-height:1.5;color:var(--primary);cursor:pointer;transition:all .15s}
+.option-btn:hover:not(:disabled){border-color:var(--accent);background:var(--gray)}
+.option-btn.selected-correct{border-color:var(--ok);background:var(--ok-bg)}
+.option-btn.selected-wrong{border-color:var(--bad);background:var(--bad-bg)}
+.option-btn.dim{opacity:.55}
+.option-btn:disabled{cursor:default}
+
+/* Обратная связь */
+.feedback{border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.5;margin:10px 0}
+.feedback.correct{background:var(--ok-bg);border:1px solid var(--ok-bd);color:var(--ok)}
+.feedback.wrong{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn)}
+.feedback strong{display:block;margin-bottom:4px}
+
+/* Цепочка */
+.chain-table{width:100%;border-collapse:collapse;font-size:13px;margin:10px 0}
+.chain-table th,.chain-table td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+.chain-table th{background:var(--gray);font-weight:700;width:30%}
+.conclusion{background:var(--ok-bg);border-left:4px solid var(--ok);border-radius:0 10px 10px 0;padding:12px 14px;font-size:13.5px;margin:12px 0}
+.conclusion strong{display:block;color:var(--ok);font-size:12px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+
+/* Финальный экран */
+.final-chain{background:var(--gray);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:12px 0;font-size:13.5px}
+.final-chain .step{margin:6px 0;display:flex;gap:8px;align-items:flex-start}
+.final-chain .step-num{flex:0 0 auto;width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+.final-chain .step-text{flex:1}
+.progress-line{font-size:12px;font-weight:700;color:var(--accent-d);background:var(--info-bg,#eff6ff);border:1px solid var(--info-bd,#bfdbfe);border-radius:20px;padding:4px 12px;display:inline-block;margin-bottom:10px}
+
+/* Навигация */
+.nav-buttons{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:background .2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-d)}
+.btn-secondary{background:#fff;border:1px solid var(--border);color:var(--primary)}
+.btn-secondary:hover{background:var(--gray)}
+.btn-big{width:100%;padding:14px;font-size:15px}
+button:focus-visible{outline:3px solid var(--accent-d);outline-offset:2px}
+
+@media (max-width:600px){
+  body{padding:12px}
+  h1{font-size:20px}
+  .case-grid{grid-template-columns:1fr}
+  .nav-buttons{flex-direction:column}
+  .btn{width:100%}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- СТАРТОВЫЙ ЭКРАН -->
+  <div id="screen-intro" class="screen active">
+    <h1>Где может сорваться результат</h1>
+    <p class="lead">Требование может быть правильно записано, но не сработать в повседневной работе. Посмотрим, как это происходит и что предпринять. Сначала напомним условия учебной ситуации.</p>
+    <div class="note-box">В каждом кейсе сначала прочитайте условия. Все сведения для ответа находятся в карточке. Затем выберите действие и сравните его с разбором.</div>
+    <p class="progress-line" id="progressLine">Кейсы просмотрены: 0 из 4</p>
+    <h2>Выберите кейс</h2>
+    <div class="case-grid" id="caseGrid"></div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="goToFinal()">К итоговому экрану</button>
+    </div>
+  </div>
+
+  <!-- ЭКРАН КЕЙСА -->
+  <div id="screen-case" class="screen">
+    <div class="case-header">
+      <div>
+        <div class="case-title" id="caseTitle"></div>
+        <div class="case-subtitle" id="caseSubtitle"></div>
+      </div>
+      <button class="btn-conditions" onclick="toggleConditions()">Условия кейса</button>
+    </div>
+    <div id="conditionsPanel" style="display:none"></div>
+    <div id="caseContent"></div>
+    <div class="nav-buttons" id="caseNav"></div>
+  </div>
+
+  <!-- ФИНАЛЬНЫЙ ЭКРАН -->
+  <div id="screen-final" class="screen">
+    <h2>От ситуации к обоснованному действию</h2>
+    <p class="lead">В каждом кейсе вы отделили известный факт от возможного последствия. Затем выбрали действие, которое отвечает на причину, и способ проверить результат.</p>
+    <p class="lead">Теперь попробуйте описать знакомую ситуацию своего предприятия по той же цепочке.</p>
+    <div class="final-chain">
+      <div class="step"><div class="step-num">1</div><div class="step-text"><strong>Что известно?</strong> — отделите подтверждённые факты от предположений</div></div>
+      <div class="step"><div class="step-num">2</div><div class="step-text"><strong>Что может произойти?</strong> — опишите риск или возможность</div></div>
+      <div class="step"><div class="step-num">3</div><div class="step-text"><strong>Как это повлияет на результат СЭМ?</strong> — связь с обязательствами или целями</div></div>
+      <div class="step"><div class="step-num">4</div><div class="step-text"><strong>Что предлагаем сделать?</strong> — действие, которое отвечает на причину</div></div>
+      <div class="step"><div class="step-num">5</div><div class="step-text"><strong>Как проверим?</strong> — способ убедиться, что действие сработало</div></div>
+    </div>
+    <div class="note-box" id="viewedNote"></div>
+    <div class="nav-buttons">
+      <button class="btn btn-primary" onclick="showScreen('screen-intro')">К списку кейсов</button>
+      <button class="btn btn-secondary" onclick="restartAll()">Пройти заново</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ========== ДАННЫЕ КЕЙСОВ ========== */
+var CASES = [
+  {
+    id:'case1',
+    title:'Кейс 1. Склад работает по старой памятке',
+    subtitle:'Как связать риск с обязательством',
+    conditions:[
+      'Учебный стекольный завод отгружает продукцию заказчику.',
+      'По договору перед каждой отгрузкой склад проверяет тару по согласованному перечню и отмечает результат в листе комплектации.',
+      'Перечень изменили. Сотрудник, который ведёт договор, получил новую версию.',
+      'На складе осталась старая памятка. Не установлено, кто передаёт изменения и обновляет рабочие сведения.',
+      'Ошибочная отгрузка пока не подтверждена.'
+    ],
+    conditionsNote:'Все обстоятельства являются учебными условиями и не подтверждают нарушения на реальном предприятии.',
+    question:'Как продолжите работу?',
+    hint:'Отделите то, что уже известно, от того, что может произойти. Затем найдите причину возможной ошибки.',
+    options:[
+      {text:'Сверю версии, передам актуальные сведения складу и предложу порядок дальнейшего обновления',
+       feedback:'Подходящий шаг. Вы разберётесь с текущими сведениями и причиной возможного повторения. Вместе с участниками уточните, кто передаёт изменения и кто проверяет актуальность.',
+       correct:true},
+      {text:'Запишу, что склад уже нарушил договор',
+       feedback:'Пока известна старая памятка, но не установлена ошибочная отгрузка. Проверьте факты, прежде чем делать вывод о выполнении договора.',
+       correct:false},
+      {text:'Напомню складу работать внимательнее',
+       feedback:'Напоминание не покажет, откуда получить новую версию. При следующем изменении ситуация может повториться.',
+       correct:false}
+    ],
+    chain:{
+      fact:'На складе старая памятка, порядок обновления не определён',
+      risk:'Склад может использовать старые требования и передать неподходящую тару',
+      consequence:'Предприятие может не выполнить условие договора',
+      action:'Сверить версии и согласовать передачу изменений',
+      check:'При следующем изменении сопоставить действующий перечень, памятку и записи по соответствующим отгрузкам'
+    },
+    conclusion:'Риск описывает не старую памятку, а возможное последствие работы по ней. Действие отвечает на причину, а не только призывает быть внимательнее.'
+  },
+  {
+    id:'case2',
+    title:'Кейс 2. Расход воды снизился',
+    subtitle:'Как не перепутать изменение показателя с улучшением',
+    conditions:[
+      'На учебном заводе отдельно учитывают расход воды и выпуск стекла. Доступны сопоставимые месячные данные.',
+      'За рассматриваемый месяц общий расход воды снизился. Выпуск продукции тоже уменьшился.',
+      'Руководитель участка предлагает записать, что предприятие стало экономнее расходовать воду. Сопоставление с выпуском ещё не выполнено.'
+    ],
+    conditionsNote:'Все обстоятельства являются учебными условиями.',
+    question:'Какой следующий шаг поможет сделать обоснованный вывод?',
+    hint:'Какие два показателя уже доступны, но пока рассматриваются отдельно?',
+    options:[
+      {text:'Проверю сопоставимость данных и сравню расход воды с учётом выпуска',
+       feedback:'Подходит. Вы используете доступные сведения, чтобы отделить изменение объёма производства от изменения расхода на единицу продукции. Затем разберёте другие обстоятельства, которые могли повлиять на показатель.',
+       correct:true},
+      {text:'Запишу улучшение, потому что общий расход стал меньше',
+       feedback:'Снижение общего расхода ещё не показывает, как предприятие использовало воду при другом объёме выпуска. Вывод об улучшении пока не обоснован.',
+       correct:false},
+      {text:'Сразу предложу купить более экономное оборудование',
+       feedback:'Пока не выяснено, где и почему изменился расход. Покупка появилась раньше разбора данных.',
+       correct:false}
+    ],
+    chain:{
+      fact:'Расход воды и выпуск снизились, данные доступны за одинаковые периоды',
+      risk:'Снижение выпуска могут принять за улучшение использования воды',
+      opportunity:'Использовать сопоставимые данные для более точной оценки',
+      action:'Проверить границы учёта и сопоставить показатели',
+      check:'Убедиться, что вывод учитывает выпуск и другие выявленные обстоятельства'
+    },
+    conclusion:'Возможность связана с доступными данными и пользой от их совместного анализа. Сам расчёт не гарантирует экономию воды.'
+  },
+  {
+    id:'case3',
+    title:'Кейс 3. Мера записана, но не выполняется',
+    subtitle:'Как отличить известную проблему от возможного последствия',
+    conditions:[
+      'Вернёмся к пересыпанию сырья на учебном заводе. По условию кейса часть пыли поступает в атмосферный воздух.',
+      'Перед началом работы предусмотрена проверка укрытия узла пересыпания. Это условная мера, заданная для упражнения.',
+      'При разборе работы выяснилось, что проверку иногда пропускают. Сведений об изменении выброса при таких пропусках пока нет.'
+    ],
+    conditionsNote:'Все обстоятельства являются учебными условиями и не подтверждают нарушения или наличие определённого оборудования на заводе.',
+    question:'Что отразите в записи о риске?',
+    hint:'Что уже произошло? Что из-за этого может остаться незамеченным? Какое последствие предстоит проверить?',
+    options:[
+      {text:'Зафиксирую пропуски проверки. Отдельно рассмотрю, может ли невыявленное повреждение укрытия усилить пыление',
+       feedback:'Подходит. Вы разделили известную проблему и возможное последствие. Связь между состоянием укрытия и выбросом уточните у технических специалистов.',
+       correct:true},
+      {text:'Запишу только «выброс пыли»',
+       feedback:'Вы повторили аспект из прошлого урока. Но не показали, какое обстоятельство может изменить результат.',
+       correct:false},
+      {text:'Запишу, что выброс уже увеличился и норматив нарушен',
+       feedback:'Таких данных в карточке нет. Пропуск проверки сам по себе не доказывает увеличение выброса или нарушение норматива.',
+       correct:false}
+    ],
+    chain:{
+      fact:'Предусмотренную проверку иногда пропускают',
+      risk:'Повреждение укрытия может остаться незамеченным',
+      consequence:'Пыление может усилиться',
+      action:'Выяснить причины пропусков и уточнить порядок проверки с участком',
+      check:'Сопоставить фактические проверки с установленным порядком; отдельно оценить состояние укрытия'
+    },
+    conclusion:'Известную проблему не откладывайте только потому, что последствие ещё не наступило. Но и возможное последствие не выдавайте за установленный факт.'
+  },
+  {
+    id:'case4',
+    title:'Кейс 4. Подрядчик ещё не подтвердил условия',
+    subtitle:'Как проверить предположение до начала работы',
+    conditions:[
+      'Учебный завод готовит задание внешнему исполнителю. После работ останутся материалы, с которыми предстоит определиться.',
+      'В переписке сотрудники предполагают, что исполнитель заберёт все остатки. В проекте договора это не указано.',
+      'Состав и статус остатков ещё не уточнены. Работы не начались.'
+    ],
+    conditionsNote:'Все обстоятельства являются учебными условиями.',
+    question:'Что сделаете до согласования задания?',
+    hint:'На какое предположение сейчас опираются участники? Где оно подтверждено?',
+    options:[
+      {text:'Уточню состав остатков, применимые требования и распределение действий с закупками и подразделением, которое заказывает работы',
+       feedback:'Подходит. Вы проверите исходные условия до начала работ. Затем участники смогут согласовать, кто и что делает, не подменяя требования законодательства договорной фразой.',
+       correct:true},
+      {text:'Запишу, что исполнитель обязан забрать всё, потому что он выполняет работы',
+       feedback:'В карточке нет такого согласованного условия. Сам факт привлечения подрядчика не подтверждает распределение действий.',
+       correct:false},
+      {text:'Дождусь завершения работ — тогда будет понятнее',
+       feedback:'Часть сведений действительно может уточняться по ходу работ. Но известный пробел в задании можно разобрать заранее, пока решения ещё обсуждаются.',
+       correct:false}
+    ],
+    chain:{
+      fact:'Участники ожидают, что исполнитель заберёт остатки, но условие не согласовано',
+      risk:'После работ действия участников могут оказаться несогласованными',
+      consequence:'Материалы останутся без предусмотренного порядка дальнейшего обращения',
+      action:'Уточнить сведения и согласовать действия с учётом применимых требований',
+      check:'Сопоставить согласованные документы с фактическими действиями после работ'
+    },
+    conclusion:'Предположение участника не равно принятому условию. В записи покажите, что ещё предстоит выяснить и согласовать.'
+  }
+];
+
+/* ========== СОСТОЯНИЕ ========== */
+var state = {
+  viewed: [],
+  currentCase: null,
+  step: 'conditions',
+  selectedOption: null,
+  conditionsVisible: false
+};
+
+function resizeIframe(){
+  if(window.parentIFrame && typeof window.parentIFrame.size==='function') window.parentIFrame.size();
+}
+function showScreen(id){
+  ['screen-intro','screen-case','screen-final'].forEach(function(s){
+    document.getElementById(s).classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({top:0,behavior:'smooth'});
+  resizeIframe();
+}
+
+/* ========== СТАРТОВЫЙ ЭКРАН ========== */
+function renderIntro(){
+  var grid = document.getElementById('caseGrid');
+  grid.innerHTML = '';
+  CASES.forEach(function(c){
+    var btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'case-card' + (state.viewed.indexOf(c.id)>=0 ? ' done' : '');
+    btn.onclick = function(){ openCase(c.id); };
+    btn.innerHTML = '<span class="case-num">'+c.title.split('.')[0]+'</span>'+
+      '<h3>'+c.title.substring(c.title.indexOf('.')+2)+'</h3>'+
+      '<p>'+c.subtitle+'</p>';
+    grid.appendChild(btn);
+  });
+  document.getElementById('progressLine').textContent = 'Кейсы просмотрены: '+state.viewed.length+' из '+CASES.length;
+  resizeIframe();
+}
+
+/* ========== ОТКРЫТИЕ КЕЙСА ========== */
+function openCase(id){
+  state.currentCase = CASES.find(function(c){ return c.id===id; });
+  state.step = 'conditions';
+  state.selectedOption = null;
+  state.conditionsVisible = true;
+  document.getElementById('caseTitle').textContent = state.currentCase.title;
+  document.getElementById('caseSubtitle').textContent = state.currentCase.subtitle;
+  renderConditions();
+  showScreen('screen-case');
+}
+
+function renderConditions(){
+  var c = state.currentCase;
+  var html = '<div class="conditions-card"><strong>Что известно</strong><ul>';
+  c.conditions.forEach(function(t){ html += '<li>'+esc(t)+'</li>'; });
+  html += '</ul>';
+  if(c.conditionsNote) html += '<div class="conditions-note">'+esc(c.conditionsNote)+'</div>';
+  html += '</div>';
+  document.getElementById('conditionsPanel').innerHTML = html;
+  document.getElementById('conditionsPanel').style.display = 'block';
+  renderChoice();
+}
+
+function toggleConditions(){
+  state.conditionsVisible = !state.conditionsVisible;
+  document.getElementById('conditionsPanel').style.display = state.conditionsVisible ? 'block' : 'none';
+  resizeIframe();
+}
+
+function renderChoice(){
+  var c = state.currentCase;
+  var html = '<div class="question-box"><div class="q-label">Вопрос</div><p class="q-text">'+esc(c.question)+'</p></div>';
+  html += '<div class="hint-box"><strong>Подсказка</strong>'+esc(c.hint)+'</div>';
+  html += '<div class="options">';
+  c.options.forEach(function(o,i){
+    html += '<button type="button" class="option-btn" onclick="selectOption('+i+')">'+esc(o.text)+'</button>';
+  });
+  html += '</div>';
+  document.getElementById('caseContent').innerHTML = html;
+  document.getElementById('caseNav').innerHTML = '';
+  resizeIframe();
+}
+
+function selectOption(i){
+  state.selectedOption = i;
+  var c = state.currentCase;
+  var o = c.options[i];
+  var btns = document.querySelectorAll('.option-btn');
+  btns.forEach(function(b,j){
+    b.disabled = true;
+    if(j===i) b.classList.add(o.correct ? 'selected-correct' : 'selected-wrong');
+    else b.classList.add('dim');
+  });
+  var fb = document.createElement('div');
+  fb.className = 'feedback ' + (o.correct ? 'correct' : 'wrong');
+  fb.innerHTML = '<strong>'+(o.correct?'Верно':'Не совсем')+'</strong>'+esc(o.feedback);
+  document.getElementById('caseContent').appendChild(fb);
+  var nav = document.getElementById('caseNav');
+  nav.innerHTML = '<button class="btn btn-primary" onclick="showChain()">Показать итоговую цепочку</button>';
+  if(!o.correct){
+    nav.innerHTML = '<button class="btn btn-secondary" onclick="renderChoice()">Выбрать снова</button>' + nav.innerHTML;
+  }
+  resizeIframe();
+}
+
+function showChain(){
+  var c = state.currentCase;
+  if(state.viewed.indexOf(c.id)<0){
+    state.viewed.push(c.id);
+  }
+  var html = '<div class="hint-box"><strong>Итоговая цепочка</strong></div>';
+  html += '<table class="chain-table"><tbody>';
+  html += '<tr><th>Факт</th><td>'+esc(c.chain.fact)+'</td></tr>';
+  if(c.chain.risk) html += '<tr><th>Риск</th><td>'+esc(c.chain.risk)+'</td></tr>';
+  if(c.chain.opportunity) html += '<tr><th>Возможность</th><td>'+esc(c.chain.opportunity)+'</td></tr>';
+  if(c.chain.consequence) html += '<tr><th>Возможное последствие</th><td>'+esc(c.chain.consequence)+'</td></tr>';
+  html += '<tr><th>Действие</th><td>'+esc(c.chain.action)+'</td></tr>';
+  html += '<tr><th>Проверка</th><td>'+esc(c.chain.check)+'</td></tr>';
+  html += '</tbody></table>';
+  html += '<div class="conclusion"><strong>Вывод</strong>'+esc(c.conclusion)+'</div>';
+  document.getElementById('caseContent').innerHTML = html;
+  document.getElementById('caseNav').innerHTML = '<button class="btn btn-primary" onclick="showScreen(\'screen-intro\');renderIntro()">К списку кейсов</button>';
+  resizeIframe();
+}
+
+/* ========== ФИНАЛЬНЫЙ ЭКРАН ========== */
+function goToFinal(){
+  var viewed = state.viewed.length;
+  var note = document.getElementById('viewedNote');
+  if(viewed===0){
+    note.innerHTML = '<strong>Вы ещё не открыли ни одного кейса.</strong> Вернитесь к списку и разберите хотя бы первый кейс — он продолжает ситуацию с тарой из урока 10.';
+    note.className = 'warn-box';
+  } else {
+    note.innerHTML = '<strong>Просмотрено кейсов: '+viewed+' из '+CASES.length+'.</strong> '+
+      (viewed===CASES.length ? 'Вы разобрали все ситуации. Теперь попробуйте описать свою по той же цепочке.' : 'Можно вернуться и открыть остальные кейсы по желанию.');
+    note.className = 'note-box accent';
+  }
+  showScreen('screen-final');
+}
+
+function restartAll(){
+  state.viewed = [];
+  renderIntro();
+  showScreen('screen-intro');
+}
+
+/* ========== УТИЛИТЫ ========== */
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+
+/* ========== СТАРТ ========== */
+document.addEventListener('DOMContentLoaded', function(){
+  renderIntro();
+  resizeIframe();
+  if('ResizeObserver' in window){
+    var ro = new ResizeObserver(function(){ resizeIframe(); });
+    ro.observe(document.body);
+  }
+});
+window.addEventListener('load', function(){ resizeIframe(); });
+</script>
+
+</body>
+</html>
