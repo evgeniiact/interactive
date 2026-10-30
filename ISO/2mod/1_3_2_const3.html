@@ -50,8 +50,12 @@ h2 { font-size: 16px; font-weight: 700; margin: 16px 0 8px; }
   background: var(--bad-bg); border: 1px solid var(--bad-bd);
   border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--bad); margin: 12px 0;
 }
-.error-box ul { margin: 6px 0 0; padding-left: 20px; }
-.error-box li { margin-bottom: 4px; }
+.error-box ul, .notices-box ul { margin: 6px 0 0; padding-left: 20px; }
+.notices-box {
+  background: var(--warn-bg); border: 1px solid var(--warn-bd);
+  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--warn); margin: 12px 0;
+}
+.error-box li, .notices-box li { margin-bottom: 4px; }
 .storage-warn { display: none; }
 .storage-warn.show { display: block; }
 .save-line { font-size: 12px; color: var(--muted); margin: 4px 0; }
@@ -68,6 +72,14 @@ h2 { font-size: 16px; font-weight: 700; margin: 16px 0 8px; }
 .field input:focus, .field textarea:focus, .field select:focus {
   outline: 3px solid var(--accent-d); outline-offset: 2px;
 }
+
+.imported-info {
+  background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;
+  padding: 10px 12px; margin: 10px 0; font-size: 13px;
+}
+.imported-info .ii-title { font-weight: 700; color: var(--accent-d); margin-bottom: 6px; }
+.imported-info .ii-row { margin: 4px 0; }
+.imported-info .ii-label { color: var(--muted); font-size: 12px; }
 
 .tabs-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; margin: 14px 0 0; }
 .tab-btn {
@@ -104,14 +116,6 @@ h2 { font-size: 16px; font-weight: 700; margin: 16px 0 8px; }
 }
 .btn-small:hover { background: var(--gray); }
 
-.chip {
-  display: inline-block; padding: 4px 10px; border-radius: 20px;
-  font-size: 12px; font-weight: 700; border: 1px solid; margin: 2px 6px 2px 0;
-}
-.chip.sig { background: var(--ok-bg); color: var(--ok); border-color: var(--ok-bd); }
-.chip.ins { background: var(--gray); color: var(--muted); border-color: var(--border); }
-.chip.rev { background: var(--bad-bg); color: var(--bad); border-color: var(--bad-bd); }
-
 .nav-buttons { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
 .btn {
   padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
@@ -131,8 +135,8 @@ h2 { font-size: 16px; font-weight: 700; margin: 16px 0 8px; }
 .import-msg.show { display: block; }
 
 .scroll-x { overflow-x: auto; }
-.scroll-x table.reg { min-width: 720px; }
-table.reg { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 10px 0; }
+.scroll-x table.reg { min-width: 900px; }
+table.reg { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0; }
 table.reg th, table.reg td {
   border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top;
 }
@@ -171,9 +175,9 @@ button:focus-visible, summary:focus-visible {
   <!-- ВВОДНЫЙ ЭКРАН -->
   <div id="screen-intro" class="screen active">
     <h1>Конструктор реестра обязательств</h1>
-    <p class="lead">Соберите реестр обязательств по значимым аспектам. Импортируйте данные из предыдущих конструкторов, определите требования и спланируйте действия.</p>
+    <p class="lead">Дополните шаблон реестра аспектов обязательствами. Для каждого значимого аспекта укажите применимые требования, план действий и ответственных. Скачайте полный документ со связью «требование → работа → действие → сведения для проверки».</p>
     <div class="note-box accent">
-      <strong>Как это работает.</strong> Загрузите значимые аспекты из конструктора оценки значимости. Для каждого аспекта определите применимые обязательства, оцените их выполнение и спланируйте действия.
+      <strong>Как это работает.</strong> Импортируйте данные из конструктора оценки значимости. Для каждого аспекта добавьте обязательства, план действий, ответственного и срок. В следующем уроке разберете, что может помешать выполнить обязательства и какие возможности помогут улучшить работу.
     </div>
     <div class="note-box">Черновик сохраняется в этом браузере. На другом устройстве записи могут быть недоступны. Скачайте Word для надежной копии.</div>
     <div class="warn-box storage-warn" id="warnIntro">Браузер не сохранил черновик. Скачайте Word перед закрытием страницы.</div>
@@ -186,7 +190,7 @@ button:focus-visible, summary:focus-visible {
   <!-- РАБОЧИЙ ЭКРАН -->
   <div id="screen-work" class="screen">
     <h1>Реестр обязательств</h1>
-    <p class="lead">Импортируйте значимые аспекты, затем для каждого определите обязательства и план действий.</p>
+    <p class="lead">Импортируйте значимые аспекты из конструктора оценки значимости. Для каждого аспекта укажите обязательства, план действий, ответственного и срок.</p>
     <div class="warn-box storage-warn" id="warnWork">Браузер не сохранил черновик. Скачайте Word перед закрытием страницы.</div>
     <div class="save-line" id="saveStatus"></div>
     <div class="nav-buttons" style="margin-top:0">
@@ -217,6 +221,7 @@ button:focus-visible, summary:focus-visible {
   <div id="screen-preview" class="screen">
     <h1>Предпросмотр реестра</h1>
     <div class="error-box" id="errorsBox" style="display:none" aria-live="polite"></div>
+    <div class="notices-box" id="noticesBox" style="display:none" aria-live="polite"></div>
     <div id="previewBox"></div>
     <div class="nav-buttons">
       <button class="btn btn-secondary" onclick="showScreen('screen-work')">Вернуться к реестру</button>
@@ -230,8 +235,9 @@ button:focus-visible, summary:focus-visible {
 
 <script>
 /* ========== КОНСТАНТЫ ========== */
-var STORAGE_KEY = 'sem-obligations-registry-v1';
-var ASPECTS_KEY = 'sem-ranks-significance-v3';
+var STORAGE_KEY = 'sem-obligations-registry-v2';
+var SIGNIFICANCE_KEY = 'sem-ranks-significance-v3';
+var ASPECTS_KEY = 'sem-aspect-records-v3';
 
 /* ========== СОСТОЯНИЕ ========== */
 var state = {
@@ -300,14 +306,21 @@ function loadOwn() {
       state.obligations.push({
         id: o.id, num: o.num || 0,
         aspectId: o.aspectId || '',
+        operation: o.operation || '',
         aspect: o.aspect || '',
+        impact: o.impact || '',
+        rank: o.rank || '',
+        significance: o.significance || '',
         requirement: o.requirement || '',
         source: o.source || '',
         status: o.status || '',
         actions: o.actions || '',
         responsible: o.responsible || '',
         deadline: o.deadline || '',
-        note: o.note || ''
+        note: o.note || '',
+        imported: !!o.imported,
+        srcId: o.srcId || '',
+        srcHash: o.srcHash || ''
       });
     });
     return state.obligations.length > 0;
@@ -333,10 +346,10 @@ function onMeta(k, v) {
 function importAspects() {
   var msg = $('importMsg');
   try {
-    var raw = localStorage.getItem(ASPECTS_KEY);
+    var raw = localStorage.getItem(SIGNIFICANCE_KEY);
     if (!raw) {
       msg.className = 'import-msg show';
-      msg.textContent = 'Данные из конструктора оценки значимости не найдены. Заполните обязательства вручную или убедитесь, что оба конструктора работают в одном браузере.';
+      msg.textContent = 'Данные из конструктора оценки значимости не найдены. Импорт доступен, если оба конструктора имеют доступ к одному локальному хранилищу. Если записи не найдены, заполните обязательства вручную.';
       resizeIframe();
       return;
     }
@@ -348,7 +361,9 @@ function importAspects() {
       resizeIframe();
       return;
     }
-    var significant = rows.filter(function(r) {
+    var added = 0;
+    rows.forEach(function(r) {
+      if (state.imported.indexOf(r.id) >= 0) return;
       var rank = r.q && r.q.q1 === 'yes' && r.q.q2 === 'no' ? 1 :
                  r.q && r.q.q1 === 'yes' && r.q.q2 === 'yes' && r.q.q3 === 'yes' ? 2 :
                  r.q && r.q.q1 === 'yes' && r.q.q2 === 'yes' && r.q.q3 === 'no' && r.q.qSmall === 'yes' ? 3 :
@@ -358,30 +373,27 @@ function importAspects() {
       var e3 = r.e && r.e.e3 === 'yes';
       var sQ = r.sQ === 'yes';
       var isSignificant = (rank === 1 || rank === 2 || e1 || e2 || e3 || sQ);
-      return isSignificant;
-    });
-    if (!significant.length) {
-      msg.className = 'import-msg show';
-      msg.textContent = 'Значимых аспектов не найдено. Импорт не требуется.';
-      resizeIframe();
-      return;
-    }
-    var added = 0;
-    significant.forEach(function(r) {
-      if (state.imported.indexOf(r.id) >= 0) return;
+      if (!isSignificant) return;
       var num = state.nextNum++;
       var o = {
         id: 'O' + String(num).padStart(2, '0'),
         num: num,
         aspectId: r.id,
-        aspect: (r.operation || '') + ' - ' + (r.aspect || ''),
+        operation: r.operation || '',
+        aspect: r.aspect || '',
+        impact: r.impact || '',
+        rank: rank || '',
+        significance: isSignificant ? 'Значимый' : 'Не значимый',
         requirement: '',
-        source: '',
+        source: r.source || '',
         status: '',
         actions: '',
         responsible: '',
         deadline: '',
-        note: ''
+        note: '',
+        imported: true,
+        srcId: r.id,
+        srcHash: JSON.stringify([r.operation, r.aspect, r.impact, r.source])
       };
       state.obligations.push(o);
       state.imported.push(r.id);
@@ -389,7 +401,7 @@ function importAspects() {
     });
     if (!added) {
       msg.className = 'import-msg show';
-      msg.textContent = 'Все значимые аспекты уже импортированы.';
+      msg.textContent = 'Значимых аспектов для импорта не найдено. Все аспекты уже импортированы или не являются значимыми.';
     } else {
       msg.className = 'import-msg show';
       msg.textContent = 'Импортировано обязательств: ' + added + '. Заполните поля для каждого.';
@@ -443,7 +455,7 @@ function refreshTabs() {
     var nm = document.createElement('span');
     nm.className = 'tab-name';
     nm.id = 'tabname-' + o.id;
-    nm.textContent = o.aspect.trim() ? o.aspect.trim().substring(0, 20) : 'обязательство ' + o.id;
+    nm.textContent = o.operation.trim() ? o.operation.trim().substring(0, 20) : 'обязательство ' + o.id;
     t.appendChild(document.createTextNode(o.id + ' '));
     t.appendChild(nm);
     bar.appendChild(t);
@@ -471,21 +483,28 @@ function addObligation(first) {
     id: 'O' + String(num).padStart(2, '0'),
     num: num,
     aspectId: '',
+    operation: '',
     aspect: '',
+    impact: '',
+    rank: '',
+    significance: '',
     requirement: '',
     source: '',
     status: '',
     actions: '',
     responsible: '',
     deadline: '',
-    note: ''
+    note: '',
+    imported: false,
+    srcId: '',
+    srcHash: ''
   };
   state.obligations.push(o);
   state.activeId = o.id;
   refreshTabs();
   saveOwn();
   if (!first) {
-    var el = $('f-' + o.id + '-aspect');
+    var el = $('f-' + o.id + '-operation');
     if (el) el.focus();
   }
   resizeIframe();
@@ -495,7 +514,7 @@ function deleteObligation(id) {
   var o = null;
   state.obligations.forEach(function(x) { if (x.id === id) o = x; });
   if (!o) return;
-  var filled = o.aspect || o.requirement || o.actions;
+  var filled = o.operation || o.aspect || o.requirement || o.actions;
   if (filled && !confirm('Удалить обязательство ' + o.id + '? Введенные данные будут потеряны.')) return;
   state.obligations = state.obligations.filter(function(x) { return x.id !== id; });
   state.imported = state.imported.filter(function(x) { return x !== o.aspectId; });
@@ -528,9 +547,28 @@ function buildObligationBody(o) {
   var body = document.createElement('div');
   var h = '';
 
+  if (o.imported && o.operation) {
+    h += '<div class="imported-info">';
+    h += '<div class="ii-title">Импортированные данные из конструктора значимости</div>';
+    h += '<div class="ii-row"><span class="ii-label">Операция:</span> ' + esc(o.operation) + '</div>';
+    h += '<div class="ii-row"><span class="ii-label">Аспект:</span> ' + esc(o.aspect) + '</div>';
+    h += '<div class="ii-row"><span class="ii-label">Воздействие:</span> ' + esc(o.impact) + '</div>';
+    if (o.rank) h += '<div class="ii-row"><span class="ii-label">Ранг:</span> ' + esc(o.rank) + '</div>';
+    if (o.significance) h += '<div class="ii-row"><span class="ii-label">Значимость:</span> ' + esc(o.significance) + '</div>';
+    h += '</div>';
+  }
+
+  h += '<div class="field"><label for="f-' + o.id + '-operation">Операция <span class="req">(обязательное поле)</span></label>';
+  h += '<input type="text" id="f-' + o.id + '-operation" value="' + esc(o.operation) + '">';
+  h += '<div class="hint">Что делают на участке?</div></div>';
+
   h += '<div class="field"><label for="f-' + o.id + '-aspect">Аспект <span class="req">(обязательное поле)</span></label>';
-  h += '<textarea id="f-' + o.id + '-aspect">' + esc(o.aspect) + '</textarea>';
-  h += '<div class="hint">Опишите аспект, к которому относится обязательство.</div></div>';
+  h += '<input type="text" id="f-' + o.id + '-aspect" value="' + esc(o.aspect) + '">';
+  h += '<div class="hint">Как работа взаимодействует со средой?</div></div>';
+
+  h += '<div class="field"><label for="f-' + o.id + '-impact">Воздействие <span class="req">(обязательное поле)</span></label>';
+  h += '<input type="text" id="f-' + o.id + '-impact" value="' + esc(o.impact) + '">';
+  h += '<div class="hint">Что меняется в окружающей среде?</div></div>';
 
   h += '<div class="field"><label for="f-' + o.id + '-requirement">Обязательство <span class="req">(обязательное поле)</span></label>';
   h += '<textarea id="f-' + o.id + '-requirement">' + esc(o.requirement) + '</textarea>';
@@ -568,14 +606,14 @@ function buildObligationBody(o) {
   body.innerHTML = h;
   panel.appendChild(body);
 
-  ['aspect', 'requirement', 'source', 'status', 'actions', 'responsible', 'deadline', 'note'].forEach(function(key) {
+  ['operation', 'aspect', 'impact', 'requirement', 'source', 'status', 'actions', 'responsible', 'deadline', 'note'].forEach(function(key) {
     var el = body.querySelector('[id="f-' + o.id + '-' + key + '"]');
     if (el) {
       el.addEventListener('input', function(e) {
         o[key] = e.target.value;
-        if (key === 'aspect') {
+        if (key === 'operation') {
           var nm = $('tabname-' + o.id);
-          if (nm) nm.textContent = o.aspect.trim() ? o.aspect.trim().substring(0, 20) : 'обязательство ' + o.id;
+          if (nm) nm.textContent = o.operation.trim() ? o.operation.trim().substring(0, 20) : 'обязательство ' + o.id;
         }
         saveOwn();
       });
@@ -594,8 +632,8 @@ function openPreview() {
 function renderPreview() {
   var errs = [];
   state.obligations.forEach(function(o) {
-    if (!o.aspect.trim() || !o.requirement.trim()) {
-      errs.push('Обязательство ' + o.id + ': не заполнены аспект или обязательство.');
+    if (!o.operation.trim() || !o.aspect.trim() || !o.impact.trim() || !o.requirement.trim()) {
+      errs.push('Обязательство ' + o.id + ': не заполнены обязательные поля.');
     }
   });
   var errBox = $('errorsBox');
@@ -605,19 +643,31 @@ function renderPreview() {
   $('downloadBtn').disabled = !state.obligations.length;
   $('downloadNote').textContent = state.obligations.length ? 'Допускается выгрузка незавершенного черновика.' : 'Добавьте хотя бы одно обязательство.';
 
-  var h = '<div class="note-box accent">Всего обязательств: ' + state.obligations.length + '.</div>';
-
-  h += '<h2>Реестр обязательств</h2>';
-  h += '<div class="scroll-x"><table class="reg"><thead><tr><th>ID</th><th>Аспект</th><th>Обязательство</th><th>Источник</th><th>Статус</th><th>План действий</th><th>Ответственный</th><th>Срок</th></tr></thead><tbody>';
+  var nt = [];
   state.obligations.forEach(function(o) {
-    var statusLabel = o.status === 'yes' ? 'Выполняется' : o.status === 'partial' ? 'Частично' : o.status === 'no' ? 'Не выполняется' : o.status === 'unknown' ? 'Требует проверки' : 'Не определен';
-    h += '<tr><td>' + o.id + '</td><td>' + esc(o.aspect || '-') + '</td><td>' + esc(o.requirement || '-') + '</td><td>' + esc(o.source || '-') + '</td><td>' + statusLabel + '</td><td>' + esc(o.actions || '-') + '</td><td>' + esc(o.responsible || '-') + '</td><td>' + esc(o.deadline || '-') + '</td></tr>';
+    if (!o.actions.trim()) nt.push('Обязательство ' + o.id + ': не указан план действий.');
+    if (!o.responsible.trim()) nt.push('Обязательство ' + o.id + ': не указан ответственный.');
+  });
+  var ntBox = $('noticesBox');
+  ntBox.style.display = nt.length ? 'block' : 'none';
+  if (nt.length) ntBox.innerHTML = '<strong>Что дополнить.</strong><ul>' + nt.map(function(n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>';
+
+  var h = '<div class="note-box accent">Всего обязательств: ' + state.obligations.length + '. Связь «требование → работа → действие → сведения для проверки».</div>';
+
+  h += '<h2>Сводный реестр</h2>';
+  h += '<div class="scroll-x"><table class="reg"><thead><tr><th>ID</th><th>Операция</th><th>Аспект</th><th>Воздействие</th><th>Ранг</th><th>Значимость</th><th>Обязательство</th><th>План действий</th><th>Ответственный</th><th>Срок</th></tr></thead><tbody>';
+  state.obligations.forEach(function(o) {
+    h += '<tr><td>' + o.id + '</td><td>' + esc(o.operation || '-') + '</td><td>' + esc(o.aspect || '-') + '</td><td>' + esc(o.impact || '-') + '</td><td>' + esc(o.rank || '-') + '</td><td>' + esc(o.significance || '-') + '</td><td>' + esc(o.requirement || '-') + '</td><td>' + esc(o.actions || '-') + '</td><td>' + esc(o.responsible || '-') + '</td><td>' + esc(o.deadline || '-') + '</td></tr>';
   });
   h += '</tbody></table></div>';
 
   h += '<h2>Подробности</h2>';
   state.obligations.forEach(function(o) {
-    h += '<details class="det"><summary>' + o.id + '. ' + esc(o.aspect || 'Аспект не указан') + '</summary><div class="det-body">';
+    h += '<details class="det"><summary>' + o.id + '. ' + esc(o.operation || 'Операция не указана') + '</summary><div class="det-body">';
+    h += '<p><strong>Аспект:</strong> ' + esc(o.aspect || '-') + '</p>';
+    h += '<p><strong>Воздействие:</strong> ' + esc(o.impact || '-') + '</p>';
+    if (o.rank) h += '<p><strong>Ранг:</strong> ' + esc(o.rank) + '</p>';
+    if (o.significance) h += '<p><strong>Значимость:</strong> ' + esc(o.significance) + '</p>';
     h += '<p><strong>Обязательство:</strong> ' + esc(o.requirement || '-') + '</p>';
     h += '<p><strong>Источник:</strong> ' + esc(o.source || '-') + '</p>';
     h += '<p><strong>Статус:</strong> ' + (o.status === 'yes' ? 'Выполняется' : o.status === 'partial' ? 'Выполняется частично' : o.status === 'no' ? 'Не выполняется' : o.status === 'unknown' ? 'Требует проверки' : 'Не определен') + '</p>';
@@ -628,7 +678,7 @@ function renderPreview() {
     h += '</div></details>';
   });
 
-  h += '<div class="note-box">Реестр обязательств составлен на основе значимых аспектов. Проверьте полноту и актуальность обязательств. В следующем уроке интегрируйте этот реестр в систему экологического менеджмента.</div>';
+  h += '<div class="note-box">Теперь вы дополнили шаблон реестра аспектов обязательствами. В шаблон внесли не просто название документа, а составили связь «требование → работа → действие → сведения для проверки». В следующем уроке разберете, что может помешать выполнить обязательства и какие возможности помогут улучшить работу.</div>';
 
   $('previewBox').innerHTML = h;
   resizeIframe();
@@ -671,26 +721,28 @@ function cell(w, x, f) {
 }
 var TBL = '<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
 var CMAR = '<w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar>';
-var RW = [600, 1400, 1400, 1200, 1000, 1400, 1000, 1000];
+var RW = [600, 1200, 1200, 1200, 600, 800, 1400, 1400, 800, 800];
 
 function buildDoc() {
   var b = [];
   b.push(para('Реестр обязательств по значимым аспектам. Проект', { style: 'Title' }));
-  b.push(para('Статус: учебный черновик. Дата: ' + (state.meta.date || today()) + '. Автор: ' + (state.meta.author || 'не указан') + '. Предприятие: ' + (state.meta.org || 'не указано') + '.', { i: true, color: '6B7280', sz: 20, after: 120 }));
+  b.push(para('Статус: учебный черновик. Дата оценки: ' + (state.meta.date || today()) + '. Автор: ' + (state.meta.author || 'не указан') + '. Предприятие: ' + (state.meta.org || 'не указано') + '.', { i: true, color: '6B7280', sz: 20, after: 120 }));
+  b.push(para('Связь «требование → работа → действие → сведения для проверки».', { after: 200 }));
 
-  b.push(para('1. Реестр обязательств', { style: 'Heading1' }));
-  var rows = '<w:tr>' + ['ID', 'Аспект', 'Обязательство', 'Источник', 'Статус', 'План действий', 'Ответственный', 'Срок'].map(function(t, i) {
+  b.push(para('1. Сводный реестр', { style: 'Heading1' }));
+  var rows = '<w:tr>' + ['ID', 'Операция', 'Аспект', 'Воздействие', 'Ранг', 'Значимость', 'Обязательство', 'План действий', 'Ответственный', 'Срок'].map(function(t, i) {
     return cell(RW[i], para(t, { b: true, sz: 16 }), 'F8FAFC');
   }).join('') + '</w:tr>';
   state.obligations.forEach(function(o) {
-    var statusLabel = o.status === 'yes' ? 'Выполняется' : o.status === 'partial' ? 'Частично' : o.status === 'no' ? 'Не выполняется' : o.status === 'unknown' ? 'Требует проверки' : 'Не определен';
-    rows += '<w:tr>' + cell(RW[0], para(o.id, { sz: 16 })) + cell(RW[1], paraMulti(o.aspect || '-', { sz: 16 })) + cell(RW[2], paraMulti(o.requirement || '-', { sz: 16 })) + cell(RW[3], paraMulti(o.source || '-', { sz: 16 })) + cell(RW[4], para(statusLabel, { sz: 16 })) + cell(RW[5], paraMulti(o.actions || '-', { sz: 16 })) + cell(RW[6], paraMulti(o.responsible || '-', { sz: 16 })) + cell(RW[7], paraMulti(o.deadline || '-', { sz: 16 })) + '</w:tr>';
+    rows += '<w:tr>' + cell(RW[0], para(o.id, { sz: 16 })) + cell(RW[1], paraMulti(o.operation || '-', { sz: 16 })) + cell(RW[2], paraMulti(o.aspect || '-', { sz: 16 })) + cell(RW[3], paraMulti(o.impact || '-', { sz: 16 })) + cell(RW[4], para(o.rank || '-', { sz: 16 })) + cell(RW[5], para(o.significance || '-', { sz: 16 })) + cell(RW[6], paraMulti(o.requirement || '-', { sz: 16 })) + cell(RW[7], paraMulti(o.actions || '-', { sz: 16 })) + cell(RW[8], paraMulti(o.responsible || '-', { sz: 16 })) + cell(RW[9], paraMulti(o.deadline || '-', { sz: 16 })) + '</w:tr>';
   });
   b.push('<w:tbl><w:tblPr><w:tblW w:w="10000" w:type="dxa"/>' + TBL + CMAR + '<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>' + RW.map(function(w) { return '<w:gridCol w:w="' + w + '"/>'; }).join('') + '</w:tblGrid>' + rows + '</w:tbl>');
 
-  b.push(para('2. Подробности', { style: 'Heading1' }));
+  b.push(para('2. Подробный разбор', { style: 'Heading1' }));
   state.obligations.forEach(function(o) {
-    b.push(para(o.id + '. ' + (o.aspect || 'Аспект не указан'), { style: 'Heading2' }));
+    b.push(para(o.id + '. ' + (o.operation || 'Операция не указана'), { style: 'Heading2' }));
+    b.push(para('Аспект: ' + (o.aspect || '-') + '. Воздействие: ' + (o.impact || '-') + '.', { after: 60 }));
+    if (o.rank) b.push(para('Ранг: ' + o.rank + '. Значимость: ' + o.significance + '.', { after: 60 }));
     b.push(para('Обязательство: ' + (o.requirement || '-') + '.', { after: 60 }));
     b.push(para('Источник: ' + (o.source || '-') + '.', { after: 60 }));
     b.push(para('Статус: ' + (o.status === 'yes' ? 'Выполняется' : o.status === 'partial' ? 'Выполняется частично' : o.status === 'no' ? 'Не выполняется' : o.status === 'unknown' ? 'Требует проверки' : 'Не определен') + '.', { after: 60 }));
@@ -699,7 +751,7 @@ function buildDoc() {
     b.push(para('Примечания: ' + (o.note || '-') + '.', { after: 60 }));
   });
 
-  b.push(para('Реестр обязательств составлен на основе значимых аспектов. Проверьте полноту и актуальность обязательств. В следующем уроке интегрируйте этот реестр в систему экологического менеджмента.', { i: true, color: '6B7280', sz: 20, before: 240 }));
+  b.push(para('Теперь вы дополнили шаблон реестра аспектов обязательствами. В шаблон внесли не просто название документа, а составили связь «требование → работа → действие → сведения для проверки». В следующем уроке разберете, что может помешать выполнить обязательства и какие возможности помогут улучшить работу.', { i: true, color: '6B7280', sz: 20, before: 240 }));
   b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
   return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>' + b.join('') + '</w:body></w:document>';
 }
