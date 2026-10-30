@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Практика: обязательства в СЭМ</title>
+<style>
+:root {
+  --bg: #ffffff;
+  --primary: #1e293b;
+  --muted: #64748b;
+  --border: #e2e8f0;
+  --gray-light: #f8fafc;
+  --accent: #2563eb;
+  --accent-dark: #1d4ed8;
+  --ok-bg: #f0fdf4;
+  --ok-border: #bbf7d0;
+  --ok-text: #166534;
+  --warn-bg: #fffbeb;
+  --warn-border: #fde68a;
+  --warn-text: #92400e;
+  --bad-bg: #fef2f2;
+  --bad-border: #fecaca;
+  --bad-text: #991b1b;
+  --info-bg: #eff6ff;
+  --info-border: #bfdbfe;
+  --info-text: #1e40af;
+  --radius: 12px;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0; padding: 20px; background: var(--bg);
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+  color: var(--primary); font-size: 15px; line-height: 1.6;
+}
+.container { max-width: 720px; margin: 0 auto; }
+.screen { display: none; animation: fadeIn .3s ease-out; }
+.screen.active { display: block; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
+h1 { font-size: 22px; font-weight: 800; margin: 0 0 8px; }
+h2 { font-size: 17px; font-weight: 700; margin: 18px 0 10px; }
+h3 { font-size: 15px; font-weight: 700; margin: 0 0 6px; }
+.lead { font-size: 14px; margin: 0 0 12px; line-height: 1.6; }
+.subtitle {
+  font-size: 13px; color: var(--muted); text-transform: uppercase;
+  letter-spacing: .5px; margin-bottom: 8px; font-weight: 700;
+}
+
+.note-box {
+  background: var(--gray-light); border: 1px solid var(--border);
+  border-left: 4px solid var(--muted); border-radius: 0 8px 8px 0;
+  padding: 10px 14px; font-size: 13px; color: var(--muted); margin: 10px 0;
+}
+.note-box.accent { border-left-color: var(--accent); color: var(--primary); }
+.warn-box {
+  background: var(--warn-bg); border-left: 3px solid var(--warn-border);
+  border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 13px;
+  color: var(--warn-text); margin: 10px 0; line-height: 1.5;
+}
+.info-box {
+  background: var(--info-bg); border-left: 3px solid var(--info-border);
+  border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 13px;
+  color: var(--info-text); margin: 10px 0; line-height: 1.5;
+}
+
+/* Переключатель режимов */
+.mode-bar { display: flex; gap: 8px; margin: 14px 0; flex-wrap: wrap; }
+.mode-btn {
+  flex: 1 1 200px; padding: 12px 14px; border: 2px solid var(--border); border-radius: 10px;
+  background: #fff; font-family: inherit; font-size: 14px; font-weight: 700; color: var(--muted);
+  cursor: pointer; transition: all .15s; text-align: center;
+}
+.mode-btn[aria-pressed="true"] { border-color: var(--accent); color: #fff; background: var(--accent); }
+.mode-btn:hover:not([aria-pressed="true"]) { border-color: var(--accent); color: var(--accent); }
+
+/* Ситуация */
+.situation-card {
+  border: 1px solid var(--border); border-radius: var(--radius);
+  padding: 14px 16px; background: #fff; margin: 12px 0;
+}
+.situation-label {
+  display: inline-block; font-size: 11px; font-weight: 800; letter-spacing: .4px;
+  text-transform: uppercase; color: var(--accent); background: var(--info-bg);
+  border: 1px solid var(--info-border); border-radius: 20px; padding: 3px 10px; margin-bottom: 8px;
+}
+.situation-text { font-size: 14px; line-height: 1.55; margin: 0 0 12px; }
+
+/* Варианты ответов */
+.options { display: flex; flex-direction: column; gap: 8px; margin: 10px 0; }
+.option-btn {
+  display: block; width: 100%; text-align: left;
+  border: 2px solid var(--border); border-radius: 10px;
+  background: #fff; padding: 12px 14px;
+  font-family: inherit; font-size: 14px; line-height: 1.5; color: var(--primary);
+  cursor: pointer; transition: all .15s;
+}
+.option-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--info-bg); }
+.option-btn.selected-correct { border-color: var(--ok-text); background: var(--ok-bg); }
+.option-btn.selected-wrong { border-color: var(--bad-text); background: var(--bad-bg); }
+.option-btn.dim { opacity: .55; }
+.option-btn:disabled { cursor: default; }
+
+/* Разбор */
+.feedback {
+  display: none; border-radius: 10px; padding: 12px 14px;
+  font-size: 13.5px; line-height: 1.55; margin: 10px 0;
+}
+.feedback.show { display: block; }
+.feedback.correct { background: var(--ok-bg); border: 1px solid var(--ok-border); color: var(--ok-text); }
+.feedback.wrong { background: var(--warn-bg); border: 1px solid var(--warn-bd); color: var(--warn-text); }
+.feedback strong { display: block; margin-bottom: 4px; }
+
+/* Последствия (управленческое мышление) */
+.consequence {
+  border: 1px solid var(--border); border-radius: 10px;
+  padding: 12px 14px; margin: 8px 0; background: #fff;
+  font-size: 13.5px; line-height: 1.55;
+}
+.consequence-title {
+  font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 6px;
+  display: flex; align-items: center; gap: 8px;
+}
+.consequence-title .tag {
+  font-size: 10px; font-weight: 800; letter-spacing: .4px;
+  text-transform: uppercase; padding: 2px 8px; border-radius: 20px; border: 1px solid;
+}
+.consequence-title .tag.good { background: var(--ok-bg); color: var(--ok-text); border-color: var(--ok-border); }
+.consequence-title .tag.bad { background: var(--bad-bg); color: var(--bad-text); border-color: var(--bad-border); }
+.consequence-title .tag.risk { background: var(--warn-bg); color: var(--warn-text); border-color: var(--warn-bd); }
+.consequence-text { color: var(--primary); margin: 0; }
+
+/* Ошибки */
+.mistake {
+  border: 1px solid var(--border); border-radius: 10px; background: #fff;
+  margin-bottom: 8px; overflow: hidden;
+}
+.mistake summary {
+  cursor: pointer; padding: 12px 14px; font-size: 14px; font-weight: 700;
+  list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 8px;
+}
+.mistake summary::-webkit-details-marker { display: none; }
+.mistake summary::after { content: "+"; color: var(--muted); font-weight: 800; font-size: 18px; }
+.mistake[open] summary::after { content: "−"; }
+.mistake[open] summary { background: var(--gray-light); border-bottom: 1px solid var(--border); }
+.mistake-body { padding: 12px 14px; font-size: 13px; }
+.mistake-body .problem { color: var(--bad-text); margin: 0 0 8px; }
+.mistake-body .solution { color: var(--ok-text); margin: 0; }
+
+/* Навигация */
+.nav-buttons { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
+.btn {
+  padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
+  cursor: pointer; border: none; font-family: inherit; transition: background .2s;
+}
+.btn-primary { background: var(--accent); color: #fff; }
+.btn-primary:hover { background: var(--accent-dark); }
+.btn-secondary { background: #fff; border: 2px solid var(--border); color: var(--primary); }
+.btn-secondary:hover { border-color: var(--accent); color: var(--accent); }
+.btn-big { width: 100%; padding: 14px; font-size: 15px; }
+button:focus-visible { outline: 3px solid var(--accent-dark); outline-offset: 2px; }
+
+.progress-line {
+  font-size: 12px; font-weight: 700; color: var(--accent-dark);
+  background: var(--info-bg); border: 1px solid var(--info-border);
+  border-radius: 20px; padding: 4px 12px; display: inline-block; margin-bottom: 8px;
+}
+
+@media (max-width: 560px) {
+  body { padding: 12px; }
+  h1 { font-size: 20px; }
+  .mode-bar { flex-direction: column; }
+  .mode-btn { width: 100%; }
+  .nav-buttons { flex-direction: column; }
+  .btn { width: 100%; }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- ИНТРО -->
+  <div id="screen-intro" class="screen active">
+    <h1>Обязательства в СЭМ: практика</h1>
+    <p class="lead">Разберитесь, что попадает в реестр обязательств и как правильно формулировать записи. Два режима: короткий тренажёр по ситуациям и разбор управленческого решения.</p>
+    <div class="note-box accent">
+      <strong>Правило.</strong> В реестр попадают только применимые требования и принятые обязательства. Название закона без конкретного норматива не даёт критерия проверки. Факт заключения договора без пункта о сроках и показателях тоже.
+    </div>
+    <div class="mode-bar" role="group" aria-label="Выбор режима">
+      <button class="mode-btn" aria-pressed="false" onclick="startPractice()">Обязательства (4 ситуации)</button>
+      <button class="mode-btn" aria-pressed="false" onclick="startManagement()">Управленческое мышление</button>
+    </div>
+  </div>
+
+  <!-- ПРАКТИКА -->
+  <div id="screen-practice" class="screen">
+    <div class="subtitle">Режим 1 из 2. Обязательства</div>
+    <h1>Определите тип обязательства и что зафиксировать</h1>
+    <p class="lead">Перед вами четыре ситуации. Для каждой выберите, обязательное это требование или добровольное, и что именно нужно записать в реестр.</p>
+    <div id="practiceBox"></div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="showScreen('screen-intro')">К выбору режимов</button>
+    </div>
+  </div>
+
+  <!-- УПРАВЛЕНЧЕСКОЕ МЫШЛЕНИЕ -->
+  <div id="screen-management" class="screen">
+    <div class="subtitle">Режим 2 из 2. Управленческое мышление</div>
+    <h1>Склад готовой продукции и новый заказчик</h1>
+    <p class="lead">Прочитайте ситуацию и выберите шаг. Ниже откроются последствия всех трёх вариантов, чтобы увидеть разницу между подходами.</p>
+    <div id="managementBox"></div>
+    <div class="nav-buttons">
+      <button class="btn btn-secondary" onclick="showScreen('screen-intro')">К выбору режимов</button>
+    </div>
+  </div>
+
+  <!-- ФИНАЛ -->
+  <div id="screen-final" class="screen">
+    <div class="subtitle">Частые ошибки при сборе обязательств</div>
+    <h1>Как не собрать бесполезный реестр</h1>
+    <div id="mistakesBox"></div>
+    <div class="note-box" style="margin-top:14px;">
+      Реестр обязательств это рабочий документ. Он должен показывать, что именно нужно проверить, кто отвечает и когда пересматривать. Назначьте ответственного за актуализацию и проверяйте реестр не реже раза в год.
+    </div>
+    <div class="nav-buttons">
+      <button class="btn btn-primary" onclick="showScreen('screen-intro')">К выбору режимов</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+/* ========== ДАННЫЕ ========== */
+var SITUATIONS = [
+  {
+    id: 1,
+    text: 'Для стекловаренной печи утвержден проект предельно допустимых выбросов. В нем указан норматив для оксидов азота.',
+    options: [
+      { t: 'Обязательное требование. Зафиксировать конкретный норматив из проекта ПДВ.', correct: true },
+      { t: 'Добровольное обязательство. Зафиксировать факт наличия проекта ПДВ.', correct: false },
+      { t: 'Обязательное требование. Зафиксировать название закона об охране атмосферного воздуха.', correct: false }
+    ],
+    explanation: 'Проект ПДВ это обязательное требование. Но в реестре нужен конкретный показатель, а не просто название документа. Иначе невозможно проверить выполнение.',
+    wrongHints: {
+      1: 'Факт наличия проекта ПДВ не дает критерия проверки. Нужен конкретный норматив.',
+      2: 'Название закона об охране атмосферного воздуха слишком общее. В реестр попадает конкретный норматив из проекта ПДВ, который применяется к вашей печи.'
+    }
+  },
+  {
+    id: 2,
+    text: 'Завод заключил договор с подрядчиком на вывоз отходов. В договоре есть пункт о передаче актов об утилизации в течение 5 дней.',
+    options: [
+      { t: 'Обязательное требование. Зафиксировать закон об отходах.', correct: false },
+      { t: 'Добровольное обязательство. Зафиксировать пункт договора о сроках передачи актов.', correct: true },
+      { t: 'Добровольное обязательство. Зафиксировать факт заключения договора.', correct: false }
+    ],
+    explanation: 'Договор с подрядчиком это добровольное обязательство. Вы сами согласились на эти условия. Факт заключения договора не дает критерия проверки. Нужен конкретный пункт и срок.',
+    wrongHints: {
+      0: 'Закон об отходах применим, но в этой ситуации важно зафиксировать именно договорное условие о сроках. Закон не устанавливает 5-дневный срок передачи актов.',
+      2: 'Факт заключения договора не дает критерия проверки. Нужен конкретный пункт о сроках передачи актов.'
+    }
+  },
+  {
+    id: 3,
+    text: 'Директор подписал корпоративную программу по снижению потребления воды на 10 процентов за три года.',
+    options: [
+      { t: 'Обязательное требование. Зафиксировать закон о водных ресурсах.', correct: false },
+      { t: 'Добровольное обязательство. Зафиксировать цель программы и срок достижения.', correct: true },
+      { t: 'Обязательное требование. Зафиксировать приказ директора.', correct: false }
+    ],
+    explanation: 'Корпоративная программа это добровольное обязательство. Закон не требует снижать воду на 10 процентов. Но раз программа принята, ее нужно выполнить. Зафиксируйте цель и срок.',
+    wrongHints: {
+      0: 'Закон о водных ресурсах применим, но в этой ситуации важно зафиксировать именно корпоративную цель. Закон не устанавливает снижение на 10 процентов.',
+      2: 'Приказ директора это документ, но в реестр попадает не факт приказа, а конкретная цель и срок из программы.'
+    }
+  },
+  {
+    id: 4,
+    text: 'Росприроднадзор выдал предписание устранить нарушение в накоплении отходов шихты в течение 3 месяцев.',
+    options: [
+      { t: 'Добровольное обязательство. Зафиксировать факт проверки.', correct: false },
+      { t: 'Обязательное требование. Зафиксировать конкретное действие и срок из предписания.', correct: true },
+      { t: 'Обязательное требование. Зафиксировать закон о защите прав юридических лиц.', correct: false }
+    ],
+    explanation: 'Предписание надзорного органа это обязательное требование. Оно имеет силу для организации. Факт проверки не требует действий. Требует действий конкретный пункт предписания.',
+    wrongHints: {
+      0: 'Факт проверки не требует действий. Требует действий конкретный пункт предписания с указанием, что устранить и в какой срок.',
+      2: 'Закон о защите прав юридических лиц регулирует процедуру проверки, но в реестр попадает конкретное действие и срок из предписания.'
+    }
+  }
+];
+
+var MANAGEMENT_CASE = {
+  context: 'Вы проводите аудит документов на складе готовой продукции. Вы обнаружили, что завод заключил новый крупный договор на поставку стекла. В разделе «Экологические условия» заказчик прописал требование: «Поставщик обязан отгружать продукцию только на поддонах, прошедших фитосанитарную обработку с маркировкой знака IPPC».',
+  conflict: 'Руководитель службы закупок заявляет вам: «Это обычный коммерческий договор поставки, экологическая служба тут ни при чем. Мы покупаем самые дешевые поддоны у местной пилорамы, у них нет никаких клейм, но стекло доезжает целым. Занимайся законами, а в наши контракты не лезь».',
+  options: [
+    {
+      id: 1,
+      t: 'Согласиться с руководителем закупок, исключить условия коммерческого договора из экологического реестра и контролировать только государственные штрафы.',
+      consequence: {
+        tag: 'Риск',
+        tagClass: 'risk',
+        text: 'Нарушен пункт 6.1.3 стандарта ИСО 14001. Добровольно принятые условия договоров СЭМ считает обязательными. Заказчик при первой проверке расторгнет контракт из-за невыполнения экологических требований, а внешний аудитор аннулирует сертификат завода.'
+      }
+    },
+    {
+      id: 2,
+      t: 'Зафиксировать официальное несоответствие СЭМ, остановить отгрузку продукции новому заказчику до момента закупки правильных поддонов.',
+      consequence: {
+        tag: 'Саботаж',
+        tagClass: 'bad',
+        text: 'Эколог заблокировал работу предприятия. Останавливать продажи завода из-за отсутствия документов на тару не входит в обязанности службы. Это вызывает жесткий саботаж со стороны коммерческой службы и подрывает доверие к СЭМ.'
+      }
+    },
+    {
+      id: 3,
+      t: 'Внести требование договора в реестр обязательств по соблюдению СЭМ. Провести совместное совещание с закупками и показать им финансовое последствие: если внешний аудит заказчика или таможенный контроль обнаружит отсутствие клейма IPPC на поддонах, контракт расторгнут, а завод получит иск за срыв поставок. Прописать в требованиях к закупкам обязательное наличие фитосанитарного сертификата на тару.',
+      consequence: {
+        tag: 'Верно',
+        tagClass: 'good',
+        text: 'Применена логика СЭМ для защиты бизнеса предприятия. Закупкам показано, что экологическое требование это не прихоть, а условие сохранения контракта. СЭМ переведен из разряда «борьбы за экологию» в инструмент экономической безопасности завода.'
+      }
+    }
+  ],
+  correct: 3
+};
+
+var MISTAKES = [
+  {
+    title: 'Собирать все законы подряд',
+    problem: 'Когда выписывают все природоохранные законы и подзаконные акты, реестр разрастается до сотен страниц. Итог: никто не может в нем разобраться, актуальность не отслеживается.',
+    solution: 'Решение: брать только применимые к аспектам и деятельности требования.'
+  },
+  {
+    title: 'Оставлять только названия законов',
+    problem: 'Когда пишут «соблюдать закон об охране атмосферного воздуха», это не дает критерия для проверки. Итог: невозможно оценить выполнение.',
+    solution: 'Решение: указывать конкретные пункты, нормативы и показатели.'
+  },
+  {
+    title: 'Забывать про добровольные обязательства',
+    problem: 'Когда собирают только государственные требования, нарушают условия договоров с заказчиками или внутренние корпоративные цели. Эколог считает, что все в порядке, а предприятие получает претензии.',
+    solution: 'Решение: проверять договоры, корпоративные стандарты и решения руководства.'
+  },
+  {
+    title: 'Не отслеживать изменения',
+    problem: 'Когда реестр собирают один раз и кладут в папку. Вышел новый норматив, изменился договор. Итог: работа по устаревшим требованиям, штрафы или претензии.',
+    solution: 'Решение: назначить ответственного за актуализацию и проверять реестр не реже раза в год.'
+  }
+];
+
+/* ========== СОСТОЯНИЕ ========== */
+var practiceState = { i: 0, answered: false, selected: null };
+var managementState = { selected: null };
+
+function resizeIframe() {
+  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') window.parentIFrame.size();
+}
+
+function showScreen(id) {
+  ['screen-intro', 'screen-practice', 'screen-management', 'screen-final'].forEach(function(s) {
+    document.getElementById(s).classList.remove('active');
+  });
+  document.getElementById(id).classList.add('active');
+  window.scrollTo({ top: 0, behavior: 'smooth' });
+  resizeIframe();
+}
+
+/* ========== ПРАКТИКА ========== */
+function startPractice() {
+  practiceState = { i: 0, answered: false, selected: null };
+  document.querySelectorAll('.mode-btn').forEach(function(b, idx) {
+    b.setAttribute('aria-pressed', idx === 0 ? 'true' : 'false');
+  });
+  renderPractice();
+  showScreen('screen-practice');
+}
+
+function renderPractice() {
+  var s = SITUATIONS[practiceState.i];
+  var box = document.getElementById('practiceBox');
+  var h = '<span class="progress-line">Ситуация ' + (practiceState.i + 1) + ' из ' + SITUATIONS.length + '</span>';
+  h += '<div class="situation-card">';
+  h += '<span class="situation-label">Ситуация ' + s.id + '</span>';
+  h += '<p class="situation-text">' + s.text + '</p>';
+  h += '<div class="options">';
+  s.options.forEach(function(opt, idx) {
+    var cls = 'option-btn';
+    if (practiceState.answered) {
+      if (practiceState.selected === idx) cls += opt.correct ? ' selected-correct' : ' selected-wrong';
+      else cls += ' dim';
+    }
+    h += '<button type="button" class="' + cls + '"' + (practiceState.answered ? ' disabled' : '') + ' onclick="selectOption(' + idx + ')">' + opt.t + '</button>';
+  });
+  h += '</div>';
+  if (practiceState.answered) {
+    var isCorrect = s.options[practiceState.selected].correct;
+    h += '<div class="feedback show ' + (isCorrect ? 'correct' : 'wrong') + '">';
+    h += '<strong>' + (isCorrect ? 'Верно' : 'Не совсем') + '</strong>';
+    if (isCorrect) {
+      h += s.explanation;
+    } else {
+      h += s.wrongHints[practiceState.selected] || 'Проверьте, что именно дает критерий для проверки выполнения.';
+    }
+    h += '</div>';
+  }
+  h += '</div>';
+  h += '<div class="nav-buttons">';
+  if (practiceState.answered) {
+    h += '<button class="btn btn-secondary" onclick="changeAnswer()">Изменить ответ</button>';
+    h += '<button class="btn btn-primary" onclick="nextSituation()">' + (practiceState.i < SITUATIONS.length - 1 ? 'Следующая ситуация' : 'К частым ошибкам') + '</button>';
+  }
+  h += '</div>';
+  box.innerHTML = h;
+  resizeIframe();
+}
+
+function selectOption(idx) {
+  if (practiceState.answered) return;
+  practiceState.answered = true;
+  practiceState.selected = idx;
+  renderPractice();
+}
+
+function changeAnswer() {
+  practiceState.answered = false;
+  practiceState.selected = null;
+  renderPractice();
+}
+
+function nextSituation() {
+  practiceState.i++;
+  if (practiceState.i >= SITUATIONS.length) {
+    renderMistakes();
+    showScreen('screen-final');
+  } else {
+    practiceState.answered = false;
+    practiceState.selected = null;
+    renderPractice();
+  }
+}
+
+/* ========== УПРАВЛЕНЧЕСКОЕ МЫШЛЕНИЕ ========== */
+function startManagement() {
+  managementState = { selected: null };
+  document.querySelectorAll('.mode-btn').forEach(function(b, idx) {
+    b.setAttribute('aria-pressed', idx === 1 ? 'true' : 'false');
+  });
+  renderManagement();
+  showScreen('screen-management');
+}
+
+function renderManagement() {
+  var c = MANAGEMENT_CASE;
+  var box = document.getElementById('managementBox');
+  var h = '<div class="situation-card">';
+  h += '<span class="situation-label">Контекст ситуации</span>';
+  h += '<p class="situation-text">' + c.context + '</p>';
+  h += '<div class="info-box"><strong>Конфликт.</strong> ' + c.conflict + '</div>';
+  h += '<h3>Выберите шаг</h3>';
+  h += '<div class="options">';
+  c.options.forEach(function(opt, idx) {
+    var cls = 'option-btn';
+    if (managementState.selected !== null) {
+      if (managementState.selected === idx) cls += opt.id === c.correct ? ' selected-correct' : ' selected-wrong';
+      else cls += ' dim';
+    }
+    h += '<button type="button" class="' + cls + '"' + (managementState.selected !== null ? ' disabled' : '') + ' onclick="selectManagement(' + opt.id + ')">' + opt.id + '. ' + opt.t + '</button>';
+  });
+  h += '</div>';
+  h += '</div>';
+  if (managementState.selected !== null) {
+    h += '<h2>Последствия каждого выбора</h2>';
+    c.options.forEach(function(opt) {
+      var cons = opt.consequence;
+      h += '<div class="consequence">';
+      h += '<div class="consequence-title"><span class="tag ' + cons.tagClass + '">' + cons.tag + '</span>Вариант ' + opt.id + '</div>';
+      h += '<p class="consequence-text">' + cons.text + '</p>';
+      h += '</div>';
+    });
+    h += '<div class="nav-buttons">';
+    h += '<button class="btn btn-primary" onclick="showScreen(\'screen-intro\')">К выбору режимов</button>';
+    h += '</div>';
+  }
+  box.innerHTML = h;
+  resizeIframe();
+}
+
+function selectManagement(id) {
+  managementState.selected = id;
+  renderManagement();
+}
+
+/* ========== ОШИБКИ ========== */
+function renderMistakes() {
+  var box = document.getElementById('mistakesBox');
+  var h = '';
+  MISTAKES.forEach(function(m, idx) {
+    h += '<details class="mistake"><summary>Ошибка ' + (idx + 1) + '. ' + m.title + '</summary><div class="mistake-body">';
+    h += '<p class="problem"><strong>К чему приводит.</strong> ' + m.problem + '</p>';
+    h += '<p class="solution"><strong>Решение.</strong> ' + m.solution + '</p>';
+    h += '</div></details>';
+  });
+  box.innerHTML = h;
+}
+
+/* ========== СТАРТ ========== */
+document.addEventListener('DOMContentLoaded', function() {
+  resizeIframe();
+  if ('ResizeObserver' in window) {
+    var ro = new ResizeObserver(function() { resizeIframe(); });
+    ro.observe(document.body);
+  }
+});
+window.addEventListener('load', function() { resizeIframe(); });
+</script>
+
+</body>
+</html>
