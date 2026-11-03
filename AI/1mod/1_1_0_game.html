@@ -39,7 +39,7 @@
     display:flex;align-items:center;justify-content:center;
     background:#f5f5f5;overflow:hidden;
   }
- #frame{
+  #frame{
     position:relative;
     width:100%;
     max-width:560px;
@@ -47,7 +47,7 @@
     background:var(--sky);
     margin:0 auto;
     overflow:hidden;
-}
+  }
   .screen{position:absolute;inset:0;display:none}
   .screen.active{display:block}
   .hidden{display:none!important}
@@ -483,9 +483,9 @@
         <div id="lamp"></div>
 
         <div class="reminder" id="reminder">Нажмите на мигающий стикер</div>
-        <button id="s1" class="sticker">Задача 1<small>Памятка</small></button>
-        <button id="s2" class="sticker locked">Задача 2<small>Презентация</small></button>
-        <button id="s3" class="sticker locked">Задача 3<small>Письмо</small></button>
+        <button id="s1" class="sticker">Задача 1<small>Промпт</small></button>
+        <button id="s2" class="sticker locked">Задача 2<small>Слайды</small></button>
+        <button id="s3" class="sticker locked">Задача 3<small>Проверка</small></button>
 
         <div id="ecologist">
           <div class="cap"></div>
@@ -566,20 +566,16 @@
 /* ================= РЕСАЙЗЕР ================= */
 const frame = document.getElementById('frame');
 
-// Функция изменения высоты фрейма в зависимости от активного экрана
-function fitFrame(){
-  // Убрали масштабирование - теперь фрейм просто занимает доступную ширину
-  if (window.parent !== window) {
-    window.parent.postMessage({ type: 'resize-frame', height: frame.offsetHeight }, '*');
+function setFrameHeight(screenId) {
+  if (screenId === 'screen-start') {
+    frame.style.height = '500px';
+  } else {
+    frame.style.height = '700px';
   }
 }
 
 function fitFrame() {
-  const s = Math.min(window.innerWidth / (frame.offsetWidth + 40),
-                     window.innerHeight / (frame.offsetHeight + 40));
-  frame.style.transform = 'scale(' + s + ')';
-
-  // Ресайзер для родительского окна (если интерактив встроен через iframe)
+  // Убрали масштабирование (transform: scale), теперь фрейм просто занимает доступную ширину
   if (window.parent !== window) {
     window.parent.postMessage({ type: 'resize-frame', height: frame.offsetHeight }, '*');
   }
@@ -790,8 +786,8 @@ mBtn.addEventListener('click', ()=>{
 
 /* ================= СТАРТОВЫЙ ДИАЛОГ ================= */
 const dialog = [
-  {who:'boss', name:'Начальник:', text:'Я решил установить контейнер по сбору батареек, это же модно сейчас.'},
-  {who:'boss', name:'Начальник:', text:'Утром в понедельник проведешь инструктаж работникам цеха. Подготовься.'},
+  {who:'boss', name:'Начальник:', text:'Заходи, присаживайся. Я решил установить контейнер по сбру батареек, это же модно сейчас.'},
+  {who:'boss', name:'Начальник:', text:'Утром в понедельник проведешь инструктаж работникам по сбору. Подготовься.'},
   {who:'boss', name:'Начальник:', text:'А, еще запроси у отделов данные по отходам за прошлый квартал.'},
   {who:'boss', name:'Начальник:', text:'Так что к 17:00 жду у себя готовые черновики. Должен успеть.'},
   {who:'eco',  name:'Эколог:',  text:'Понял. Памятка, презентация, письмо. Успею.'},
@@ -830,7 +826,7 @@ function startGame(){
   updateHUD();
   setWork('Рабочий стол',
     'Пятница, 16:00. Три задачи до 17:00. Нажмите на мигающий стикер.',
-    'Начните с задачи 1 — составьте памятку.',
+    'Начните с задачи 1 — соберите рабочий промпт.',
     'info');
   updateStickers();
 }
@@ -1463,6 +1459,7 @@ function showFinal(){
 
 /* ================= ПЕРЕЗАПУСК ================= */
 function resetGame(){
+  frame.style.height = '500px'; // Сброс высоты на стартовую
   state.time = 0;
   state.errors = 0;
   state.tasks = 0;
@@ -1504,14 +1501,11 @@ function resetGame(){
 document.getElementById('restartBtn').addEventListener('click', ()=>{
   initAudio();
   click();
-  function resetGame(){
-  // Сброс высоты на стартовую
-  frame.style.height = '500px';
-  // ... остальной код
+  resetGame();
 });
 
 /* ================= ИНИЦИАЛИЗАЦИЯ ================= */
-setFrameHeight('screen-start'); // Устанавливаем высоту для первого экрана при загрузке
+setFrameHeight('screen-start');
 updateHUD();
 updateStickers();
 fitFrame();
