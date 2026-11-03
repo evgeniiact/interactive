@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<title>Тренажер «Взгляд с высоты»</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, Segoe UI, Roboto, Arial, sans-serif;
+    background: #f4f4f4;
+    color: #222;
+    line-height: 1.5;
+    padding: 20px 10px;
+  }
+  .wrap {
+    max-width: 650px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 10px;
+    padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  h1 { font-size: 18px; margin-bottom: 12px; }
+  
+  .progress {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+  .progress-dot {
+    flex: 1;
+    height: 6px;
+    background: #e0e0e0;
+    border-radius: 3px;
+  }
+  .progress-dot.done { background: #2a6db5; }
+  
+  .map-container {
+    position: relative;
+    width: 100%;
+    border-radius: 6px;
+    overflow: hidden;
+    border: 1px solid #ddd;
+  }
+  .map-container img { width: 100%; display: block; }
+  
+  .zone {
+    position: absolute;
+    cursor: pointer;
+  }
+  .zone svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+  }
+  .zone polygon {
+    fill: transparent;
+    stroke: transparent;
+    stroke-width: 2;
+    transition: all 0.2s;
+  }
+  .zone:hover polygon {
+    fill: rgba(230, 57, 70, 0.15);
+    stroke: rgba(230, 57, 70, 0.6);
+  }
+  .zone.done polygon {
+    fill: rgba(42, 157, 143, 0.1);
+    stroke: rgba(42, 157, 143, 0.4);
+    cursor: default;
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+  .modal-overlay.active { display: flex; }
+  
+  .modal {
+    background: #fff;
+    border-radius: 8px;
+    max-width: 600px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 24px;
+    position: relative;
+    box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+  }
+  .modal-close {
+    position: absolute;
+    top: 12px; right: 12px;
+    width: 32px; height: 32px;
+    border: none;
+    background: #f0f0f0;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-close:hover { background: #e0e0e0; }
+  
+  .question-title { font-size: 16px; font-weight: bold; margin-bottom: 12px; color: #1a1a1a; }
+  .question-text { margin-bottom: 14px; font-size: 14px; }
+  
+  .options { display: flex; flex-direction: column; gap: 8px; margin-bottom: 14px; }
+  .option {
+    padding: 10px 12px;
+    background: #fff;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.15s;
+  }
+  .option:hover { background: #f0f6ff; border-color: #2a6db5; }
+  .option.correct { background: #e6f7f0; border-color: #2a9d8f; }
+  .option.wrong { background: #fdecea; border-color: #e63946; }
+  .option.disabled { cursor: default; }
+
+  .explanation {
+    padding: 12px;
+    background: #fff8e7;
+    border-left: 3px solid #f0a500;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  .explanation h3 { font-size: 14px; margin-bottom: 6px; color: #8a5a00; }
+  .explanation p { margin-bottom: 6px; }
+  .explanation ul { padding-left: 18px; margin-bottom: 6px; }
+  .explanation li { margin-bottom: 3px; font-size: 12px; }
+
+  .btn {
+    display: inline-block;
+    padding: 8px 16px;
+    background: #2a6db5;
+    color: #fff;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-size: 13px;
+    margin-top: 10px;
+  }
+  .btn:hover { background: #1f5490; }
+
+  .final {
+    padding: 14px;
+    background: #e6f7f0;
+    border-left: 3px solid #2a9d8f;
+    border-radius: 4px;
+    font-size: 13px;
+  }
+  .final h2 { font-size: 15px; color: #1a6b5a; margin-bottom: 8px; }
+  .final ul { padding-left: 18px; margin: 8px 0; }
+  .final li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <h1>Тренажер «Взгляд с высоты»</h1>
+
+  <div class="progress" id="progress">
+    <div class="progress-dot" data-i="0"></div>
+    <div class="progress-dot" data-i="1"></div>
+    <div class="progress-dot" data-i="2"></div>
+    <div class="progress-dot" data-i="3"></div>
+  </div>
+
+  <div class="map-container" id="map">
+    <img src="satellite-violations.jpg" alt="Снимок предприятия">
+    
+    <!-- Зона 0: Факел задымления -->
+    <div class="zone" data-point="0" style="left: 62%; top: 29%; width: 9%; height: 10%;">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polygon points="11,0 56,0 100,50 78,100 22,100 0,50"/>
+      </svg>
+    </div>
+    
+    <!-- Зона 1а: Верхний навал отходов -->
+    <div class="zone" data-point="1" style="left: 15%; top: 49%; width: 17%; height: 11%;">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polygon points="0,36 47,0 94,0 100,45 53,91 6,100"/>
+      </svg>
+    </div>
+    
+    <!-- Зона 1б: Нижний навал отходов -->
+    <div class="zone" data-point="1" style="left: 20%; top: 59%; width: 18%; height: 25%;">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polygon points="0,52 44,12 78,0 100,16 100,60 83,88 28,100 0,52"/>
+      </svg>
+    </div>
+    
+    <!-- Зона 2: Хозяйственные постройки в ВОЗ -->
+    <div class="zone" data-point="2" style="left: 14%; top: 76%; width: 11%; height: 13%;">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polygon points="0,8 55,0 91,46 100,85 27,100 0,62"/>
+      </svg>
+    </div>
+    
+    <!-- Зона 3: Радужная пленка -->
+    <div class="zone" data-point="3" style="left: 72%; top: 82%; width: 11%; height: 17%;">
+      <svg viewBox="0 0 100 100" preserveAspectRatio="none">
+        <polygon points="0,0 55,6 100,41 91,82 36,100 0,53"/>
+      </svg>
+    </div>
+  </div>
+
+</div>
+
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <button class="modal-close" onclick="closeModal()">&times;</button>
+    <div id="modalContent"></div>
+  </div>
+</div>
+
+<script>
+const pointsData = [
+  {
+    title: "Зона 1. Открытое сжигание отходов",
+    question: "Что увидит алгоритм на этом участке и как это повлияет на работу службы?",
+    options: [
+      { text: "Ничего серьезного: дрон просто зафиксирует картинку, а штраф выпишут только если инспектор приедет лично.", correct: false },
+      { text: "Алгоритм распознает термическую аномалию и очаг горения. Снимок станет самостоятельным основанием для внеплановой проверки, инспектор приедет уже с готовым делом.", correct: true },
+      { text: "Это внутренний вопрос предприятия: пока нет жалобы от соседей, регулятор не вмешается.", correct: false },
+      { text: "Дрон пришлет предостережение, и у компании будет месяц на устранение без последствий.", correct: false }
+    ],
+    explanation: {
+      status: "Алгоритм считывает термическую аномалию и очаг горения на открытой площадке. Снимок с координатами и временем уходит в единый реестр контрольных мероприятий. Инспектор получает готовое основание для внеплановой проверки без уведомления компании.",
+      risks: "Параллельно с проверкой запускается расчет вреда окружающей среде от горения отходов. Сумма может многократно превысить административный штраф. Ответственность несет предприятие, а не подрядчик, если договор не закрывает этот риск.",
+      actions: [
+        "Внедрите ежедневный визуальный осмотр площадок хранения отходов с фотофиксацией",
+        "Назначьте ответственного за состояние открытых территорий в программе производственного контроля",
+        "При возгорании ликвидируйте очаг, зафиксируйте тушение на фото с геопривязкой и временем",
+        "Соберите защитную папку: акт о ликвидации, журнал учета отходов, регламент площадки"
+      ]
+    }
+  },
+  {
+    title: "Зона 2. Навалы отходов на открытой почве",
+    question: "Как регулятор расценит эти навалы и что это значит для эколога?",
+    options: [
+      { text: "Отходы на грунте не считаются нарушением, если они временно размещены до вывоза.", correct: false },
+      { text: "Алгоритм распознает размещение отходов на открытой почве и несанкционированную свалку у воды. Это самостоятельное основание для внеплановой проверки и расчета вреда.", correct: true },
+      { text: "Нарушение зафиксируют только после жалобы жителей или предписания администрации.", correct: false },
+      { text: "Дрон не различает отходы от грунта, поэтому такая ситуация не попадает в поле контроля.", correct: false }
+    ],
+    explanation: {
+      status: "Алгоритм выделяет участки с навалами отходов на открытой почве, в том числе вблизи водного объекта. Для регулятора это признак несанкционированного размещения отходов. Снимок уходит в реестр как основание для проверки.",
+      risks: "Расчет вреда за размещение отходов на почве и риск загрязнения водного объекта. Сумма растет с каждым днем размещения. Инспектор вправе проверить всю цепочку движения отходов: от образования до передачи подрядчику.",
+      actions: [
+        "Оборудуйте площадки хранения отходов твердым покрытием и ограждением",
+        "Проверьте договоры с подрядчиками: пропишите сроки вывоза и ответственность за разлет",
+        "Включите осмотр площадок хранения в маршрут ежедневного обхода",
+        "Соберите защитную папку: акты передачи отходов, талоны, журнал учета, схему площадок"
+      ]
+    }
+  },
+  {
+    title: "Зона 3. Постройки в прибрежной полосе",
+    question: "Чем грозит размещение построек у воды и как это связано с работой службы?",
+    options: [
+      { text: "Нарушение есть только если постройки сбрасывают в воду неочищенные стоки.", correct: false },
+      { text: "Размещение хозяйственных построек в прибрежной полосе без согласования — нарушение специального режима. Снимок становится основанием для проверки и предписания о сносе или выносе.", correct: true },
+      { text: "Если постройки стоят давно и никто не жаловался, регулятор не обратит внимания.", correct: false },
+      { text: "Нарушение фиксируется только для капитальных строений свыше 20 квадратных метров.", correct: false }
+    ],
+    explanation: {
+      status: "Алгоритм фиксирует хозяйственные постройки в пределах прибрежной защитной полосы. Размещение объектов без согласования — нарушение специального режима использования прибрежной полосы. Снимок уходит в реестр как основание для проверки.",
+      risks: "Предписание о сносе или выносе построек за счет предприятия. Штраф за нарушение режима прибрежной полосы. Если постройки используются для хранения ГСМ или отходов, риск загрязнения воды добавляет расчет вреда водному объекту.",
+      actions: [
+        "Проверьте границы прибрежной защитной полосы на вашем участке",
+        "Согласуйте размещение построек или организуйте их вынос за пределы прибрежной полосы",
+        "Если вынос невозможен в короткий срок, подготовьте документальное обоснование: разрешения, проект, график работ",
+        "Включите проверку прибрежной полосы в программу производственного контроля"
+      ]
+    }
+  },
+  {
+    title: "Зона 4. Радужная пленка на воде",
+    question: "Что означает пленка на воде для предприятия и какие процессы нужно выстроить?",
+    options: [
+      { text: "Пленка не считается нарушением до получения протокола аккредитованной лаборатории.", correct: false },
+      { text: "Визуальный признак загрязнения водного объекта. Основание для внеплановой проверки и расчета вреда, который может многократно превысить штраф.", correct: true },
+      { text: "Штраф последует только если площадь пленки превышает установленный порог.", correct: false },
+      { text: "БПЛА не способен зафиксировать пленку на воде из-за бликов и отражений.", correct: false }
+    ],
+    explanation: {
+      status: "Алгоритм распознает радужную пленку как визуальный признак загрязнения водного объекта. Разлив нефтепродуктов входит в перечень признаков, которые фиксируются дистанционно. Снимок становится основанием для проверки.",
+      risks: "Расчет вреда водному объекту ведется по методике регулятора и часто многократно превышает административный штраф. Параллельно проверяют герметичность выпусков, корректность отчетности по сбросам, работу очистных сооружений.",
+      actions: [
+        "Выставьте боновые заграждения вдоль береговой линии",
+        "Отберите параллельные пробы в аккредитованной лаборатории, сохраните цепочку custody",
+        "Проверьте герметичность выпусков и трубопроводов, зафиксируйте результаты",
+        "Соберите защитную папку: акты отбора проб, протоколы анализов, схему выпусков, договор с лабораторией"
+      ]
+    }
+  }
+];
+
+const state = { answered: [false,false,false,false], current: null };
+
+function updateProgress() {
+  const dots = document.querySelectorAll('.progress-dot');
+  dots.forEach((d, i) => {
+    d.classList.remove('done');
+    if (state.answered[i]) d.classList.add('done');
+  });
+  document.querySelectorAll('.zone').forEach(p => {
+    const i = +p.dataset.point;
+    if (state.answered[i]) p.classList.add('done');
+  });
+}
+
+function openModal(idx) {
+  if (state.answered[idx]) return;
+  state.current = idx;
+  const data = pointsData[idx];
+  const content = document.getElementById('modalContent');
+  
+  let html = `<div class="question-title">${data.title}</div>`;
+  html += `<div class="question-text">${data.question}</div>`;
+  html += `<div class="options">`;
+  data.options.forEach((opt, i) => {
+    html += `<div class="option" data-idx="${i}">${opt.text}</div>`;
+  });
+  html += `</div><div id="explBox"></div>`;
+  
+  content.innerHTML = html;
+  document.getElementById('modal').classList.add('active');
+  
+  content.querySelectorAll('.option').forEach(el => {
+    el.addEventListener('click', () => handleAnswer(idx, +el.dataset.idx));
+  });
+}
+
+function handleAnswer(qIdx, optIdx) {
+  if (state.answered[qIdx]) return;
+  const data = pointsData[qIdx];
+  const correct = data.options[optIdx].correct;
+  const opts = document.querySelectorAll('.option');
+  opts.forEach((el, i) => {
+    el.classList.add('disabled');
+    if (data.options[i].correct) el.classList.add('correct');
+    if (i === optIdx && !correct) el.classList.add('wrong');
+  });
+
+  const d = data.explanation;
+  const expl = document.getElementById('explBox');
+  expl.innerHTML = `
+    <div class="explanation">
+      <h3>Разбор ситуации</h3>
+      <p><b>Что видит алгоритм.</b> ${d.status}</p>
+      <p><b>Риски для предприятия.</b> ${d.risks}</p>
+      <p><b>Что сделать службе.</b></p>
+      <ul>${d.actions.map(a=>`<li>${a}</li>`).join('')}</ul>
+      <button class="btn" id="nextBtn">${qIdx < 3 ? 'Следующая зона' : 'Итог'}</button>
+    </div>`;
+  
+  document.getElementById('nextBtn').addEventListener('click', () => {
+    state.answered[qIdx] = true;
+    closeModal();
+    updateProgress();
+    if (state.answered.every(a=>a)) showFinal();
+  });
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('active');
+}
+
+function showFinal() {
+  const content = document.getElementById('modalContent');
+  content.innerHTML = `
+    <div class="final">
+      <h2>Итог тренажера</h2>
+      <p>Вы разобрали четыре признака, которые алгоритмы считывают со снимков. Каждый из них запускает внеплановую проверку без уведомления компании.</p>
+      <p><b>Ключевой вывод.</b> Снимок — не штраф, а спусковой крючок. У предприятия есть шанс подготовиться, если оно заранее видит свои уязвимые места.</p>
+      <p><b>Что внедрить в работу службы.</b></p>
+      <ul>
+        <li>Закажите собственную аэросъемку или разберите спутниковые снимки высокого разрешения</li>
+        <li>Наложите на изображение границы участка, водоохранных зон и санитарно-защитной зоны</li>
+        <li>Введите регламент воздушного самообследования: кто, как часто и какими средствами проверяет территорию</li>
+        <li>Назначьте ответственного за воздушный мониторинг и включите его в программу производственного контроля</li>
+        <li>Соберите защитную папку по каждой контрольной точке: акты, фото с геопривязкой, протоколы, договоры</li>
+      </ul>
+      <p>Регламент не защитит от штрафа напрямую, но докажет добросовестность компании, если дело дойдет до суда. Суды учитывают, принимало ли предприятие меры для соблюдения требований.</p>
+      <button class="btn" onclick="closeModal()">Закрыть</button>
+    </div>`;
+  document.getElementById('modal').classList.add('active');
+}
+
+document.querySelectorAll('.zone').forEach(p => {
+  p.addEventListener('click', () => openModal(+p.dataset.point));
+});
+
+document.getElementById('modal').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+updateProgress();
+</script>
+</body>
+</html>
