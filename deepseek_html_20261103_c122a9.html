@@ -1,0 +1,1500 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Эколог против рутины — Dendy‑тренажер</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
+
+  :root{
+    --ink:#101010;
+    --paper:#ffffff;
+    --cream:#fff8e0;
+    --sky:#9fd9ff;
+    --sky2:#c9f2ff;
+    --grass:#63b034;
+    --grass2:#8fdb5d;
+    --yellow:#ffd838;
+    --green:#d9ffd8;
+    --green-d:#1f7a1f;
+    --blue:#2f6fd8;
+    --red:#e83838;
+    --panel:#fffaf0;
+    --sky-tone:#9fd9ff;
+    --sky-tone-2:#c9f2ff;
+    --grass-tone:#63b034;
+    --grass-tone-2:#8fdb5d;
+  }
+
+  *{box-sizing:border-box;image-rendering:pixelated}
+  html,body{
+    width:100%;height:100%;margin:0;overflow:hidden;
+    font-family:'VT323','Courier New',monospace;
+    background:#f5f5f5;color:var(--ink);user-select:none;
+  }
+  button{font-family:inherit}
+  #stage{
+    position:fixed;inset:0;
+    display:flex;align-items:center;justify-content:center;
+    background:#f5f5f5;overflow:hidden;
+  }
+  #frame{
+    position:relative;
+    width:560px;height:700px;
+    background:var(--sky);
+    border:4px solid #e2e2e2;
+    box-shadow:0 0 0 2px #fff,12px 12px 0 rgba(0,0,0,.08);
+    transform-origin:center center;
+    overflow:hidden;
+    transition:width .18s ease,height .18s ease;
+  }
+  .screen{position:absolute;inset:0;display:none}
+  .screen.active{display:block}
+  .hidden{display:none!important}
+
+  .pixel-btn{
+    font-size:16px;line-height:1.2;color:#123212;
+    background:var(--green);border:2px solid #000;
+    box-shadow:2px 2px 0 #000;cursor:pointer;padding:6px 8px;
+    transition:transform .08s ease;
+  }
+  .pixel-btn:hover:not(:disabled){background:#c8ffc0}
+  .pixel-btn:active:not(:disabled){transform:translate(2px,2px);box-shadow:none}
+  .pixel-btn:disabled{opacity:.45;cursor:default}
+  .pixel-btn.selected{background:var(--yellow)}
+  .pixel-btn.primary{background:var(--yellow);color:#4a3000;font-size:19px}
+  .pixel-btn.primary:hover:not(:disabled){background:#ffe680}
+
+  /* ---------- START ---------- */
+  #screen-start{
+    background:linear-gradient(180deg,var(--sky-tone) 0%,var(--sky-tone-2) 66%,var(--grass-tone-2) 66%,var(--grass-tone) 100%);
+  }
+  .cloud{position:absolute;background:#fff;
+    box-shadow:6px -4px 0 #fff,14px 0 0 #fff,4px 4px 0 rgba(255,255,255,.9);
+    animation:drift 28s linear infinite}
+  .cloud-1{width:20px;height:7px;left:40px;top:38px}
+  .cloud-2{width:24px;height:8px;left:300px;top:24px;animation-duration:36s;animation-delay:-12s}
+  .cloud-3{width:16px;height:6px;left:470px;top:64px;animation-duration:32s;animation-delay:-20s}
+  @keyframes drift{0%{transform:translateX(0)}100%{transform:translateX(-90px)}}
+
+  .start-head{
+    position:absolute;left:14px;right:14px;top:14px;z-index:8;
+    background:rgba(255,255,255,.97);
+    border:3px solid #000;box-shadow:4px 4px 0 rgba(0,0,0,.22);
+    padding:10px 12px;
+  }
+  .start-head h1{margin:0 0 6px;font-size:22px;line-height:1.15;color:#173d8d}
+  .start-head p{margin:0;font-size:15px;line-height:1.3}
+
+  .start-scene{position:absolute;left:0;right:0;bottom:0;height:250px;pointer-events:none}
+  .ground{position:absolute;left:0;right:0;bottom:0;height:44px;
+    background:var(--grass-tone);border-top:3px solid #000;
+    box-shadow:inset 0 6px 0 var(--grass-tone-2)}
+  .ground::after{content:'';position:absolute;inset:0;
+    background:repeating-linear-gradient(90deg,transparent 0 10px,rgba(0,0,0,.12) 10px 12px)}
+
+  .sprite{position:absolute;bottom:44px;width:34px;height:62px}
+  .sprite.eco{left:150px;animation:bob 1.6s steps(2) infinite}
+  .sprite.boss{left:390px;animation:bob 1.4s steps(2) infinite .2s}
+  @keyframes bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-2px)}}
+  .sprite::before,.sprite::after{content:'';position:absolute;border:2px solid #000}
+  .sprite.eco::before{left:6px;top:0;width:20px;height:20px;background:#f2c293;
+    box-shadow:inset 0 -7px 0 #6b4a2f}
+  .sprite.eco::after{left:3px;top:22px;width:28px;height:38px;background:#2f5fd8;
+    box-shadow:inset 7px 0 0 #d8d8d8,inset 0 9px 0 #f8f8f8}
+  .sprite.boss::before{left:6px;top:0;width:20px;height:20px;background:#f2c293;
+    box-shadow:inset 0 6px 0 #3a3a3a}
+  .sprite.boss::after{left:3px;top:22px;width:28px;height:38px;background:#5d6470;
+    box-shadow:inset 6px 0 0 #d8d8d8,inset 12px 8px 0 #c02020}
+
+  .name-label{
+    position:absolute;bottom:108px;z-index:11;
+    font-size:11px;background:#fff;border:2px solid #000;
+    padding:1px 6px;color:#173d8d;text-align:center;min-width:72px;
+    white-space:nowrap;
+  }
+  .eco-label{left:131px;}
+  .boss-label{left:371px;}
+
+  .bubble{
+    position:absolute;z-index:9;max-width:250px;
+    background:#fff;border:3px solid #000;padding:8px 10px;
+    font-size:15px;line-height:1.3;box-shadow:3px 3px 0 rgba(0,0,0,.22);
+    opacity:0;transition:opacity .2s ease;
+  }
+  .bubble.show{opacity:1}
+  .bubble .who{display:block;font-size:13px;color:#173d8d;margin-bottom:2px}
+  .bubble.eco{left:14px;bottom:196px}
+  .bubble.boss{right:14px;bottom:150px}
+
+  .start-controls{
+    position:absolute;left:14px;right:14px;bottom:14px;z-index:12;
+    display:flex;gap:8px;justify-content:center;
+  }
+  .start-controls .pixel-btn{flex:1;max-width:260px}
+
+  /* ---------- GAME ---------- */
+  #screen-game{background:#f5f5f5}
+  #topbar{
+    height:56px;display:flex;justify-content:space-between;align-items:center;
+    padding:5px 8px;background:var(--panel);border-bottom:3px solid #000;
+  }
+  .hud{display:flex;align-items:center;gap:8px}
+  .hud.right{flex-direction:column;align-items:flex-end;gap:2px}
+  .clock{width:38px;height:38px;border-radius:50%;border:3px solid #000;
+    background:#fff;position:relative;flex:0 0 auto}
+  .hand{position:absolute;left:50%;bottom:50%;transform-origin:50% 100%;background:#000}
+  .hand.h{width:3px;height:10px;margin-left:-1.5px}
+  .hand.m{width:2px;height:14px;margin-left:-1px;background:var(--red)}
+  .digital{font-size:20px;color:#173d8d;line-height:1}
+  .sub{font-size:12px;color:#7a4a00}
+  .label{font-size:11px;color:#5a4a00}
+  .cells{display:flex;gap:2px}
+  .cell{width:10px;height:10px;border:2px solid #000;background:#e8e0c8;
+    transition:background .25s ease}
+  .cell.fill{background:#48c838;box-shadow:inset -2px -2px 0 rgba(0,0,0,.18)}
+  .err{font-size:11px;color:#a02020}
+  .penalty{
+    position:absolute;right:8px;top:56px;z-index:30;
+    font-size:14px;color:var(--red);font-weight:bold;
+    background:#fff;border:2px solid #000;padding:2px 6px;
+    opacity:0;transform:translateY(-6px);transition:opacity .2s,transform .2s;
+  }
+  .penalty.show{opacity:1;transform:translateY(0)}
+
+  #office{
+    height:210px;position:relative;overflow:hidden;
+    background:linear-gradient(180deg,var(--sky-tone) 0%,var(--sky-tone-2) 78%,var(--grass-tone-2) 78%,var(--grass-tone) 100%);
+    border-bottom:3px solid #000;
+    transition:background 1.2s ease;
+  }
+  .office-cloud{position:absolute;background:#fff;
+    box-shadow:5px -3px 0 #fff,10px 0 0 #fff;
+    animation:drift 24s linear infinite}
+  .office-cloud.c1{width:16px;height:5px;left:26px;top:14px;animation-duration:28s}
+  .office-cloud.c2{width:18px;height:6px;left:400px;top:10px;animation-duration:32s;animation-delay:-10s}
+  .office-cloud.c3{width:14px;height:5px;left:220px;top:8px;animation-duration:26s;animation-delay:-16s}
+
+  .window-frame{
+    position:absolute;left:16px;top:14px;width:64px;height:54px;
+    background:var(--sky-tone);border:4px solid #4c3d2f;overflow:hidden;
+    transition:background 1.2s ease;
+  }
+  .window-frame::before{content:'';position:absolute;left:50%;top:0;bottom:0;width:2px;
+    background:#4c3d2f;transform:translateX(-50%)}
+  .window-frame::after{content:'';position:absolute;top:50%;left:0;right:0;height:2px;
+    background:#4c3d2f;transform:translateY(-50%)}
+  .moon{position:absolute;right:6px;top:6px;width:14px;height:14px;
+    background:#fff8c8;border-radius:50%;
+    box-shadow:0 0 0 2px rgba(255,248,200,.3);
+    opacity:0;transition:opacity 1.2s ease}
+  .moon.show{opacity:1}
+  .star{position:absolute;width:2px;height:2px;background:#fff;
+    opacity:0;transition:opacity 1.2s ease;animation:twinkle 2s steps(2) infinite}
+  .star.show{opacity:1}
+  .star-1{left:10px;top:8px}
+  .star-2{left:26px;top:20px;animation-delay:.5s}
+  .star-3{left:44px;top:6px;animation-delay:1s}
+  @keyframes twinkle{0%,100%{opacity:1}50%{opacity:.3}}
+
+  .monitor-big{
+    position:absolute;left:50%;top:14px;transform:translateX(-50%);
+    width:210px;height:108px;background:#f8f8f8;
+    border:3px solid #000;box-shadow:0 6px 0 rgba(0,0,0,.18);
+  }
+  .monitor-big .scr{position:absolute;inset:6px;background:#eaffe8;
+    border:2px solid #000;overflow:hidden}
+  .monitor-big .scr::after{content:'';position:absolute;inset:0;
+    background:repeating-linear-gradient(rgba(255,255,255,.22) 0 2px,transparent 2px 4px);
+    pointer-events:none}
+  .ln{height:5px;margin:6px 6px 0;background:#2f8f2f;opacity:.75}
+  .ln:nth-child(1){width:72%}.ln:nth-child(2){width:86%}
+  .ln:nth-child(3){width:56%}.ln:nth-child(4){width:74%}
+
+  #ecologist{
+    position:absolute;left:50%;bottom:2px;transform:translateX(-50%);
+    width:104px;z-index:6;
+  }
+  .cap{width:26px;height:9px;margin:0 auto;background:#28a828;
+    border:2px solid #000;position:relative;z-index:5;
+    box-shadow:inset 0 -3px 0 #187818}
+  .head{width:24px;height:17px;margin:-3px auto 0;background:#f2c293;
+    border:2px solid #000;position:relative;z-index:4;
+    animation:headBob 1.05s steps(2) infinite}
+  .body{width:66px;height:26px;margin:-2px auto 0;background:#2f5fd8;
+    border:2px solid #000;position:relative;z-index:3;
+    box-shadow:inset 0 8px 0 #f8f8f8}
+  .arm{position:absolute;top:34px;width:6px;height:14px;background:#f2c293;
+    border:2px solid #000;z-index:4;animation:typeHands .42s steps(2) infinite}
+  .arm-l{left:17px;transform:rotate(16deg)}
+  .arm-r{right:17px;transform:rotate(-16deg);animation-delay:.16s}
+  .keyboard{width:86px;height:8px;margin:2px auto 0;background:#d8d8d8;
+    border:2px solid #000;position:relative;z-index:2}
+  @keyframes headBob{0%,100%{transform:translateY(0)}50%{transform:translateY(1px)}}
+  @keyframes typeHands{0%{transform:translateY(0)}50%{transform:translateY(2px)}100%{transform:translateY(0)}}
+
+  #lamp{position:absolute;left:50%;top:0;transform:translateX(-50%);
+    width:0;height:0;border-left:70px solid transparent;border-right:70px solid transparent;
+    border-top:150px solid rgba(255,230,128,.28);
+    opacity:0;transition:opacity 1.2s ease;z-index:1;pointer-events:none}
+  #lamp.show{opacity:1}
+
+  .sticker{
+    position:absolute;width:62px;height:56px;padding:3px;
+    font-size:10px;line-height:1.15;text-align:left;color:#3a2800;
+    background:var(--yellow);border:3px solid #000;
+    box-shadow:inset -3px -3px 0 rgba(0,0,0,.16),2px 2px 0 rgba(0,0,0,.22);
+    cursor:pointer;z-index:8;transition:opacity .22s ease;
+  }
+  .sticker small{display:block;margin-top:2px;font-size:9px;color:#5a4000}
+  .sticker.locked{filter:grayscale(.9) brightness(.82);cursor:not-allowed}
+  .sticker.active{animation:stickerBlink .72s steps(2) infinite;z-index:10}
+  .sticker.gone{opacity:0;pointer-events:none}
+  @keyframes stickerBlink{
+    0%,100%{filter:brightness(1)}
+    50%{filter:brightness(1.2);box-shadow:0 0 0 3px #fff,2px 2px 0 rgba(0,0,0,.22)}
+  }
+  #s1{left:14px;top:26px;transform:rotate(-4deg)}
+  #s2{right:14px;top:26px;transform:rotate(3deg)}
+  #s3{right:14px;top:96px;transform:rotate(-3deg)}
+
+  .reminder{
+    position:absolute;left:50%;top:2px;transform:translateX(-50%);z-index:9;
+    padding:4px 6px;background:#fff;color:#101010;border:2px solid #000;
+    font-size:12px;line-height:1.2;box-shadow:2px 2px 0 rgba(0,0,0,.18);
+    animation:bounceY .8s steps(2) infinite;white-space:nowrap;
+  }
+  .reminder::after{content:'';position:absolute;left:50%;bottom:-7px;
+    width:5px;height:5px;background:#fff;border-right:2px solid #000;
+    border-bottom:2px solid #000;transform:translateX(-50%) rotate(45deg)}
+  @keyframes bounceY{0%,100%{transform:translateX(-50%) translateY(0)}
+    50%{transform:translateX(-50%) translateY(-2px)}}
+
+  #work{
+    margin:6px;padding:8px;position:relative;
+    background:#fff;border:3px solid #000;
+    box-shadow:inset 0 0 0 2px #fff,3px 3px 0 rgba(0,0,0,.18);
+    min-height:300px;max-height:360px;
+    display:flex;flex-direction:column;
+  }
+  #work.flash-err{animation:fErr .38s steps(2)}
+  #work.flash-ok{animation:fOk .42s steps(2)}
+  @keyframes fErr{0%{background:#fff}50%{background:#ffe0d8;border-color:var(--red)}100%{background:#fff}}
+  @keyframes fOk{0%{background:#fff}50%{background:#e8ffd8;border-color:#28a828}100%{background:#fff}}
+
+  .wtitle{font-size:16px;color:#173d8d;margin-bottom:4px;line-height:1.2}
+  .wtext{font-size:14px;line-height:1.3;margin-bottom:5px}
+  .wstatus{min-height:20px;font-size:13px;line-height:1.25;margin-bottom:5px}
+  .wstatus.info{color:#1c47a0}
+  .wstatus.error{color:#c02020}
+  .wstatus.success{color:#187818}
+  .wscroll{
+    flex:1;overflow-y:auto;overflow-x:hidden;
+    display:flex;flex-direction:column;gap:5px;
+    padding-right:2px;
+  }
+  .wscroll::-webkit-scrollbar{width:8px}
+  .wscroll::-webkit-scrollbar-thumb{background:#2f6fd8;border:2px solid #000}
+
+  .choice-btn{display:block;width:100%;text-align:left;
+    font-size:13px;line-height:1.25;padding:6px;min-height:26px}
+
+  .dots{display:flex;gap:3px;margin-bottom:4px}
+  .dot{width:10px;height:10px;border:2px solid #000;background:#f8e8b0}
+  .dot.done{background:#48c838}
+  .dot.current{background:var(--yellow);animation:pulse .8s steps(2) infinite}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(255,216,56,.6)}
+    50%{box-shadow:0 0 0 3px rgba(255,216,56,0)}}
+
+  .pb-badges{display:flex;flex-wrap:wrap;gap:3px;margin-bottom:4px}
+  .pb-badge{font-size:10px;padding:2px 4px;background:#e0e0e0;border:2px solid #000;color:#555;white-space:nowrap}
+  .pb-badge.on{background:#d9ffd8;border-color:var(--green-d);color:var(--green-d)}
+  .pb-badge.cur{background:var(--yellow);color:#4a3000}
+
+  .prompt-live{
+    margin-top:4px;padding:6px;font-size:12px;line-height:1.35;
+    background:#f0f8ff;border:2px dashed var(--blue);
+    min-height:48px;white-space:pre-wrap;color:#0b2b57;
+  }
+  .prompt-live .ph{color:#8aa4c8}
+
+  .chat{border:2px solid #000;background:#fff;margin-top:4px;overflow:hidden}
+  .chat-head{display:flex;align-items:center;gap:6px;padding:4px 6px;
+    background:#e8f2ff;border-bottom:2px solid #000;font-size:12px;color:#173d8d}
+  .chat-dot{width:8px;height:8px;border-radius:50%;background:#48c838;border:2px solid #000}
+  .chat-body{padding:6px;font-size:12px;line-height:1.4;white-space:pre-wrap;
+    max-height:170px;overflow-y:auto}
+  .chat-body .you{color:#173d8d}
+  .chat-body .ai{color:#1f5a1f}
+
+  #overlay{position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.35);z-index:80}
+  #overlay.active{display:flex}
+  .modal{width:88%;max-width:460px;padding:12px;background:#fff;
+    border:3px solid var(--blue);box-shadow:5px 5px 0 rgba(0,0,0,.22);
+    animation:pop .28s steps(3)}
+  @keyframes pop{0%{transform:scale(.75)}100%{transform:scale(1)}}
+  .modal .mtitle{font-size:18px;color:#173d8d;margin-bottom:6px;line-height:1.25}
+  .modal .mtext{font-size:14px;line-height:1.35;margin-bottom:8px}
+  .modal .mresult{padding:7px 8px;background:#f0fff0;
+    border:2px solid var(--green-d);font-size:13px;line-height:1.35;margin-bottom:8px}
+  .modal .mresult.funny{background:#fff8e0;border-color:#c89800;font-style:italic}
+  .modal .mresult b{color:var(--green-d)}
+  .modal .actions{display:flex;gap:6px;flex-wrap:wrap}
+  .modal .actions .pixel-btn{flex:1;font-size:14px;min-width:120px}
+
+  #osBox,#sofaBox{
+    position:absolute;inset:0;display:none;align-items:center;justify-content:center;
+    background:rgba(0,0,0,.35);z-index:75;
+  }
+  #osBox.active,#sofaBox.active{display:flex}
+  .os-window{
+    width:92%;max-width:440px;background:#c0c0c0;
+    border:3px solid #000;box-shadow:4px 4px 0 rgba(0,0,0,.35);
+    animation:osIn .25s steps(3);
+  }
+  @keyframes osIn{0%{transform:scale(.6)}100%{transform:scale(1)}}
+  .os-titlebar{
+    display:flex;justify-content:space-between;align-items:center;
+    background:#000080;color:#fff;padding:3px 6px;font-size:13px;
+  }
+  .os-titlebar .os-x{
+    width:16px;height:16px;background:#c0c0c0;border:2px solid #fff;
+    box-shadow:inset -2px -2px 0 #808080;color:#000;font-size:12px;
+    display:flex;align-items:center;justify-content:center;cursor:pointer;
+  }
+  .os-body{display:flex;gap:8px;padding:12px;align-items:flex-start}
+  .os-icon{width:36px;height:36px;background:var(--yellow);border:3px solid #000;
+    flex:0 0 auto;display:flex;align-items:center;justify-content:center;
+    font-size:20px}
+  .os-msg{font-size:14px;line-height:1.35;cursor:pointer;
+    padding:2px;border:2px dashed transparent;border-radius:2px}
+  .os-msg:hover{border-color:#808080;background:#dcdcdc}
+  .os-actions{display:flex;gap:6px;padding:0 12px 12px;justify-content:flex-end;flex-wrap:wrap}
+  .os-actions .pixel-btn{font-size:13px;padding:5px 8px}
+
+  .sofa-window{background:#f0f0f0}
+
+  #screen-final{
+    background:linear-gradient(180deg,var(--sky-tone) 0%,var(--sky-tone-2) 66%,var(--grass-tone-2) 66%,var(--grass-tone) 100%);
+  }
+  .final-wrap{
+    position:absolute;inset:12px;overflow-y:auto;
+    padding:12px;background:#fff;
+    border:3px solid #000;box-shadow:5px 5px 0 rgba(0,0,0,.2);
+  }
+  .final-wrap::-webkit-scrollbar{width:8px}
+  .final-wrap::-webkit-scrollbar-thumb{background:#2f6fd8;border:2px solid #000}
+  .final-wrap h2{margin:0 0 8px;font-size:20px;line-height:1.25;color:#173d8d}
+  .final-wrap p{margin:0 0 6px;font-size:14px;line-height:1.35}
+  .final-wrap .sub{font-size:14px;line-height:1.35;margin:7px 0 5px;color:#7a4a00;font-weight:bold}
+  .final-wrap ul{margin:0 0 6px;padding-left:16px;font-size:13px;line-height:1.35}
+  .final-wrap li{margin-bottom:4px}
+  .myth{
+    margin:6px 0;padding:7px 9px;border:2px solid #000;
+    background:#fffaf0;font-size:13px;line-height:1.35;
+  }
+  .myth .lbl{display:inline-block;background:#000;color:#fff;
+    padding:1px 6px;font-size:11px;margin-right:6px}
+  .myth.neg{border-color:#8a1a1a}
+  .myth.neg .lbl{background:#8a1a1a}
+  .myth.ok{border-color:var(--green-d)}
+  .myth.ok .lbl{background:var(--green-d)}
+  .final-stats{
+    margin-top:8px;padding:7px;font-size:13px;line-height:1.45;
+    background:#fff;border:2px solid #000;
+  }
+  .final-wrap .pixel-btn{margin-top:8px;font-size:18px}
+</style>
+</head>
+<body>
+<div id="stage">
+  <div id="frame">
+
+    <section id="screen-start" class="screen active">
+      <div class="cloud cloud-1"></div>
+      <div class="cloud cloud-2"></div>
+      <div class="cloud cloud-3"></div>
+
+      <div class="start-head">
+        <h1>Эколог против рутины</h1>
+        <p>Пятница, 16:00. Один час до конца рабочего дня.</p>
+      </div>
+
+      <div class="bubble eco" id="bEco"></div>
+      <div class="bubble boss" id="bBoss"></div>
+
+      <div class="start-scene">
+        <div class="sprite eco"></div>
+        <div class="sprite boss"></div>
+        <div class="name-label eco-label">Эколог</div>
+        <div class="name-label boss-label">Начальник</div>
+        <div class="ground"></div>
+      </div>
+
+      <div class="start-controls">
+        <button id="startBtn" class="pixel-btn primary">Дальше</button>
+      </div>
+    </section>
+
+    <section id="screen-game" class="screen">
+      <div id="topbar">
+        <div class="hud">
+          <div class="clock" id="clock">
+            <div class="hand h" id="handH"></div>
+            <div class="hand m" id="handM"></div>
+          </div>
+          <div>
+            <div class="digital" id="digital">16:00</div>
+            <div class="sub">Дедлайн 17:00</div>
+          </div>
+        </div>
+        <div class="hud right">
+          <div class="label">Задачи</div>
+          <div class="cells" id="taskCells"><div class="cell"></div><div class="cell"></div><div class="cell"></div></div>
+          <div class="label">Проверка</div>
+          <div class="cells" id="skillCells"><div class="cell"></div><div class="cell"></div><div class="cell"></div></div>
+          <div class="err" id="errLabel">Ошибки 0</div>
+        </div>
+      </div>
+
+      <div class="penalty" id="penalty">+5 мин</div>
+
+      <div id="office">
+        <div class="office-cloud c1"></div>
+        <div class="office-cloud c2"></div>
+        <div class="office-cloud c3"></div>
+
+        <div class="window-frame">
+          <div class="moon" id="moon"></div>
+          <div class="star star-1" id="star1"></div>
+          <div class="star star-2" id="star2"></div>
+          <div class="star star-3" id="star3"></div>
+        </div>
+
+        <div class="monitor-big">
+          <div class="scr">
+            <div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div>
+          </div>
+        </div>
+
+        <div id="lamp"></div>
+
+        <div class="reminder" id="reminder">Нажмите на мигающий стикер</div>
+        <button id="s1" class="sticker">Задача 1<small>Промпт</small></button>
+        <button id="s2" class="sticker locked">Задача 2<small>Слайды</small></button>
+        <button id="s3" class="sticker locked">Задача 3<small>Проверка</small></button>
+
+        <div id="ecologist">
+          <div class="cap"></div>
+          <div class="head"></div>
+          <div class="body"></div>
+          <div class="arm arm-l"></div>
+          <div class="arm arm-r"></div>
+          <div class="keyboard"></div>
+        </div>
+      </div>
+
+      <div id="work">
+        <div class="wtitle" id="wTitle">Рабочий стол</div>
+        <div class="wtext" id="wText"></div>
+        <div class="wstatus info" id="wStatus"></div>
+        <div class="wscroll" id="wChoices"></div>
+      </div>
+    </section>
+
+    <div id="osBox">
+      <div class="os-window">
+        <div class="os-titlebar">
+          <span id="osTitle">Уведомление чата</span>
+          <span class="os-x" id="osX">×</span>
+        </div>
+        <div class="os-body">
+          <div class="os-icon" id="osIcon">!</div>
+          <div class="os-msg" id="osMsg">Кто взял единственную ложку на кухне цеха?! Срочный сбор!</div>
+        </div>
+        <div class="os-actions">
+          <button class="pixel-btn" id="osArgue">Вступить в спор</button>
+          <button class="pixel-btn" id="osClose">Закрыть спам</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="sofaBox">
+      <div class="os-window sofa-window">
+        <div class="os-titlebar">
+          <span>Завхоз</span>
+          <span class="os-x" id="sofaX">×</span>
+        </div>
+        <div class="os-body">
+          <div class="os-icon" style="background:#ffb0b0">🔧</div>
+          <div class="os-msg">Михалыч, там на заднем дворе кто-то выкинул старый диван. Это какие отходы — КГО или ТКО? Пошли смотреть!</div>
+        </div>
+        <div class="os-actions">
+          <button class="pixel-btn" id="sofaGo">Пойти смотреть</button>
+          <button class="pixel-btn primary" id="sofaAi">Ищи в ФККО для КГО</button>
+        </div>
+      </div>
+    </div>
+
+    <div id="overlay">
+      <div class="modal">
+        <div class="mtitle" id="mTitle"></div>
+        <div class="mtext" id="mText"></div>
+        <div class="mresult" id="mResult"></div>
+        <div class="actions">
+          <button class="pixel-btn primary" id="mBtn">Продолжить</button>
+        </div>
+      </div>
+    </div>
+
+    <section id="screen-final" class="screen">
+      <div class="final-wrap">
+        <h2 id="finalTitle"></h2>
+        <div id="finalBody"></div>
+        <div class="final-stats" id="finalStats"></div>
+        <button class="pixel-btn primary" id="restartBtn">Пройти еще раз</button>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<script>
+/* ================= РЕСАЙЗЕР ================= */
+const frame = document.getElementById('frame');
+function fitFrame(){
+  const s = Math.min(window.innerWidth / (frame.offsetWidth + 40),
+                     window.innerHeight / (frame.offsetHeight + 40));
+  frame.style.transform = 'scale(' + s + ')';
+}
+window.addEventListener('resize', fitFrame);
+const ro = new ResizeObserver(()=>fitFrame());
+ro.observe(frame);
+fitFrame();
+
+/* ================= ЗВУК ================= */
+let actx = null;
+function initAudio(){
+  const AC = window.AudioContext || window.webkitAudioContext;
+  if(!actx && AC) actx = new AC();
+  if(actx && actx.state === 'suspended') actx.resume();
+}
+function beep(f,d,type,vol,delay){
+  if(!actx) return;
+  const t = actx.currentTime + (delay||0);
+  const o = actx.createOscillator(), g = actx.createGain();
+  o.type = type || 'square';
+  o.frequency.setValueAtTime(f,t);
+  g.gain.setValueAtTime(vol||0.035,t);
+  g.gain.exponentialRampToValueAtTime(0.001,t+d);
+  o.connect(g); g.connect(actx.destination);
+  o.start(t); o.stop(t+d+0.02);
+}
+const click = ()=>beep(760,.05);
+const sndErr= ()=>{beep(140,.14,'square',.06);beep(90,.18,'square',.05,.08)};
+const sndOk = ()=>{beep(523,.07);beep(659,.08,'square',.035,.08);beep(784,.1,'square',.035,.16)};
+const sndBip= ()=>{beep(940,.06);beep(940,.06,'square',.03,.1)};
+
+/* ================= ЭКРАНЫ ================= */
+function showScreen(id){
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  fitFrame();
+}
+
+/* ================= СОСТОЯНИЕ ================= */
+const state = {
+  time: 0,
+  errors: 0,
+  tasks: 0,
+  checks: 0,
+  overtime: false,
+  unlocked: {1:true,2:false,3:false},
+  done: {1:false,2:false,3:false},
+  inTask: false,
+  t1: {step:0, blocks:{}, funny:{}},
+  t2: {step:1, wrong:{}},
+  t3: {law:false, date:false, wrong1:false, wrong2:false}
+};
+
+/* ================= HUD ================= */
+const digital = document.getElementById('digital');
+const handH = document.getElementById('handH');
+const handM = document.getElementById('handM');
+const errLabel = document.getElementById('errLabel');
+const reminder = document.getElementById('reminder');
+const penalty = document.getElementById('penalty');
+
+function updateHUD(){
+  const total = 16*60 + state.time;
+  const h = Math.floor(total/60)%24, m = total%60;
+  digital.textContent = String(h).padStart(2,'0')+':'+String(m).padStart(2,'0');
+  handH.style.transform = 'rotate(' + ((h%12)*30 + m*0.5) + 'deg)';
+  handM.style.transform = 'rotate(' + (m*6) + 'deg)';
+
+  document.querySelectorAll('#taskCells .cell').forEach((c,i)=>c.classList.toggle('fill', i<state.tasks));
+  document.querySelectorAll('#skillCells .cell').forEach((c,i)=>c.classList.toggle('fill', i<state.checks));
+  errLabel.textContent = 'Ошибки ' + state.errors;
+
+  updateDaylight();
+
+  if(state.time > 60 && !state.overtime){
+    state.overtime = true;
+    sndBip();
+  }
+}
+function addTime(min){ state.time += min; updateHUD(); }
+function addError(){
+  state.errors++;
+  if(state.errors >= 4 && state.time < 62) state.time = 62;
+  addTime(5);
+  sndErr();
+  penalty.textContent = '+5 мин';
+  penalty.classList.add('show');
+  setTimeout(()=>penalty.classList.remove('show'), 900);
+}
+
+/* ================= ВРЕМЯ СУТОК ================= */
+const moon = document.getElementById('moon');
+const star1 = document.getElementById('star1');
+const star2 = document.getElementById('star2');
+const star3 = document.getElementById('star3');
+const lamp = document.getElementById('lamp');
+
+function updateDaylight(){
+  const m = state.time;
+  let s1, s2, g1, g2;
+  if(m < 15){ s1='#9fd9ff'; s2='#c9f2ff'; g1='#63b034'; g2='#8fdb5d'; }
+  else if(m < 30){ s1='#8ec8ef'; s2='#b8d8f0'; g1='#5a9a2e'; g2='#7cc850'; }
+  else if(m < 45){ s1='#4a7fb8'; s2='#7a9ec8'; g1='#4a7a24'; g2='#6aa040'; }
+  else if(m < 60){ s1='#2a4a78'; s2='#4a6898'; g1='#3a5a1c'; g2='#5a8030'; }
+  else { s1='#1a2a48'; s2='#2a3a58'; g1='#2a4014'; g2='#3a5020'; }
+
+  document.documentElement.style.setProperty('--sky-tone', s1);
+  document.documentElement.style.setProperty('--sky-tone-2', s2);
+  document.documentElement.style.setProperty('--grass-tone', g1);
+  document.documentElement.style.setProperty('--grass-tone-2', g2);
+
+  const showSky = m >= 30;
+  moon.classList.toggle('show', showSky);
+  star1.classList.toggle('show', showSky);
+  star2.classList.toggle('show', showSky);
+  star3.classList.toggle('show', showSky);
+  lamp.classList.toggle('show', m > 60);
+}
+
+/* ================= РАБОЧИЙ ЭКРАН ================= */
+const wTitle = document.getElementById('wTitle');
+const wText = document.getElementById('wText');
+const wStatus = document.getElementById('wStatus');
+const wChoices = document.getElementById('wChoices');
+const work = document.getElementById('work');
+
+function setWork(title,text,status,type){
+  wTitle.textContent = title;
+  wText.innerHTML = text;
+  wStatus.className = 'wstatus ' + (type||'info');
+  wStatus.innerHTML = status;
+  wChoices.innerHTML = '';
+}
+function flash(kind){
+  work.classList.remove('flash-err','flash-ok');
+  void work.offsetWidth;
+  work.classList.add(kind==='err'?'flash-err':'flash-ok');
+  setTimeout(()=>work.classList.remove('flash-err','flash-ok'), 480);
+}
+
+/* ================= СТИКЕРЫ ================= */
+const s1 = document.getElementById('s1');
+const s2 = document.getElementById('s2');
+const s3 = document.getElementById('s3');
+
+function updateStickers(){
+  [s1,s2,s3].forEach(x=>x.classList.remove('active'));
+  let active = null;
+  if(!state.done[1] && state.unlocked[1]) active = s1;
+  else if(!state.done[2] && state.unlocked[2]) active = s2;
+  else if(!state.done[3] && state.unlocked[3]) active = s3;
+  if(active && !state.inTask) active.classList.add('active');
+  reminder.classList.toggle('hidden', !active || state.inTask);
+}
+
+/* ================= МОДАЛКА ================= */
+const overlay = document.getElementById('overlay');
+const mTitle = document.getElementById('mTitle');
+const mText = document.getElementById('mText');
+const mResult = document.getElementById('mResult');
+const mBtn = document.getElementById('mBtn');
+const mActions = document.querySelector('.modal .actions');
+let modalCb = null;
+let modalCb2 = null;
+let btn2El = null;
+
+function showModal({title,text,result,btn,cb,btn2,cb2,funny}){
+  mTitle.innerHTML = title;
+  mText.innerHTML = text || '';
+  mResult.style.display = result ? 'block' : 'none';
+  mResult.innerHTML = result || '';
+  mResult.className = 'mresult' + (funny ? ' funny' : '');
+  mBtn.textContent = btn || 'Продолжить';
+  modalCb = cb || null;
+
+  if(btn2){
+    if(!btn2El){
+      btn2El = document.createElement('button');
+      btn2El.className = 'pixel-btn';
+      btn2El.style.background = '#e0e0e0';
+      btn2El.style.color = '#000';
+      btn2El.addEventListener('click', ()=>{
+        overlay.classList.remove('active');
+        click();
+        const cb = modalCb2; modalCb2 = null;
+        if(cb) cb();
+      });
+      mActions.appendChild(btn2El);
+    }
+    btn2El.style.display = 'block';
+    btn2El.textContent = btn2;
+    modalCb2 = cb2 || null;
+  } else if(btn2El){
+    btn2El.style.display = 'none';
+    modalCb2 = null;
+  }
+
+  overlay.classList.add('active');
+}
+mBtn.addEventListener('click', ()=>{
+  overlay.classList.remove('active');
+  click();
+  const cb = modalCb; modalCb = null;
+  if(cb) cb();
+});
+
+/* ================= СТАРТОВЫЙ ДИАЛОГ ================= */
+const dialog = [
+  {who:'boss', name:'Начальник:', text:'Заходи, присаживайся. Пятница, до конца рабочего дня ровно час. Руководство срочно поручило три материала для сотрудников предприятия.'},
+  {who:'boss', name:'Начальник:', text:'Первый — памятка для цеха по сбору отработанных батареек. Что можно приносить, что нельзя кидать в контейнер, куда его нести. Второй — план презентации из пяти слайдов для инструктажа по этой памятке.'},
+  {who:'boss', name:'Начальник:', text:'Третий — письмо руководителям цехов. Запроси у них данные по отходам за прошлый квартал. Вежливо, по-деловому.'},
+  {who:'boss', name:'Начальник:', text:'В 17:00 жду у себя готовые черновики. На каждую задачу примерно пятнадцать минут. Успеешь — премия. Не успеешь — сидишь до ночи.'},
+  {who:'eco',  name:'Эколог:',  text:'Понял. Памятка, план слайдов, письмо. Успею.'},
+  {who:'boss', name:'Начальник:', text:'И еще. Проверяй, что тебе пишут. Потом переделывать будешь дольше, чем делать.'},
+  {who:'eco',  name:'Эколог:',  text:'Сделаю. Приступаю.'}
+];
+let dIdx = 0;
+const bEco = document.getElementById('bEco');
+const bBoss = document.getElementById('bBoss');
+const startBtn = document.getElementById('startBtn');
+
+function showDialogStep(){
+  bEco.classList.remove('show');
+  bBoss.classList.remove('show');
+  if(dIdx >= dialog.length){
+    startBtn.textContent = 'Приступить';
+    return;
+  }
+  const d = dialog[dIdx];
+  const el = d.who === 'eco' ? bEco : bBoss;
+  el.innerHTML = '<span class="who">' + d.name + '</span>' + d.text;
+  el.classList.add('show');
+  dIdx++;
+  startBtn.textContent = (dIdx >= dialog.length) ? 'Приступить' : 'Дальше';
+}
+
+startBtn.addEventListener('click', ()=>{
+  initAudio(); click();
+  if(dIdx < dialog.length){ showDialogStep(); return; }
+  startGame();
+});
+setTimeout(showDialogStep, 400);
+
+/* ================= ИГРА ================= */
+function startGame(){
+  showScreen('screen-game');
+  updateHUD();
+  setWork('Рабочий стол',
+    'Пятница, 16:00. Три задачи до 17:00. Нажмите на мигающий стикер.',
+    'Начните с задачи 1 — соберите рабочий промпт.',
+    'info');
+  updateStickers();
+}
+
+/* ================= ЗАДАЧА 1 ================= */
+const PROMPT_BLOCKS = [
+  {
+    key:'role',
+    label:'Роль',
+    hint:'Кем представить ИИ, чтобы памятка была рабочей?',
+    good:'Ты — промышленный эколог с 10-летним опытом на предприятии.',
+    bad:'Ты — полезный помощник, который отвечает на любые вопросы про экологию.',
+    badTitle:'ИИ не в роли',
+    badText:'«Полезный помощник» звучит красиво, но не задает экспертизу. Модель ответит общо, как в энциклопедии, и памятку придется переписывать.'
+  },
+  {
+    key:'context',
+    label:'Контекст',
+    hint:'Опишите предприятие и аудиторию памятки.',
+    good:'Контекст: завод, работники цеха не знают, куда сдавать отработанные батарейки. Нужна памятка для цеха.',
+    bad:'На заводе есть работники и разные отходы, в том числе батарейки.',
+    badTitle:'Контекст общий',
+    badText:'Формально все верно, но ИИ не понимает, что памятка — для работников цеха, которые не знают, куда нести батарейки. Получится текст «для всех и ни для кого».'
+  },
+  {
+    key:'task',
+    label:'Задача',
+    hint:'Что именно должно получиться на выходе?',
+    good:'Задача: составь памятку из двух списков — что можно приносить и что нельзя кидать в контейнер.',
+    bad:'Помоги разобраться с батарейками и сформулируй полезные рекомендации.',
+    badTitle:'Задача размыта',
+    badText:'«Помоги разобраться» — это не результат. Модель может выдать статью, пост или инструкцию. Нужен конкретный документ: памятка со списками.'
+  },
+  {
+    key:'format',
+    label:'Формат',
+    hint:'Каким должен быть ответ по форме?',
+    good:'Формат: короткие пункты, простой язык, объем до 200 слов.',
+    bad:'Сделай аккуратно и по делу, чтобы было понятно.',
+    badTitle:'Формат не задан',
+    badText:'«Аккуратно и по делу» каждый понимает по-своему. ИИ добавит вступление, выводы и «воду». Укажите пункты, язык и объем.'
+  },
+  {
+    key:'limits',
+    label:'Ограничения',
+    hint:'Что ИИ делать нельзя?',
+    good:'Ограничения: не используй сложные термины, не ссылайся на законы, не добавляй стихи.',
+    bad:'Не пиши ничего лишнего и не ошибайся.',
+    badTitle:'Ограничения не работают',
+    badText:'«Не ошибайся» не запрещает конкретных действий. Модель все равно добавит ссылки на законы и общие слова. Ограничения должны быть конкретными.'
+  }
+];
+
+const FUNNY_OUTPUT = {
+  format: 'Йоу, братва! Вот ваша памятка по батарейкам: кидайте их в контейнер в холле — и будет вам счастье и чистая планета! Аккумуляторы не кидайте, они не батарейки, но тоже плохие. Берегите природу, красавчики!',
+  limits: 'Памятка по батарейкам.\n\nСогласно Постановлению № 12345 от 2026 года, все работники обязаны сдавать батарейки в контейнер. За нарушение — штраф 500 000 рублей и увольнение.\n\nБатарейки выделяют полезные витамины. Сдавайте их и будьте здоровы!\n\nСтих: Батарейка, ты мала, но нужна нам всем она.'
+};
+
+function renderPromptLive(){
+  const parts = [];
+  PROMPT_BLOCKS.forEach(b=>{
+    const v = state.t1.blocks[b.key];
+    parts.push(v || '<span class="ph">[' + b.label.toLowerCase() + ' — не задано]</span>');
+  });
+  return parts.join('\n');
+}
+
+function openTask1(){
+  state.inTask = true;
+  state.t1 = {step:0, blocks:{}, funny:{}};
+  renderTask1();
+  updateStickers();
+}
+
+function renderTask1(){
+  const step = state.t1.step;
+  if(step >= PROMPT_BLOCKS.length){ task1Success(); return; }
+  const b = PROMPT_BLOCKS[step];
+
+  let dots = '<div class="dots">';
+  for(let i=0;i<PROMPT_BLOCKS.length;i++){
+    let c = 'dot';
+    if(i < step) c += ' done';
+    if(i === step) c += ' current';
+    dots += '<div class="' + c + '"></div>';
+  }
+  dots += '</div>';
+
+  const badges = PROMPT_BLOCKS.map((blk,i)=>{
+    const on = i < step, cur = i === step;
+    return '<span class="pb-badge' + (on?' on':'') + (cur?' cur':'') + '">' + blk.label + '</span>';
+  }).join('');
+
+  setWork(
+    'Задача 1. Сборка рабочего промпта (' + (step+1) + '/5)',
+    b.hint,
+    'Шаг ' + (step+1) + ' из 5. Выберите формулировку, которая действительно задает «' + b.label.toLowerCase() + '».',
+    'info'
+  );
+
+  wChoices.innerHTML =
+    dots +
+    '<div class="pb-badges">' + badges + '</div>' +
+    '<button class="pixel-btn choice-btn" data-good="1">' + b.good + '</button>' +
+    '<button class="pixel-btn choice-btn" data-good="0">' + b.bad + '</button>' +
+    '<div class="prompt-live"><b>Собранный промпт:</b>\n' + renderPromptLive() + '</div>';
+
+  wChoices.querySelectorAll('[data-good]').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(btn.dataset.good === '1'){
+        click();
+        state.t1.blocks[b.key] = b.good;
+        state.t1.step++;
+        renderTask1();
+      } else {
+        if(b.key === 'format' || b.key === 'limits'){
+          showFunnyAiModal(b);
+        } else {
+          addError();
+          flash('err');
+          showModal({
+            title: b.badTitle,
+            text: b.badText,
+            result:'<b>Штраф:</b> +5 минут. Вернитесь к выбору и возьмите формулировку, которая явно задает «' + b.label.toLowerCase() + '».',
+            btn:'Исправить',
+            cb: renderTask1
+          });
+        }
+      }
+    });
+  });
+}
+
+function showFunnyAiModal(b){
+  sndBip();
+  const funny = FUNNY_OUTPUT[b.key];
+  showModal({
+    title:'ИИ выдал странный текст',
+    text:'Без блока «' + b.label + '» модель решила расслабиться. Вот что получилось:',
+    result:'«' + funny + '»',
+    funny:true,
+    btn:'Переделать нормально',
+    cb: ()=>{
+      addError();
+      flash('err');
+      renderTask1();
+    },
+    btn2:'Отправить как есть',
+    cb2: ()=>{
+      addTime(5);
+      sndErr();
+      flash('err');
+      penalty.textContent = '+5 мин';
+      penalty.classList.add('show');
+      setTimeout(()=>penalty.classList.remove('show'), 900);
+      state.t1.blocks[b.key] = funny;
+      state.t1.funny[b.key] = true;
+      state.t1.step++;
+      renderTask1();
+    }
+  });
+}
+
+function task1Success(){
+  state.done[1] = true;
+  state.tasks++;
+  state.checks++;
+  addTime(15);
+  sndOk(); flash('ok');
+  s1.classList.add('gone');
+  state.inTask = false;
+
+  const promptText = PROMPT_BLOCKS.map(b=>state.t1.blocks[b.key]).join('\n');
+  const hasFunny = Object.keys(state.t1.funny).length > 0;
+  const funnyNote = hasFunny ? '\n\nВнимание: в промпте был неформальный блок. Памятка получилась странной, ее придется переделывать вручную.' : '';
+
+  const aiOutput = hasFunny
+    ? 'Памятка для цеха (странная)\n\n' + (state.t1.funny.format ? 'Йоу, братва! Кидайте батарейки в контейнер — будет вам счастье!' : 'Можно приносить: батарейки AA, AAA, кроны.\n\nНельзя: аккумуляторы, ртутные лампы.\n\nБатарейки выделяют полезные витамины.')
+    : 'Памятка для цеха\n\nМожно приносить: батарейки AA, AAA, кроны, пальчиковые и мизинчиковые.\n\nНельзя: аккумуляторы от техники, ртутные лампы, поврежденные элементы с потеками.\n\nКонтейнер — в холле у поста охраны. Сдавайте партиями, не смешивая с бытовым мусором.';
+
+  setWork('Задача 1 закрыта',
+    'Промпт собран из 5 блоков. ИИ выдал памятку для цеха.',
+    hasFunny ? 'Готово, но с неформальным блоком — памятку стоит перепроверить.' : 'Готово. Результат можно использовать дальше.',
+    hasFunny ? 'error' : 'success');
+
+  wChoices.innerHTML =
+    '<div class="chat"><div class="chat-head"><span class="chat-dot"></span>Результат в окне чата</div>' +
+    '<div class="chat-body"><span class="you">Вы:</span>\n' + promptText +
+    '\n\n<span class="ai">ИИ:</span>\n' + aiOutput + funnyNote + '</div></div>';
+
+  showModal({
+    title:'Задача 1: промпт собран',
+    text:'Вы прошли все пять блоков и получили документ. Именно так формулируется настоящий запрос: роль, контекст, задача, формат, ограничения.',
+    result:'<b>Результат:</b> памятка для цеха готова. Дальше из нее вырастут слайды — поэтому важно не потерять контекст.',
+    btn:'К задаче 2',
+    cb: ()=>{
+      showOsPopup(unlockTask2);
+    }
+  });
+
+  updateStickers();
+}
+
+/* ================= СПАМ ================= */
+const osBox = document.getElementById('osBox');
+const osArgue = document.getElementById('osArgue');
+const osClose = document.getElementById('osClose');
+const osX = document.getElementById('osX');
+const osMsg = document.getElementById('osMsg');
+const osIcon = document.getElementById('osIcon');
+const osTitle = document.getElementById('osTitle');
+
+const spamMessages = [
+  {icon:'!', title:'Уведомление чата', text:'Кто взял единственную ложку на кухне цеха?! Срочный сбор!'},
+  {icon:'🐱', title:'Чат «Мой заводик»', text:'Бухгалтерия опять прислала котиков вместо актов выполненных работ!'},
+  {icon:'🔌', title:'Чат «Флудилка завода»', text:'У кого-то есть зарядка для iPhone? Срочно! Тут телефон умирает!'}
+];
+
+let osCallback = null;
+
+function showOsPopup(cb){
+  osCallback = cb;
+  const m = spamMessages[Math.floor(Math.random() * spamMessages.length)];
+  osIcon.textContent = m.icon;
+  osTitle.textContent = m.title;
+  osMsg.textContent = m.text;
+  sndBip();
+  osBox.classList.add('active');
+}
+function hideOsPopup(){ osBox.classList.remove('active'); }
+
+osMsg.addEventListener('click', ()=>{
+  if(!osBox.classList.contains('active')) return;
+  hideOsPopup();
+  addTime(2);
+  penalty.textContent = '+2 мин';
+  penalty.classList.add('show');
+  setTimeout(()=>penalty.classList.remove('show'), 900);
+  sndBip();
+  showModal({
+    title:'Вы залипли в чате',
+    text:'Обсуждали ложку или котиков, пока ИИ ждал команды. Время утекло.',
+    result:'<b>Штраф:</b> +2 минуты за офисный спам. Закрывайте уведомления сразу — это рабочее время.',
+    btn:'Понятно',
+    cb: ()=>{ const c = osCallback; osCallback = null; if(c) c(); }
+  });
+});
+
+osArgue.addEventListener('click', ()=>{
+  hideOsPopup();
+  addError(); flash('err');
+  showModal({
+    title:'Спам крадет время',
+    text:'Офисные чаты не связаны с задачей. Каждая минута в споре отодвигает дедлайн.',
+    result:'<b>Штраф:</b> +5 минут переработки. Закрывайте спам, пока работаете.',
+    btn:'Понятно',
+    cb: ()=>{ const c = osCallback; osCallback = null; if(c) c(); }
+  });
+});
+
+osClose.addEventListener('click', ()=>{
+  hideOsPopup(); click();
+  const c = osCallback; osCallback = null;
+  if(c) c();
+});
+osX.addEventListener('click', ()=>{
+  hideOsPopup(); click();
+  const c = osCallback; osCallback = null;
+  if(c) c();
+});
+
+/* ================= ЗАДАЧА 2 ================= */
+function unlockTask2(){
+  state.unlocked[2] = true;
+  s2.classList.remove('locked');
+  state.inTask = false;
+  setWork('Рабочий стол',
+    'Задача 1 закрыта. Нажмите на стикер задачи 2.',
+    'Слайды делаются на основе уже готовой памятки. Где продолжить?',
+    'info');
+  updateStickers();
+}
+
+function openTask2(){
+  state.inTask = true;
+  state.t2 = {step:1, wrong:{}};
+  renderTask2();
+  updateStickers();
+}
+
+function renderTask2(){
+  const st = state.t2;
+
+  if(st.step === 1){
+    setWork('Задача 2. Слайды для инструктажа (1/3)',
+      'Памятка уже готова в чате. Нужен план из 5 слайдов. Где продолжить работу?',
+      'Новый чат не помнит предыдущий документ.',
+      'info');
+    wChoices.innerHTML =
+      '<button class="pixel-btn choice-btn" data-a="newChat">Открыть новый чат — пусть ИИ начнет с чистого листа.</button>' +
+      '<button class="pixel-btn choice-btn" data-a="stay">Остаться в этой ветке, где уже лежит памятка.</button>';
+  }
+  if(st.step === 2){
+    setWork('Задача 2. Слайды для инструктажа (2/3)',
+      'Вы в той же ветке. Как сформулировать команду?',
+      'Хорошая команда ссылается на предыдущий текст и задает формат.',
+      'info');
+    wChoices.innerHTML =
+      '<button class="pixel-btn choice-btn" data-a="vague">Сделай презентацию про батарейки.</button>' +
+      '<button class="pixel-btn choice-btn" data-a="precise">На основе памятки выше составь структуру из 5 слайдов. Дай только заголовки и тезисы.</button>';
+  }
+  if(st.step === 3){
+    setWork('Задача 2. Слайды для инструктажа (3/3)',
+      'ИИ дал план из 5 слайдов, но на слайде 2 нет списка батареек из памятки. Что сделать?',
+      'Уточняйте результат в той же ветке.',
+      'info');
+    wChoices.innerHTML =
+      '<button class="pixel-btn choice-btn" data-a="asis">Отправить как есть — список допишу вручную.</button>' +
+      '<button class="pixel-btn choice-btn" data-a="refine">В этой же ветке попросить добавить во второй слайд список батареек из памятки выше.</button>' +
+      '<button class="pixel-btn choice-btn" data-a="newfix">Открыть новый чат и попросить список отдельно.</button>';
+  }
+
+  wChoices.querySelectorAll('[data-a]').forEach(btn=>{
+    btn.addEventListener('click', ()=>task2Action(btn.dataset.a));
+  });
+}
+
+function task2Action(a){
+  const st = state.t2;
+  if(a === 'stay'){ click(); st.step = 2; renderTask2(); return; }
+  if(a === 'precise'){ click(); st.step = 3; renderTask2(); return; }
+  if(a === 'refine'){ click(); task2Success(); return; }
+
+  if(st.wrong[a]) return;
+  st.wrong[a] = true;
+  addError(); flash('err');
+
+  const info = {
+    newChat:{t:'Контекст потерян', x:'Новый чат не помнит памятку. ИИ выдаст абстрактный план, и списки придется переносить вручную.'},
+    vague:{t:'Команда слишком общая', x:'Запрос без ссылки на предыдущий текст, без числа слайдов и формата дает общий план.'},
+    asis:{t:'Ручная переделка', x:'Если отправить план без деталей, придется дописывать списки вручную. ИИ может сделать это сам — в той же ветке.'},
+    newfix:{t:'Снова новый чат', x:'Новый чат опять теряет памятку. Уточняйте в текущей ветке — один диалог хранит историю.'}
+  }[a];
+
+  showModal({
+    title: info.t,
+    text: info.x,
+    result:'<b>Штраф:</b> +5 минут. Держите одну ветку и уточняйте в ней.',
+    btn:'Переделать',
+    cb: renderTask2
+  });
+}
+
+function task2Success(){
+  state.done[2] = true;
+  state.tasks++;
+  state.checks++;
+  addTime(15);
+  sndOk(); flash('ok');
+  s2.classList.add('gone');
+  state.inTask = false;
+
+  setWork('Задача 2 закрыта',
+    'План слайдов готов. ИИ взял списки из памятки и добавил их в структуру.',
+    'Контекст удержан — копировать вручную не пришлось.',
+    'success');
+
+  wChoices.innerHTML =
+    '<div class="chat"><div class="chat-head"><span class="chat-dot"></span>Результат в окне чата</div>' +
+    '<div class="chat-body"><span class="you">Вы:</span>\nНа основе памятки выше составь структуру из 5 слайдов. Дай только заголовки и тезисы.\n\n' +
+    '<span class="ai">ИИ:</span>\n1. Зачем сдавать батарейки отдельно\n2. Что можно приносить (из памятки: AA, AAA, кроны)\n3. Что нельзя (аккумуляторы, ртутные лампы)\n4. Куда нести: контейнер в холле\n5. Порядок сдачи и ответственный</div></div>';
+
+  showModal({
+    title:'Задача 2: контекст удержан',
+    text:'Вы не стали дробить диалог. Один чат хранит памятку, план и уточнения — документ превращается в другой без копирования.',
+    result:'<b>Результат:</b> план слайдов готов. Теперь осталось проверить письмо коллегам.',
+    btn:'К задаче 3',
+    cb: showSofaPopup
+  });
+
+  updateStickers();
+}
+
+/* ================= ДИВАН ================= */
+const sofaBox = document.getElementById('sofaBox');
+const sofaGo = document.getElementById('sofaGo');
+const sofaAi = document.getElementById('sofaAi');
+const sofaX = document.getElementById('sofaX');
+
+function showSofaPopup(){
+  sndBip();
+  sofaBox.classList.add('active');
+}
+function hideSofaPopup(){ sofaBox.classList.remove('active'); }
+
+sofaGo.addEventListener('click', ()=>{
+  hideSofaPopup();
+  addTime(5);
+  penalty.textContent = '+5 мин';
+  penalty.classList.add('show');
+  setTimeout(()=>penalty.classList.remove('show'), 900);
+  sndErr();
+  showModal({
+    title:'Полчаса у дивана',
+    text:'Вы спорили с завхозом о классификации отходов. Диван так и остался на заднем дворе.',
+    result:'<b>Штраф:</b> +5 минут. В следующий раз отправляйте завхоза читать ФККО — он справится сам.',
+    btn:'Понятно',
+    cb: unlockTask3
+  });
+});
+
+sofaAi.addEventListener('click', ()=>{
+  hideSofaPopup();
+  click();
+  sndOk();
+  setWork('Завхоз отправлен читать ФККО',
+    'Вы ответили плашкой «Ищи в ФККО для КГО» и отправили завхоза читать инструкции. Экономия времени!',
+    'Диван — это КГО (крупногабаритные отходы). Пусть завхоз сам разбирается.',
+    'success');
+  setTimeout(unlockTask3, 800);
+});
+
+sofaX.addEventListener('click', ()=>{
+  hideSofaPopup();
+  click();
+  unlockTask3();
+});
+
+/* ================= ЗАДАЧА 3 ================= */
+function unlockTask3(){
+  state.unlocked[3] = true;
+  s3.classList.remove('locked');
+  state.inTask = false;
+  setWork('Рабочий стол',
+    'Задача 2 закрыта. Нажмите на стикер задачи 3.',
+    'ИИ подготовил письмо коллегам. Найдите два блока с выдумками.',
+    'info');
+  updateStickers();
+}
+
+function openTask3(){
+  state.inTask = true;
+  state.t3 = {law:false, date:false, wrong1:false, wrong2:false};
+  renderTask3();
+  updateStickers();
+}
+
+function renderTask3(){
+  setWork('Задача 3. Проверка письма ИИ',
+    'Перед вами черновик письма. Найдите <b>два блока с галлюцинациями</b>. Остальные блоки безопасны.',
+    'Проверяйте нормативные ссылки и даты. ИИ не признается в ошибке сам.',
+    'info');
+
+  const b1 = state.t3.wrong1 ? ' disabled' : '';
+  const b2 = state.t3.wrong2 ? ' disabled' : '';
+  const b3c = state.t3.law ? ' selected' : '';
+  const b3d = state.t3.law ? ' disabled' : '';
+  const b4c = state.t3.date ? ' selected' : '';
+  const b4d = state.t3.date ? ' disabled' : '';
+
+  wChoices.innerHTML =
+    '<button class="pixel-btn choice-btn" data-b="1"' + b1 + '>Приветствую, коллеги! Для подготовки внутренних материалов прошу предоставить данные по отходам.</button>' +
+    '<button class="pixel-btn choice-btn" data-b="2"' + b2 + '>Прошу дать данные за прошлый квартал в срок до [вставьте дату].</button>' +
+    '<button class="pixel-btn choice-btn' + b3c + '" data-b="3"' + b3d + '>Прошу направить сведения на основании Постановления Правительства РФ № 9999 от 2026 года.</button>' +
+    '<button class="pixel-btn choice-btn' + b4c + '" data-b="4"' + b4d + '>Прошу направить ответ в срок до 31 февраля 2026 года.</button>';
+
+  wChoices.querySelectorAll('[data-b]').forEach(btn=>{
+    btn.addEventListener('click', ()=>task3Click(Number(btn.dataset.b)));
+  });
+}
+
+function task3Click(b){
+  const st = state.t3;
+
+  if(b === 1 && !st.wrong1){
+    addError(); flash('err');
+    showModal({
+      title:'Здесь нет галлюцинации',
+      text:'Это обычное приветствие и рабочая просьба. Ищите то, что ИИ мог выдумать: номера законов, даты, сроки, факты.',
+      result:'<b>Штраф:</b> +5 минут. Проверяйте именно фактические утверждения.',
+      btn:'Искать дальше',
+      cb:()=>{ st.wrong1 = true; renderTask3(); }
+    });
+    return;
+  }
+  if(b === 2 && !st.wrong2){
+    addError(); flash('err');
+    showModal({
+      title:'Здесь нет галлюцинации',
+      text:'ИИ оставил маркер [вставьте дату]. Это место для человека, а не выдумка.',
+      result:'<b>Штраф:</b> +5 минут. Ищите скрытую фактическую ошибку.',
+      btn:'Искать дальше',
+      cb:()=>{ st.wrong2 = true; renderTask3(); }
+    });
+    return;
+  }
+  if(b === 3 && !st.law){
+    st.law = true;
+    sndOk(); flash('ok');
+    setWork('Вы поймали выдуманный закон',
+      'Постановления Правительства РФ № 9999 не существует. Нормативные ссылки всегда проверяет человек.',
+      'Отметьте вторую ошибку.',
+      'success');
+    renderTask3();
+    checkTask3();
+    return;
+  }
+  if(b === 4 && !st.date){
+    st.date = true;
+    sndOk(); flash('ok');
+    setWork('Вы поймали невозможную дату',
+      '31 февраля не бывает. Сроки в документах нужно проверять.',
+      'Отметьте вторую ошибку.',
+      'success');
+    renderTask3();
+    checkTask3();
+    return;
+  }
+}
+
+function checkTask3(){
+  if(state.t3.law && state.t3.date && !state.done[3]) task3Success();
+}
+
+function task3Success(){
+  state.done[3] = true;
+  state.tasks++;
+  state.checks++;
+  addTime(15);
+  sndOk(); flash('ok');
+  s3.classList.add('gone');
+  state.inTask = false;
+
+  setWork('Все задачи закрыты',
+    'Черновик исправлен, письмо можно отправлять.',
+    'Вы провели экспертный аудит и не пропустили выдумки ИИ.',
+    'success');
+
+  wChoices.innerHTML =
+    '<div class="chat"><div class="chat-head"><span class="chat-dot"></span>Результат в окне чата</div>' +
+    '<div class="chat-body"><span class="ai">ИИ:</span>\nПисьмо коллегам (исправленный вариант)\n\nПриветствую, коллеги! Прошу предоставить данные по отходам за прошлый квартал в срок до [дата].\n\nСведения направить ответственным за участок.\n\n<span class="you">Проверено экспертом:</span> выдуманный закон удален, невозможная дата заменена.</div></div>';
+
+  showModal({
+    title:'Задача 3: проверка пройдена',
+    text:'ИИ уверенно выдумывает законы, даты и сроки. Перед отправкой документа проверяйте нормативные ссылки и факты.',
+    result:'<b>Результат:</b> письмо проверено. Все три артефакта — памятка, слайды и письмо — готовы и связаны между собой.',
+    btn:'К итогам',
+    cb: showFinal
+  });
+
+  updateStickers();
+}
+
+/* ---------- СТИКЕРЫ ---------- */
+s1.addEventListener('click', ()=>{
+  if(state.done[1]) return;
+  if(!state.unlocked[1]) return;
+  click(); openTask1();
+});
+s2.addEventListener('click', ()=>{
+  if(state.done[2]) return;
+  if(!state.unlocked[2]){
+    showModal({title:'Задача 2', text:'Сначала закройте памятку в задаче 1.', btn:'Понятно'});
+    return;
+  }
+  click(); openTask2();
+});
+s3.addEventListener('click', ()=>{
+  if(state.done[3]) return;
+  if(!state.unlocked[3]){
+    showModal({title:'Задача 3', text:'Сначала закройте план слайдов в задаче 2.', btn:'Понятно'});
+    return;
+  }
+  click(); openTask3();
+});
+
+/* ================= ФИНАЛ ================= */
+function showFinal(){
+  const success = state.time <= 60;
+  const time = digital.textContent;
+
+  document.getElementById('finalTitle').textContent = success
+    ? 'Победа: уходите домой вовремя!'
+    : 'Овертайм: переработка';
+
+  const body = document.getElementById('finalBody');
+  if(success){
+    body.innerHTML =
+      '<p>На часах ' + time + '. Эколог выключает компьютер, берет куртку. Три материала готовы.</p>' +
+      '<p>Вы доказали: ИИ — эффективный инструмент, а не игрушка. Не переписывали документы с нуля, а управляли процессом как эксперт.</p>' +
+      '<div class="sub">Практические навыки и разборы:</div>' +
+      '<div class="myth ok"><span class="lbl">Навык</span><b>Формула рабочего промпта.</b> Собрали роль, контекст, задачу, формат и ограничения. Модель стала ассистентом, а не генератором «воды».</div>' +
+      '<div class="myth ok"><span class="lbl">Навык</span><b>Работа с контекстом.</b> Один чат хранит памятку, план и уточнения. Документ превращается в другой без копирования.</div>' +
+      '<div class="myth ok"><span class="lbl">Навык</span><b>Проверка фактов.</b> Поймали выдуманный закон и невозможную дату. Экспертный контроль остался за человеком.</div>' +
+      '<div class="myth neg"><span class="lbl">Миф</span><b>«ИИ сам проверяет себя».</b> Нет — вы лично нашли две галлюцинации. Модель не признается в ошибке.</div>' +
+      '<div class="myth neg"><span class="lbl">Миф</span><b>«Чем больше чатов — тем быстрее».</b> Дробление диалога теряет контекст и плодит двойную работу.</div>' +
+      '<div class="myth neg"><span class="lbl">Отрицание</span><b>«Проверка — формальность».</b> Нет. Именно проверка ловит выдуманные законы и даты. Без нее документ уйдет с ошибкой.</div>' +
+      '<div class="sub">Вы уже умеете:</div>' +
+      '<ul>' +
+        '<li>Экономить время, собирая точные запросы из ключевых элементов.</li>' +
+        '<li>Держать фокус на задачах СЭМ, несмотря на диваны на заднем дворе и котиков в мессенджерах.</li>' +
+        '<li>Отличать качественный черновик от «воды», требующей переработки.</li>' +
+      '</ul>';
+  } else {
+    body.innerHTML =
+      '<p>На часах ' + time + '. В офисе горит одна лампа, за окном темно. Все задачи выполнены — но вы задержались.</p>' +
+      '<p>Игры со слабыми промптами и отвлечение на офисный спам привели к тому, что пришлось переделывать черновики вручную. В жизни это потерянный вечер. Но теперь вы точно знаете, где теряется время.</p>' +
+      '<div class="sub">Практические навыки и разборы:</div>' +
+      '<div class="myth ok"><span class="lbl">Навык</span><b>Формула рабочего промпта.</b> Без рамки из пяти блоков модель выдает «воду» и стихи.</div>' +
+      '<div class="myth ok"><span class="lbl">Навык</span><b>Работа с контекстом.</b> Дробление диалога теряет данные и плодит двойную работу.</div>' +
+      '<div class="myth ok"><span class="lbl">Навык</span><b>Проверка фактов.</b> Вы поймали галлюцинации — и это главное.</div>' +
+      '<div class="myth neg"><span class="lbl">Миф</span><b>«Чем больше чатов — тем быстрее».</b> На деле дробление диалога теряет контекст.</div>' +
+      '<div class="myth neg"><span class="lbl">Отрицание</span><b>«Проверка — формальность».</b> Нет. Именно проверка ловит выдуманные законы и даты.</div>' +
+      '<div class="sub">Вы уже умеете:</div>' +
+      '<ul>' +
+        '<li>Задавать ИИ жесткие рамки и роль, чтобы не сидеть в офисе допоздна.</li>' +
+        '<li>Отличать качественный черновик от «воды», требующей долгой переработки.</li>' +
+        '<li>Не отвлекаться на диваны на заднем дворе и котиков в мессенджерах.</li>' +
+      '</ul>';
+  }
+
+  document.getElementById('finalStats').innerHTML =
+    'Время: ' + time + '<br>' +
+    'Задачи: 3 из 3<br>' +
+    'Проверки: ' + state.checks + ' из 3<br>' +
+    'Ошибки: ' + state.errors;
+
+  showScreen('screen-final');
+}
+
+/* ================= ПЕРЕЗАПУСК ================= */
+function resetGame(){
+  state.time = 0;
+  state.errors = 0;
+  state.tasks = 0;
+  state.checks = 0;
+  state.overtime = false;
+  state.unlocked = {1:true,2:false,3:false};
+  state.done = {1:false,2:false,3:false};
+  state.inTask = false;
+  state.t1 = {step:0, blocks:{}, funny:{}};
+  state.t2 = {step:1, wrong:{}};
+  state.t3 = {law:false, date:false, wrong1:false, wrong2:false};
+
+  s1.classList.remove('gone','active');
+  s2.classList.remove('gone','active');
+  s3.classList.remove('gone','active');
+  s2.classList.add('locked');
+  s3.classList.add('locked');
+
+  work.classList.remove('flash-err','flash-ok');
+  wTitle.textContent = 'Рабочий стол';
+  wText.innerHTML = '';
+  wStatus.className = 'wstatus info';
+  wStatus.innerHTML = '';
+  wChoices.innerHTML = '';
+
+  dIdx = 0;
+  bEco.classList.remove('show');
+  bBoss.classList.remove('show');
+  bEco.innerHTML = '';
+  bBoss.innerHTML = '';
+  startBtn.textContent = 'Дальше';
+
+  updateHUD();
+  updateStickers();
+  showScreen('screen-start');
+  setTimeout(showDialogStep, 400);
+}
+
+document.getElementById('restartBtn').addEventListener('click', ()=>{
+  initAudio();
+  click();
+  resetGame();
+});
+
+/* ================= ИНИЦИАЛИЗАЦИЯ ================= */
+updateHUD();
+updateStickers();
+</script>
+</body>
+</html>
