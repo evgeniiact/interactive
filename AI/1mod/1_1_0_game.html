@@ -562,28 +562,37 @@
   </div>
 </div>
 
+<!-- 1. Подключение библиотеки iframe-resizer (обязательно) -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+
 <script>
 /* ================= РЕСАЙЗЕР ================= */
 const frame = document.getElementById('frame');
 
+// Функция изменения высоты фрейма в зависимости от активного экрана
 function setFrameHeight(screenId) {
   if (screenId === 'screen-start') {
-    frame.style.height = '500px';
+    frame.style.height = '500px'; // Уменьшенный первый экран
   } else {
-    frame.style.height = '700px';
+    frame.style.height = '700px'; // Единый размер для всех последующих экранов
+  }
+  // Уведомляем родительское окно об изменении размера
+  resizeIframe();
+}
+
+// Функция отправки актуальной высоты родительскому окну
+function resizeIframe() {
+  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+    window.parentIFrame.size();
   }
 }
 
-function fitFrame() {
-  // Убрали масштабирование (transform: scale), теперь фрейм просто занимает доступную ширину
-  if (window.parent !== window) {
-    window.parent.postMessage({ type: 'resize-frame', height: frame.offsetHeight }, '*');
-  }
+function fitFrame(){
+  // Убрали масштабирование - просто уведомляем родителя
+  resizeIframe();
 }
 
 window.addEventListener('resize', fitFrame);
-const ro = new ResizeObserver(() => fitFrame());
-ro.observe(frame);
 
 /* ================= ЗВУК ================= */
 let actx = null;
@@ -873,7 +882,7 @@ const PROMPT_BLOCKS = [
     key:'limits',
     label:'Ограничения',
     hint:'Что ИИ делать нельзя?',
-    good:'Ограничения: не используй сложные термины, не ссылайся на законы, не добавляй эмоджи.',
+    good:'Ограничения: не используй сложные термины, не ссылайся на законы, не добавляй эмодзи.',
     bad:'Не пиши ничего лишнего и не ошибайся.',
     badTitle:'Ограничения не работают',
     badText:'«Не ошибайся» не запрещает конкретных действий. Модель все равно добавит ссылки на законы и общие слова. Ограничения должны быть конкретными.'
@@ -1459,7 +1468,9 @@ function showFinal(){
 
 /* ================= ПЕРЕЗАПУСК ================= */
 function resetGame(){
-  frame.style.height = '500px'; // Сброс высоты на стартовую
+  // Сброс высоты на стартовую
+  frame.style.height = '500px';
+  
   state.time = 0;
   state.errors = 0;
   state.tasks = 0;
@@ -1496,6 +1507,7 @@ function resetGame(){
   updateStickers();
   showScreen('screen-start');
   setTimeout(showDialogStep, 400);
+  resizeIframe();
 }
 
 document.getElementById('restartBtn').addEventListener('click', ()=>{
@@ -1505,7 +1517,26 @@ document.getElementById('restartBtn').addEventListener('click', ()=>{
 });
 
 /* ================= ИНИЦИАЛИЗАЦИЯ ================= */
-setFrameHeight('screen-start');
+// Запуск при готовности DOM
+document.addEventListener('DOMContentLoaded', () => {
+  // Первичный расчет высоты
+  setFrameHeight('screen-start');
+  resizeIframe();
+  
+  // Отслеживание любых изменений размера контента
+  if ('ResizeObserver' in window) {
+    const resizeObserver = new ResizeObserver(() => {
+      resizeIframe();
+    });
+    resizeObserver.observe(document.body);
+  }
+});
+
+// Дополнительная страховка на случай полной загрузки всех ресурсов
+window.addEventListener('load', () => {
+  resizeIframe();
+});
+
 updateHUD();
 updateStickers();
 fitFrame();
