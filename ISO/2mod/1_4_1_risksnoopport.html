@@ -4,140 +4,93 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
-<title>Практика: определите риски и возможности</title>
+<title>Где может сорваться результат: тренажер по рискам и возможностям</title>
 <style>
-:root {
-  --bg: #ffffff;
-  --primary: #1e293b;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --gray: #f8fafc;
-  --accent: #2563eb;
-  --accent-d: #1d4ed8;
-  --ok: #16a34a;
-  --ok-bg: #f0fdf4;
-  --ok-bd: #bbf7d0;
-  --warn: #ea580c;
-  --warn-bg: #fff7ed;
-  --warn-bd: #fed7aa;
-  --bad: #991b1b;
-  --bad-bg: #fef2f2;
-  --bad-bd: #fecaca;
-  --r: 12px;
+:root{
+ --bg:#fff; --primary:#1e293b; --muted:#64748b; --border:#e2e8f0;
+ --gray:#f8fafc; --accent:#2563eb; --accent-d:#1d4ed8;
+ --ok:#16a34a; --ok-bg:#f0fdf4; --ok-bd:#bbf7d0;
+ --warn:#ea580c; --warn-bg:#fff7ed; --warn-bd:#fed7aa;
+ --bad:#991b1b; --bad-bg:#fef2f2; --bad-bd:#fecaca;
+ --info-bg:#eff6ff; --info-bd:#bfdbfe; --info-tx:#1e40af;
+ --r:12px;
 }
-* { box-sizing: border-box; }
-body {
-  margin: 0; padding: 20px; background: var(--bg);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  color: var(--primary); font-size: 15px; line-height: 1.6;
-}
-.container { max-width: 760px; margin: 0 auto; }
-.screen { display: none; }
-.screen.active { display: block; animation: fadeIn .3s ease-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-h1 { font-size: 22px; font-weight: 800; margin: 0 0 8px; }
-h2 { font-size: 17px; font-weight: 700; margin: 16px 0 10px; }
-h3 { font-size: 15px; font-weight: 700; margin: 0 0 6px; }
-.lead { font-size: 14px; margin: 0 0 12px; line-height: 1.6; color: var(--muted); }
-.note-box {
-  background: var(--gray); border: 1px solid var(--border);
-  border-left: 4px solid var(--muted); border-radius: 0 8px 8px 0;
-  padding: 10px 14px; font-size: 13px; color: var(--muted); margin: 10px 0;
-}
-.note-box.accent { border-left-color: var(--accent); color: var(--primary); }
-.warn-box {
-  background: var(--warn-bg); border-left: 3px solid var(--warn-bd);
-  border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 13px;
-  color: var(--warn); margin: 10px 0;
-}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--primary);font-size:15px;line-height:1.6}
+.container{max-width:720px;margin:0 auto}
+.screen{display:none}.screen.active{display:block;animation:fi .3s ease-out}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:22px;font-weight:800;margin:0 0 8px;outline:none}
+h2{font-size:17px;font-weight:700;margin:16px 0 10px}
+.lead{font-size:14px;margin:0 0 12px;color:var(--muted)}
+.note-box{background:var(--gray);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--muted);margin:10px 0}
+.note-box.accent{border-left-color:var(--accent);color:var(--primary)}
+.progress-line{font-size:12px;font-weight:700;color:var(--accent-d);background:var(--info-bg);border:1px solid var(--info-bd);border-radius:20px;padding:4px 12px;display:inline-block;margin-bottom:10px}
 
-/* Прогресс */
-.progress-bar {
-  display: flex; gap: 6px; margin: 14px 0;
-}
-.progress-dot {
-  flex: 1; height: 6px; background: var(--border);
-  border-radius: 3px; transition: background .2s;
-}
-.progress-dot.active { background: var(--accent); }
-.progress-dot.done { background: var(--ok); }
+.case-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.case-card{border:2px solid var(--border);border-radius:var(--r);padding:14px;background:#fff;cursor:pointer;font-family:inherit;text-align:left;transition:border-color .15s}
+.case-card:hover{border-color:var(--accent);background:var(--gray)}
+.case-card.done{border-color:var(--ok-bd);background:var(--ok-bg)}
+.case-card .case-num{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--accent);background:var(--gray);border:1px solid var(--border);border-radius:20px;padding:2px 8px;margin-bottom:6px}
+.case-card.done .case-num{color:var(--ok);background:#fff;border-color:var(--ok-bd)}
+.case-card h3{margin:0 0 4px;font-size:14px}
+.case-card p{margin:0;font-size:12px;color:var(--muted)}
 
-/* Ситуация */
-.situation-card {
-  border: 1px solid var(--border); border-radius: var(--r);
-  padding: 16px; background: #fff; margin: 12px 0;
-}
-.situation-label {
-  display: inline-block; font-size: 11px; font-weight: 800;
-  letter-spacing: .4px; text-transform: uppercase; color: var(--accent);
-  background: var(--gray); border: 1px solid var(--border);
-  border-radius: 20px; padding: 3px 10px; margin-bottom: 8px;
-}
-.situation-text { font-size: 14px; line-height: 1.55; margin: 0 0 12px; }
+.case-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px;flex-wrap:wrap}
+.case-title{font-size:13px;font-weight:700;color:var(--accent);text-transform:uppercase;letter-spacing:.4px}
+.btn-conditions{padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--primary);cursor:pointer;font-family:inherit}
+.btn-conditions:hover{background:var(--gray)}
 
-/* Выбор */
-.choice-box {
-  display: flex; gap: 10px; margin: 12px 0; flex-wrap: wrap;
-}
-.choice-btn {
-  flex: 1; min-width: 140px; padding: 12px 16px;
-  border: 2px solid var(--border); border-radius: 10px;
-  background: #fff; font-family: inherit; font-size: 14px;
-  font-weight: 700; color: var(--primary); cursor: pointer;
-  transition: all .15s;
-}
-.choice-btn:hover:not(:disabled) { border-color: var(--accent); background: var(--gray); }
-.choice-btn.selected-risk { border-color: var(--bad); background: var(--bad-bg); color: var(--bad); }
-.choice-btn.selected-opportunity { border-color: var(--ok); background: var(--ok-bg); color: var(--ok); }
-.choice-btn.dim { opacity: .55; }
-.choice-btn:disabled { cursor: default; }
+.conditions-card{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;background:var(--gray);padding:12px 14px;font-size:13.5px;margin:10px 0}
+.conditions-card strong{display:block;font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
+.conditions-card ul{margin:0;padding-left:18px}
+.conditions-card li{margin-bottom:5px}
+.conditions-note{font-size:11.5px;color:var(--muted);margin-top:8px;font-style:italic}
 
-/* Обратная связь */
-.feedback {
-  border-radius: 10px; padding: 14px 16px; margin: 12px 0;
-  font-size: 13.5px; line-height: 1.55;
-}
-.feedback.correct { background: var(--ok-bg); border: 1px solid var(--ok-bd); color: var(--ok); }
-.feedback.wrong { background: var(--warn-bg); border: 1px solid var(--warn-bd); color: var(--warn); }
-.feedback strong { display: block; margin-bottom: 6px; font-size: 14px; }
+.question-box{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:12px 0}
+.question-box .q-label{font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--accent);margin-bottom:6px}
+.question-box .q-text{font-size:15px;font-weight:600;margin:0}
+.hint-box{background:var(--info-bg);border:1px solid var(--info-bd);border-radius:8px;padding:10px 12px;font-size:12.5px;color:var(--info-tx);margin:10px 0}
+.hint-box strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
 
-/* Частые ошибки */
-.mistake {
-  border: 1px solid var(--border); border-radius: 10px;
-  background: #fff; margin-bottom: 8px; overflow: hidden;
-}
-.mistake summary {
-  cursor: pointer; padding: 12px 14px; font-size: 14px; font-weight: 700;
-  list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 8px;
-}
-.mistake summary::-webkit-details-marker { display: none; }
-.mistake summary::after { content: "+"; color: var(--muted); font-weight: 800; font-size: 18px; }
-.mistake[open] summary::after { content: "−"; }
-.mistake[open] summary { background: var(--gray); border-bottom: 1px solid var(--border); }
-.mistake-body { padding: 12px 14px; font-size: 13px; }
-.mistake-body .problem { color: var(--bad); margin: 0 0 8px; font-weight: 600; }
-.mistake-body .solution { color: var(--ok); margin: 0; }
+.options{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.option-btn{display:block;width:100%;text-align:left;border:2px solid var(--border);border-radius:10px;background:#fff;padding:12px 14px;font-family:inherit;font-size:13.5px;line-height:1.5;color:var(--primary);cursor:pointer;transition:all .15s}
+.option-btn:hover:not(:disabled){border-color:var(--accent);background:var(--gray)}
+.option-btn.selected-correct{border-color:var(--ok);background:var(--ok-bg)}
+.option-btn.selected-wrong{border-color:var(--bad);background:var(--bad-bg)}
+.option-btn.dim{opacity:.55}
+.option-btn:disabled{cursor:default}
 
-/* Навигация */
-.nav-buttons { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-.btn {
-  padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
-  cursor: pointer; border: none; font-family: inherit; transition: background .2s;
-}
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-d); }
-.btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--primary); }
-.btn-secondary:hover { background: var(--gray); }
-.btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
-button:focus-visible { outline: 3px solid var(--accent-d); outline-offset: 2px; }
+.feedback{border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.55;margin:10px 0;display:none}
+.feedback.show{display:block}
+.feedback.correct{background:var(--ok-bg);border:1px solid var(--ok-bd);color:var(--ok)}
+.feedback.wrong{background:var(--warn-bg);border:1px solid var(--warn-bd);color:var(--warn)}
+.feedback strong{display:block;margin-bottom:4px}
 
-@media (max-width: 600px) {
-  body { padding: 12px; }
-  h1 { font-size: 20px; }
-  .choice-box { flex-direction: column; }
-  .choice-btn { width: 100%; }
-  .nav-buttons { flex-direction: column; }
-  .btn { width: 100%; }
+.chain-table{width:100%;border-collapse:collapse;font-size:13.5px;margin:10px 0}
+.chain-table th,.chain-table td{border:1px solid var(--border);padding:8px 10px;text-align:left;vertical-align:top}
+.chain-table th{background:var(--gray);font-weight:700;width:32%}
+.conclusion{background:var(--ok-bg);border-left:4px solid var(--ok);border-radius:0 10px 10px 0;padding:12px 14px;font-size:13.5px;margin:12px 0}
+.conclusion strong{display:block;color:var(--ok);font-size:12px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+
+.final-chain{background:var(--gray);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:12px 0;font-size:13.5px}
+.final-chain .step{margin:6px 0;display:flex;gap:8px;align-items:flex-start}
+.final-chain .step-num{flex:0 0 auto;width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+
+.nav-buttons{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:background .2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-d)}
+.btn-secondary{background:#fff;border:1px solid var(--border);color:var(--primary)}
+.btn-secondary:hover{background:var(--gray)}
+button:focus-visible{outline:3px solid var(--accent-d);outline-offset:2px}
+
+@media (max-width:600px){
+ body{padding:12px}
+ h1{font-size:20px}
+ .case-grid{grid-template-columns:1fr}
+ .nav-buttons{flex-direction:column}
+ .btn{width:100%}
 }
 </style>
 </head>
@@ -145,250 +98,325 @@ button:focus-visible { outline: 3px solid var(--accent-d); outline-offset: 2px; 
 
 <div class="container">
 
-  <!-- ВВОДНЫЙ ЭКРАН -->
+  <!-- СТАРТОВЫЙ ЭКРАН -->
   <div id="screen-intro" class="screen active">
-    <h1>Определите риски и возможности</h1>
-    <p class="lead">Перед вами пять ситуаций. Определите, риск это или возможность, и обоснуйте выбор. После каждого ответа получите разбор и сравните с правильным решением.</p>
-    <div class="note-box accent">
-      <strong></strong>
-    </div>
-    <div class="nav-buttons">
-      <button class="btn btn-primary" onclick="startPractice()">Начать практику</button>
-    </div>
+    <h1>Где может сорваться результат</h1>
+    <p class="lead">Требование можно записать правильно, но в ежедневной работе оно не выполняется. Разберем четыре ситуации: что может испортить результат и как действовать заранее.</p>
+    <div class="note-box accent">В каждом кейсе порядок один: условия, ваш выбор, разбор и итоговая цепочка «факт - последствие - действие - проверка». Все обстоятельства учебные: они не подтверждают нарушения или наличие оборудования на реальном заводе.</div>
+    <p class="progress-line" id="progressLine">Кейсы просмотрены: 0 из 4</p>
+    <div class="case-grid" id="caseGrid"></div>
+    <div class="nav-buttons" id="introNav"></div>
   </div>
 
-  <!-- ЭКРАН ПРАКТИКИ -->
-  <div id="screen-practice" class="screen">
-    <div class="progress-bar" id="progressBar"></div>
-    <h1 id="situationTitle"></h1>
-    <div id="situationBox"></div>
-    <div id="feedbackBox"></div>
-    <div class="nav-buttons" id="navBox"></div>
+  <!-- ЭКРАН КЕЙСА -->
+  <div id="screen-case" class="screen">
+    <div class="case-header">
+      <div>
+        <div class="case-title" id="caseTitle"></div>
+      </div>
+      <button class="btn-conditions" onclick="toggleConditions()">Условия кейса</button>
+    </div>
+    <div id="conditionsPanel"></div>
+    <div id="caseContent"></div>
+    <div class="nav-buttons" id="caseNav"></div>
   </div>
 
-  <!-- ФИНАЛЬНЫЙ ЭКРАН -->
+  <!-- ИТОГОВЫЙ РАЗБОР -->
   <div id="screen-final" class="screen">
-    <h1>Частые ошибки при определении рисков и возможностей</h1>
-    <p class="lead">Теперь вы знаете, как отличить риск от возможности. Избегайте типичных ошибок при сборе перечня.</p>
-    <div id="mistakesBox"></div>
-    <div class="note-box" style="margin-top:14px;">
-      Помните: сначала соберите полный перечень рисков и возможностей, связанных с аспектами и обязательствами. Затем будете оценивать вероятность и тяжесть, планировать действия.
+    <h1>Итоговый разбор</h1>
+    <p class="lead">В каждом кейсе вы отделили известный факт от возможного последствия. Затем выбрали действие, которое отвечает на причину, и способ проверить результат.</p>
+    <p class="lead">Теперь опишите знакомую ситуацию своего предприятия по той же цепочке.</p>
+    <div class="final-chain">
+      <div class="step"><div class="step-num">1</div><div><strong>Что известно?</strong> Отделите подтвержденные факты от предположений.</div></div>
+      <div class="step"><div class="step-num">2</div><div><strong>Что может произойти?</strong> Назовите риск или возможность.</div></div>
+      <div class="step"><div class="step-num">3</div><div><strong>Как это повлияет на результат?</strong> Свяжите с обязательствами или целями.</div></div>
+      <div class="step"><div class="step-num">4</div><div><strong>Что предлагаем сделать?</strong> Действие должно отвечать на причину.</div></div>
+      <div class="step"><div class="step-num">5</div><div><strong>Как проверим?</strong> Способ убедиться, что действие сработало.</div></div>
     </div>
+    <div class="note-box accent" id="finalNote"></div>
     <div class="nav-buttons">
-      <button class="btn btn-primary" onclick="showScreen('screen-intro')">Начать заново</button>
-      <button class="btn btn-secondary" onclick="location.reload()"></button>
+      <button class="btn btn-primary" onclick="goIntro()">К списку кейсов</button>
+      <button class="btn btn-secondary" onclick="restartAll()">Пройти заново</button>
     </div>
   </div>
 
 </div>
 
 <script>
-/* ========== ДАННЫЕ ========== */
-var SITUATIONS = [
+/* ========== ДАННЫЕ КЕЙСОВ ========== */
+var CASES = [
   {
-    id: 1,
-    text: 'Росприроднадзор готовит проект нового норматива выбросов для стекловаренных печей. Текущие выбросы завода в пределах действующего ПДВ, но новый норматив может быть строже.',
-    correct: 'risk',
-    explanation: 'Риск. Изменение норматива может привести к тому, что текущие меры не обеспечат соответствие. Нужно заранее оценить разрыв и подготовить план действий.',
-    wrongFeedback: {
-      opportunity: 'Это не возможность. Новый норматив создает угрозу несоответствия, а не потенциал для улучшения. Возможность была бы, если бы завод мог добровольно снизить выбросы и получить преимущество.'
-    }
+    id:'case1',
+    title:'Кейс 1. Склад работает по старой памятке',
+    subtitle:'Как связать риск с обязательством',
+    conditions:[
+      'Завод отгружает стекло заказчику.',
+      'По договору перед каждой отгрузкой склад проверяет тару по согласованному перечню и записывает результат в лист комплектации.',
+      'Перечень обновили. Новую версию получил только сотрудник, который ведет договор.',
+      'На складе до сих пор работает старая памятка. Никто не назначил, кто передает изменения и кто обновляет рабочие документы.',
+      'Ошибочных отгрузок пока не было, или о них ничего не известно.'
+    ],
+    conditionsNote:'Все обстоятельства - учебные условия задания.',
+    question:'Как поступить дальше?',
+    hint:'Сначала отделите то, что уже известно, от того, что только может случиться. Потом найдите причину возможной ошибки.',
+    options:[
+      {t:'Сравнить версии перечня, передать складу актуальную памятку и договориться, кто и как обновляет ее дальше.',
+       feedback:'Верный шаг. Вы убираете саму причину: склад получает актуальный перечень, а дальше будет понятно, кто передает изменения и кто контролирует обновление.',
+       correct:true},
+      {t:'Записать, что склад уже нарушил договор.',
+       feedback:'Рано. Пока известна только старая памятка. Была ли ошибочная отгрузка - неизвестно. Сначала проверьте факты, потом делайте вывод о нарушении.',
+       correct:false},
+      {t:'Попросить склад быть внимательнее.',
+       feedback:'Не поможет. Дело не во внимательности: склад просто не знает, где взять новый перечень. Пока нет порядка обновления, ситуация повторится.',
+       correct:false}
+    ],
+    chain:[
+      ['Факт','Склад работает по старой памятке, порядок обновления не назначен'],
+      ['Риск','Склад проверит тару по старому перечню и отгрузит продукцию в неподходящей таре'],
+      ['Последствие','Завод нарушит условие договора с заказчиком'],
+      ['Действие','Сравнить версии, передать складу актуальную памятку, назначить порядок обновления'],
+      ['Проверка','При следующей правке перечня сверить памятку склада и записи в листах комплектации с актуальной версией']
+    ],
+    conclusion:'Риск - это не сама старая памятка, а то, что из-за нее может случиться. Действие убирает причину, а не призывает быть внимательнее.'
   },
   {
-    id: 2,
-    text: 'Подрядчик по вывозу отходов предлагает новую схему сортировки стеклобоя. Это позволит продать часть боя как вторсырье и сократить плату за размещение.',
-    correct: 'opportunity',
-    explanation: 'Возможность. Новая схема позволяет сократить отходы и получить доход. Нужно оценить предложение и при принятии решения включить в план действий.',
-    wrongFeedback: {
-      risk: 'Это не риск. Подрядчик предлагает улучшение, которое дает экономическую выгоду и снижает воздействие. Риск был бы, если бы схема могла привести к нарушениям или дополнительным затратам.'
-    }
+    id:'case2',
+    title:'Кейс 2. Расход воды снизился',
+    subtitle:'Как не перепутать изменение показателя с улучшением',
+    conditions:[
+      'Завод каждый месяц отдельно записывает два показателя: сколько воды потребили и сколько стекла выпустили.',
+      'В прошлом месяце общий расход воды стал меньше. Выпуск стекла тоже стал меньше.',
+      'Руководитель участка хочет сразу записать: «стали экономнее расходовать воду». Никто не посчитал, как изменился расход на тонну стекла.'
+    ],
+    conditionsNote:'Все обстоятельства - учебные условия задания.',
+    question:'Какой шаг даст обоснованный вывод?',
+    hint:'Какие два показателя уже есть, но на них смотрят по отдельности?',
+    options:[
+      {t:'Проверить, сопоставимы ли данные, и посчитать расход воды на тонну стекла.',
+       feedback:'Верно. Так вы отделите две причины: завод действительно стал тратить меньше воды или просто выпустил меньше стекла. Дальше можно учесть и другие обстоятельства месяца.',
+       correct:true},
+      {t:'Записать улучшение, потому что общий расход стал меньше.',
+       feedback:'Рано. Общий расход мог упасть просто из-за снижения выпуска. Пока расход не сопоставлен с выпуском, вывод об улучшении не обоснован.',
+       correct:false},
+      {t:'Сразу предложить купить более экономное оборудование.',
+       feedback:'Рано. Еще не понятно, где и почему изменился расход. Покупка без разбора данных может не решить настоящую причину.',
+       correct:false}
+    ],
+    chain:[
+      ['Факт','Расход воды и выпуск стекла снизились за один период; оба показателя доступны'],
+      ['Риск ошибочного решения','Снижение выпуска примут за улучшение использования воды'],
+      ['Возможность','Сопоставимые данные позволяют точно оценить расход на тонну продукции'],
+      ['Действие','Проверить границы учета и сопоставить расход с выпуском'],
+      ['Проверка','Убедиться, что вывод учитывает выпуск и другие выявленные обстоятельства месяца']
+    ],
+    conclusion:'Возможность здесь в том, что данные уже собираются: их сопоставление дает точную картину. Сам пересчет еще не гарантирует экономию воды.'
   },
   {
-    id: 3,
-    text: 'Начальник производства сообщает, что один из операторов печи уходит на пенсию. Новый оператор будет обучаться на месте, но опыт работы с газоочисткой у него небольшой.',
-    correct: 'risk',
-    explanation: 'Риск. Уход опытного оператора и недостаток опыта у нового создают риск нарушения режима работы печи и газоочистки. Нужно усилить обучение и контроль.',
-    wrongFeedback: {
-      opportunity: 'Это не возможность. Хотя новый сотрудник может принести свежие идеи, в данной ситуации акцент на недостатке опыта создает угрозу выполнения требований. Возможность была бы, если бы новый оператор имел уникальный опыт или предлагал улучшения.'
-    }
+    id:'case3',
+    title:'Кейс 3. Мера записана, но не выполняется',
+    subtitle:'Как отличить известную проблему от возможного последствия',
+    conditions:[
+      'Снова пересыпание сырья на учебном заводе: по условию задания часть пыли при пересыпании попадает в воздух.',
+      'Правила работы предписывают перед началом смены проверять укрытие узла пересыпания. Это условная мера для упражнения.',
+      'Выяснилось, что проверку иногда пропускают. Увеличивается ли из-за этого выброс - неизвестно: замеров не делали.'
+    ],
+    conditionsNote:'Все обстоятельства - учебные условия задания.',
+    question:'Что записать в запись о риске?',
+    hint:'Что уже произошло? Что из-за этого может остаться незамеченным? Какое последствие еще предстоит проверить?',
+    options:[
+      {t:'Записать пропуски проверки. Отдельно отметить, что нужно проверить влияние состояния укрытия на выброс.',
+       feedback:'Верно. Вы разделили известное (проверки пропускают) и то, что еще предстоит проверить (как состояние укрытия влияет на выброс). Это честная и полезная запись.',
+       correct:true},
+      {t:'Записать только «выброс пыли».',
+       feedback:'Мало. Это повтор аспекта из прошлого урока, но не показано, какое обстоятельство может изменить результат. Запись без причины не поможет спланировать действия.',
+       correct:false},
+      {t:'Записать, что выброс уже увеличился и норматив нарушен.',
+       feedback:'Таких данных нет. Пропуск проверки сам по себе не доказывает рост выброса или нарушение норматива. Непроверенное нельзя писать в запись как факт.',
+       correct:false}
+    ],
+    chain:[
+      ['Факт','Предусмотренную правилами проверку укрытия иногда пропускают'],
+      ['Возможное событие','Повреждение укрытия может остаться незамеченным'],
+      ['Возможное последствие','Пыление может усилиться'],
+      ['Действие','Выяснить причины пропусков и уточнить порядок проверки с участком'],
+      ['Проверка','Сопоставить фактические проверки с установленным порядком; отдельно оценить состояние укрытия']
+    ],
+    conclusion:'Известную проблему не откладывают только потому, что последствие еще не наступило. Но и возможное последствие не выдают за установленный факт.'
   },
   {
-    id: 4,
-    text: 'Главный инженер предлагает заменить старые горелки печи на энергосберегающие. Это снизит расход газа на 15 процентов и уменьшит выбросы.',
-    correct: 'opportunity',
-    explanation: 'Возможность. Замена горелок снижает расход ресурсов и воздействие. Нужно подготовить технико-экономическое обоснование и включить в план инвестиций.',
-    wrongFeedback: {
-      risk: 'Это не риск. Предложение направлено на улучшение: снижение затрат и воздействия. Риск был бы, если бы новые горелки могли не обеспечить нужные параметры или потребовать дополнительных разрешений.'
-    }
-  },
-  {
-    id: 5,
-    text: 'Жители ближайшего поселка жалуются на запах от склада сырья. Источник запаха не установлен, но проверка надзорного органа возможна.',
-    correct: 'risk',
-    explanation: 'Риск. Жалобы жителей могут привести к проверке и ограничениям. Нужно установить источник запаха и принять меры до проверки.',
-    wrongFeedback: {
-      opportunity: 'Это не возможность. Жалобы создают угрозу репутации и проверок. Возможность была бы, если бы завод мог добровольно улучшить ситуацию и получить поддержку сообщества или преимущества.'
-    }
-  }
-];
-
-var MISTAKES = [
-  {
-    title: 'Сводить риски только к авариям',
-    problem: 'Вы пишете только «разлив масла» или «пожар на складе». Итог: вы упускаете риски несоблюдения обязательств, репутационные риски, риски изменений.',
-    solution: 'Решение: смотрите на все四个方面 — аспекты, обязательства, условия, стороны.'
-  },
-  {
-    title: 'Путать риск с аспектом',
-    problem: 'Вы пишете риск «выброс пыли от пересыпки шихты». Это аспект, а не риск. Риск — это «залповый выброс пыли при разрыве рукава фильтра». Аспект описывает факт, риск описывает вероятность негативного исхода.',
-    solution: 'Решение: аспект — это как работа взаимодействует со средой. Риск — что может пойти не так при этом взаимодействии.'
-  },
-  {
-    title: 'Путать возможность с целью',
-    problem: 'Вы пишете возможность «снизить выбросы на 20 процентов». Это цель, а не возможность. Возможность — «замена технологии очистки позволяет снизить выбросы». Цель — конкретный измеримый результат, возможность — точка улучшения.',
-    solution: 'Решение: возможность описывает, что можно сделать. Цель описывает, какой результат хотите получить.'
-  },
-  {
-    title: 'Определять риски и возможности без связи с аспектами и обязательствами',
-    problem: 'Вы собираете общие риски предприятия: «падение спроса», «увольнение ключевых сотрудников». Это бизнес-риски, а не экологические.',
-    solution: 'Решение: связывайте каждый риск и возможность с конкретным аспектом или обязательством.'
-  },
-  {
-    title: 'Оценивать вероятность и тяжесть на этом этапе',
-    problem: 'Вы сразу присваиваете баллы и строите матрицу. Это преждевременно.',
-    solution: 'Решение: сначала соберите полный перечень, потом будете оценивать и планировать действия.'
+    id:'case4',
+    title:'Кейс 4. Подрядчик еще не подтвердил условия',
+    subtitle:'Как проверить предположение до начала работы',
+    conditions:[
+      'Завод готовит задание для внешнего подрядчика. После работ останутся материалы, которые нужно куда-то передать или утилизировать.',
+      'В переписке сотрудники пишут: «исполнитель заберет все остатки». В проекте договора этого пункта нет.',
+      'Состав и статус остатков еще не уточнены. Работы не начались.'
+    ],
+    conditionsNote:'Все обстоятельства - учебные условия задания.',
+    question:'Что сделать до согласования задания?',
+    hint:'На какое предположение сейчас опираются участники? Где оно подтверждено?',
+    options:[
+      {t:'Уточнить состав остатков и применимые требования, затем согласовать действия с закупками и подразделением-заказчиком работ.',
+       feedback:'Верно. Дешевле уточнить условия до начала работ, чем переделывать после. Участники договорятся, кто что делает, и предположение перестанет быть только перепиской.',
+       correct:true},
+      {t:'Записать, что исполнитель обязан забрать все остатки, потому что он выполняет работы.',
+       feedback:'Это условие нигде не подтверждено. Сам факт привлечения подрядчика не означает, что он отвечает за остатки. Без пункта договора запись будет недостоверной.',
+       correct:false},
+      {t:'Дождаться окончания работ - тогда будет понятнее.',
+       feedback:'Часть сведений действительно появится по ходу работ. Но известный пробел - кто забирает остатки - можно закрыть сейчас, пока решения еще обсуждаются.',
+       correct:false}
+    ],
+    chain:[
+      ['Факт','Участники ожидают, что исполнитель заберет остатки, но условие не согласовано в документах'],
+      ['Риск','После работ окажется, что за остатки никто не отвечает'],
+      ['Возможное последствие','Материалы останутся без установленного порядка обращения'],
+      ['Действие','Уточнить состав остатков и требования, согласовать действия с закупками и заказчиком работ'],
+      ['Проверка','Сопоставить согласованные документы с фактическими действиями после завершения работ']
+    ],
+    conclusion:'Предположение участника не равно согласованному условию. В записи видно, что еще предстоит выяснить и закрепить.'
   }
 ];
 
 /* ========== СОСТОЯНИЕ ========== */
-var state = {
-  current: 0,
-  answers: [],
-  selected: null
-};
+var state = { viewed: [], current: null, selected: null, conditionsVisible: true };
 
-/* ========== УТИЛИТЫ ========== */
-function $(id) { return document.getElementById(id); }
-function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
-function resizeIframe() {
-  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') window.parentIFrame.size();
-}
-function showScreen(id) {
-  ['screen-intro', 'screen-practice', 'screen-final'].forEach(function(s) {
-    $(s).classList.remove('active');
-  });
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function resizeIframe(){ if(window.parentIFrame && typeof window.parentIFrame.size==='function') window.parentIFrame.size(); }
+function showScreen(id){
+  ['screen-intro','screen-case','screen-final'].forEach(function(s){ $(s).classList.remove('active'); });
   $(id).classList.add('active');
-  window.scrollTo({ top: 0, behavior: 'smooth' });
+  var h=$(id).querySelector('h1'); if(h){ h.setAttribute('tabindex','-1'); h.focus({preventScroll:true}); }
+  window.scrollTo({top:0,behavior:'smooth'});
   resizeIframe();
 }
 
-/* ========== ПРАКТИКА ========== */
-function startPractice() {
-  state = { current: 0, answers: [], selected: null };
-  renderProgress();
-  renderSituation();
-  showScreen('screen-practice');
-}
-
-function renderProgress() {
-  var bar = $('progressBar');
-  bar.innerHTML = '';
-  for (var i = 0; i < SITUATIONS.length; i++) {
-    var dot = document.createElement('div');
-    dot.className = 'progress-dot';
-    if (i < state.current) dot.className += ' done';
-    else if (i === state.current) dot.className += ' active';
-    bar.appendChild(dot);
+/* ========== СТАРТОВЫЙ ЭКРАН ========== */
+function goIntro(){ renderIntro(); showScreen('screen-intro'); }
+function renderIntro(){
+  var grid=$('caseGrid'); grid.innerHTML='';
+  CASES.forEach(function(c){
+    var done = state.viewed.indexOf(c.id)>=0;
+    var b=document.createElement('button');
+    b.type='button';
+    b.className='case-card'+(done?' done':'');
+    b.onclick=function(){ openCase(c.id); };
+    b.innerHTML='<span class="case-num">'+(done?'просмотрен':'кейс')+'</span><h3>'+esc(c.title.replace(/^Кейс \d+\. /,''))+'</h3><p>'+esc(c.subtitle)+'</p>';
+    grid.appendChild(b);
+  });
+  $('progressLine').textContent='Кейсы просмотрены: '+state.viewed.length+' из '+CASES.length;
+  var nav=$('introNav'); nav.innerHTML='';
+  if(state.viewed.length>=CASES.length){
+    var f=document.createElement('button');
+    f.className='btn btn-primary'; f.textContent='Итоговый разбор';
+    f.onclick=function(){ showScreen('screen-final'); };
+    nav.appendChild(f);
   }
-}
-
-function renderSituation() {
-  var s = SITUATIONS[state.current];
-  $('situationTitle').textContent = 'Ситуация ' + s.id + ' из ' + SITUATIONS.length;
-  
-  var html = '<div class="situation-card">';
-  html += '<span class="situation-label">Ситуация ' + s.id + '</span>';
-  html += '<p class="situation-text">' + esc(s.text) + '</p>';
-  html += '<div class="choice-box">';
-  html += '<button type="button" class="choice-btn" onclick="selectAnswer(\'risk\')">Риск</button>';
-  html += '<button type="button" class="choice-btn" onclick="selectAnswer(\'opportunity\')">Возможность</button>';
-  html += '</div>';
-  html += '</div>';
-  
-  $('situationBox').innerHTML = html;
-  $('feedbackBox').innerHTML = '';
-  $('navBox').innerHTML = '';
-  state.selected = null;
   resizeIframe();
 }
 
-function selectAnswer(answer) {
-  if (state.selected) return;
-  state.selected = answer;
-  state.answers.push(answer);
-  
-  var s = SITUATIONS[state.current];
-  var isCorrect = (answer === s.correct);
-  
-  var buttons = document.querySelectorAll('.choice-btn');
-  buttons.forEach(function(btn) {
-    btn.disabled = true;
-    if (btn.textContent.toLowerCase().includes(answer === 'risk' ? 'риск' : 'возможность')) {
-      btn.classList.add(answer === 'risk' ? 'selected-risk' : 'selected-opportunity');
-    } else {
-      btn.classList.add('dim');
+/* ========== КЕЙС ========== */
+function openCase(id){
+  var c=null; CASES.forEach(function(x){ if(x.id===id) c=x; });
+  state.current=c; state.selected=null; state.conditionsVisible=true;
+  $('caseTitle').textContent=c.title;
+  renderConditions();
+  renderChoice();
+  showScreen('screen-case');
+}
+function renderConditions(){
+  var c=state.current;
+  var h='<div class="conditions-card"><strong>Что известно</strong><ul>';
+  c.conditions.forEach(function(t){ h+='<li>'+esc(t)+'</li>'; });
+  h+='</ul>';
+  if(c.conditionsNote) h+='<div class="conditions-note">'+esc(c.conditionsNote)+'</div>';
+  h+='</div>';
+  $('conditionsPanel').innerHTML=h;
+  $('conditionsPanel').style.display=state.conditionsVisible?'block':'none';
+}
+function toggleConditions(){
+  state.conditionsVisible=!state.conditionsVisible;
+  $('conditionsPanel').style.display=state.conditionsVisible?'block':'none';
+  resizeIframe();
+}
+function renderChoice(){
+  var c=state.current;
+  var h='<div class="question-box"><div class="q-label">Вопрос</div><p class="q-text">'+esc(c.question)+'</p></div>';
+  h+='<div class="hint-box"><strong>Подсказка</strong>'+esc(c.hint)+'</div>';
+  h+='<div class="options">';
+  c.options.forEach(function(o,i){
+    var cls='option-btn';
+    if(state.selected!==null){
+      if(state.selected===i) cls+= o.correct?' selected-correct':' selected-wrong';
+      else cls+=' dim';
     }
+    h+='<button type="button" class="'+cls+'"'+(state.selected!==null?' disabled':'')+' onclick="selectOption('+i+')">'+esc(o.t)+'</button>';
   });
-  
-  var fb = document.createElement('div');
-  fb.className = 'feedback ' + (isCorrect ? 'correct' : 'wrong');
-  fb.innerHTML = '<strong>' + (isCorrect ? 'Верно' : 'Неверно') + '</strong>' + 
-    (isCorrect ? esc(s.explanation) : esc(s.wrongFeedback[answer]));
-  $('feedbackBox').appendChild(fb);
-  
-  var nav = $('navBox');
-  if (state.current < SITUATIONS.length - 1) {
-    nav.innerHTML = '<button class="btn btn-primary" onclick="nextSituation()">Следующая ситуация</button>';
-  } else {
-    nav.innerHTML = '<button class="btn btn-primary" onclick="showFinal()">Завершить практику</button>';
+  h+='</div>';
+  if(state.selected!==null){
+    var o=c.options[state.selected];
+    h+='<div class="feedback show '+(o.correct?'correct':'wrong')+'"><strong>'+(o.correct?'Верно':'Не совсем')+'</strong>'+esc(o.feedback)+'</div>';
+  }
+  $('caseContent').innerHTML=h;
+  var nav=$('caseNav'); nav.innerHTML='';
+  if(state.selected!==null){
+    if(!c.options[state.selected].correct){
+      var rb=document.createElement('button');
+      rb.className='btn btn-secondary'; rb.textContent='Изменить ответ';
+      rb.onclick=function(){ state.selected=null; renderChoice(); };
+      nav.appendChild(rb);
+    }
+    var nb=document.createElement('button');
+    nb.className='btn btn-primary'; nb.textContent='Показать итоговую цепочку';
+    nb.onclick=showChain;
+    nav.appendChild(nb);
+  }
+  resizeIframe();
+}
+function selectOption(i){
+  if(state.selected!==null) return;
+  state.selected=i;
+  renderChoice();
+}
+function showChain(){
+  var c=state.current;
+  if(state.viewed.indexOf(c.id)<0) state.viewed.push(c.id);
+  var h='<div class="hint-box"><strong>Итоговая цепочка</strong></div>';
+  h+='<table class="chain-table"><tbody>';
+  c.chain.forEach(function(row){ h+='<tr><th>'+esc(row[0])+'</th><td>'+esc(row[1])+'</td></tr>'; });
+  h+='</tbody></table>';
+  h+='<div class="conclusion"><strong>Вывод</strong>'+esc(c.conclusion)+'</div>';
+  $('caseContent').innerHTML=h;
+  var nav=$('caseNav'); nav.innerHTML='';
+  var all = state.viewed.length>=CASES.length;
+  var b1=document.createElement('button');
+  b1.className='btn btn-secondary'; b1.textContent='К списку кейсов';
+  b1.onclick=goIntro;
+  nav.appendChild(b1);
+  if(all){
+    var b2=document.createElement('button');
+    b2.className='btn btn-primary'; b2.textContent='Итоговый разбор';
+    b2.onclick=function(){ showScreen('screen-final'); };
+    nav.appendChild(b2);
   }
   resizeIframe();
 }
 
-function nextSituation() {
-  state.current++;
-  renderProgress();
-  renderSituation();
-}
-
-function showFinal() {
-  renderMistakes();
-  showScreen('screen-final');
-}
-
-/* ========== ОШИБКИ ========== */
-function renderMistakes() {
-  var box = $('mistakesBox');
-  var html = '';
-  MISTAKES.forEach(function(m, idx) {
-    html += '<details class="mistake"><summary>Ошибка ' + (idx + 1) + '. ' + esc(m.title) + '</summary>';
-    html += '<div class="mistake-body">';
-    html += '<p class="problem"><strong>К чему приводит.</strong> ' + esc(m.problem) + '</p>';
-    html += '<p class="solution"><strong>Решение.</strong> ' + esc(m.solution) + '</p>';
-    html += '</div></details>';
-  });
-  box.innerHTML = html;
+/* ========== ИТОГОВЫЙ РАЗБОР ========== */
+function restartAll(){
+  state.viewed=[]; state.current=null; state.selected=null;
+  $('finalNote').textContent='';
+  goIntro();
 }
 
 /* ========== СТАРТ ========== */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function(){
+  $('finalNote').textContent='Вы просмотрели все четыре кейса. Цепочка «факт - последствие - действие - проверка» работает одинаково для рисков и возможностей: она не дает ни преувеличивать угрозу, ни записывать неподтвержденное как факт.';
+  renderIntro();
   resizeIframe();
-  if ('ResizeObserver' in window) {
-    var ro = new ResizeObserver(function() { resizeIframe(); });
-    ro.observe(document.body);
-  }
+  if('ResizeObserver' in window){ var ro=new ResizeObserver(function(){resizeIframe();}); ro.observe(document.body); }
 });
-window.addEventListener('load', function() { resizeIframe(); });
+window.addEventListener('load', function(){ resizeIframe(); });
 </script>
 
 </body>
