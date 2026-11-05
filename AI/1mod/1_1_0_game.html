@@ -8,442 +8,822 @@
   @import url('https://fonts.googleapis.com/css2?family=VT323&display=swap');
 
   :root{
-    --ink:#101010;
-    --paper:#ffffff;
-    --cream:#fff8e0;
-    --sky:#9fd9ff;
-    --sky2:#c9f2ff;
-    --grass:#63b034;
-    --grass2:#8fdb5d;
-    --yellow:#ffd838;
-    --green:#d9ffd8;
-    --green-d:#1f7a1f;
-    --blue:#2f6fd8;
-    --red:#e83838;
-    --panel:#fffaf0;
-    --sky-tone:#9fd9ff;
-    --sky-tone-2:#c9f2ff;
-    --grass-tone:#63b034;
-    --grass-tone-2:#8fdb5d;
+    --ink:#000; --paper:#fff;
+    --sky:#5c94fc; --sky2:#98c8fc;
+    --yellow:#f8b800; --green:#00e800; --green-d:#008000;
+    --blue:#0058f8; --red:#f83800;
+    --sky-tone:#5c94fc; --sky-tone-2:#98c8fc;
+    --grass-tone:#00a800; --grass-tone-2:#80d010;
+    --wall-1:#eef4fa; --wall-2:#cfe0ee;
+    --wood-1:#a06a3a; --wood-2:#7a4a22; --wood-3:#c88a50;
   }
 
-  *{box-sizing:border-box;image-rendering:pixelated}
-  
-  /* 1. УБРАНЫ ОГРАНИЧЕНИЯ И РАМКИ У КОРНЕВЫХ ЭЛЕМЕНТОВ */
-  html, body {
-    width: 100%;
-    min-height: 100%;
-    margin: 0;
-    padding: 0;
-    background: #ffffff; /* Белый фон без рамок */
-    border: none;
-    outline: none;
-    font-family: 'VT323', 'Courier New', monospace;
-    color: var(--ink);
-    user-select: none;
-    overflow-x: hidden;
-  }
-  
-  button { font-family: inherit; }
-  
-  /* 2. КОНТЕЙНЕР БОЛЬше НЕ ФИКСИРОВАН И НЕ ОБРЕЗАЕТ КОНТЕНТ */
-  #stage {
-    position: relative;
-    width: 100%;
-    min-height: 100%;
-    display: flex;
-    align-items: flex-start;
-    justify-content: center;
-    background: #ffffff;
-  }
-  
-  /* 3. ФРЕЙМ ИГРАЕТ РОЛЬ ГИБКОГО КОНТЕЙНЕРА */
-  #frame {
-    position: relative;
-    width: 100%;
-    background: var(--sky);
-    transition: height 0.3s ease;
-    /* Убраны: max-width, height, border, box-shadow, overflow: hidden */
-  }
-  
-  .screen { position: absolute; inset: 0; display: none; }
-  .screen.active { display: block; }
-  .hidden { display: none !important; }
+  *{box-sizing:border-box; image-rendering:pixelated; image-rendering:-moz-crisp-edges; image-rendering:crisp-edges;}
 
-  .pixel-btn {
-    font-size: 16px; line-height: 1.2; color: #123212;
-    background: var(--green); border: 2px solid #000;
-    box-shadow: 2px 2px 0 #000; cursor: pointer; padding: 6px 8px;
-    transition: transform .08s ease;
+  html,body{
+    width:100%; height:auto; min-height:0; margin:0; padding:0;
+    background:#202020; border:none; outline:none;
+    font-family:'VT323',monospace; color:var(--ink);
+    user-select:none; overflow-x:hidden; font-size:18px;
   }
-  .pixel-btn:hover:not(:disabled) { background: #c8ffc0; }
-  .pixel-btn:active:not(:disabled) { transform: translate(2px, 2px); box-shadow: none; }
-  .pixel-btn:disabled { opacity: .45; cursor: default; }
-  .pixel-btn.selected { background: var(--yellow); }
-  .pixel-btn.primary { background: var(--yellow); color: #4a3000; font-size: 19px; }
-  .pixel-btn.primary:hover:not(:disabled) { background: #ffe680; }
+  button{font-family:inherit;}
 
-  /* ---------- START ---------- */
-  #screen-start {
-    background: linear-gradient(180deg, var(--sky-tone) 0%, var(--sky-tone-2) 66%, var(--grass-tone-2) 66%, var(--grass-tone) 100%);
-    min-height: 400px; /* Минимальная высота для стартового экрана */
-  }
-  .cloud { position: absolute; background: #fff;
-    box-shadow: 6px -4px 0 #fff, 14px 0 0 #fff, 4px 4px 0 rgba(255,255,255,.9);
-    animation: drift 28s linear infinite; }
-  .cloud-1 { width: 20px; height: 7px; left: 40px; top: 38px; }
-  .cloud-2 { width: 24px; height: 8px; left: 300px; top: 24px; animation-duration: 36s; animation-delay: -12s; }
-  .cloud-3 { width: 16px; height: 6px; left: 470px; top: 64px; animation-duration: 32s; animation-delay: -20s; }
-  @keyframes drift { 0% { transform: translateX(0); } 100% { transform: translateX(-90px); } }
-
-  .start-head {
-    position: absolute; left: 14px; right: 14px; top: 14px; z-index: 8;
-    background: rgba(255,255,255,.97);
-    border: 3px solid #000; box-shadow: 4px 4px 0 rgba(0,0,0,.22);
-    padding: 10px 12px;
-  }
-  .start-head h1 { margin: 0 0 6px; font-size: 22px; line-height: 1.15; color: #173d8d; }
-  .start-head p { margin: 0; font-size: 15px; line-height: 1.3; }
-
-  .start-scene { position: absolute; left: 0; right: 0; bottom: 0; height: 250px; pointer-events: none; }
-  .ground { position: absolute; left: 0; right: 0; bottom: 0; height: 44px;
-    background: var(--grass-tone); border-top: 3px solid #000;
-    box-shadow: inset 0 6px 0 var(--grass-tone-2); }
-  .ground::after { content: ''; position: absolute; inset: 0;
-    background: repeating-linear-gradient(90deg, transparent 0 10px, rgba(0,0,0,.12) 10px 12px); }
-
-  .sprite { position: absolute; bottom: 44px; width: 34px; height: 62px; }
-  .sprite.eco { left: 150px; animation: bob 1.6s steps(2) infinite; }
-  .sprite.boss { left: 390px; animation: bob 1.4s steps(2) infinite .2s; }
-  @keyframes bob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-2px); } }
-  .sprite::before, .sprite::after { content: ''; position: absolute; border: 2px solid #000; }
-  .sprite.eco::before { left: 6px; top: 0; width: 20px; height: 20px; background: #f2c293;
-    box-shadow: inset 0 -7px 0 #6b4a2f; }
-  .sprite.eco::after { left: 3px; top: 22px; width: 28px; height: 38px; background: #2f5fd8;
-    box-shadow: inset 7px 0 0 #d8d8d8, inset 0 9px 0 #f8f8f8; }
-  .sprite.boss::before { left: 6px; top: 0; width: 20px; height: 20px; background: #f2c293;
-    box-shadow: inset 0 6px 0 #3a3a3a; }
-  .sprite.boss::after { left: 3px; top: 22px; width: 28px; height: 38px; background: #5d6470;
-    box-shadow: inset 6px 0 0 #d8d8d8, inset 12px 8px 0 #c02020; }
-
-  .name-label {
-    position: absolute; bottom: 108px; z-index: 11;
-    font-size: 11px; background: #fff; border: 2px solid #000;
-    padding: 1px 6px; color: #173d8d; text-align: center; min-width: 72px;
-    white-space: nowrap;
-  }
-  .eco-label { left: 131px; }
-  .boss-label { left: 371px; }
-
-  .bubble {
-    position: absolute; z-index: 9; max-width: 250px;
-    background: #fff; border: 3px solid #000; padding: 8px 10px;
-    font-size: 15px; line-height: 1.3; box-shadow: 3px 3px 0 rgba(0,0,0,.22);
-    opacity: 0; transition: opacity .2s ease;
-  }
-  .bubble.show { opacity: 1; }
-  .bubble .who { display: block; font-size: 13px; color: #173d8d; margin-bottom: 2px; }
-  .bubble.eco { left: 14px; bottom: 196px; }
-  .bubble.boss { right: 14px; bottom: 150px; }
-
-  .start-controls {
-    position: absolute; left: 14px; right: 14px; bottom: 14px; z-index: 12;
-    display: flex; gap: 8px; justify-content: center;
-  }
-  .start-controls .pixel-btn { flex: 1; max-width: 260px; }
-
-  /* ---------- GAME ---------- */
-  #screen-game { background: #f5f5f5; min-height: 600px; }
-  #topbar {
-    height: 56px; display: flex; justify-content: space-between; align-items: center;
-    padding: 5px 8px; background: var(--panel); border-bottom: 3px solid #000;
-  }
-  .hud { display: flex; align-items: center; gap: 8px; }
-  .hud.right { flex-direction: column; align-items: flex-end; gap: 2px; }
-  .clock { width: 38px; height: 38px; border-radius: 50%; border: 3px solid #000;
-    background: #fff; position: relative; flex: 0 0 auto; }
-  .hand { position: absolute; left: 50%; bottom: 50%; transform-origin: 50% 100%; background: #000; }
-  .hand.h { width: 3px; height: 10px; margin-left: -1.5px; }
-  .hand.m { width: 2px; height: 14px; margin-left: -1px; background: var(--red); }
-  .digital { font-size: 20px; color: #173d8d; line-height: 1; }
-  .sub { font-size: 12px; color: #7a4a00; }
-  .label { font-size: 11px; color: #5a4a00; }
-  .cells { display: flex; gap: 2px; }
-  .cell { width: 10px; height: 10px; border: 2px solid #000; background: #e8e0c8;
-    transition: background .25s ease; }
-  .cell.fill { background: #48c838; box-shadow: inset -2px -2px 0 rgba(0,0,0,.18); }
-  .err { font-size: 11px; color: #a02020; }
-  .penalty {
-    position: absolute; right: 8px; top: 56px; z-index: 30;
-    font-size: 14px; color: var(--red); font-weight: bold;
-    background: #fff; border: 2px solid #000; padding: 2px 6px;
-    opacity: 0; transform: translateY(-6px); transition: opacity .2s, transform .2s;
-  }
-  .penalty.show { opacity: 1; transform: translateY(0); }
-
-  #office {
-    height: 210px; position: relative; overflow: hidden;
-    background: linear-gradient(180deg, var(--sky-tone) 0%, var(--sky-tone-2) 78%, var(--grass-tone-2) 78%, var(--grass-tone) 100%);
-    border-bottom: 3px solid #000;
-    transition: background 1.2s ease;
-  }
-  .office-cloud { position: absolute; background: #fff;
-    box-shadow: 5px -3px 0 #fff, 10px 0 0 #fff;
-    animation: drift 24s linear infinite; }
-  .office-cloud.c1 { width: 16px; height: 5px; left: 26px; top: 14px; animation-duration: 28s; }
-  .office-cloud.c2 { width: 18px; height: 6px; left: 400px; top: 10px; animation-duration: 32s; animation-delay: -10s; }
-  .office-cloud.c3 { width: 14px; height: 5px; left: 220px; top: 8px; animation-duration: 26s; animation-delay: -16s; }
-
-  .window-frame {
-    position: absolute; left: 16px; top: 14px; width: 64px; height: 54px;
-    background: var(--sky-tone); border: 4px solid #4c3d2f; overflow: hidden;
-    transition: background 1.2s ease;
-  }
-  .window-frame::before { content: ''; position: absolute; left: 50%; top: 0; bottom: 0; width: 2px;
-    background: #4c3d2f; transform: translateX(-50%); }
-  .window-frame::after { content: ''; position: absolute; top: 50%; left: 0; right: 0; height: 2px;
-    background: #4c3d2f; transform: translateY(-50%); }
-  .moon { position: absolute; right: 6px; top: 6px; width: 14px; height: 14px;
-    background: #fff8c8; border-radius: 50%;
-    box-shadow: 0 0 0 2px rgba(255,248,200,.3);
-    opacity: 0; transition: opacity 1.2s ease; }
-  .moon.show { opacity: 1; }
-  .star { position: absolute; width: 2px; height: 2px; background: #fff;
-    opacity: 0; transition: opacity 1.2s ease; animation: twinkle 2s steps(2) infinite; }
-  .star.show { opacity: 1; }
-  .star-1 { left: 10px; top: 8px; }
-  .star-2 { left: 26px; top: 20px; animation-delay: .5s; }
-  .star-3 { left: 44px; top: 6px; animation-delay: 1s; }
-  @keyframes twinkle { 0%, 100% { opacity: 1; } 50% { opacity: .3; } }
-
-  .monitor-big {
-    position: absolute; left: 50%; top: 14px; transform: translateX(-50%);
-    width: 210px; height: 108px; background: #f8f8f8;
-    border: 3px solid #000; box-shadow: 0 6px 0 rgba(0,0,0,.18);
-  }
-  .monitor-big .scr { position: absolute; inset: 6px; background: #eaffe8;
-    border: 2px solid #000; overflow: hidden; }
-  .monitor-big .scr::after { content: ''; position: absolute; inset: 0;
-    background: repeating-linear-gradient(rgba(255,255,255,.22) 0 2px, transparent 2px 4px);
-    pointer-events: none; }
-  .ln { height: 5px; margin: 6px 6px 0; background: #2f8f2f; opacity: .75; }
-  .ln:nth-child(1) { width: 72%; } .ln:nth-child(2) { width: 86%; }
-  .ln:nth-child(3) { width: 56%; } .ln:nth-child(4) { width: 74%; }
-
-  #ecologist {
-    position: absolute; left: 50%; bottom: 2px; transform: translateX(-50%);
-    width: 104px; z-index: 6;
-  }
-  .cap { width: 26px; height: 9px; margin: 0 auto; background: #28a828;
-    border: 2px solid #000; position: relative; z-index: 5;
-    box-shadow: inset 0 -3px 0 #187818; }
-  .head { width: 24px; height: 17px; margin: -3px auto 0; background: #f2c293;
-    border: 2px solid #000; position: relative; z-index: 4;
-    animation: headBob 1.05s steps(2) infinite; }
-  .body { width: 66px; height: 26px; margin: -2px auto 0; background: #2f5fd8;
-    border: 2px solid #000; position: relative; z-index: 3;
-    box-shadow: inset 0 8px 0 #f8f8f8; }
-  .arm { position: absolute; top: 34px; width: 6px; height: 14px; background: #f2c293;
-    border: 2px solid #000; z-index: 4; animation: typeHands .42s steps(2) infinite; }
-  .arm-l { left: 17px; transform: rotate(16deg); }
-  .arm-r { right: 17px; transform: rotate(-16deg); animation-delay: .16s; }
-  .keyboard { width: 86px; height: 8px; margin: 2px auto 0; background: #d8d8d8;
-    border: 2px solid #000; position: relative; z-index: 2; }
-  @keyframes headBob { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(1px); } }
-  @keyframes typeHands { 0% { transform: translateY(0); } 50% { transform: translateY(2px); } 100% { transform: translateY(0); } }
-
-  #lamp { position: absolute; left: 50%; top: 0; transform: translateX(-50%);
-    width: 0; height: 0; border-left: 70px solid transparent; border-right: 70px solid transparent;
-    border-top: 150px solid rgba(255,230,128,.28);
-    opacity: 0; transition: opacity 1.2s ease; z-index: 1; pointer-events: none; }
-  #lamp.show { opacity: 1; }
-
-  .sticker {
-    position: absolute; width: 62px; height: 56px; padding: 3px;
-    font-size: 10px; line-height: 1.15; text-align: left; color: #3a2800;
-    background: var(--yellow); border: 3px solid #000;
-    box-shadow: inset -3px -3px 0 rgba(0,0,0,.16), 2px 2px 0 rgba(0,0,0,.22);
-    cursor: pointer; z-index: 8; transition: opacity .22s ease;
-  }
-  .sticker small { display: block; margin-top: 2px; font-size: 9px; color: #5a4000; }
-  .sticker.locked { filter: grayscale(.9) brightness(.82); cursor: not-allowed; }
-  .sticker.active { animation: stickerBlink .72s steps(2) infinite; z-index: 10; }
-  .sticker.gone { opacity: 0; pointer-events: none; }
-  @keyframes stickerBlink {
-    0%, 100% { filter: brightness(1); }
-    50% { filter: brightness(1.2); box-shadow: 0 0 0 3px #fff, 2px 2px 0 rgba(0,0,0,.22); }
-  }
-  #s1 { left: 14px; top: 26px; transform: rotate(-4deg); }
-  #s2 { right: 14px; top: 26px; transform: rotate(3deg); }
-  #s3 { right: 14px; top: 96px; transform: rotate(-3deg); }
-
-  .reminder {
-    position: absolute; left: 50%; top: 2px; transform: translateX(-50%); z-index: 9;
-    padding: 4px 6px; background: #fff; color: #101010; border: 2px solid #000;
-    font-size: 12px; line-height: 1.2; box-shadow: 2px 2px 0 rgba(0,0,0,.18);
-    animation: bounceY .8s steps(2) infinite; white-space: nowrap;
-  }
-  .reminder::after { content: ''; position: absolute; left: 50%; bottom: -7px;
-    width: 5px; height: 5px; background: #fff; border-right: 2px solid #000;
-    border-bottom: 2px solid #000; transform: translateX(-50%) rotate(45deg); }
-  @keyframes bounceY { 0%, 100% { transform: translateX(-50%) translateY(0); }
-    50% { transform: translateX(-50%) translateY(-2px); } }
-
-  #work {
-    margin: 6px; padding: 8px; position: relative;
-    background: #fff; border: 3px solid #000;
-    box-shadow: inset 0 0 0 2px #fff, 3px 3px 0 rgba(0,0,0,.18);
-    min-height: 300px; /* Убран max-height, чтобы блок мог расти */
-    display: flex; flex-direction: column;
-  }
-  #work.flash-err { animation: fErr .38s steps(2); }
-  #work.flash-ok { animation: fOk .42s steps(2); }
-  @keyframes fErr { 0% { background: #fff; } 50% { background: #ffe0d8; border-color: var(--red); } 100% { background: #fff; } }
-  @keyframes fOk { 0% { background: #fff; } 50% { background: #e8ffd8; border-color: #28a828; } 100% { background: #fff; } }
-
-  .wtitle { font-size: 16px; color: #173d8d; margin-bottom: 4px; line-height: 1.2; }
-  .wtext { font-size: 14px; line-height: 1.3; margin-bottom: 5px; }
-  .wstatus { min-height: 20px; font-size: 13px; line-height: 1.25; margin-bottom: 5px; }
-  .wstatus.info { color: #1c47a0; }
-  .wstatus.error { color: #c02020; }
-  .wstatus.success { color: #187818; }
-  .wscroll {
-    flex: 1; overflow-y: visible; /* Убран скролл, чтобы контент растягивал фрейм */
-    overflow-x: hidden;
-    display: flex; flex-direction: column; gap: 5px;
-    padding-right: 2px;
+  #stage{
+    position:relative; width:100%; min-height:100%;
+    display:flex; align-items:flex-start; justify-content:center;
+    background:#202020; padding:20px 0;
   }
 
-  .choice-btn { display: block; width: 100%; text-align: left;
-    font-size: 13px; line-height: 1.25; padding: 6px; min-height: 26px; }
+  #frame{
+    position:relative; width:100%; max-width:640px;
+    background:var(--sky); border:6px solid #000;
+    box-shadow:0 0 0 4px #5c5c5c, 0 0 0 8px #000, 8px 8px 0 rgba(0,0,0,.5);
+  }
+  #frame::before{
+    content:''; position:absolute; inset:0; pointer-events:none; z-index:200;
+    background:repeating-linear-gradient(0deg, rgba(0,0,0,.03) 0 1px, transparent 1px 3px);
+  }
 
-  .dots { display: flex; gap: 3px; margin-bottom: 4px; }
-  .dot { width: 10px; height: 10px; border: 2px solid #000; background: #f8e8b0; }
-  .dot.done { background: #48c838; }
-  .dot.current { background: var(--yellow); animation: pulse .8s steps(2) infinite; }
-  @keyframes pulse { 0%, 100% { box-shadow: 0 0 0 0 rgba(255,216,56,.6); }
-    50% { box-shadow: 0 0 0 3px rgba(255,216,56,0); } }
+  .screen{display:none; position:relative;}
+  .screen.active{display:block;}
+  .hidden{display:none !important;}
 
-  .pb-badges { display: flex; flex-wrap: wrap; gap: 3px; margin-bottom: 4px; }
-  .pb-badge { font-size: 10px; padding: 2px 4px; background: #e0e0e0; border: 2px solid #000; color: #555; white-space: nowrap; }
-  .pb-badge.on { background: #d9ffd8; border-color: var(--green-d); color: var(--green-d); }
-  .pb-badge.cur { background: var(--yellow); color: #4a3000; }
+  .pixel-btn{
+    font-size:18px; line-height:1.2; color:#000;
+    background:#e0e0e0; border:3px solid #000;
+    box-shadow:inset 3px 3px 0 #fff, inset -3px -3px 0 #808080, 3px 3px 0 #000;
+    cursor:pointer; padding:6px 12px;
+    transition:transform .05s ease, box-shadow .05s ease;
+  }
+  .pixel-btn:hover:not(:disabled){background:#fff;}
+  .pixel-btn:active:not(:disabled){
+    transform:translate(3px,3px);
+    box-shadow:inset 3px 3px 0 #808080, inset -3px -3px 0 #fff, 0 0 0 #000;
+  }
+  .pixel-btn:disabled{opacity:.5; cursor:default; filter:grayscale(1);}
+  .pixel-btn.selected{background:var(--yellow);}
+  .pixel-btn.primary{
+    background:var(--yellow); color:#000; font-size:20px; font-weight:bold;
+    box-shadow:inset 3px 3px 0 #ffec8b, inset -3px -3px 0 #c89800, 3px 3px 0 #000;
+  }
+  .pixel-btn.primary:hover:not(:disabled){background:#ffec8b;}
+  .pixel-btn.primary:active:not(:disabled){
+    transform:translate(3px,3px);
+    box-shadow:inset 3px 3px 0 #c89800, inset -3px -3px 0 #ffec8b, 0 0 0 #000;
+  }
 
-  .prompt-live {
-    margin-top: 4px; padding: 6px; font-size: 12px; line-height: 1.35;
-    background: #f0f8ff; border: 2px dashed var(--blue);
-    min-height: 48px; white-space: pre-wrap; color: #0b2b57;
+  /* ==================== СТАРТ ==================== */
+  #screen-start{
+    position:relative; min-height:520px; overflow:hidden;
+    background:linear-gradient(180deg,
+      var(--sky-tone) 0%, var(--sky-tone-2) 62%,
+      var(--grass-tone-2) 62%, var(--grass-tone) 100%);
   }
-  .prompt-live .ph { color: #8aa4c8; }
+  #screen-start.active{display:flex; flex-direction:column;}
 
-  .chat { border: 2px solid #000; background: #fff; margin-top: 4px; overflow: hidden; }
-  .chat-head { display: flex; align-items: center; gap: 6px; padding: 4px 6px;
-    background: #e8f2ff; border-bottom: 2px solid #000; font-size: 12px; color: #173d8d; }
-  .chat-dot { width: 8px; height: 8px; border-radius: 50%; background: #48c838; border: 2px solid #000; }
-  .chat-body { padding: 6px; font-size: 12px; line-height: 1.4; white-space: pre-wrap;
-    max-height: none; /* Убрано ограничение высоты */
-    overflow-y: visible; }
-  .chat-body .you { color: #173d8d; }
-  .chat-body .ai { color: #1f5a1f; }
+  .cloud{
+    position:absolute; background:#fff; z-index:1;
+    box-shadow:8px -4px 0 #fff, 16px 0 0 #fff, 4px 4px 0 rgba(255,255,255,.9);
+    animation:drift 32s linear infinite;
+  }
+  .cloud-1{width:24px; height:8px; left:40px; top:38px;}
+  .cloud-2{width:32px; height:10px; left:300px; top:24px; animation-duration:40s; animation-delay:-12s;}
+  .cloud-3{width:20px; height:7px; left:520px; top:64px; animation-duration:36s; animation-delay:-20s;}
+  @keyframes drift{0%{transform:translateX(0);}100%{transform:translateX(-100px);}}
 
-  #overlay { position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
-    background: rgba(0,0,0,.35); z-index: 80; }
-  #overlay.active { display: flex; }
-  .modal { width: 88%; max-width: 460px; padding: 12px; background: #fff;
-    border: 3px solid var(--blue); box-shadow: 5px 5px 0 rgba(0,0,0,.22);
-    animation: pop .28s steps(3); }
-  @keyframes pop { 0% { transform: scale(.75); } 100% { transform: scale(1); } }
-  .modal .mtitle { font-size: 18px; color: #173d8d; margin-bottom: 6px; line-height: 1.25; }
-  .modal .mtext { font-size: 14px; line-height: 1.35; margin-bottom: 8px; }
-  .modal .mresult { padding: 7px 8px; background: #f0fff0;
-    border: 2px solid var(--green-d); font-size: 13px; line-height: 1.35; margin-bottom: 8px; }
-  .modal .mresult.funny { background: #fff8e0; border-color: #c89800; font-style: italic; }
-  .modal .mresult b { color: var(--green-d); }
-  .modal .actions { display: flex; gap: 6px; flex-wrap: wrap; }
-  .modal .actions .pixel-btn { flex: 1; font-size: 14px; min-width: 120px; }
+  .start-head{
+    position:relative; z-index:8; margin:14px 14px 0;
+    background:rgba(255,255,255,.96);
+    border:4px solid #000; box-shadow:4px 4px 0 #000;
+    padding:12px 14px;
+  }
+  .start-head h1{margin:0 0 8px; font-size:26px; line-height:1.1; color:var(--blue); text-transform:uppercase; letter-spacing:1px;}
+  .start-head p{margin:0; font-size:17px; line-height:1.3;}
+  .start-head p + p{margin-top:8px;}
 
-  #osBox, #sofaBox {
-    position: absolute; inset: 0; display: none; align-items: center; justify-content: center;
-    background: rgba(0,0,0,.35); z-index: 75;
+  .start-scene{position:relative; flex:1 1 auto; min-height:250px; margin-top:6px; z-index:2;}
+  .ground{
+    position:absolute; left:0; right:0; bottom:0; height:48px;
+    background:var(--grass-tone); border-top:4px solid #000;
+    box-shadow:inset 0 8px 0 var(--grass-tone-2);
   }
-  #osBox.active, #sofaBox.active { display: flex; }
-  .os-window {
-    width: 92%; max-width: 440px; background: #c0c0c0;
-    border: 3px solid #000; box-shadow: 4px 4px 0 rgba(0,0,0,.35);
-    animation: osIn .25s steps(3);
+  .ground::after{
+    content:''; position:absolute; inset:0;
+    background:repeating-linear-gradient(90deg, transparent 0 12px, rgba(0,0,0,.15) 12px 14px);
   }
-  @keyframes osIn { 0% { transform: scale(.6); } 100% { transform: scale(1); } }
-  .os-titlebar {
-    display: flex; justify-content: space-between; align-items: center;
-    background: #000080; color: #fff; padding: 3px 6px; font-size: 13px;
-  }
-  .os-titlebar .os-x {
-    width: 16px; height: 16px; background: #c0c0c0; border: 2px solid #fff;
-    box-shadow: inset -2px -2px 0 #808080; color: #000; font-size: 12px;
-    display: flex; align-items: center; justify-content: center; cursor: pointer;
-  }
-  .os-body { display: flex; gap: 8px; padding: 12px; align-items: flex-start; }
-  .os-icon { width: 36px; height: 36px; background: var(--yellow); border: 3px solid #000;
-    flex: 0 0 auto; display: flex; align-items: center; justify-content: center;
-    font-size: 20px; }
-  .os-msg { font-size: 14px; line-height: 1.35; cursor: pointer;
-    padding: 2px; border: 2px dashed transparent; border-radius: 2px; }
-  .os-msg:hover { border-color: #808080; background: #dcdcdc; }
-  .os-actions { display: flex; gap: 6px; padding: 0 12px 12px; justify-content: flex-end; flex-wrap: wrap; }
-  .os-actions .pixel-btn { font-size: 13px; padding: 5px 8px; }
 
-  .sofa-window { background: #f0f0f0; }
+  .sprite{position:absolute; bottom:48px; width:40px; height:70px;}
+  .sprite.eco{left:160px; animation:bob 1.6s steps(2) infinite;}
+  .sprite.boss{left:400px; animation:bob 1.4s steps(2) infinite .2s;}
+  @keyframes bob{0%,100%{transform:translateY(0);}50%{transform:translateY(-3px);}}
+  .sprite::before, .sprite::after{content:''; position:absolute; border:3px solid #000;}
+  .sprite.eco::before{left:8px; top:0; width:24px; height:22px; background:#f2c293; box-shadow:inset 0 -8px 0 #6b4a2f;}
+  .sprite.eco::after{left:4px; top:24px; width:32px; height:44px; background:var(--blue); box-shadow:inset 8px 0 0 #d8d8d8, inset 0 10px 0 #f8f8f8;}
+  .sprite.boss::before{left:8px; top:0; width:24px; height:22px; background:#f2c293; box-shadow:inset 0 8px 0 #3a3a3a;}
+  .sprite.boss::after{left:4px; top:24px; width:32px; height:44px; background:#5d6470; box-shadow:inset 8px 0 0 #d8d8d8, inset 14px 10px 0 var(--red);}
 
-  #screen-final {
-    background: linear-gradient(180deg, var(--sky-tone) 0%, var(--sky-tone-2) 66%, var(--grass-tone-2) 66%, var(--grass-tone) 100%);
-    min-height: 600px;
+  .name-label{
+    position:absolute; bottom:120px; z-index:11;
+    font-size:14px; background:#fff; border:3px solid #000;
+    padding:2px 8px; color:var(--blue); text-align:center; min-width:80px;
+    white-space:nowrap; box-shadow:3px 3px 0 rgba(0,0,0,.2);
   }
-  
-  /* 4. ФИНАЛЬНЫЙ ЭКРАН ТЕПЕРЬ РАСТЯГИВАЕТ ФРЕЙМ, А НЕ СКРОЛЛИТСЯ ВНУТРИ */
-  .final-wrap {
-    position: relative; /* Было absolute */
-    inset: auto;        /* Было 12px */
-    width: calc(100% - 24px);
-    margin: 12px;
-    overflow-y: visible; /* Было auto */
-    padding: 12px;
-    background: #fff;
-    border: 3px solid #000;
-    box-shadow: 5px 5px 0 rgba(0,0,0,.2);
+  .eco-label{left:140px;}
+  .boss-label{left:380px;}
+
+  .bubble{
+    position:absolute; z-index:9; max-width:280px;
+    background:#fff; border:4px solid #000; padding:10px 12px;
+    font-size:17px; line-height:1.3; box-shadow:4px 4px 0 #000;
+    opacity:0; transition:opacity .2s ease;
   }
-  .final-wrap h2 { margin: 0 0 8px; font-size: 20px; line-height: 1.25; color: #173d8d; }
-  .final-wrap p { margin: 0 0 6px; font-size: 14px; line-height: 1.35; }
-  .final-wrap .sub { font-size: 14px; line-height: 1.35; margin: 7px 0 5px; color: #7a4a00; font-weight: bold; }
-  .final-wrap ul { margin: 0 0 6px; padding-left: 16px; font-size: 13px; line-height: 1.35; }
-  .final-wrap li { margin-bottom: 4px; }
-  .myth {
-    margin: 6px 0; padding: 7px 9px; border: 2px solid #000;
-    background: #fffaf0; font-size: 13px; line-height: 1.35;
+  .bubble.show{opacity:1;}
+  .bubble .who{display:block; font-size:15px; color:var(--blue); margin-bottom:3px; font-weight:bold;}
+  .bubble.eco{left:14px; bottom:150px;}
+  .bubble.boss{right:14px; bottom:118px;}
+
+  .start-controls{
+    position:relative; z-index:12;
+    display:flex; gap:8px; justify-content:center;
+    padding:10px 14px 14px;
   }
-  .myth .lbl { display: inline-block; background: #000; color: #fff;
-    padding: 1px 6px; font-size: 11px; margin-right: 6px; }
-  .myth.neg { border-color: #8a1a1a; }
-  .myth.neg .lbl { background: #8a1a1a; }
-  .myth.ok { border-color: var(--green-d); }
-  .myth.ok .lbl { background: var(--green-d); }
-  .final-stats {
-    margin-top: 8px; padding: 7px; font-size: 13px; line-height: 1.45;
-    background: #fff; border: 2px solid #000;
+  .start-controls .pixel-btn{flex:1; max-width:280px;}
+
+  /* ==================== ИГРА ==================== */
+  #screen-game{background:#f0f0f0;}
+
+  #topbar{
+    height:60px; display:flex; justify-content:space-between; align-items:center;
+    padding:6px 10px; background:#fcfcfc; border-bottom:4px solid #000;
   }
-  .final-wrap .pixel-btn { margin-top: 8px; font-size: 18px; }
-  
-  .download-box {
-    margin-top: 15px; padding: 12px; border-radius: 4px; text-align: center; border: 2px solid;
+  .hud{display:flex; align-items:center; gap:10px;}
+  .hud.right{flex-direction:column; align-items:flex-end; gap:3px;}
+
+  .clock{
+    width:42px; height:42px; border-radius:50%; border:4px solid #000;
+    background:#fff; position:relative; flex:0 0 auto;
+    box-shadow:inset 2px 2px 0 #ccc;
   }
-  .download-box.success { background: #e8ffd8; border-color: #28a828; }
-  .download-box.fail { background: #ffe0d8; border-color: #e83838; }
-  .download-box p { margin: 0 0 8px 0; font-size: 14px; }
+  .hand{position:absolute; left:50%; bottom:50%; transform-origin:50% 100%; background:#000;}
+  .hand.h{width:4px; height:12px; margin-left:-2px;}
+  .hand.m{width:3px; height:16px; margin-left:-1.5px; background:var(--red);}
+
+  .digital{font-size:24px; color:var(--blue); line-height:1; font-weight:bold;}
+  .sub{font-size:14px; color:#805000;}
+  .label{font-size:13px; color:#5a4a00; font-weight:bold;}
+
+  .cells{display:flex; gap:3px;}
+  .cell{
+    width:12px; height:12px; border:3px solid #000; background:#e8e0c8;
+    transition:background .25s ease; box-shadow:inset 1px 1px 0 rgba(0,0,0,.2);
+  }
+  .cell.fill{background:var(--green); box-shadow:inset -2px -2px 0 rgba(0,0,0,.2);}
+  .err{font-size:13px; color:var(--red); font-weight:bold;}
+
+  .penalty{
+    position:absolute; right:10px; top:64px; z-index:30;
+    font-size:16px; color:var(--red); font-weight:bold;
+    background:#fff; border:3px solid #000; padding:3px 8px;
+    box-shadow:3px 3px 0 #000;
+    opacity:0; transform:translateY(-6px); transition:opacity .2s, transform .2s;
+  }
+  .penalty.show{opacity:1; transform:translateY(0);}
+
+  /* ==================== КАБИНЕТ ==================== */
+  #office{
+    position:relative; height:270px; overflow:hidden;
+    border-bottom:4px solid #000; background:var(--wall-2);
+    transition:background 1.2s ease;
+  }
+  .wall{
+    position:absolute; inset:0; z-index:0;
+    background:linear-gradient(180deg, var(--wall-1) 0%, var(--wall-2) 100%);
+    transition:background 1.2s ease;
+  }
+  .wall::after{
+    content:''; position:absolute; inset:0;
+    background:repeating-linear-gradient(0deg, rgba(0,0,0,.05) 0 2px, transparent 2px 7px);
+  }
+
+  .window-frame{
+    position:absolute; left:18px; top:14px; width:78px; height:66px;
+    background:var(--sky-tone); border:5px solid #4c3d2f; overflow:hidden;
+    box-shadow:inset 2px 2px 0 rgba(255,255,255,.25), 4px 4px 0 rgba(0,0,0,.25);
+    transition:background 1.2s ease; z-index:2;
+  }
+  .window-frame::before{content:''; position:absolute; left:50%; top:0; bottom:0; width:3px; background:#4c3d2f; transform:translateX(-50%);}
+  .window-frame::after{content:''; position:absolute; top:50%; left:0; right:0; height:3px; background:#4c3d2f; transform:translateY(-50%);}
+
+  .moon{
+    position:absolute; right:8px; top:8px; width:16px; height:16px;
+    background:#fff8c8; border-radius:50%;
+    box-shadow:0 0 0 3px rgba(255,248,200,.3);
+    opacity:0; transition:opacity 1.2s ease;
+  }
+  .moon.show{opacity:1;}
+  .star{
+    position:absolute; width:3px; height:3px; background:#fff;
+    opacity:0; transition:opacity 1.2s ease; animation:twinkle 2s steps(2) infinite;
+  }
+  .star.show{opacity:1;}
+  .star-1{left:12px; top:10px;}
+  .star-2{left:30px; top:24px; animation-delay:.5s;}
+  .star-3{left:50px; top:8px; animation-delay:1s;}
+  @keyframes twinkle{0%,100%{opacity:1;}50%{opacity:.3;}}
+
+  /* ==================== КОТИК-ПЛАКАТ ==================== */
+  .cat-poster{
+    position:absolute; right:16px; top:14px; width:92px; height:70px;
+    background:#fff; border:4px solid #000; z-index:2;
+    box-shadow:4px 4px 0 rgba(0,0,0,.25); transform:rotate(1.5deg);
+    padding:4px; text-align:center;
+  }
+  .cat-poster::before{
+    content:''; position:absolute; left:50%; top:-8px; transform:translateX(-50%);
+    width:12px; height:12px; background:#c8c8c8; border:3px solid #000;
+  }
+  .cat-head{
+    position:relative; width:46px; height:36px; margin:2px auto 0;
+    background:#f2a060; border:3px solid #000; border-radius:8px 8px 6px 6px;
+  }
+  .cat-head::before, .cat-head::after{
+    content:''; position:absolute; top:-9px; width:14px; height:12px;
+    background:#f2a060; border:3px solid #000;
+    transform:rotate(45deg);
+  }
+  .cat-head::before{left:1px;}
+  .cat-head::after{right:1px;}
+  .cat-eye{position:absolute; top:10px; width:5px; height:7px; background:#000; border-radius:2px;}
+  .cat-eye.l{left:8px;}
+  .cat-eye.r{right:8px;}
+  .cat-nose{position:absolute; left:50%; top:20px; transform:translateX(-50%);
+    width:6px; height:4px; background:#000;}
+  .cat-whisker{position:absolute; top:20px; width:10px; height:2px; background:#000;}
+  .cat-whisker.l{left:-7px; transform:rotate(-8deg);}
+  .cat-whisker.r{right:-7px; transform:rotate(8deg);}
+  .cat-caption{
+    font-size:9px; line-height:1.1; margin-top:3px;
+    color:#8a4a00; font-weight:bold;
+  }
+
+  /* часы на стене */
+  .wallclock{
+    position:absolute; left:50%; top:10px; transform:translateX(-50%);
+    width:34px; height:34px; background:#fff; border:4px solid #000;
+    border-radius:50%; z-index:2; box-shadow:inset 0 0 0 3px #f8e8b0;
+  }
+  .wallclock::before{
+    content:''; position:absolute; left:50%; top:6px; width:3px; height:11px;
+    background:#000; transform-origin:bottom center; transform:translateX(-50%) rotate(40deg);
+  }
+  .wallclock::after{
+    content:''; position:absolute; left:50%; top:9px; width:3px; height:8px;
+    background:#c00; transform-origin:bottom center; transform:translateX(-50%) rotate(-70deg);
+  }
+
+  .desk{
+    position:absolute; left:0; right:0; bottom:0; height:50px; z-index:1;
+    background:var(--wood-1);
+    border-top:4px solid #000;
+    box-shadow:inset 0 8px 0 var(--wood-3), inset 0 -12px 0 var(--wood-2);
+  }
+  .desk::after{
+    content:''; position:absolute; inset:0;
+    background:repeating-linear-gradient(90deg, transparent 0 20px, rgba(0,0,0,.12) 20px 22px);
+  }
+
+  /* хлам на столе */
+  .prop{position:absolute; bottom:44px; z-index:2;}
+
+  .prop.papers{left:50px; width:34px; height:22px;}
+  .prop.papers span{position:absolute; left:0; right:0; height:12px; background:#fff; border:3px solid #000;}
+  .prop.papers span:nth-child(1){bottom:0; transform:rotate(-5deg); background:#f2f2f2;}
+  .prop.papers span:nth-child(2){bottom:5px; transform:rotate(2deg);}
+  .prop.papers span:nth-child(3){bottom:10px; transform:rotate(-1deg); background:#fafafa;}
+
+  .prop.mug{
+    left:96px; width:20px; height:18px; background:#f8f8f8;
+    border:3px solid #000; border-radius:0 0 4px 4px;
+  }
+  .prop.mug::before{
+    content:''; position:absolute; right:-11px; top:4px; width:9px; height:10px;
+    border:3px solid #000; border-left:none; border-radius:0 6px 6px 0;
+  }
+  .prop.mug::after{
+    content:''; position:absolute; left:2px; right:2px; top:-4px; height:3px; background:#7a3a10;
+  }
+  .steam{position:absolute; left:3px; top:-18px; width:12px; height:18px;}
+  .steam i{
+    position:absolute; bottom:0; width:4px; height:4px;
+    background:rgba(255,255,255,.95); border:1px solid rgba(0,0,0,.25);
+    animation:steamUp 2.2s steps(4) infinite;
+  }
+  .steam i:nth-child(2){left:6px; animation-delay:.9s;}
+  @keyframes steamUp{
+    0%{transform:translateY(0); opacity:0;}
+    25%{opacity:1;}
+    100%{transform:translateY(-18px); opacity:0;}
+  }
+
+  .prop.pens{right:104px; width:18px; height:18px; background:#9fb6c8; border:3px solid #000;}
+  .prop.pens i{position:absolute; bottom:13px; width:4px; height:14px; background:#f8b800; border:2px solid #000;}
+  .prop.pens i:nth-child(1){left:0; transform:rotate(-10deg);}
+  .prop.pens i:nth-child(2){left:6px; height:16px; background:#f83800; transform:rotate(3deg);}
+  .prop.pens i:nth-child(3){left:12px; height:12px; background:#0058f8; transform:rotate(12deg);}
+
+  .prop.plant{right:56px; width:24px; height:28px;}
+  .prop.plant::after{
+    content:''; position:absolute; left:2px; right:2px; bottom:0; height:12px;
+    background:#b06a3a; border:3px solid #000;
+  }
+  .prop.plant i{position:absolute; bottom:10px; width:8px; height:12px; background:#2f9a4a; border:3px solid #000;}
+  .prop.plant i:nth-child(1){left:0; transform:rotate(-20deg);}
+  .prop.plant i:nth-child(2){left:50%; transform:translateX(-50%); bottom:12px; height:16px; background:#3fc060;}
+  .prop.plant i:nth-child(3){right:0; transform:rotate(20deg);}
+
+  .prop.snack{
+    right:24px; width:24px; height:14px; background:#f8b800;
+    border:3px solid #000; transform:rotate(-6deg);
+  }
+  .prop.snack::after{content:''; position:absolute; left:2px; right:2px; top:2px; height:2px; background:#c00;}
+
+  .prop.ball{
+    left:132px; width:14px; height:14px; background:#e8e8e8;
+    border:3px solid #000; border-radius:50% 40% 55% 45%; transform:rotate(12deg);
+  }
+  .prop.folders{right:158px; width:30px; height:16px;}
+  .prop.folders span{position:absolute; left:0; right:0; height:8px; border:3px solid #000;}
+  .prop.folders span:nth-child(1){bottom:0; background:#4a8ad8;}
+  .prop.folders span:nth-child(2){bottom:6px; background:#d8b04a;}
+
+  /* ==================== МОНИТОР (вид со спины, детально) ==================== */
+  .monitor-back{
+    position:absolute; left:50%; bottom:50px; transform:translateX(-50%);
+    width:146px; height:130px; z-index:2;
+    background:#b8b8a8; border:4px solid #000; border-radius:6px;
+    box-shadow:
+      5px 5px 0 rgba(0,0,0,.3),
+      inset 4px 4px 0 #dcdccc,
+      inset -4px -4px 0 #7a7a68,
+      0 0 30px rgba(140,255,140,.22);
+  }
+  /* винты */
+  .mon-screw{
+    position:absolute; width:6px; height:6px;
+    background:#6a6a5a; border:2px solid #000; border-radius:50%;
+    z-index:5;
+  }
+  .mon-screw::after{
+    content:''; position:absolute; left:1px; top:2px; width:3px; height:1px; background:#000;
+  }
+  .mon-screw.tl{left:6px; top:6px;}
+  .mon-screw.tr{right:6px; top:6px;}
+  .mon-screw.bl{left:6px; bottom:6px;}
+  .mon-screw.br{right:6px; bottom:6px;}
+
+  /* вентиляция — 5 решёток */
+  .mon-vent{
+    position:absolute; left:16px; right:16px; height:6px;
+    background:repeating-linear-gradient(90deg, #6a6a5a 0 4px, #90907e 4px 8px);
+    border:2px solid #000;
+  }
+  .mon-vent.v1{top:16px;}
+  .mon-vent.v2{top:27px;}
+  .mon-vent.v3{top:38px;}
+  .mon-vent.v4{top:49px;}
+  .mon-vent.v5{top:60px;}
+
+  .mon-brand{
+    position:absolute; left:50%; transform:translateX(-50%);
+    bottom:46px; font-size:10px; letter-spacing:1px;
+    color:#4a4a3a; font-weight:bold;
+    background:#c8c8b8; border:2px solid #000; padding:1px 6px;
+    box-shadow:inset 1px 1px 0 #e8e8d8;
+  }
+  .mon-label{
+    position:absolute; left:50%; bottom:24px; transform:translateX(-50%);
+    font-size:11px; letter-spacing:1px; color:#3a3a2a; font-weight:bold;
+  }
+  .mon-led{
+    position:absolute; right:10px; bottom:10px; width:7px; height:7px;
+    background:var(--green); border:2px solid #000;
+    animation:ledBlink 1.4s steps(2) infinite;
+  }
+  @keyframes ledBlink{0%,100%{background:#00e800;}50%{background:#005000;}}
+
+  .mon-note{
+    position:absolute; left:8px; bottom:34px; width:26px; height:26px;
+    background:#fff26a; border:2px solid #000; transform:rotate(-7deg);
+    box-shadow:2px 2px 0 rgba(0,0,0,.25);
+  }
+  .mon-note::after{
+    content:''; position:absolute; left:4px; right:4px; top:6px; height:2px;
+    background:#9a8a00; box-shadow:0 5px 0 #9a8a00, 0 10px 0 #9a8a00;
+  }
+
+  /* подставка с шарниром */
+  .mon-base{
+    position:absolute; left:50%; bottom:-14px; transform:translateX(-50%);
+    width:84px; height:14px; background:#9a9a8a;
+    border:3px solid #000; border-radius:3px;
+    box-shadow:inset 0 3px 0 #c8c8b8, inset 0 -3px 0 #6a6a5a;
+  }
+  .mon-hinge{
+    position:absolute; left:50%; top:-16px; transform:translateX(-50%);
+    width:16px; height:8px; background:#5a5a4a; border:2px solid #000;
+  }
+
+  /* кабель питания */
+  .mon-cable{
+    position:absolute; left:50%; bottom:-46px; transform:translateX(-50%);
+    width:5px; height:36px; background:#1e1e1e; border:2px solid #000;
+    border-radius:0 0 4px 4px; z-index:1;
+  }
+  .mon-cable::after{
+    content:''; position:absolute; left:-4px; bottom:-4px;
+    width:13px; height:6px; background:#3a3a3a; border:2px solid #000;
+  }
+
+  /* ==================== ЭКОЛОГ СО СПИНЫ (детально) ==================== */
+  #ecologist{
+    position:absolute; left:50%; bottom:30px; transform:translateX(-50%);
+    width:120px; height:150px; z-index:6;
+    animation:ecoBob 1.7s steps(2) infinite;
+  }
+  @keyframes ecoBob{
+    0%,100%{transform:translateX(-50%) translateY(0);}
+    50%{transform:translateX(-50%) translateY(-2px);}
+  }
+
+  .eco-body{
+    position:absolute; left:50%; bottom:20px; transform:translateX(-50%);
+    width:84px; height:100px; z-index:3;
+  }
+
+  /* эмоция при ошибке */
+  .eco-emote{
+    position:absolute; left:50%; top:-26px;
+    transform:translateX(-50%) scale(0);
+    background:#fff; border:3px solid #000; box-shadow:3px 3px 0 #000;
+    padding:2px 8px; font-size:14px; font-weight:bold; color:#c00;
+    opacity:0; transition:opacity 0.2s, transform 0.2s;
+    z-index:10; white-space:nowrap;
+  }
+  #ecologist.error-react .eco-emote{
+    opacity:1; transform:translateX(-50%) scale(1);
+  }
+
+  /* голова: back — затылок, front — грустное лицо */
+  .eco-head{
+    position:absolute; left:50%; top:0; transform:translateX(-50%);
+    width:42px; height:36px; z-index:3;
+    animation:ecoShake 2.4s steps(3) infinite;
+  }
+  @keyframes ecoShake{
+    0%,100%{transform:translateX(-50%) rotate(-3deg);}
+    50%{transform:translateX(-50%) rotate(3deg);}
+  }
+  .eco-head-back{
+    position:absolute; inset:0; background:#4a3222; border:3px solid #000;
+    box-shadow:inset 0 -8px 0 #5e4230;
+    transition:opacity 0.15s steps(2);
+  }
+  .eco-head-back::before, .eco-head-back::after{
+    content:''; position:absolute; top:13px; width:7px; height:11px;
+    background:#f2c293; border:3px solid #000;
+  }
+  .eco-head-back::before{left:-11px;}
+  .eco-head-back::after{right:-11px;}
+
+  .eco-head-front{
+    position:absolute; inset:0; background:#f2c293; border:3px solid #000;
+    opacity:0; transition:opacity 0.15s steps(2);
+  }
+  .eco-eye{position:absolute; top:10px; width:6px; height:3px; background:#000;}
+  .eco-eye.l{left:7px;}
+  .eco-eye.r{right:7px;}
+  .eco-mouth{
+    position:absolute; left:50%; bottom:5px; transform:translateX(-50%);
+    width:12px; height:4px;
+    border-top:3px solid #000; border-radius:6px 6px 0 0;
+  }
+
+  #ecologist.error-react .eco-head{
+    animation:headSad 1.7s steps(5);
+  }
+  @keyframes headSad{
+    0%{transform:translateX(-50%) rotate(-3deg);}
+    20%{transform:translateX(-50%) rotate(14deg) translateY(3px);}
+    75%{transform:translateX(-50%) rotate(14deg) translateY(3px);}
+    100%{transform:translateX(-50%) rotate(-3deg);}
+  }
+  #ecologist.error-react .eco-head-back{opacity:0;}
+  #ecologist.error-react .eco-head-front{opacity:1;}
+
+  /* шея */
+  .eco-neck{
+    position:absolute; left:50%; top:28px; transform:translateX(-50%);
+    width:14px; height:8px; background:#e8b888; border:3px solid #000;
+    z-index:2;
+  }
+
+  /* спина в жилете */
+  .eco-torso{
+    position:absolute; left:50%; top:32px; transform:translateX(-50%);
+    width:72px; height:70px; background:#2f9a4a; border:3px solid #000;
+    z-index:2;
+    box-shadow:inset 0 10px 0 #46b862, inset 0 -12px 0 #1f7034;
+  }
+  .eco-torso::before{
+    content:''; position:absolute; left:0; right:0; top:0; height:10px;
+    background:#e8e8e8; border-bottom:3px solid #000;
+  }
+  .eco-torso::after{
+    content:''; position:absolute; left:50%; top:10px; bottom:0; transform:translateX(-50%);
+    width:4px; background:rgba(0,0,0,.2);
+  }
+
+  /* руки-предплечья */
+  .eco-arm{
+    position:absolute; top:40px; width:22px; height:32px;
+    background:var(--blue); border:3px solid #000; z-index:4;
+    box-shadow:inset 0 6px 0 #2f74e0, inset 0 -6px 0 #1f54b0;
+  }
+  .eco-arm.l{left:-20px; transform-origin:right top; animation:typeL 0.4s steps(2) infinite;}
+  .eco-arm.r{right:-20px; transform-origin:left top; animation:typeR 0.4s steps(2) infinite 0.2s;}
+  @keyframes typeL{
+    0%{transform:rotate(16deg) translateY(0);}
+    50%{transform:rotate(6deg) translateY(3px);}
+    100%{transform:rotate(16deg) translateY(0);}
+  }
+  @keyframes typeR{
+    0%{transform:rotate(-16deg) translateY(0);}
+    50%{transform:rotate(-6deg) translateY(3px);}
+    100%{transform:rotate(-16deg) translateY(0);}
+  }
+
+  /* кисти с пальцами */
+  .eco-hand{
+    position:absolute; bottom:-12px; left:50%; transform:translateX(-50%);
+    width:22px; height:11px; background:#f2c293;
+    border:2px solid #000; border-radius:3px; z-index:1;
+  }
+  .eco-hand i{
+    position:absolute; bottom:-7px; width:5px; height:9px;
+    background:#f2c293; border:2px solid #000; border-top:none;
+    border-radius:0 0 3px 3px;
+    animation:tapFinger 0.4s steps(2) infinite;
+  }
+  .eco-hand i:nth-child(1){left:1px; animation-delay:0s;}
+  .eco-hand i:nth-child(2){left:7px; animation-delay:0.13s;}
+  .eco-hand i:nth-child(3){left:13px; animation-delay:0.26s;}
+  @keyframes tapFinger{
+    0%,100%{transform:translateY(0);}
+    50%{transform:translateY(4px);}
+  }
+
+  /* при ошибке — руки вверх, пальцы замирают */
+  #ecologist.error-react .eco-arm.l{animation:handsUpL 1.7s steps(5);}
+  #ecologist.error-react .eco-arm.r{animation:handsUpR 1.7s steps(5);}
+  #ecologist.error-react .eco-hand i{animation:none;}
+  @keyframes handsUpL{
+    0%{transform:rotate(16deg) translateY(0);}
+    15%{transform:rotate(-95deg) translateY(-8px);}
+    75%{transform:rotate(-95deg) translateY(-8px);}
+    100%{transform:rotate(16deg) translateY(0);}
+  }
+  @keyframes handsUpR{
+    0%{transform:rotate(-16deg) translateY(0);}
+    15%{transform:rotate(95deg) translateY(-8px);}
+    75%{transform:rotate(95deg) translateY(-8px);}
+    100%{transform:rotate(-16deg) translateY(0);}
+  }
+
+  /* кресло — с подлокотниками */
+  .eco-chair{
+    position:absolute; left:50%; bottom:0; transform:translateX(-50%);
+    width:108px; height:58px; background:#3b4a5a; border:3px solid #000;
+    z-index:5; box-shadow:inset 0 8px 0 #56687c, inset 0 -6px 0 #2a3644;
+  }
+  .eco-chair::before, .eco-chair::after{
+    content:''; position:absolute; top:-16px; width:12px; height:18px;
+    background:#3b4a5a; border:3px solid #000;
+  }
+  .eco-chair::before{left:12px;}
+  .eco-chair::after{right:12px;}
+  .eco-chair-armrest{
+    position:absolute; top:-6px; width:14px; height:26px;
+    background:#4a5a6a; border:3px solid #000;
+  }
+  .eco-chair-armrest.l{left:-14px;}
+  .eco-chair-armrest.r{right:-14px;}
+
+  /* лампа / вечерний свет */
+  #lamp{
+    position:absolute; inset:0; pointer-events:none; z-index:5;
+    opacity:0; transition:opacity 1.2s ease;
+    background:radial-gradient(ellipse 72% 82% at 50% 32%,
+      rgba(255,230,140,.38), rgba(255,230,140,.10) 58%, transparent 76%);
+  }
+  #lamp.show{opacity:1;}
+
+  /* стикеры-задачи */
+  .sticker{
+    position:absolute; width:68px; height:62px; padding:4px;
+    font-size:12px; line-height:1.15; text-align:left; color:#3a2800;
+    background:var(--yellow); border:3px solid #000;
+    box-shadow:inset -4px -4px 0 rgba(0,0,0,.15), 4px 4px 0 #000;
+    cursor:pointer; z-index:8; transition:opacity .22s ease;
+  }
+  .sticker small{display:block; margin-top:3px; font-size:10px; color:#5a4000; font-weight:bold;}
+  .sticker.locked{filter:grayscale(.9) brightness(.8); cursor:not-allowed;}
+  .sticker.active{animation:stickerBlink .7s steps(2) infinite; z-index:10;}
+  .sticker.gone{opacity:0; pointer-events:none;}
+  @keyframes stickerBlink{
+    0%,100%{filter:brightness(1);}
+    50%{filter:brightness(1.2); box-shadow:0 0 0 4px #fff, 4px 4px 0 #000;}
+  }
+  #s1{left:14px; top:96px; transform:rotate(-4deg);}
+  #s2{right:14px; top:96px; transform:rotate(3deg);}
+  #s3{right:14px; top:164px; transform:rotate(-3deg);}
+
+  .reminder{
+    position:absolute; left:50%; top:6px; transform:translateX(-50%); z-index:9;
+    padding:5px 8px; background:#fff; color:#000; border:3px solid #000;
+    font-size:14px; line-height:1.2; box-shadow:3px 3px 0 #000;
+    animation:bounceY .8s steps(2) infinite; white-space:nowrap; font-weight:bold;
+  }
+  .reminder::after{
+    content:''; position:absolute; left:50%; bottom:-9px;
+    width:6px; height:6px; background:#fff; border-right:3px solid #000;
+    border-bottom:3px solid #000; transform:translateX(-50%) rotate(45deg);
+  }
+  @keyframes bounceY{
+    0%,100%{transform:translateX(-50%) translateY(0);}
+    50%{transform:translateX(-50%) translateY(-3px);}
+  }
+
+  /* ==================== РАБОЧАЯ ЗОНА ==================== */
+  #work{
+    margin:8px; padding:10px; position:relative;
+    background:#fff; border:4px solid #000;
+    box-shadow:inset 0 0 0 3px #fff, 5px 5px 0 rgba(0,0,0,.2);
+    min-height:300px;
+    display:flex; flex-direction:column;
+  }
+  #work.flash-err{animation:fErr .38s steps(2);}
+  #work.flash-ok{animation:fOk .42s steps(2);}
+  @keyframes fErr{0%{background:#fff;}50%{background:#ffe0d8; border-color:var(--red);}100%{background:#fff;}}
+  @keyframes fOk{0%{background:#fff;}50%{background:#e8ffd8; border-color:var(--green-d);}100%{background:#fff;}}
+
+  .wtitle{font-size:20px; color:var(--blue); margin-bottom:6px; line-height:1.2; font-weight:bold;}
+  .wtext{font-size:17px; line-height:1.3; margin-bottom:6px;}
+  .wstatus{min-height:22px; font-size:15px; line-height:1.25; margin-bottom:6px; font-weight:bold;}
+  .wstatus.info{color:#0058f8;}
+  .wstatus.error{color:var(--red);}
+  .wstatus.success{color:var(--green-d);}
+  .wscroll{
+    flex:1; overflow-y:visible; overflow-x:hidden;
+    display:flex; flex-direction:column; gap:6px; padding-right:2px;
+  }
+
+  .choice-btn{
+    display:block; width:100%; text-align:left;
+    font-size:16px; line-height:1.25; padding:8px; min-height:28px;
+    background:#f0f0f0; border:3px solid #000;
+    box-shadow:inset 2px 2px 0 #fff, inset -2px -2px 0 #aaa, 2px 2px 0 #000;
+  }
+  .choice-btn:hover{background:#fff;}
+  .choice-btn:active{
+    transform:translate(2px,2px);
+    box-shadow:inset 2px 2px 0 #aaa, inset -2px -2px 0 #fff, 0 0 0 #000;
+  }
+
+  .dots{display:flex; gap:4px; margin-bottom:6px;}
+  .dot{width:12px; height:12px; border:3px solid #000; background:#f8e8b0;}
+  .dot.done{background:var(--green);}
+  .dot.current{background:var(--yellow); animation:pulse .8s steps(2) infinite;}
+  @keyframes pulse{0%,100%{box-shadow:0 0 0 0 rgba(248,184,0,.6);}50%{box-shadow:0 0 0 4px rgba(248,184,0,0);}}
+
+  .pb-badges{display:flex; flex-wrap:wrap; gap:4px; margin-bottom:6px;}
+  .pb-badge{font-size:12px; padding:3px 6px; background:#e0e0e0; border:3px solid #000; color:#555; white-space:nowrap; font-weight:bold;}
+  .pb-badge.on{background:#d9ffd8; border-color:var(--green-d); color:var(--green-d);}
+  .pb-badge.cur{background:var(--yellow); color:#000;}
+
+  .prompt-live{
+    margin-top:6px; padding:8px; font-size:15px; line-height:1.35;
+    background:#e8f4ff; border:3px dashed var(--blue);
+    min-height:54px; white-space:pre-wrap; color:#003080; font-weight:bold;
+  }
+  .prompt-live .ph{color:#8aa4c8;}
+
+  .chat{border:3px solid #000; background:#fff; margin-top:6px; overflow:hidden; box-shadow:3px 3px 0 rgba(0,0,0,.1);}
+  .chat-head{display:flex; align-items:center; gap:8px; padding:6px 8px;
+    background:#d0e8ff; border-bottom:3px solid #000; font-size:15px; color:var(--blue); font-weight:bold;}
+  .chat-dot{width:10px; height:10px; border-radius:50%; background:var(--green); border:2px solid #000;}
+  .chat-body{padding:8px; font-size:15px; line-height:1.4; white-space:pre-wrap; max-height:none; overflow-y:visible;}
+  .chat-body .you{color:var(--blue); font-weight:bold;}
+  .chat-body .ai{color:var(--green-d); font-weight:bold;}
+
+  /* ==================== МОДАЛКИ ==================== */
+  #overlay{position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.4); z-index:80;}
+  #overlay.active{display:flex;}
+  .modal{width:90%; max-width:480px; padding:14px; background:#fff;
+    border:4px solid var(--blue); box-shadow:6px 6px 0 #000;
+    animation:pop .28s steps(3);}
+  @keyframes pop{0%{transform:scale(.8);}100%{transform:scale(1);}}
+  .modal .mtitle{font-size:22px; color:var(--blue); margin-bottom:8px; line-height:1.2; font-weight:bold;}
+  .modal .mtext{font-size:17px; line-height:1.35; margin-bottom:10px;}
+  .modal .mresult{padding:9px 10px; background:#f0fff0;
+    border:3px solid var(--green-d); font-size:16px; line-height:1.35; margin-bottom:10px; font-weight:bold;}
+  .modal .mresult.funny{background:#fff8e0; border-color:#c89800; font-style:italic;}
+  .modal .mresult b{color:var(--green-d);}
+  .modal .actions{display:flex; gap:8px; flex-wrap:wrap;}
+  .modal .actions .pixel-btn{flex:1; font-size:16px; min-width:130px;}
+
+  #osBox, #sofaBox{
+    position:absolute; inset:0; display:none; align-items:center; justify-content:center;
+    background:rgba(0,0,0,.4); z-index:75;
+  }
+  #osBox.active, #sofaBox.active{display:flex;}
+  .os-window{
+    width:94%; max-width:460px; background:#c0c0c0;
+    border:4px solid #000; box-shadow:6px 6px 0 #000;
+    animation:osIn .25s steps(3);
+  }
+  @keyframes osIn{0%{transform:scale(.7);}100%{transform:scale(1);}}
+  .os-titlebar{
+    display:flex; justify-content:space-between; align-items:center;
+    background:#000080; color:#fff; padding:4px 8px; font-size:16px; font-weight:bold;
+  }
+  .os-titlebar .os-x{
+    width:20px; height:20px; background:#c0c0c0; border:3px solid #fff;
+    box-shadow:inset -2px -2px 0 #808080, inset 2px 2px 0 #fff; color:#000; font-size:14px;
+    display:flex; align-items:center; justify-content:center; cursor:pointer; font-weight:bold;
+  }
+  .os-titlebar .os-x:active{box-shadow:inset 2px 2px 0 #808080, inset -2px -2px 0 #fff;}
+  .os-body{display:flex; gap:10px; padding:14px; align-items:flex-start;}
+  .os-icon{width:40px; height:40px; background:var(--yellow); border:3px solid #000;
+    flex:0 0 auto; display:flex; align-items:center; justify-content:center;
+    font-size:24px; box-shadow:inset 2px 2px 0 #fff, inset -2px -2px 0 #c89800;}
+  .os-msg{font-size:17px; line-height:1.35; cursor:pointer;
+    padding:4px; border:3px dashed transparent;}
+  .os-msg:hover{border-color:#808080; background:#dcdcdc;}
+  .os-actions{display:flex; gap:8px; padding:0 14px 14px; justify-content:flex-end; flex-wrap:wrap;}
+  .os-actions .pixel-btn{font-size:15px; padding:6px 10px;}
+  .sofa-window{background:#f0f0f0;}
+
+  /* ==================== ФИНАЛ ==================== */
+  #screen-final{
+    background:linear-gradient(180deg,
+      var(--sky-tone) 0%, var(--sky-tone-2) 62%,
+      var(--grass-tone-2) 62%, var(--grass-tone) 100%);
+  }
+  .final-wrap{
+    position:relative; width:calc(100% - 28px);
+    margin:14px; padding:14px;
+    background:#fff; border:4px solid #000; box-shadow:6px 6px 0 #000;
+  }
+  .final-wrap h2{margin:0 0 10px; font-size:24px; line-height:1.2; color:var(--blue); font-weight:bold;}
+  .final-wrap p{margin:0 0 8px; font-size:17px; line-height:1.35;}
+  .final-wrap .sub{font-size:17px; line-height:1.35; margin:10px 0 6px; color:#805000; font-weight:bold;}
+  .final-wrap ul{margin:0 0 8px; padding-left:20px; font-size:16px; line-height:1.35;}
+  .final-wrap li{margin-bottom:5px;}
+
+  .myth{
+    margin:8px 0; padding:9px 11px; border:3px solid #000;
+    background:#fffaf0; font-size:16px; line-height:1.35;
+    box-shadow:3px 3px 0 rgba(0,0,0,.1);
+  }
+  .myth .lbl{display:inline-block; background:#000; color:#fff;
+    padding:2px 7px; font-size:13px; margin-right:8px; font-weight:bold;}
+  .myth.neg{border-color:#8a1a1a;}
+  .myth.neg .lbl{background:#8a1a1a;}
+  .myth.ok{border-color:var(--green-d);}
+  .myth.ok .lbl{background:var(--green-d);}
+
+  .final-stats{
+    margin-top:10px; padding:10px; font-size:16px; line-height:1.45;
+    background:#f0f0f0; border:3px solid #000; font-weight:bold;
+    box-shadow:inset 2px 2px 0 #fff, inset -2px -2px 0 #aaa;
+  }
+  .final-wrap .pixel-btn{margin-top:12px; font-size:20px; width:100%;}
+
+  .download-box{
+    margin-top:18px; padding:14px; text-align:center; border:4px solid;
+    box-shadow:4px 4px 0 #000;
+  }
+  .download-box.success{background:#e8ffd8; border-color:var(--green-d);}
+  .download-box.fail{background:#ffe0d8; border-color:var(--red);}
+  .download-box p{margin:0 0 10px 0; font-size:17px; font-weight:bold;}
 </style>
 </head>
 <body>
 <div id="stage">
   <div id="frame">
 
+    <!-- ==================== СТАРТ ==================== -->
     <section id="screen-start" class="screen active">
       <div class="cloud cloud-1"></div>
       <div class="cloud cloud-2"></div>
@@ -451,7 +831,8 @@
 
       <div class="start-head">
         <h1>Эколог против рутины</h1>
-        <p>Пятница, 16:00. Один час до конца рабочего дня.</p>
+        <p>Пятница, 16:00. До конца рабочего дня ровно час. Руководство срочно поручило подготовить материалы. Если писать их с нуля, вы точно останетесь в офисе до ночи.</p>
+        <p>Ваша задача — использовать ИИ как ассистента, быстро собрать черновики и успеть уйти домой в 17:00. На каждую задачу заложено по 15 минут. Каждая ошибка приводит к потере времени.</p>
       </div>
 
       <div class="bubble eco" id="bEco"></div>
@@ -470,6 +851,7 @@
       </div>
     </section>
 
+    <!-- ==================== ИГРА ==================== -->
     <section id="screen-game" class="screen">
       <div id="topbar">
         <div class="hud">
@@ -493,10 +875,9 @@
 
       <div class="penalty" id="penalty">+5 мин</div>
 
+      <!-- ==================== КАБИНЕТ ==================== -->
       <div id="office">
-        <div class="office-cloud c1"></div>
-        <div class="office-cloud c2"></div>
-        <div class="office-cloud c3"></div>
+        <div class="wall"></div>
 
         <div class="window-frame">
           <div class="moon" id="moon"></div>
@@ -505,9 +886,77 @@
           <div class="star star-3" id="star3"></div>
         </div>
 
-        <div class="monitor-big">
-          <div class="scr">
-            <div class="ln"></div><div class="ln"></div><div class="ln"></div><div class="ln"></div>
+        <!-- котик-плакат -->
+        <div class="cat-poster">
+          <div class="cat-head">
+            <div class="cat-eye l"></div>
+            <div class="cat-eye r"></div>
+            <div class="cat-nose"></div>
+            <div class="cat-whisker l"></div>
+            <div class="cat-whisker r"></div>
+          </div>
+          <div class="cat-caption">Кот следит<br>за дедлайном</div>
+        </div>
+
+        <div class="wallclock"></div>
+
+        <!-- монитор (вид со спины, детально) -->
+        <div class="monitor-back">
+          <div class="mon-screw tl"></div>
+          <div class="mon-screw tr"></div>
+          <div class="mon-screw bl"></div>
+          <div class="mon-screw br"></div>
+          <div class="mon-vent v1"></div>
+          <div class="mon-vent v2"></div>
+          <div class="mon-vent v3"></div>
+          <div class="mon-vent v4"></div>
+          <div class="mon-vent v5"></div>
+          <div class="mon-brand">SYNCMASTER</div>
+          <div class="mon-label">CRT-2000</div>
+          <div class="mon-led"></div>
+          <div class="mon-note"></div>
+          <div class="mon-hinge"></div>
+          <div class="mon-base"></div>
+          <div class="mon-cable"></div>
+        </div>
+
+        <!-- стол и хлам -->
+        <div class="desk">
+          <div class="prop papers"><span></span><span></span><span></span></div>
+          <div class="prop mug">
+            <div class="steam"><i></i><i></i></div>
+          </div>
+          <div class="prop ball"></div>
+          <div class="prop pens"><i></i><i></i><i></i></div>
+          <div class="prop folders"><span></span><span></span></div>
+          <div class="prop plant"><i></i><i></i><i></i></div>
+          <div class="prop snack"></div>
+        </div>
+
+        <!-- эколог со спины -->
+        <div id="ecologist">
+          <div class="eco-body">
+            <div class="eco-emote">T_T</div>
+            <div class="eco-head">
+              <div class="eco-head-back"></div>
+              <div class="eco-head-front">
+                <div class="eco-eye l"></div>
+                <div class="eco-eye r"></div>
+                <div class="eco-mouth"></div>
+              </div>
+            </div>
+            <div class="eco-neck"></div>
+            <div class="eco-torso"></div>
+            <div class="eco-arm l">
+              <div class="eco-hand"><i></i><i></i><i></i></div>
+            </div>
+            <div class="eco-arm r">
+              <div class="eco-hand"><i></i><i></i><i></i></div>
+            </div>
+          </div>
+          <div class="eco-chair">
+            <div class="eco-chair-armrest l"></div>
+            <div class="eco-chair-armrest r"></div>
           </div>
         </div>
 
@@ -517,15 +966,6 @@
         <button id="s1" class="sticker">Задача 1<small>Промпт</small></button>
         <button id="s2" class="sticker locked">Задача 2<small>Слайды</small></button>
         <button id="s3" class="sticker locked">Задача 3<small>Проверка</small></button>
-
-        <div id="ecologist">
-          <div class="cap"></div>
-          <div class="head"></div>
-          <div class="body"></div>
-          <div class="arm arm-l"></div>
-          <div class="arm arm-r"></div>
-          <div class="keyboard"></div>
-        </div>
       </div>
 
       <div id="work">
@@ -536,6 +976,7 @@
       </div>
     </section>
 
+    <!-- ==================== ОКНА ==================== -->
     <div id="osBox">
       <div class="os-window">
         <div class="os-titlebar">
@@ -561,7 +1002,7 @@
         </div>
         <div class="os-body">
           <div class="os-icon" style="background:#ffb0b0">🔧</div>
-          <div class="os-msg">Михалыч, там на заднем дворе кто-то выкинул старый диван. Это какие отходы - КГО или ТКО? Пошли смотреть!</div>
+          <div class="os-msg">Михалыч, там на заднем дворе кто-то выкинул старый диван. Это какие отходы — КГО или ТКО? Пошли смотреть!</div>
         </div>
         <div class="os-actions">
           <button class="pixel-btn" id="sofaGo">Пойти смотреть</button>
@@ -581,6 +1022,7 @@
       </div>
     </div>
 
+    <!-- ==================== ФИНАЛ ==================== -->
     <section id="screen-final" class="screen">
       <div class="final-wrap">
         <h2 id="finalTitle"></h2>
@@ -594,31 +1036,17 @@
 </div>
 
 <script>
-/* ================= РЕСАЙЗЕР И РАЗМЕРЫ ================= */
-const frame = document.getElementById('frame');
-
-// Универсальная функция ресайза, которая измеряет реальную высоту контента
-function resizeIframe() {
-  const bodyHeight = Math.max(
-    document.body.scrollHeight,
-    document.body.offsetHeight,
-    document.documentElement.clientHeight,
-    document.documentElement.scrollHeight,
-    document.documentElement.offsetHeight
-  );
-  
-  frame.style.height = bodyHeight + 'px';
-  
-  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
-    window.parentIFrame.size();
+/* ================= СООБЩЕНИЕ РОДИТЕЛЮ (без петли высот) ================= */
+function notifyParent(){
+  if(window.parentIFrame && typeof window.parentIFrame.size === 'function'){
+    try{ window.parentIFrame.size(); }catch(e){}
   }
 }
 
 function showScreen(id){
   document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
-  // Небольшая задержка позволяет CSS-переходам и рендерингу завершиться перед измерением
-  setTimeout(resizeIframe, 50);
+  setTimeout(notifyParent, 60);
 }
 
 /* ================= ЗВУК ================= */
@@ -639,10 +1067,10 @@ function beep(f,d,type,vol,delay){
   o.connect(g); g.connect(actx.destination);
   o.start(t); o.stop(t+d+0.02);
 }
-const click = ()=>beep(760,.05);
-const sndErr= ()=>{beep(140,.14,'square',.06);beep(90,.18,'square',.05,.08)};
-const sndOk = ()=>{beep(523,.07);beep(659,.08,'square',.035,.08);beep(784,.1,'square',.035,.16)};
-const sndBip= ()=>{beep(940,.06);beep(940,.06,'square',.03,.1)};
+const click  = ()=>beep(760,.05);
+const sndErr = ()=>{beep(140,.14,'square',.06);beep(90,.18,'square',.05,.08)};
+const sndOk  = ()=>{beep(523,.07);beep(659,.08,'square',.035,.08);beep(784,.1,'square',.035,.16)};
+const sndBip = ()=>{beep(940,.06);beep(940,.06,'square',.03,.1)};
 
 /* ================= СОСТОЯНИЕ ================= */
 const state = {
@@ -660,12 +1088,12 @@ const state = {
 };
 
 /* ================= HUD ================= */
-const digital = document.getElementById('digital');
-const handH = document.getElementById('handH');
-const handM = document.getElementById('handM');
+const digital  = document.getElementById('digital');
+const handH    = document.getElementById('handH');
+const handM    = document.getElementById('handM');
 const errLabel = document.getElementById('errLabel');
 const reminder = document.getElementById('reminder');
-const penalty = document.getElementById('penalty');
+const penalty  = document.getElementById('penalty');
 
 function updateHUD(){
   const total = 16*60 + state.time;
@@ -686,36 +1114,52 @@ function updateHUD(){
   }
 }
 function addTime(min){ state.time += min; updateHUD(); }
+
+/* ================= РЕАКЦИЯ ЭКОЛОГА ================= */
+function triggerSad(){
+  const eco = document.getElementById('ecologist');
+  if(!eco) return;
+  eco.classList.remove('error-react');
+  void eco.offsetWidth;
+  eco.classList.add('error-react');
+  setTimeout(()=>eco.classList.remove('error-react'), 1750);
+}
+
 function addError(){
   state.errors++;
   if(state.errors >= 4 && state.time < 62) state.time = 62;
   addTime(5);
   sndErr();
+  triggerSad();
   penalty.textContent = '+5 мин';
   penalty.classList.add('show');
   setTimeout(()=>penalty.classList.remove('show'), 900);
 }
 
 /* ================= ВРЕМЯ СУТОК ================= */
-const moon = document.getElementById('moon');
+const moon  = document.getElementById('moon');
 const star1 = document.getElementById('star1');
 const star2 = document.getElementById('star2');
 const star3 = document.getElementById('star3');
-const lamp = document.getElementById('lamp');
+const lamp  = document.getElementById('lamp');
 
 function updateDaylight(){
   const m = state.time;
-  let s1, s2, g1, g2;
-  if(m < 15){ s1='#9fd9ff'; s2='#c9f2ff'; g1='#63b034'; g2='#8fdb5d'; }
-  else if(m < 30){ s1='#8ec8ef'; s2='#b8d8f0'; g1='#5a9a2e'; g2='#7cc850'; }
-  else if(m < 45){ s1='#4a7fb8'; s2='#7a9ec8'; g1='#4a7a24'; g2='#6aa040'; }
-  else if(m < 60){ s1='#2a4a78'; s2='#4a6898'; g1='#3a5a1c'; g2='#5a8030'; }
-  else { s1='#1a2a48'; s2='#2a3a58'; g1='#2a4014'; g2='#3a5020'; }
+  let s1, s2, g1, g2, w1, w2;
 
-  document.documentElement.style.setProperty('--sky-tone', s1);
-  document.documentElement.style.setProperty('--sky-tone-2', s2);
-  document.documentElement.style.setProperty('--grass-tone', g1);
-  document.documentElement.style.setProperty('--grass-tone-2', g2);
+  if(m < 15){        s1='#5c94fc'; s2='#98c8fc'; g1='#00a800'; g2='#80d010'; w1='#eef4fa'; w2='#cfe0ee'; }
+  else if(m < 30){   s1='#4884e0'; s2='#80b8e0'; g1='#009000'; g2='#70c000'; w1='#e2ecf6'; w2='#bcd2e2'; }
+  else if(m < 45){   s1='#3060b0'; s2='#5080c0'; g1='#007000'; g2='#50a000'; w1='#c4d4e4'; w2='#98b0c6'; }
+  else if(m < 60){   s1='#183070'; s2='#284090'; g1='#004000'; g2='#307000'; w1='#8c9fb6'; w2='#687c94'; }
+  else{              s1='#081030'; s2='#101840'; g1='#002000'; g2='#184000'; w1='#4a5a72'; w2='#33415a'; }
+
+  const root = document.documentElement.style;
+  root.setProperty('--sky-tone', s1);
+  root.setProperty('--sky-tone-2', s2);
+  root.setProperty('--grass-tone', g1);
+  root.setProperty('--grass-tone-2', g2);
+  root.setProperty('--wall-1', w1);
+  root.setProperty('--wall-2', w2);
 
   const showSky = m >= 30;
   moon.classList.toggle('show', showSky);
@@ -725,12 +1169,12 @@ function updateDaylight(){
   lamp.classList.toggle('show', m > 60);
 }
 
-/* ================= РАБОЧИЙ ЭКРАН ================= */
-const wTitle = document.getElementById('wTitle');
-const wText = document.getElementById('wText');
-const wStatus = document.getElementById('wStatus');
+/* ================= РАБОЧАЯ ЗОНА ================= */
+const wTitle   = document.getElementById('wTitle');
+const wText    = document.getElementById('wText');
+const wStatus  = document.getElementById('wStatus');
 const wChoices = document.getElementById('wChoices');
-const work = document.getElementById('work');
+const work     = document.getElementById('work');
 
 function setWork(title,text,status,type){
   wTitle.textContent = title;
@@ -762,11 +1206,11 @@ function updateStickers(){
 }
 
 /* ================= МОДАЛКА ================= */
-const overlay = document.getElementById('overlay');
-const mTitle = document.getElementById('mTitle');
-const mText = document.getElementById('mText');
-const mResult = document.getElementById('mResult');
-const mBtn = document.getElementById('mBtn');
+const overlay  = document.getElementById('overlay');
+const mTitle   = document.getElementById('mTitle');
+const mText    = document.getElementById('mText');
+const mResult  = document.getElementById('mResult');
+const mBtn     = document.getElementById('mBtn');
 const mActions = document.querySelector('.modal .actions');
 let modalCb = null;
 let modalCb2 = null;
@@ -790,8 +1234,9 @@ function showModal({title,text,result,btn,cb,btn2,cb2,funny}){
       btn2El.addEventListener('click', ()=>{
         overlay.classList.remove('active');
         click();
-        const cb = modalCb2; modalCb2 = null;
-        if(cb) cb();
+        const c = modalCb2; modalCb2 = null;
+        if(c) c();
+        setTimeout(notifyParent, 50);
       });
       mActions.appendChild(btn2El);
     }
@@ -804,24 +1249,23 @@ function showModal({title,text,result,btn,cb,btn2,cb2,funny}){
   }
 
   overlay.classList.add('active');
-  setTimeout(resizeIframe, 50); // Ресайз при открытии модалки
+  setTimeout(notifyParent, 50);
 }
 mBtn.addEventListener('click', ()=>{
   overlay.classList.remove('active');
   click();
   const cb = modalCb; modalCb = null;
   if(cb) cb();
-  setTimeout(resizeIframe, 50); // Ресайз при закрытии модалки
+  setTimeout(notifyParent, 50);
 });
 
 /* ================= СТАРТОВЫЙ ДИАЛОГ ================= */
 const dialog = [
-  {who:'boss', name:'Начальник:', text:'Заходи, присаживайся. Пятница, до конца рабочего дня ровно час. Руководство срочно поручило три материала для сотрудников предприятия.'},
-  {who:'boss', name:'Начальник:', text:'Первый - памятка для цеха по сбору отработанных батареек. Что можно приносить, что нельзя кидать в контейнер, куда его нести. Второй - план презентации из пяти слайдов для инструктажа по этой памятке.'},
-  {who:'boss', name:'Начальник:', text:'Третий - письмо руководителям цехов. Запроси у них данные по отходам за прошлый квартал. Вежливо, по-деловому.'},
-  {who:'boss', name:'Начальник:', text:'В 17:00 жду у себя готовые черновики. На каждую задачу примерно пятнадцать минут. Успеешь - премия. Не успеешь - сидишь до ночи.'},
-  {who:'eco',  name:'Эколог:',  text:'Понял. Памятка, план слайдов, письмо. Успею.'},
-  {who:'boss', name:'Начальник:', text:'И еще. Проверяй, что тебе пишут. Потом переделывать будешь дольше, чем делать.'},
+  {who:'boss', name:'Начальник:', text:'Заходи, присаживайся. Я решил установить контейнер по сбору батареек, это же модно сейчас.'},
+  {who:'boss', name:'Начальник:', text:'Утром в понедельник проведешь инструктаж работникам по сбору. Подготовься.'},
+  {who:'boss', name:'Начальник:', text:'А, еще запроси у отделов данные по отходам за прошлый квартал.'},
+  {who:'boss', name:'Начальник:', text:'Так что к 17:00 жду у себя готовые черновики. Должен успеть.'},
+  {who:'eco',  name:'Эколог:',  text:'Понял. Памятка, презентация, письмо. Успею.'},
   {who:'eco',  name:'Эколог:',  text:'Сделаю. Приступаю.'}
 ];
 let dIdx = 0;
@@ -857,7 +1301,7 @@ function startGame(){
   updateHUD();
   setWork('Рабочий стол',
     'Пятница, 16:00. Три задачи до 17:00. Нажмите на мигающий стикер.',
-    'Начните с задачи 1 - соберите рабочий промпт.',
+    'Начните с задачи 1 — соберите рабочий промпт.',
     'info');
   updateStickers();
 }
@@ -868,8 +1312,9 @@ const PROMPT_BLOCKS = [
     key:'role',
     label:'Роль',
     hint:'Кем представить ИИ, чтобы памятка была рабочей?',
-    good:'Ты - промышленный эколог с 10-летним опытом на предприятии.',
-    bad:'Ты - полезный помощник, который отвечает на любые вопросы про экологию.',
+    good:'Ты — промышленный эколог с 10-летним опытом на предприятии.',
+    bad:'Ты — полезный помощник, который отвечает на любые вопросы про экологию.',
+    correctText:'Роль задает экспертизу. Модель отвечает как специалист, а не как энциклопедия.',
     badTitle:'ИИ не в роли',
     badText:'«Полезный помощник» звучит красиво, но не задает экспертизу. Модель ответит общо, как в энциклопедии, и памятку придется переписывать.'
   },
@@ -879,17 +1324,19 @@ const PROMPT_BLOCKS = [
     hint:'Опишите предприятие и аудиторию памятки.',
     good:'Контекст: завод, работники цеха не знают, куда сдавать отработанные батарейки. Нужна памятка для цеха.',
     bad:'На заводе есть работники и разные отходы, в том числе батарейки.',
+    correctText:'Контекст объясняет аудиторию. Модель понимает, для кого текст.',
     badTitle:'Контекст общий',
-    badText:'Формально все верно, но ИИ не понимает, что памятка - для работников цеха, которые не знают, куда нести батарейки. Получится текст «для всех и ни для кого».'
+    badText:'Формально все верно, но ИИ не понимает, что памятка — для работников цеха, которые не знают, куда нести батарейки. Получится текст «для всех и ни для кого».'
   },
   {
     key:'task',
     label:'Задача',
     hint:'Что именно должно получиться на выходе?',
-    good:'Задача: составь памятку из двух списков - что можно приносить и что нельзя кидать в контейнер.',
+    good:'Задача: составь памятку из двух списков — что можно приносить и что нельзя кидать в контейнер.',
     bad:'Помоги разобраться с батарейками и сформулируй полезные рекомендации.',
+    correctText:'Задача — это конкретный результат. Памятка со списками, а не статья.',
     badTitle:'Задача размыта',
-    badText:'«Помоги разобраться» - это не результат. Модель может выдать статью, пост или инструкцию. Нужен конкретный документ: памятка со списками.'
+    badText:'«Помоги разобраться» — это не результат. Модель может выдать статью, пост или инструкцию. Нужен конкретный документ: памятка со списками.'
   },
   {
     key:'format',
@@ -897,6 +1344,7 @@ const PROMPT_BLOCKS = [
     hint:'Каким должен быть ответ по форме?',
     good:'Формат: короткие пункты, простой язык, объем до 200 слов.',
     bad:'Сделай аккуратно и по делу, чтобы было понятно.',
+    correctText:'Формат задает структуру и объем. ИИ не добавляет «воду».',
     badTitle:'Формат не задан',
     badText:'«Аккуратно и по делу» каждый понимает по-своему. ИИ добавит вступление, выводы и «воду». Укажите пункты, язык и объем.'
   },
@@ -906,21 +1354,22 @@ const PROMPT_BLOCKS = [
     hint:'Что ИИ делать нельзя?',
     good:'Ограничения: не используй сложные термины, не ссылайся на законы, не добавляй стихи.',
     bad:'Не пиши ничего лишнего и не ошибайся.',
+    correctText:'Ограничения запрещают конкретные вещи. Модель не тянет законы и стихи.',
     badTitle:'Ограничения не работают',
     badText:'«Не ошибайся» не запрещает конкретных действий. Модель все равно добавит ссылки на законы и общие слова. Ограничения должны быть конкретными.'
   }
 ];
 
 const FUNNY_OUTPUT = {
-  format: 'Йоу, братва! Вот ваша памятка по батарейкам: кидайте их в контейнер в холле - и будет вам счастье и чистая планета! Аккумуляторы не кидайте, они не батарейки, но тоже плохие. Берегите природу, красавчики!',
-  limits: 'Памятка по батарейкам.\n\nСогласно Постановлению № 12345 от 2026 года, все работники обязаны сдавать батарейки в контейнер. За нарушение - штраф 500 000 рублей и увольнение.\n\nБатарейки выделяют полезные витамины. Сдавайте их и будьте здоровы!\n\nСтих: Батарейка, ты мала, но нужна нам всем она.'
+  format:'Йоу, братва! Вот ваша памятка по батарейкам: кидайте их в контейнер в холле — и будет вам счастье и чистая планета! Аккумуляторы не кидайте, они не батарейки, но тоже плохие. Берегите природу, красавчики!',
+  limits:'Памятка по батарейкам.\n\nСогласно Постановлению № 12345 от 2026 года, все работники обязаны сдавать батарейки в контейнер. За нарушение — штраф 500 000 рублей и увольнение.\n\nБатарейки выделяют полезные витамины. Сдавайте их и будьте здоровы!\n\nСтих: Батарейка, ты мала, но нужна нам всем она.'
 };
 
 function renderPromptLive(){
   const parts = [];
   PROMPT_BLOCKS.forEach(b=>{
     const v = state.t1.blocks[b.key];
-    parts.push(v || '<span class="ph">[' + b.label.toLowerCase() + ' - не задано]</span>');
+    parts.push(v || '<span class="ph">[' + b.label.toLowerCase() + ' — не задано]</span>');
   });
   return parts.join('\n');
 }
@@ -969,9 +1418,18 @@ function renderTask1(){
     btn.addEventListener('click', ()=>{
       if(btn.dataset.good === '1'){
         click();
-        state.t1.blocks[b.key] = b.good;
-        state.t1.step++;
-        renderTask1();
+        sndOk();
+        showModal({
+          title:'Верно: ' + b.label,
+          text: b.correctText,
+          result:'<b>Блок «' + b.label + '» добавлен в промпт.</b>',
+          btn:'Дальше',
+          cb: ()=>{
+            state.t1.blocks[b.key] = b.good;
+            state.t1.step++;
+            renderTask1();
+          }
+        });
       } else {
         if(b.key === 'format' || b.key === 'limits'){
           showFunnyAiModal(b);
@@ -1009,6 +1467,7 @@ function showFunnyAiModal(b){
     cb2: ()=>{
       addTime(5);
       sndErr();
+      triggerSad();
       flash('err');
       penalty.textContent = '+5 мин';
       penalty.classList.add('show');
@@ -1035,12 +1494,12 @@ function task1Success(){
   const funnyNote = hasFunny ? '\n\nВнимание: в промпте был неформальный блок. Памятка получилась странной, ее придется переделывать вручную.' : '';
 
   const aiOutput = hasFunny
-    ? 'Памятка для цеха (странная)\n\n' + (state.t1.funny.format ? 'Йоу, братва! Кидайте батарейки в контейнер - будет вам счастье!' : 'Можно приносить: батарейки AA, AAA, кроны.\n\nНельзя: аккумуляторы, ртутные лампы.\n\nБатарейки выделяют полезные витамины.')
-    : 'Памятка для цеха\n\nМожно приносить: батарейки AA, AAA, кроны, пальчиковые и мизинчиковые.\n\nНельзя: аккумуляторы от техники, ртутные лампы, поврежденные элементы с потеками.\n\nКонтейнер - в холле у поста охраны. Сдавайте партиями, не смешивая с бытовым мусором.';
+    ? 'Памятка для цеха (странная)\n\n' + (state.t1.funny.format ? 'Йоу, братва! Кидайте батарейки в контейнер — будет вам счастье!' : 'Можно приносить: батарейки AA, AAA, кроны.\n\nНельзя: аккумуляторы, ртутные лампы.\n\nБатарейки выделяют полезные витамины.')
+    : 'Памятка для цеха\n\nМожно приносить: батарейки AA, AAA, кроны, пальчиковые и мизинчиковые.\n\nНельзя: аккумуляторы от техники, ртутные лампы, поврежденные элементы с потеками.\n\nКонтейнер — в холле у поста охраны. Сдавайте партиями, не смешивая с бытовым мусором.';
 
   setWork('Задача 1 закрыта',
     'Промпт собран из 5 блоков. ИИ выдал памятку для цеха.',
-    hasFunny ? 'Готово, но с неформальным блоком - памятку стоит перепроверить.' : 'Готово. Результат можно использовать дальше.',
+    hasFunny ? 'Готово, но с неформальным блоком — памятку стоит перепроверить.' : 'Готово. Результат можно использовать дальше.',
     hasFunny ? 'error' : 'success');
 
   wChoices.innerHTML =
@@ -1051,24 +1510,22 @@ function task1Success(){
   showModal({
     title:'Задача 1: промпт собран',
     text:'Вы прошли все пять блоков и получили документ. Именно так формулируется настоящий запрос: роль, контекст, задача, формат, ограничения.',
-    result:'<b>Результат:</b> памятка для цеха готова. Дальше из нее вырастут слайды - поэтому важно не потерять контекст.',
+    result:'<b>Результат:</b> памятка для цеха готова. Дальше из нее вырастут слайды — поэтому важно не потерять контекст.',
     btn:'К задаче 2',
-    cb: ()=>{
-      showOsPopup(unlockTask2);
-    }
+    cb: ()=>{ showOsPopup(unlockTask2); }
   });
 
   updateStickers();
 }
 
 /* ================= СПАМ ================= */
-const osBox = document.getElementById('osBox');
-const osArgue = document.getElementById('osArgue');
-const osClose = document.getElementById('osClose');
-const osX = document.getElementById('osX');
-const osMsg = document.getElementById('osMsg');
-const osIcon = document.getElementById('osIcon');
-const osTitle = document.getElementById('osTitle');
+const osBox    = document.getElementById('osBox');
+const osArgue  = document.getElementById('osArgue');
+const osClose  = document.getElementById('osClose');
+const osX      = document.getElementById('osX');
+const osMsg    = document.getElementById('osMsg');
+const osIcon   = document.getElementById('osIcon');
+const osTitle  = document.getElementById('osTitle');
 
 const spamMessages = [
   {icon:'!', title:'Уведомление чата', text:'Кто взял единственную ложку на кухне цеха?! Срочный сбор!'},
@@ -1100,7 +1557,7 @@ osMsg.addEventListener('click', ()=>{
   showModal({
     title:'Вы залипли в чате',
     text:'Обсуждали ложку или котиков, пока ИИ ждал команды. Время утекло.',
-    result:'<b>Штраф:</b> +2 минуты за офисный спам. Закрывайте уведомления сразу - это рабочее время.',
+    result:'<b>Штраф:</b> +2 минуты за офисный спам. Закрывайте уведомления сразу — это рабочее время.',
     btn:'Понятно',
     cb: ()=>{ const c = osCallback; osCallback = null; if(c) c(); }
   });
@@ -1157,7 +1614,7 @@ function renderTask2(){
       'Новый чат не помнит предыдущий документ.',
       'info');
     wChoices.innerHTML =
-      '<button class="pixel-btn choice-btn" data-a="newChat">Открыть новый чат - пусть ИИ начнет с чистого листа.</button>' +
+      '<button class="pixel-btn choice-btn" data-a="newChat">Открыть новый чат — пусть ИИ начнет с чистого листа.</button>' +
       '<button class="pixel-btn choice-btn" data-a="stay">Остаться в этой ветке, где уже лежит памятка.</button>';
   }
   if(st.step === 2){
@@ -1175,7 +1632,7 @@ function renderTask2(){
       'Уточняйте результат в той же ветке.',
       'info');
     wChoices.innerHTML =
-      '<button class="pixel-btn choice-btn" data-a="asis">Отправить как есть - список допишу вручную.</button>' +
+      '<button class="pixel-btn choice-btn" data-a="asis">Отправить как есть — список допишу вручную.</button>' +
       '<button class="pixel-btn choice-btn" data-a="refine">В этой же ветке попросить добавить во второй слайд список батареек из памятки выше.</button>' +
       '<button class="pixel-btn choice-btn" data-a="newfix">Открыть новый чат и попросить список отдельно.</button>';
   }
@@ -1187,8 +1644,29 @@ function renderTask2(){
 
 function task2Action(a){
   const st = state.t2;
-  if(a === 'stay'){ click(); st.step = 2; renderTask2(); return; }
-  if(a === 'precise'){ click(); st.step = 3; renderTask2(); return; }
+
+  if(a === 'stay'){
+    click(); sndOk();
+    showModal({
+      title:'Верно: остаемся в ветке',
+      text:'Один чат хранит весь контекст. Модель помнит памятку, которую мы только что создали.',
+      result:'<b>Правильно:</b> контекст сохранен, пересказывать документ не нужно.',
+      btn:'Дальше',
+      cb: ()=>{ st.step = 2; renderTask2(); }
+    });
+    return;
+  }
+  if(a === 'precise'){
+    click(); sndOk();
+    showModal({
+      title:'Верно: точная команда',
+      text:'Команда ссылается на предыдущий текст, задает число слайдов и формат. Модель не фантазирует.',
+      result:'<b>Правильно:</b> команда содержит ссылку, количество и формат.',
+      btn:'Дальше',
+      cb: ()=>{ st.step = 3; renderTask2(); }
+    });
+    return;
+  }
   if(a === 'refine'){ click(); task2Success(); return; }
 
   if(st.wrong[a]) return;
@@ -1198,8 +1676,8 @@ function task2Action(a){
   const info = {
     newChat:{t:'Контекст потерян', x:'Новый чат не помнит памятку. ИИ выдаст абстрактный план, и списки придется переносить вручную.'},
     vague:{t:'Команда слишком общая', x:'Запрос без ссылки на предыдущий текст, без числа слайдов и формата дает общий план.'},
-    asis:{t:'Ручная переделка', x:'Если отправить план без деталей, придется дописывать списки вручную. ИИ может сделать это сам - в той же ветке.'},
-    newfix:{t:'Снова новый чат', x:'Новый чат опять теряет памятку. Уточняйте в текущей ветке - один диалог хранит историю.'}
+    asis:{t:'Ручная переделка', x:'Если отправить план без деталей, придется дописывать списки вручную. ИИ может сделать это сам — в той же ветке.'},
+    newfix:{t:'Снова новый чат', x:'Новый чат опять теряет памятку. Уточняйте в текущей ветке — один диалог хранит историю.'}
   }[a];
 
   showModal({
@@ -1222,7 +1700,7 @@ function task2Success(){
 
   setWork('Задача 2 закрыта',
     'План слайдов готов. ИИ взял списки из памятки и добавил их в структуру.',
-    'Контекст удержан - копировать вручную не пришлось.',
+    'Контекст удержан — копировать вручную не пришлось.',
     'success');
 
   wChoices.innerHTML =
@@ -1232,7 +1710,7 @@ function task2Success(){
 
   showModal({
     title:'Задача 2: контекст удержан',
-    text:'Вы не стали дробить диалог. Один чат хранит памятку, план и уточнения - документ превращается в другой без копирования.',
+    text:'Вы не стали дробить диалог. Один чат хранит памятку, план и уточнения — документ превращается в другой без копирования.',
     result:'<b>Результат:</b> план слайдов готов. Теперь осталось проверить письмо коллегам.',
     btn:'К задаче 3',
     cb: showSofaPopup
@@ -1243,9 +1721,9 @@ function task2Success(){
 
 /* ================= ДИВАН ================= */
 const sofaBox = document.getElementById('sofaBox');
-const sofaGo = document.getElementById('sofaGo');
-const sofaAi = document.getElementById('sofaAi');
-const sofaX = document.getElementById('sofaX');
+const sofaGo  = document.getElementById('sofaGo');
+const sofaAi  = document.getElementById('sofaAi');
+const sofaX   = document.getElementById('sofaX');
 
 function showSofaPopup(){
   sndBip();
@@ -1256,6 +1734,7 @@ function hideSofaPopup(){ sofaBox.classList.remove('active'); }
 sofaGo.addEventListener('click', ()=>{
   hideSofaPopup();
   addTime(5);
+  triggerSad();
   penalty.textContent = '+5 мин';
   penalty.classList.add('show');
   setTimeout(()=>penalty.classList.remove('show'), 900);
@@ -1263,7 +1742,7 @@ sofaGo.addEventListener('click', ()=>{
   showModal({
     title:'Полчаса у дивана',
     text:'Вы спорили с завхозом о классификации отходов. Диван так и остался на заднем дворе.',
-    result:'<b>Штраф:</b> +5 минут. В следующий раз отправляйте завхоза читать ФККО - он справится сам.',
+    result:'<b>Штраф:</b> +5 минут. В следующий раз отправляйте завхоза читать ФККО — он справится сам.',
     btn:'Понятно',
     cb: unlockTask3
   });
@@ -1275,7 +1754,7 @@ sofaAi.addEventListener('click', ()=>{
   sndOk();
   setWork('Завхоз отправлен читать ФККО',
     'Вы ответили плашкой «Ищи в ФККО для КГО» и отправили завхоза читать инструкции. Экономия времени!',
-    'Диван - это КГО (крупногабаритные отходы). Пусть завхоз сам разбирается.',
+    'Диван — это КГО (крупногабаритные отходы). Пусть завхоз сам разбирается.',
     'success');
   setTimeout(unlockTask3, 800);
 });
@@ -1354,26 +1833,44 @@ function task3Click(b){
     });
     return;
   }
+
   if(b === 3 && !st.law){
-    st.law = true;
     sndOk(); flash('ok');
-    setWork('Вы поймали выдуманный закон',
-      'Постановления Правительства РФ № 9999 не существует. Нормативные ссылки всегда проверяет человек.',
-      'Отметьте вторую ошибку.',
-      'success');
-    renderTask3();
-    checkTask3();
+    showModal({
+      title:'Верно: выдуманный закон',
+      text:'Постановления Правительства РФ № 9999 не существует. Нормативные ссылки всегда проверяет человек.',
+      result:'<b>Первая галлюцинация поймана.</b>',
+      btn:'Дальше',
+      cb: ()=>{
+        st.law = true;
+        setWork('Вы поймали выдуманный закон',
+          'Постановления Правительства РФ № 9999 не существует. Нормативные ссылки всегда проверяет человек.',
+          'Отметьте вторую ошибку.',
+          'success');
+        renderTask3();
+        setTimeout(checkTask3, 220);
+      }
+    });
     return;
   }
+
   if(b === 4 && !st.date){
-    st.date = true;
     sndOk(); flash('ok');
-    setWork('Вы поймали невозможную дату',
-      '31 февраля не бывает. Сроки в документах нужно проверять.',
-      'Отметьте вторую ошибку.',
-      'success');
-    renderTask3();
-    checkTask3();
+    showModal({
+      title:'Верно: невозможная дата',
+      text:'31 февраля не бывает. Сроки в документах нужно проверять.',
+      result:'<b>Вторая галлюцинация поймана.</b>',
+      btn:'Дальше',
+      cb: ()=>{
+        st.date = true;
+        setWork('Вы поймали невозможную дату',
+          '31 февраля не бывает. Сроки в документах нужно проверять.',
+          'Отметьте вторую ошибку.',
+          'success');
+        renderTask3();
+        setTimeout(checkTask3, 220);
+      }
+    });
     return;
   }
 }
@@ -1403,7 +1900,7 @@ function task3Success(){
   showModal({
     title:'Задача 3: проверка пройдена',
     text:'ИИ уверенно выдумывает законы, даты и сроки. Перед отправкой документа проверяйте нормативные ссылки и факты.',
-    result:'<b>Результат:</b> письмо проверено. Все три артефакта - памятка, слайды и письмо - готовы и связаны между собой.',
+    result:'<b>Результат:</b> письмо проверено. Все три артефакта — памятка, слайды и письмо — готовы и связаны между собой.',
     btn:'К итогам',
     cb: showFinal
   });
@@ -1411,7 +1908,7 @@ function task3Success(){
   updateStickers();
 }
 
-/* ---------- СТИКЕРЫ ---------- */
+/* ---------- КЛИКИ ПО СТИКЕРАМ ---------- */
 s1.addEventListener('click', ()=>{
   if(state.done[1]) return;
   if(!state.unlocked[1]) return;
@@ -1435,23 +1932,23 @@ s3.addEventListener('click', ()=>{
 });
 
 /* ================= ФИНАЛ И СКАЧИВАНИЕ ================= */
-function downloadCheatSheet() {
+function downloadCheatSheet(){
   const text = `Как составить промпт, чтобы ИИ понял вашу задумку?
 
 Чем точнее запрос, тем проще получить нужный результат без бесконечных правок. Но как понять, что именно стоит добавить в промпт?
 
-Собрали памятку с основными элементами хорошего запроса - сохраняйте, чтобы не потерять:
+Собрали памятку с основными элементами хорошего запроса — сохраняйте, чтобы не потерять:
 
-1. РОЛЬ: Кем должен быть ИИ? (Например: "Ты - опытный промышленный эколог...")
+1. РОЛЬ: Кем должен быть ИИ? (Например: "Ты — опытный промышленный эколог...")
 2. КОНТЕКСТ: Для кого и зачем это делается? (Например: "Для работников цеха, которые не знают, куда сдавать батарейки")
 3. ЗАДАЧА: Что конкретно нужно сделать? (Например: "Составь памятку из двух списков...")
 4. ФОРМАТ: Как должен выглядеть ответ? (Например: "Короткие пункты, простой язык, до 200 слов")
 5. ОГРАНИЧЕНИЯ: Чего делать нельзя? (Например: "Не используй сложные термины, не ссылайся на законы")
 
 Пример идеального промпта:
-"Ты - промышленный эколог с 10-летним опытом. Контекст: работники цеха не знают, куда сдавать батарейки. Задача: составь памятку из двух списков (что можно и что нельзя). Формат: короткие пункты, простой язык, до 200 слов. Ограничения: не используй сложные термины и не ссылайся на законы."`;
+"Ты — промышленный эколог с 10-летним опытом. Контекст: работники цеха не знают, куда сдавать батарейки. Задача: составь памятку из двух списков (что можно и что нельзя). Формат: короткие пункты, простой язык, до 200 слов. Ограничения: не используй сложные термины и не ссылайся на законы."`;
 
-  const blob = new Blob([text], { type: 'text/plain;charset=utf-8' });
+  const blob = new Blob([text], {type:'text/plain;charset=utf-8'});
   const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
@@ -1471,9 +1968,9 @@ function showFinal(){
     : 'Овертайм: переработка';
 
   const body = document.getElementById('finalBody');
-  
+
   let downloadBlock = '';
-  if (success) {
+  if(success){
     downloadBlock = `
       <div class="download-box success">
         <p><b>Отличная работа! Вы уложились в срок.</b></p>
@@ -1483,8 +1980,8 @@ function showFinal(){
   } else {
     downloadBlock = `
       <div class="download-box fail">
-        <p style="color: #c02020;"><b>Вы не уложились в срок.</b></p>
-        <p style="font-size: 13px; margin-top: 5px;">Памятка доступна только при успешном прохождении игры до 17:00. Попробуйте еще раз!</p>
+        <p style="color:var(--red);"><b>Вы не уложились в срок.</b></p>
+        <p style="font-size:15px; margin-top:5px;">Памятка доступна только при успешном прохождении игры до 17:00. Попробуйте еще раз!</p>
       </div>
     `;
   }
@@ -1492,14 +1989,14 @@ function showFinal(){
   if(success){
     body.innerHTML =
       '<p>На часах ' + time + '. Эколог выключает компьютер, берет куртку. Три материала готовы.</p>' +
-      '<p>Вы доказали: ИИ - эффективный инструмент, а не игрушка. Не переписывали документы с нуля, а управляли процессом как эксперт.</p>' +
+      '<p>Вы доказали: ИИ — эффективный инструмент, а не игрушка. Не переписывали документы с нуля, а управляли процессом как эксперт.</p>' +
       '<div class="sub">Практические навыки и разборы:</div>' +
       '<div class="myth ok"><span class="lbl">Навык</span><b>Формула рабочего промпта.</b> Собрали роль, контекст, задачу, формат и ограничения. Модель стала ассистентом, а не генератором «воды».</div>' +
       '<div class="myth ok"><span class="lbl">Навык</span><b>Работа с контекстом.</b> Один чат хранит памятку, план и уточнения. Документ превращается в другой без копирования.</div>' +
       '<div class="myth ok"><span class="lbl">Навык</span><b>Проверка фактов.</b> Поймали выдуманный закон и невозможную дату. Экспертный контроль остался за человеком.</div>' +
-      '<div class="myth neg"><span class="lbl">Миф</span><b>«ИИ сам проверяет себя».</b> Нет - вы лично нашли две галлюцинации. Модель не признается в ошибке.</div>' +
-      '<div class="myth neg"><span class="lbl">Миф</span><b>«Чем больше чатов - тем быстрее».</b> Дробление диалога теряет контекст и плодит двойную работу.</div>' +
-      '<div class="myth neg"><span class="lbl">Отрицание</span><b>«Проверка - формальность».</b> Нет. Именно проверка ловит выдуманные законы и даты. Без нее документ уйдет с ошибкой.</div>' +
+      '<div class="myth neg"><span class="lbl">Миф</span><b>«ИИ сам проверяет себя».</b> Нет — вы лично нашли две галлюцинации. Модель не признается в ошибке.</div>' +
+      '<div class="myth neg"><span class="lbl">Миф</span><b>«Чем больше чатов — тем быстрее».</b> Дробление диалога теряет контекст и плодит двойную работу.</div>' +
+      '<div class="myth neg"><span class="lbl">Отрицание</span><b>«Проверка — формальность».</b> Нет. Именно проверка ловит выдуманные законы и даты. Без нее документ уйдет с ошибкой.</div>' +
       '<div class="sub">Вы уже умеете:</div>' +
       '<ul>' +
         '<li>Экономить время, собирая точные запросы из ключевых элементов.</li>' +
@@ -1508,14 +2005,14 @@ function showFinal(){
       '</ul>' + downloadBlock;
   } else {
     body.innerHTML =
-      '<p>На часах ' + time + '. В офисе горит одна лампа, за окном темно. Все задачи выполнены - но вы задержались.</p>' +
+      '<p>На часах ' + time + '. В офисе горит одна лампа, за окном темно. Все задачи выполнены — но вы задержались.</p>' +
       '<p>Игры со слабыми промптами и отвлечение на офисный спам привели к тому, что пришлось переделывать черновики вручную. В жизни это потерянный вечер. Но теперь вы точно знаете, где теряется время.</p>' +
       '<div class="sub">Практические навыки и разборы:</div>' +
       '<div class="myth ok"><span class="lbl">Навык</span><b>Формула рабочего промпта.</b> Без рамки из пяти блоков модель выдает «воду» и стихи.</div>' +
       '<div class="myth ok"><span class="lbl">Навык</span><b>Работа с контекстом.</b> Дробление диалога теряет данные и плодит двойную работу.</div>' +
-      '<div class="myth ok"><span class="lbl">Навык</span><b>Проверка фактов.</b> Вы поймали галлюцинации - и это главное.</div>' +
-      '<div class="myth neg"><span class="lbl">Миф</span><b>«Чем больше чатов - тем быстрее».</b> На деле дробление диалога теряет контекст.</div>' +
-      '<div class="myth neg"><span class="lbl">Отрицание</span><b>«Проверка - формальность».</b> Нет. Именно проверка ловит выдуманные законы и даты.</div>' +
+      '<div class="myth ok"><span class="lbl">Навык</span><b>Проверка фактов.</b> Вы поймали галлюцинации — и это главное.</div>' +
+      '<div class="myth neg"><span class="lbl">Миф</span><b>«Чем больше чатов — тем быстрее».</b> На деле дробление диалога теряет контекст.</div>' +
+      '<div class="myth neg"><span class="lbl">Отрицание</span><b>«Проверка — формальность».</b> Нет. Именно проверка ловит выдуманные законы и даты.</div>' +
       '<div class="sub">Вы уже умеете:</div>' +
       '<ul>' +
         '<li>Задавать ИИ жесткие рамки и роль, чтобы не сидеть в офисе допоздна.</li>' +
@@ -1579,33 +2076,15 @@ document.getElementById('restartBtn').addEventListener('click', ()=>{
   resetGame();
 });
 
-/* ================= ИНИЦИАЛИЗАЦИЯ И РЕСАЙЗЕР ================= */
+/* ================= ИНИЦИАЛИЗАЦИЯ ================= */
 updateHUD();
 updateStickers();
 
-// Запуск ресайзера при загрузке
-document.addEventListener('DOMContentLoaded', () => {
-  resizeIframe();
-  
-  // Наблюдатель за любыми изменениями в DOM (переключение экранов, модалки, текст)
-  const observer = new MutationObserver(() => {
-    setTimeout(resizeIframe, 50);
-  });
-  
-  observer.observe(document.body, {
-    childList: true,
-    subtree: true,
-    attributes: true,
-    attributeFilter: ['class', 'style']
-  });
-});
-
 window.addEventListener('load', () => {
-  resizeIframe();
+  setTimeout(notifyParent, 100);
 });
 </script>
 
-<!-- Скрипт ресайзера для работы внутри iframe -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 </body>
 </html>
