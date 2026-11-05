@@ -2320,13 +2320,33 @@ s3.addEventListener('click', ()=>{
 });
 
 /* ================= ФИНАЛ ================= */
-function downloadCheatSheet(){
-  const a = document.createElement('a');
-  a.href = 'rules.png';
-  a.download = 'rules.png';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
+async function downloadCheatSheet() {
+  const imgUrl = 'rules.png';
+  try {
+    // Пытаемся получить файл как бинарные данные, чтобы принудительно скачать его
+    const response = await fetch(imgUrl);
+    const blob = await response.blob();
+    const blobUrl = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = blobUrl;
+    a.download = 'rules.png';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(blobUrl);
+  } catch (error) {
+    // Если fetch не сработал (например, при локальном открытии file://), 
+    // открываем картинку в новой вкладке, чтобы игра не ломалась
+    console.error('Ошибка при скачивании:', error);
+    const a = document.createElement('a');
+    a.href = imgUrl;
+    a.download = 'rules.png';
+    a.target = '_blank';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+  }
 }
 
 function showFinal(){
