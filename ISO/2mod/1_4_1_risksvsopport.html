@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Где может сорваться результат: риски и возможности</title>
+<style>
+:root{
+ --bg:#fff; --primary:#1e293b; --muted:#64748b; --border:#e2e8f0;
+ --gray:#f8fafc; --accent:#2563eb; --accent-d:#1d4ed8;
+ --ok:#16a34a; --ok-bg:#f0fdf4; --ok-bd:#bbf7d0;
+ --warn:#ea580c; --warn-bg:#fff7ed; --warn-bd:#fed7aa;
+ --info-bg:#eff6ff; --info-bd:#bfdbfe; --info-tx:#1e40af;
+ --r:12px;
+}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--primary);font-size:15px;line-height:1.6}
+.container{max-width:720px;margin:0 auto}
+.screen{display:none}.screen.active{display:block;animation:fi .3s ease-out}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:22px;font-weight:800;margin:0 0 8px;outline:none}
+h2{font-size:16px;font-weight:700;margin:16px 0 8px}
+.lead{font-size:14px;margin:0 0 12px;color:var(--muted)}
+.note-box{background:var(--gray);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--muted);margin:10px 0}
+.note-box.accent{border-left-color:var(--accent);color:var(--primary)}
+.progress-line{font-size:12px;font-weight:700;color:var(--accent-d);background:var(--info-bg);border:1px solid var(--info-bd);border-radius:20px;padding:4px 12px;display:inline-block;margin-bottom:10px}
+
+.case-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.case-card{border:2px solid var(--border);border-radius:var(--r);padding:14px;background:#fff;cursor:pointer;font-family:inherit;text-align:left;transition:border-color .15s}
+.case-card:hover{border-color:var(--accent);background:var(--gray)}
+.case-card.done{border-color:var(--ok-bd);background:var(--ok-bg)}
+.case-card .case-num{display:inline-block;font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--accent);background:var(--gray);border:1px solid var(--border);border-radius:20px;padding:2px 8px;margin-bottom:6px}
+.case-card.done .case-num{color:var(--ok);background:#fff;border-color:var(--ok-bd)}
+.case-card h3{margin:0 0 4px;font-size:14px}
+.case-card p{margin:0;font-size:12px;color:var(--muted)}
+
+.case-header{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.case-title{font-size:16px;font-weight:800}
+.btn-conditions{padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--primary);cursor:pointer;font-family:inherit}
+.btn-conditions:hover{background:var(--gray)}
+
+details.cond{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;background:var(--gray);margin:10px 0}
+details.cond>summary{cursor:pointer;padding:10px 14px;font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--accent);list-style:none}
+details.cond>summary::-webkit-details-marker{display:none}
+details.cond .cond-body{padding:0 14px 12px;font-size:13.5px}
+details.cond ul{margin:0;padding-left:18px}
+details.cond li{margin-bottom:5px}
+.cond-note{font-size:11.5px;color:var(--muted);margin-top:8px;font-style:italic}
+
+.side-tabs{display:flex;gap:8px;margin:12px 0}
+.side-tab{flex:1;padding:10px 14px;border:2px solid var(--border);border-radius:10px;background:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:8px;color:var(--muted)}
+.side-tab .st-status{font-size:10px;font-weight:800;text-transform:uppercase;letter-spacing:.4px}
+.side-tab.risk.active{border-color:var(--warn);color:var(--warn);background:var(--warn-bg)}
+.side-tab.opp.active{border-color:var(--ok);color:var(--ok);background:var(--ok-bg)}
+.side-tab.done .st-status{color:inherit}
+
+.side-panel{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:10px 0;background:#fff}
+.side-panel.risk{border-left:5px solid var(--warn)}
+.side-panel.opp{border-left:5px solid var(--ok)}
+.side-label{font-size:12px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;margin:0 0 6px}
+.side-panel.risk .side-label{color:var(--warn)}
+.side-panel.opp .side-label{color:var(--ok)}
+.q-text{font-size:15px;font-weight:600;margin:0 0 8px}
+.hint-box{background:var(--info-bg);border:1px solid var(--info-bd);border-radius:8px;padding:8px 12px;font-size:12.5px;color:var(--info-tx);margin:8px 0}
+.hint-box strong{display:block;font-size:11px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:3px}
+
+.options{display:flex;flex-direction:column;gap:8px;margin:10px 0}
+.option-btn{display:block;width:100%;text-align:left;border:2px solid var(--border);border-radius:10px;background:#fff;padding:11px 14px;font-family:inherit;font-size:13.5px;line-height:1.5;color:var(--primary);cursor:pointer;transition:all .15s}
+.option-btn:hover:not(:disabled){border-color:var(--accent);background:var(--gray)}
+.option-btn.selected-correct{border-color:var(--ok);background:var(--ok-bg)}
+.option-btn.selected-wrong{border-color:var(--warn);background:var(--warn-bg)}
+.option-btn.dim{opacity:.6}
+.option-btn:disabled{cursor:default}
+
+.feedback{border-radius:10px;padding:12px 14px;font-size:13.5px;line-height:1.55;margin:10px 0}
+.feedback.good{background:var(--ok-bg);border:1px solid var(--ok-bd);color:#166534}
+.feedback.bad{background:var(--warn-bg);border:1px solid var(--warn-bd);color:#9a3412}
+.feedback strong{display:block;margin-bottom:4px}
+
+details.chain{border:1px solid var(--border);border-radius:10px;background:#fff;margin:10px 0;overflow:hidden}
+details.chain>summary{cursor:pointer;padding:10px 14px;font-size:13px;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px}
+details.chain>summary::-webkit-details-marker{display:none}
+details.chain>summary::after{content:"+";color:var(--muted);font-weight:800;font-size:16px}
+details.chain[open]>summary::after{content:"−"}
+details.chain[open]>summary{background:var(--gray);border-bottom:1px solid var(--border)}
+table.chain{width:100%;border-collapse:collapse;font-size:12.5px;margin:0}
+table.chain th,table.chain td{border:1px solid var(--border);padding:7px 8px;text-align:left;vertical-align:top}
+table.chain th{background:var(--gray);font-weight:700;width:34%}
+.conclusion{background:var(--ok-bg);border-left:4px solid var(--ok);border-radius:0 10px 10px 0;padding:12px 14px;font-size:13.5px;margin:12px 0}
+.conclusion strong{display:block;color:#166534;font-size:12px;text-transform:uppercase;letter-spacing:.4px;margin-bottom:4px}
+
+.final-chain{background:var(--gray);border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:12px 0;font-size:13.5px}
+.final-chain .step{margin:6px 0;display:flex;gap:8px;align-items:flex-start}
+.final-chain .step-num{flex:0 0 auto;width:24px;height:24px;background:var(--accent);color:#fff;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:800}
+
+.nav-buttons{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit;transition:background .2s}
+.btn-primary{background:var(--accent);color:#fff}
+.btn-primary:hover{background:var(--accent-d)}
+.btn-secondary{background:#fff;border:1px solid var(--border);color:var(--primary)}
+.btn-secondary:hover{background:var(--gray)}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--accent-d);outline-offset:2px}
+
+@media (max-width:600px){
+ body{padding:12px}
+ h1{font-size:20px}
+ .case-grid,.side-tabs{grid-template-columns:1fr;flex-direction:column}
+ .nav-buttons{flex-direction:column}
+ .btn{width:100%}
+}
+</style>
+</head>
+<body>
+<div class="container">
+
+<!-- СТАРТ -->
+<div id="screen-intro" class="screen active">
+<h1 tabindex="-1">Где может сорваться результат</h1>
+<p class="lead">Требование может быть записано верно, но не сработать в повседневной работе. В каждом кейсе посмотрим на ситуацию с двух сторон: где риск и где возможность.</p>
+<div class="note-box accent">Сначала прочитайте условия: все сведения для ответа находятся в карточке. Варианты перемешиваются при каждом открытии кейса, поэтому подсказок по порядку нет. Пояснение дается к каждому варианту.</div>
+<p class="progress-line" id="progressLine">Кейсы просмотрены: 0 из 4</p>
+<div class="case-grid" id="caseGrid"></div>
+<div class="nav-buttons" id="introNav"></div>
+</div>
+
+<!-- КЕЙС -->
+<div id="screen-case" class="screen">
+<div class="case-header">
+<span class="case-title" id="caseTitle"></span>
+<button class="btn-conditions" onclick="toggleFacts()">Условия кейса</button>
+</div>
+<details class="cond" id="factsDet" open>
+<summary>Что известно</summary>
+<div class="cond-body" id="factsBody"></div>
+</details>
+<div class="side-tabs" role="group" aria-label="Стороны разбора">
+<button type="button" class="side-tab risk" id="tabRisk" onclick="setSide('risk')">Риск<span class="st-status" id="stRisk"></span></button>
+<button type="button" class="side-tab opp" id="tabOpp" onclick="setSide('opp')">Возможность<span class="st-status" id="stOpp"></span></button>
+</div>
+<div id="sideBox"></div>
+<div id="chainsBox"></div>
+<div class="nav-buttons" id="caseNav"></div>
+</div>
+
+<!-- ФИНАЛ -->
+<div id="screen-final" class="screen">
+<h1 tabindex="-1">От ситуации к обоснованному действию</h1>
+<p class="lead">В каждом кейсе вы отделили известный факт от возможного последствия и увидели обе стороны ситуации: риск и возможность.</p>
+<p class="lead">Теперь опишите знакомую ситуацию своего предприятия по той же цепочке.</p>
+<div class="final-chain">
+<div class="step"><div class="step-num">1</div><div><strong>Что известно?</strong> Отделите подтвержденные факты от предположений.</div></div>
+<div class="step"><div class="step-num">2</div><div><strong>Что может произойти?</strong> Назовите риск и его возможное последствие.</div></div>
+<div class="step"><div class="step-num">3</div><div><strong>Что ситуация позволяет улучшить?</strong> Назовите возможность и ее результат.</div></div>
+<div class="step"><div class="step-num">4</div><div><strong>Как это повлияет на результат СЭМ?</strong> Свяжите обе стороны с обязательствами и целями.</div></div>
+<div class="step"><div class="step-num">5</div><div><strong>Что предлагаем сделать?</strong> Действие по риску и действие по возможности.</div></div>
+<div class="step"><div class="step-num">6</div><div><strong>Как проверим?</strong> Способ убедиться, что действия сработали.</div></div>
+</div>
+<div class="note-box accent" id="finalNote"></div>
+<div class="nav-buttons">
+<button class="btn btn-primary" onclick="goIntro()">К списку кейсов</button>
+<button class="btn btn-secondary" onclick="restartAll()">Пройти заново</button>
+</div>
+</div>
+
+</div>
+<script>
+/* ========== ДАННЫЕ ========== */
+var CASES=[
+{
+ id:'case1',title:'Кейс 1. Склад работает по старой памятке',
+ cond:[
+  'Учебный стекольный завод отгружает продукцию заказчику.',
+  'По договору перед каждой отгрузкой склад проверяет тару по согласованному перечню и отмечает результат в листе комплектации.',
+  'Перечень изменили. Сотрудник, который ведет договор, получил новую версию.',
+  'На складе осталась старая памятка. Не установлено, кто передает изменения и обновляет рабочие сведения.',
+  'Ошибочная отгрузка пока не подтверждена.'
+ ],
+ condNote:'Все обстоятельства ниже являются предложенными учебными условиями. Они не подтверждают нарушения или наличие определенного оборудования на заводе.',
+ riskQ:'Где здесь риск?',
+ riskHint:'Отделите то, что уже известно, от того, что может произойти. Что именно сделает возможной ошибку?',
+ riskOpts:[
+  {t:'Склад опирается на старую памятку и проверит тару по неактуальному перечню: отгрузка может нарушить условие договора',ok:true,
+   fb:'Верно. Риск связывает факт (старая памятка и отсутствие порядка обновления) с последствием (отгрузка тары, которая не соответствует действующему перечню). Ошибочная отгрузка пока не подтверждена, поэтому это риск, а не свершившееся нарушение.'},
+  {t:'Склад уже отгрузил неподходящую тару: условие договора нарушено, и это нужно записать как свершившийся факт',ok:false,
+   fb:'Ошибочная отгрузка не подтверждена: известна только старая памятка. Запись о нарушении без фактов превращает предположение в ложный факт и уводит от настоящей причины.'},
+  {t:'Риск в том, что сотрудник, ведущий договор, не передаст новую версию перечня складу вовремя',ok:false,
+   fb:'Это причина риска, а не сам риск. В записи важно показать, к чему приведет старая памятка: проверка тары по неактуальному перечню и возможное нарушение условия договора. Причина затем попадает в действие.'}
+ ],
+ oppQ:'Где здесь возможность?',
+ oppHint:'Какую слабость процесса показал сбой и что можно усилить на будущее?',
+ oppOpts:[
+  {t:'Построить порядок обновления рабочих сведений: кто передает изменения, в какой срок и как подтверждается актуальность - для всех процессов, а не только по таре',ok:true,
+   fb:'Верно. Сбой показал системный пробел: порядок обновления закроет не одну памятку, а класс похожих рисков на других участках.'},
+  {t:'Провести для сотрудников склада обучение по условиям договора и проверить знание перечня',ok:false,
+   fb:'Обучение полезно, но причину не убирает: без порядка обновления склад снова получит устаревшую версию. Возможность здесь в настройке процесса, а не в разовой проверке знаний.'},
+  {t:'Возможности в этой ситуации нет: сбой говорит только о риске, который нужно закрыть',ok:false,
+   fb:'Любой сбой показывает слабое место процесса, которое можно усилить. Пока пробел виден, его можно закрыть до ошибочной отгрузки - это и есть возможность.'}
+ ],
+ riskChain:[
+  ['Факт','На складе старая памятка, порядок обновления не определен'],
+  ['Риск','Склад проверит тару по неактуальному перечню и отгрузит неподходящую тару'],
+  ['Последствие','Предприятие может не выполнить условие договора'],
+  ['Действие','Сверить версии, передать актуальную памятку, согласовать порядок обновления'],
+  ['Проверка','При следующем изменении сопоставить действующий перечень, памятку и записи по отгрузкам']
+ ],
+ oppChain:[
+  ['Факт','Сбой показал отсутствие порядка обновления рабочих сведений'],
+  ['Возможность','Построить порядок, который работает для всех процессов'],
+  ['Результат','Меньше скрытых расхождений между документами и реальной работой'],
+  ['Действие','Описать роли, сроки и подтверждение актуальности версий'],
+  ['Проверка','Через три месяца проверить актуальность версий на двух-трех участках']
+ ],
+ conclusion:'Риск описывает не старую памятку, а возможное последствие работы по ней. Возможность растет из того же факта: пробел в порядке обновления. Действие отвечает на причину, а не только призывает быть внимательнее.'
+},
+{
+ id:'case2',title:'Кейс 2. Расход воды снизился',
+ cond:[
+  'На учебном заводе отдельно учитывают расход воды и выпуск стекла. Доступны сопоставимые месячные данные.',
+  'За рассматриваемый месяц общий расход воды снизился. Выпуск продукции тоже уменьшился.',
+  'Руководитель участка предлагает записать, что предприятие стало экономнее расходовать воду. Сопоставление с выпуском еще не выполнено.'
+ ],
+ condNote:'Все обстоятельства являются предложенными учебными условиями.',
+ riskQ:'Где здесь риск?',
+ riskHint:'Какой вывод делают без проверки и на что он повлияет?',
+ riskOpts:[
+  {t:'Снижение выпуска могут принять за улучшение использования воды: решения и отчеты построят на непроверенном выводе',ok:true,
+   fb:'Верно. Риск не в самом снижении, а в подмене вывода: общий расход упал, но как изменился расход на тонну стекла - неизвестно. По непроверенному выводу поставят цели и подготовят отчеты.'},
+  {t:'Расход воды на самом деле мог вырасти, и учетные данные это скрывают',ok:false,
+   fb:'Факты говорят обратное: общий расход снизился. Предположение против данных - не риск этой ситуации, а ошибка чтения карточки.'},
+  {t:'Записанное улучшение могут не подтвердить приборы: без внеплановой проверки счетчиков цифра недостоверна',ok:false,
+   fb:'Проверка приборов полезна, но отвечает на другой вопрос: достоверны ли данные. Главный пробел здесь не в приборах, а в том, что расход не сопоставлен с выпуском.'}
+ ],
+ oppQ:'Где здесь возможность?',
+ oppHint:'Какие данные уже есть и что они покажут вместе?',
+ oppOpts:[
+  {t:'Сопоставить расход на тонну стекла за одинаковые периоды и найти, где прячутся реальные потери или резервы',ok:true,
+   fb:'Верно. Сопоставимые данные уже собираются. Их совместный анализ дает точную картину и может выявить реальные резервы.'},
+  {t:'Объединить оба показателя в одном отчете, чтобы расход всегда рассматривали вместе с выпуском',ok:false,
+   fb:'Общий отчет - это форма, а не анализ. Возможность появится, когда данные сопоставят и сделают вывод: где реальные потери или резервы. Без вывода форма ничего не меняет.'},
+  {t:'Предложить закупку более экономного оборудования, чтобы закрепить снижение расхода технологией',ok:false,
+   fb:'Закупка раньше анализа: еще не выяснено, где и почему меняется расход. Оборудование может не повлиять на настоящую причину.'}
+ ],
+ riskChain:[
+  ['Факт','Расход и выпуск снизились, сопоставление не выполнено'],
+  ['Риск','Снижение выпуска примут за улучшение использования воды'],
+  ['Последствие','Решения и отчеты построят на непроверенном выводе'],
+  ['Действие','Проверить границы учета и сопоставить удельный расход'],
+  ['Проверка','Убедиться, что вывод учитывает выпуск и другие обстоятельства месяца']
+ ],
+ oppChain:[
+  ['Факт','Ежемесячно доступны сопоставимые данные по расходу и выпуску'],
+  ['Возможность','Оценить удельный расход и найти реальные резервы'],
+  ['Результат','Точная картина использования воды вместо общих цифр'],
+  ['Действие','Ввести удельный показатель в ежемесячный разбор'],
+  ['Проверка','Сравнить динамику удельного показателя за три месяца']
+ ],
+ conclusion:'Общие цифры скрывают то, что видно в удельных. Риск здесь - поспешный вывод, возможность - данные, которые наконец можно использовать правильно.'
+},
+{
+ id:'case3',title:'Кейс 3. Мера записана, но не выполняется',
+ cond:[
+  'Вернемся к пересыпанию сырья на учебном заводе: по условию кейса часть пыли поступает в атмосферный воздух.',
+  'Перед началом работы предусмотрена проверка укрытия узла пересыпания. Это условная мера, заданная для упражнения.',
+  'При разборе работы выяснилось, что проверку иногда пропускают. Сведений об изменении выброса при таких пропусках пока нет.'
+ ],
+ condNote:'Все обстоятельства являются предложенными учебными условиями.',
+ riskQ:'Где здесь риск?',
+ riskHint:'Что уже произошло? Что из-за этого может остаться незамеченным?',
+ riskOpts:[
+  {t:'Повреждение укрытия может остаться незамеченным: из-за пропусков проверки пыление способно усилиться, и об этом узнают поздно',ok:true,
+   fb:'Верно. Вы разделили известную проблему (пропуски проверки) и возможное последствие (незамеченное повреждение и рост пыления). Связь состояния укрытия и выброса еще предстоит проверить - это честно отражено в записи.'},
+  {t:'Риск уже реализовался: пропуски проверки доказывают рост выброса и нарушение норматива',ok:false,
+   fb:'Пропуски не доказывают рост выброса: замеров не было. Возможное последствие выдано за установленный факт, а это подрывает доверие ко всей записи о риске.'},
+  {t:'Записывать риск рано: без замеров изменения выброса это гипотеза, которую нельзя вносить в реестр',ok:false,
+   fb:'Гипотеза с известной причиной - это и есть материал для записи о риске. Ожидание замеров оставит известную проблему без контроля и без владельца.'}
+ ],
+ oppQ:'Где здесь возможность?',
+ oppHint:'Что могут дать данные о проверках, если собирать их регулярно?',
+ oppOpts:[
+  {t:'Превратить проверку в простую запись: результаты и пропуски станут видны, а состояние укрытия можно планировать, а не угадывать',ok:true,
+   fb:'Верно. Простой порядок записи превращает контроль в источник данных: пропуски и их причины видны, состояние укрытия перестает быть догадкой.'},
+  {t:'Отменить проверку как избыточную: проблем с выбросом не было годами, а ресурс уходит на формальность',ok:false,
+   fb:'Отмена контроля убирает не проблему, а способ ее заметить. Риск по пылению останется без наблюдения, и узнают о нем уже по последствию.'},
+  {t:'Закупить новое укрытие, чтобы состояние узла не зависело от дисциплины проверок',ok:false,
+   fb:'Закупка не опирается на данные: состояние укрытия неизвестно. Сначала посмотрите, что покажут записи проверок, затем решайте про оборудование.'}
+ ],
+ riskChain:[
+  ['Факт','Предусмотренную проверку иногда пропускают'],
+  ['Возможное событие','Повреждение укрытия может остаться незамеченным'],
+  ['Возможное последствие','Пыление может усилиться'],
+  ['Действие','Выяснить причины пропусков и уточнить порядок проверки с участком'],
+  ['Проверка','Сопоставить фактические проверки с порядком; отдельно оценить состояние укрытия']
+ ],
+ oppChain:[
+  ['Факт','Проверка предусмотрена, но выполняется неустойчиво'],
+  ['Возможность','Построить простую запись результатов и пропусков'],
+  ['Результат','Видны причины пропусков и состояние укрытия'],
+  ['Действие','Согласовать формат и периодичность записи с участком'],
+  ['Проверка','Через месяц разобрать записи и решить о дальнейших действиях']
+ ],
+ conclusion:'Известную проблему не откладывают только потому, что последствие еще не наступило. Но и возможное последствие не выдают за установленный факт. Одно и то же наблюдение питает и запись о риске, и запись о возможности.'
+},
+{
+ id:'case4',title:'Кейс 4. Подрядчик еще не подтвердил условия',
+ cond:[
+  'Учебный завод готовит задание внешнему исполнителю. После работ останутся материалы, с которыми предстоит определиться.',
+  'В переписке сотрудники предполагают, что исполнитель заберет все остатки. В проекте договора это не указано.',
+  'Состав и статус остатков еще не уточнены. Работы не начались.'
+ ],
+ condNote:'Все обстоятельства являются предложенными учебными условиями.',
+ riskQ:'Где здесь риск?',
+ riskHint:'На какое предположение опираются участники и где оно подтверждено?',
+ riskOpts:[
+  {t:'После работ может оказаться, что за остатки никто не отвечает: материалы останутся без порядка обращения',ok:true,
+   fb:'Верно. Риск растет из разрыва между предположением в переписке и документами. Пока работы не начались, разрыв еще можно закрыть без споров и допсоглашений.'},
+  {t:'Подрядчик заберет остатки без разрешительных документов, и предприятие получит штраф за передачу материалов',ok:false,
+   fb:'Факты не упоминают ни передачу, ни разрешительные документы. Настоящий пробел в том, что никто не согласовал, кто забирает остатки и на каких условиях.'},
+  {t:'Риск невелик: работы еще не начались, и вопрос с остатками можно решить по ходу выполнения',ok:false,
+   fb:'Именно так пробел становится проблемой: по ходу работ участники действуют из своих предположений, и согласование обходится дороже, чем до старта.'}
+ ],
+ oppQ:'Где здесь возможность?',
+ oppHint:'Что дешевле сделать сейчас, чем после начала работ?',
+ oppOpts:[
+  {t:'Включить условия по обращению с остатками в договор и в требования к закупкам, пока проект еще обсуждается',ok:true,
+   fb:'Верно. Пока договор в проекте, условие стоит одного абзаца. То же условие закроет пробел и в будущих работах с подрядчиками.'},
+  {t:'Дождаться, когда подрядчик сам предложит схему обращения с остатками, и поддержать лучшую инициативу',ok:false,
+   fb:'Это ожидание, а не возможность: предложение подрядчика может не соответствовать требованиям и срокам завода. Инициатива без условий в договоре не защищает предприятие.'},
+  {t:'Зафиксировать предположение из переписки как согласованное условие, чтобы в реестре было основание',ok:false,
+   fb:'Предположение не становится условием от того, что его записали в реестр. Условие нужно внести в договор, иначе запись недостоверна.'}
+ ],
+ riskChain:[
+  ['Факт','Участники ожидают, что исполнитель заберет остатки, но условие не согласовано'],
+  ['Риск','После работ действия участников окажутся несогласованными'],
+  ['Возможное последствие','Материалы останутся без предусмотренного порядка обращения'],
+  ['Действие','Уточнить состав и требования, согласовать действия с закупками и заказчиком работ'],
+  ['Проверка','Сопоставить согласованные документы с фактическими действиями после работ']
+ ],
+ oppChain:[
+  ['Факт','Договор в стадии проекта, условия можно добавить без споров'],
+  ['Возможность','Закрепить требования по обращению с остатками в договоре и процедуре закупок'],
+  ['Результат','Тот же пробел закрыт для будущих работ'],
+  ['Действие','Добавить условие в договор, отразить требование в чек-листе закупок'],
+  ['Проверка','Проверить следующие два договора с подрядчиками на наличие такого условия']
+ ],
+ conclusion:'Предположение участника не равно принятому условию. Пока договор в проекте, ситуация дает и риск, который нужно закрыть, и возможность встроить правило в будущие работы.'
+}
+];
+
+/* ========== СОСТОЯНИЕ ========== */
+var state={viewed:[],cur:null,side:'risk',facts:true,chains:false,
+ st:{risk:{sel:null,done:false},opp:{sel:null,done:false}},
+ order:{risk:[0,1,2],opp:[0,1,2]}};
+
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function resizeIframe(){if(window.parentIFrame&&typeof window.parentIFrame.size==='function')window.parentIFrame.size();}
+function showScreen(id){
+ ['screen-intro','screen-case','screen-final'].forEach(function(s){$(s).classList.remove('active');});
+ $(id).classList.add('active');
+ var h=$(id).querySelector('h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true});}
+ window.scrollTo({top:0,behavior:'smooth'});
+ resizeIframe();
+}
+function shuffle(a){
+ a=a.slice();
+ for(var i=a.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1));var t=a[i];a[i]=a[j];a[j]=t;}
+ return a;
+}
+
+/* ========== СТАРТ ========== */
+function goIntro(){renderIntro();showScreen('screen-intro');}
+function renderIntro(){
+ var grid=$('caseGrid');grid.innerHTML='';
+ CASES.forEach(function(c){
+  var done=state.viewed.indexOf(c.id)>=0;
+  var b=document.createElement('button');
+  b.type='button';b.className='case-card'+(done?' done':'');
+  b.onclick=function(){openCase(c.id);};
+  b.innerHTML='<span class="case-num">'+(done?'просмотрен':'кейс')+'</span><h3>'+esc(c.title.replace(/^Кейс \d+\. /,''))+'</h3><p>Риск и возможность в одной ситуации</p>';
+  grid.appendChild(b);
+ });
+ $('progressLine').textContent='Кейсы просмотрены: '+state.viewed.length+' из '+CASES.length;
+ var nav=$('introNav');nav.innerHTML='';
+ if(state.viewed.length>=CASES.length){
+  var f=document.createElement('button');
+  f.className='btn btn-primary';f.textContent='К итоговому разбору';
+  f.onclick=function(){showFinal();};
+  nav.appendChild(f);
+ }
+ resizeIframe();
+}
+
+/* ========== КЕЙС ========== */
+function openCase(id){
+ var c=null;CASES.forEach(function(x){if(x.id===id)c=x;});
+ state.cur=c;state.side='risk';state.facts=true;state.chains=false;
+ state.st={risk:{sel:null,done:false},opp:{sel:null,done:false}};
+ state.order={risk:shuffle([0,1,2]),opp:shuffle([0,1,2])};
+ $('caseTitle').textContent=c.title;
+ renderFacts();
+ renderSide();
+ showScreen('screen-case');
+}
+function renderFacts(){
+ var c=state.cur;
+ var h='<ul>';
+ c.cond.forEach(function(f){h+='<li>'+esc(f)+'</li>';});
+ h+='</ul>';
+ if(c.condNote)h+='<div class="cond-note">'+esc(c.condNote)+'</div>';
+ $('factsBody').innerHTML=h;
+ $('factsDet').open=state.facts;
+}
+function toggleFacts(){
+ var d=$('factsDet');d.open=!d.open;state.facts=d.open;resizeIframe();
+}
+function setSide(s){state.side=s;renderSide();}
+function optsFor(side){return side==='risk'?state.cur.riskOpts:state.cur.oppOpts;}
+function renderSide(){
+ var c=state.cur,side=state.side,st=state.st[side];
+ ['risk','opp'].forEach(function(s){
+  var t=$(s==='risk'?'tabRisk':'tabOpp');
+  t.classList.toggle('active',state.side===s);
+  t.classList.toggle('done',state.st[s].done);
+  $(s==='risk'?'stRisk':'stOpp').textContent=state.st[s].done?'разобрано':(state.st[s].sel!==null?'есть ответ':'');
+ });
+ var q=side==='risk'?c.riskQ:c.oppQ;
+ var hint=side==='risk'?c.riskHint:c.oppHint;
+ var opts=optsFor(side);
+ var h='<div class="side-panel '+side+'">';
+ h+='<p class="side-label">'+(side==='risk'?'Сторона 1. Риск':'Сторона 2. Возможность')+'</p>';
+ h+='<p class="q-text">'+esc(q)+'</p>';
+ h+='<div class="hint-box"><strong>Подсказка</strong>'+esc(hint)+'</div>';
+ h+='<div class="options">';
+ state.order[side].forEach(function(idx){
+  var o=opts[idx];
+  var cls='option-btn';
+  if(st.sel!==null){
+   if(st.sel===idx)cls+=o.ok?' selected-correct':' selected-wrong';
+   else cls+=' dim';
+  }
+  h+='<button type="button" class="'+cls+'"'+(st.sel!==null?' disabled':'')+' onclick="pick(\''+side+'\','+idx+')">'+esc(o.t)+'</button>';
+ });
+ h+='</div>';
+ if(st.sel!==null){
+  var o2=opts[st.sel];
+  h+='<div class="feedback '+(o2.ok?'good':'bad')+'"><strong>'+(o2.ok?'Верно':'Не совсем')+'</strong>'+esc(o2.fb)+'</div>';
+  if(!o2.ok&&!st.done)h+='<div class="nav-buttons"><button class="btn btn-secondary" onclick="retry(\''+side+'\')">Выбрать снова</button></div>';
+ }
+ h+='</div>';
+ $('sideBox').innerHTML=h;
+ renderChains();
+ renderCaseNav();
+ resizeIframe();
+}
+function pick(side,idx){
+ var st=state.st[side];
+ if(st.sel!==null||st.done)return;
+ st.sel=idx;
+ if(optsFor(side)[idx].ok)st.done=true;
+ renderSide();
+}
+function retry(side){
+ state.st[side].sel=null;
+ renderSide();
+}
+function bothDone(){return state.st.risk.done&&state.st.opp.done;}
+function renderChains(){
+ var box=$('chainsBox');
+ if(!bothDone()||!state.chains){box.innerHTML='';return;}
+ var c=state.cur;
+ if(state.viewed.indexOf(c.id)<0)state.viewed.push(c.id);
+ var h='<details class="chain" open><summary>Цепочка риска</summary><table class="chain"><tbody>';
+ c.riskChain.forEach(function(r){h+='<tr><th>'+esc(r[0])+'</th><td>'+esc(r[1])+'</td></tr>';});
+ h+='</tbody></table></details>';
+ h+='<details class="chain" open><summary>Цепочка возможности</summary><table class="chain"><tbody>';
+ c.oppChain.forEach(function(r){h+='<tr><th>'+esc(r[0])+'</th><td>'+esc(r[1])+'</td></tr>';});
+ h+='</tbody></table></details>';
+ h+='<div class="conclusion"><strong>Вывод</strong>'+esc(c.conclusion)+'</div>';
+ box.innerHTML=h;
+}
+function renderCaseNav(){
+ var nav=$('caseNav');nav.innerHTML='';
+ var b1=document.createElement('button');
+ b1.className='btn btn-secondary';b1.textContent='К списку кейсов';
+ b1.onclick=goIntro;nav.appendChild(b1);
+ if(bothDone()&&!state.chains){
+  var b2=document.createElement('button');
+  b2.className='btn btn-primary';b2.textContent='Показать разбор и обе цепочки';
+  b2.onclick=function(){state.chains=true;renderSide();};
+  nav.appendChild(b2);
+ }
+ if(state.chains){
+  var b3=document.createElement('button');
+  b3.className='btn btn-primary';
+  if(state.viewed.length>=CASES.length){b3.textContent='К итоговому разбору';b3.onclick=function(){showFinal();};}
+  else{
+   b3.textContent='Следующий кейс';
+   b3.onclick=function(){
+    var idx=-1;CASES.forEach(function(x,i){if(x.id===state.cur.id)idx=i;});
+    openCase(CASES[(idx+1)%CASES.length].id);
+   };
+  }
+  nav.appendChild(b3);
+ }
+}
+
+/* ========== ФИНАЛ ========== */
+function showFinal(){
+ $('finalNote').innerHTML='Вы разобрали обе стороны во всех четырех кейсах: риск и возможность растут из одних и тех же фактов, но ведут к разным действиям. В конструкторе рисков запишите собственные ситуации по той же цепочке: факт, риск или возможность, действие, проверка.';
+ showScreen('screen-final');
+}
+function restartAll(){
+ state.viewed=[];state.cur=null;
+ goIntro();
+}
+
+/* ========== СТАРТ ========== */
+document.addEventListener('DOMContentLoaded',function(){
+ renderIntro();
+ resizeIframe();
+ if('ResizeObserver' in window){var ro=new ResizeObserver(function(){resizeIframe();});ro.observe(document.body);}
+});
+window.addEventListener('load',function(){resizeIframe();});
+</script>
+</body>
+</html>
