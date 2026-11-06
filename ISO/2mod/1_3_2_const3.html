@@ -6,848 +6,377 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <title>Конструктор реестра обязательств</title>
 <style>
-:root {
-  --bg: #ffffff;
-  --primary: #1e293b;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --gray: #f8fafc;
-  --accent: #2563eb;
-  --accent-d: #1d4ed8;
-  --ok: #16a34a;
-  --ok-bg: #f0fdf4;
-  --warn: #ea580c;
-  --warn-bg: #fff7ed;
-  --bad: #991b1b;
-  --bad-bg: #fef2f2;
-  --r: 12px;
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0; padding: 20px; background: var(--bg);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  color: var(--primary); font-size: 15px; line-height: 1.6;
-}
-.container { max-width: 760px; margin: 0 auto; }
-.screen { display: none; }
-.screen.active { display: block; animation: fadeIn .3s ease-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-h1 { font-size: 22px; font-weight: 800; margin: 0 0 8px; }
-h2 { font-size: 16px; font-weight: 700; margin: 16px 0 8px; }
-.lead { font-size: 14px; margin: 0 0 12px; color: var(--muted); }
-.note-box {
-  background: var(--gray); border: 1px solid var(--border);
-  border-left: 4px solid var(--muted); border-radius: 0 8px 8px 0;
-  padding: 10px 14px; font-size: 13px; color: var(--muted); margin: 10px 0;
-}
-.note-box.accent { border-left-color: var(--accent); color: var(--primary); }
-.warn-box {
-  background: var(--warn-bg); border-left: 3px solid var(--warn-bd);
-  border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 13px;
-  color: var(--warn); margin: 10px 0;
-}
-.error-box {
-  background: var(--bad-bg); border: 1px solid var(--bad-bd);
-  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--bad); margin: 12px 0;
-}
-.error-box ul, .notices-box ul { margin: 6px 0 0; padding-left: 20px; }
-.notices-box {
-  background: var(--warn-bg); border: 1px solid var(--warn-bd);
-  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--warn); margin: 12px 0;
-}
-.error-box li, .notices-box li { margin-bottom: 4px; }
-.storage-warn { display: none; }
-.storage-warn.show { display: block; }
-.save-line { font-size: 12px; color: var(--muted); margin: 4px 0; }
-
-.field { margin-bottom: 12px; }
-.field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-.field .req { color: var(--bad); font-weight: 600; }
-.field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
-.field input, .field textarea, .field select {
-  width: 100%; padding: 10px 12px; border: 1px solid var(--border);
-  border-radius: 8px; font-family: inherit; font-size: 14px; background: #fff;
-}
-.field textarea { min-height: 56px; resize: vertical; }
-.field input:focus, .field textarea:focus, .field select:focus {
-  outline: 3px solid var(--accent-d); outline-offset: 2px;
-}
-
-.imported-info {
-  background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px;
-  padding: 10px 12px; margin: 10px 0; font-size: 13px;
-}
-.imported-info .ii-title { font-weight: 700; color: var(--accent-d); margin-bottom: 6px; }
-.imported-info .ii-row { margin: 4px 0; }
-.imported-info .ii-label { color: var(--muted); font-size: 12px; }
-
-.tabs-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; margin: 14px 0 0; }
-.tab-btn {
-  border: 1px solid var(--border); border-radius: 10px 10px 0 0;
-  padding: 9px 12px; background: var(--gray); color: var(--muted);
-  font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
-  display: inline-flex; align-items: center; gap: 6px; max-width: 220px;
-}
-.tab-btn .tab-name {
-  font-weight: 500; overflow: hidden; text-overflow: ellipsis;
-  white-space: nowrap; max-width: 140px;
-}
-.tab-btn[aria-selected="true"] { background: #fff; color: var(--accent); border-color: var(--accent); }
-.tab-add {
-  border: 1px dashed var(--accent); color: var(--accent); background: #fff;
-  border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 700;
-  cursor: pointer; font-family: inherit;
-}
-.tab-add:hover { background: #eff6ff; }
-.tab-panel {
-  border: 1px solid var(--border); border-radius: 0 10px 10px 10px;
-  padding: 16px; background: #fff; margin-top: -1px;
-}
-.tab-panel[hidden] { display: none; }
-.panel-head {
-  display: flex; justify-content: space-between; align-items: center;
-  gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
-}
-.panel-head strong { font-size: 15px; }
-.btn-small {
-  padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 6px;
-  border: 1px solid var(--border); background: #fff; color: var(--primary);
-  cursor: pointer; font-family: inherit;
-}
-.btn-small:hover { background: var(--gray); }
-
-.nav-buttons { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-.btn {
-  padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
-  cursor: pointer; border: none; font-family: inherit; transition: background .2s;
-}
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-d); }
-.btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--primary); }
-.btn-secondary:hover { background: var(--gray); }
-.btn-danger { background: #fff; border: 1px solid var(--bad-bd); color: var(--bad); }
-.btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
-
-.import-msg {
-  display: none; background: #eff6ff; border: 1px solid #bfdbfe;
-  border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--accent-d); margin: 10px 0;
-}
-.import-msg.show { display: block; }
-
-.scroll-x { overflow-x: auto; }
-.scroll-x table.reg { min-width: 900px; }
-table.reg { width: 100%; border-collapse: collapse; font-size: 12px; margin: 10px 0; }
-table.reg th, table.reg td {
-  border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top;
-}
-table.reg th { background: var(--gray); font-weight: 700; }
-
-details.det {
-  border: 1px solid var(--border); border-radius: 10px; background: #fff; margin-bottom: 8px;
-}
-details.det > summary {
-  cursor: pointer; padding: 10px 14px; font-size: 13px; font-weight: 700;
-  list-style: none; display: flex; justify-content: space-between; gap: 8px;
-}
-details.det > summary::-webkit-details-marker { display: none; }
-details.det > summary::after { content: "＋"; color: var(--muted); font-weight: 800; }
-details.det[open] > summary::after { content: "－"; }
-details.det[open] > summary { background: var(--gray); }
-.det-body { padding: 0 14px 12px; font-size: 13px; }
-.det-body p { margin: 0 0 6px; }
-
-button:focus-visible, summary:focus-visible {
-  outline: 3px solid var(--accent-d); outline-offset: 2px;
-}
-
-@media (max-width: 600px) {
-  body { padding: 12px; }
-  h1 { font-size: 20px; }
-  .nav-buttons { flex-direction: column; }
-  .btn { width: 100%; }
-}
+:root{--bg:#fff;--primary:#1e293b;--muted:#64748b;--border:#e2e8f0;--gray:#f8fafc;--accent:#2563eb;--accent-d:#1d4ed8;
+--ok:#16a34a;--ok-bg:#f0fdf4;--ok-bd:#bbf7d0;--warn:#ea580c;--warn-bg:#fff7ed;--warn-bd:#fed7aa;--bad:#991b1b;--bad-bg:#fef2f2;--bad-bd:#fecaca;--r:12px}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--primary);font-size:15px;line-height:1.6}
+.container{max-width:760px;margin:0 auto}
+.screen{display:none}.screen.active{display:block;animation:fi .3s ease-out}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:22px;font-weight:800;margin:0 0 8px;outline:none}
+h2{font-size:16px;font-weight:700;margin:16px 0 8px}
+.lead{font-size:14px;margin:0 0 12px;color:var(--muted)}
+.note-box{background:var(--gray);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--muted);margin:10px 0}
+.note-box.accent{border-left-color:var(--accent);color:var(--primary)}
+.warn-box{background:var(--warn-bg);border-left:3px solid var(--warn-bd);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--warn);margin:10px 0}
+.error-box{background:var(--bad-bg);border:1px solid var(--bad-bd);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--bad);margin:12px 0}
+.error-box ul,.notices-box ul{margin:6px 0 0;padding-left:20px}
+.notices-box{background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--warn);margin:12px 0}
+.error-box li,.notices-box li{margin-bottom:4px}
+.storage-warn{display:none}.storage-warn.show{display:block}
+.save-line{font-size:12px;color:var(--muted);margin:4px 0}
+.field{margin-bottom:10px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:4px}
+.field .req{color:var(--bad);font-weight:600}
+.field .hint{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+.field input{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;background:#fff;color:var(--primary)}
+.field input:focus{outline:3px solid var(--accent-d);outline-offset:2px}
+details.blk{border:1px solid var(--border);border-radius:10px;margin:10px 0;background:#fff;overflow:hidden}
+details.blk>summary{cursor:pointer;padding:11px 14px;font-size:13.5px;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--gray)}
+details.blk>summary::-webkit-details-marker{display:none}
+details.blk>summary::after{content:"+";color:var(--muted);font-weight:800;font-size:16px}
+details.blk[open]>summary::after{content:"−"}
+details.blk[open]>summary{border-bottom:1px solid var(--border)}
+.blk-body{padding:12px 14px}
+.status-line{font-size:12.5px;color:var(--muted);margin:8px 0 0}
+.chip{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:800;border:1px solid;margin-right:6px}
+.chip.imp{background:#eff6ff;color:var(--accent-d);border-color:#bfdbfe}
+.chip.rev{background:var(--bad-bg);color:var(--bad);border-color:var(--bad-bd)}
+.chip.ok{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-bd)}
+.chip.no{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-bd)}
+.tabs-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;margin:14px 0 0}
+.tab-btn{border:1px solid var(--border);border-radius:10px 10px 0 0;padding:9px 12px;background:var(--gray);color:var(--muted);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;max-width:220px}
+.tab-btn .tab-name{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px}
+.tab-btn[aria-selected="true"]{background:#fff;color:var(--accent);border-color:var(--accent)}
+.tab-add{border:1px dashed var(--accent);color:var(--accent);background:#fff;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.tab-panel{border:1px solid var(--border);border-radius:0 10px 10px 10px;padding:16px;background:#fff;margin-top:-1px}
+.tab-panel[hidden]{display:none}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.panel-head strong{font-size:15px}
+.btn-small{padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--primary);cursor:pointer;font-family:inherit}
+.btn-small:hover{background:var(--gray)}
+.nav-buttons{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent-d)}
+.btn-secondary{background:#fff;border:1px solid var(--border);color:var(--primary)}.btn-secondary:hover{background:var(--gray)}
+.btn-danger{background:#fff;border:1px solid var(--bad-bd);color:var(--bad)}
+.btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
+.import-msg{display:none;background:#eff6ff;border:1px solid #bfdbfe;border-radius:10px;padding:10px 14px;font-size:13px;color:var(--accent-d);margin:10px 0}
+.import-msg.show{display:block}
+.scroll-x{overflow-x:auto}
+.scroll-x table.reg{min-width:1100px}
+table.reg{width:100%;border-collapse:collapse;font-size:12px;margin:10px 0}
+table.reg th,table.reg td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top}
+table.reg th{background:var(--gray);font-weight:700}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--accent-d);outline-offset:2px}
+@media (max-width:640px){body{padding:12px}h1{font-size:20px}.nav-buttons{flex-direction:column}.btn{width:100%}}
 </style>
 </head>
 <body>
-
 <div class="container">
 
-  <!-- ВВОДНЫЙ ЭКРАН -->
-  <div id="screen-intro" class="screen active">
-    <h1>Конструктор реестра обязательств</h1>
-    <p class="lead">Дополните шаблон реестра аспектов обязательствами. Для каждого значимого аспекта укажите применимые требования, план действий и ответственных. Скачайте полный документ со связью «требование → работа → действие → сведения для проверки».</p>
-    <div class="note-box accent">
-      <strong>Как это работает.</strong> Импортируйте данные из конструктора оценки значимости. Для каждого аспекта добавьте обязательства, план действий, ответственного и срок. В следующем уроке разберете, что может помешать выполнить обязательства и какие возможности помогут улучшить работу.
-    </div>
-    <div class="note-box">Черновик сохраняется в этом браузере. На другом устройстве записи могут быть недоступны. Скачайте Word для надежной копии.</div>
-    <div class="warn-box storage-warn" id="warnIntro">Браузер не сохранил черновик. Скачайте Word перед закрытием страницы.</div>
-    <div class="note-box" id="restoreNote" style="display:none">Найден сохраненный черновик. Данные восстановлены.</div>
-    <div class="nav-buttons">
-      <button class="btn btn-primary" onclick="startWork()">Начать работу</button>
-    </div>
-  </div>
-
-  <!-- РАБОЧИЙ ЭКРАН -->
-  <div id="screen-work" class="screen">
-    <h1>Реестр обязательств</h1>
-    <p class="lead">Импортируйте значимые аспекты из конструктора оценки значимости. Для каждого аспекта укажите обязательства, план действий, ответственного и срок.</p>
-    <div class="warn-box storage-warn" id="warnWork">Браузер не сохранил черновик. Скачайте Word перед закрытием страницы.</div>
-    <div class="save-line" id="saveStatus"></div>
-    <div class="nav-buttons" style="margin-top:0">
-      <button class="btn btn-secondary" onclick="importAspects()">Импорт значимых аспектов</button>
-      <button class="btn btn-secondary" onclick="showScreen('screen-intro')">К введению</button>
-    </div>
-    <div class="import-msg" id="importMsg" aria-live="polite"></div>
-    <div class="field" style="max-width:320px;display:inline-block;margin-right:8px">
-      <label for="m-org">Предприятие (необязательно)</label>
-      <input type="text" id="m-org" oninput="onMeta('org',this.value)">
-    </div>
-    <div class="field" style="max-width:150px;display:inline-block;margin-right:8px">
-      <label for="m-date">Дата</label>
-      <input type="text" id="m-date" oninput="onMeta('date',this.value)">
-    </div>
-    <div class="field" style="max-width:200px;display:inline-block">
-      <label for="m-author">Автор (необязательно)</label>
-      <input type="text" id="m-author" oninput="onMeta('author',this.value)">
-    </div>
-    <div class="tabs-bar" id="tabsBar" role="tablist" aria-label="Обязательства"></div>
-    <div id="panelsBox"></div>
-    <div class="nav-buttons">
-      <button class="btn btn-primary" onclick="openPreview()">Предпросмотр и скачивание</button>
-    </div>
-  </div>
-
-  <!-- ПРЕДПРОСМОТР -->
-  <div id="screen-preview" class="screen">
-    <h1>Предпросмотр реестра</h1>
-    <div class="error-box" id="errorsBox" style="display:none" aria-live="polite"></div>
-    <div class="notices-box" id="noticesBox" style="display:none" aria-live="polite"></div>
-    <div id="previewBox"></div>
-    <div class="nav-buttons">
-      <button class="btn btn-secondary" onclick="showScreen('screen-work')">Вернуться к реестру</button>
-      <button class="btn btn-primary" id="downloadBtn" onclick="downloadDocx()">Скачать Word</button>
-      <button class="btn btn-danger" onclick="restartAll()">Полная очистка</button>
-    </div>
-    <p id="downloadNote" style="font-size:12px;color:var(--muted);margin-top:8px"></p>
-  </div>
-
+<div id="screen-intro" class="screen active">
+<h1 tabindex="-1">Конструктор реестра обязательств</h1>
+<p class="lead">Соберите реестр по связке «требование - работа - действие - сведения для проверки»: операция, аспект, воздействие, ранг, значимость, обязательство, действия, ответственный, срок и проверка. Каждое поле попадает в сводную таблицу и в Word.</p>
+<div class="note-box accent"><strong>Как это работает.</strong> Импортируйте значимые аспекты из конструкторов курса: ранг и значимость подставятся автоматически, их можно поправить вручную. Затем по каждой строке запишите обязательство и план действий.</div>
+<div class="note-box">Черновик сохраняется в этом браузере, если его настройки разрешают локальное хранилище. На другом устройстве записи могут быть недоступны. Скачайте Word, чтобы сохранить отдельную копию.</div>
+<div class="warn-box storage-warn" id="warnIntro">Браузер не сохранил черновик. Скачайте Word перед закрытием страницы.</div>
+<div class="note-box" id="restoreNote" style="display:none">Найден сохраненный черновик. Данные восстановлены.</div>
+<div class="nav-buttons"><button class="btn btn-primary" onclick="startWork()">Начать работу</button></div>
 </div>
 
+<div id="screen-work" class="screen">
+<h1 tabindex="-1">Реестр обязательств</h1>
+<p class="lead">Каждая строка на своей вкладке. Заполнены только те поля, которые попадают в итоговую таблицу и документ.</p>
+<div class="warn-box storage-warn" id="warnWork">Браузер не сохранил черновик. Скачайте Word перед закрытием страницы.</div>
+<div class="save-line" id="saveStatus"></div>
+<div class="nav-buttons" style="margin-top:0">
+<button class="btn btn-secondary" onclick="importRegistry()">Импорт из конструкторов курса</button>
+<button class="btn btn-secondary" onclick="showScreen('screen-intro')">К введению</button>
+</div>
+<div class="import-msg" id="importMsg" aria-live="polite"></div>
+<div class="field" style="max-width:320px;display:inline-block;margin-right:8px"><label for="m-org">Предприятие (необязательно)</label><input type="text" id="m-org"></div>
+<div class="field" style="max-width:150px;display:inline-block;margin-right:8px"><label for="m-date">Дата</label><input type="text" id="m-date"></div>
+<div class="field" style="max-width:200px;display:inline-block"><label for="m-author">Автор (необязательно)</label><input type="text" id="m-author"></div>
+<div class="tabs-bar" id="tabsBar" role="tablist" aria-label="Строки реестра"></div>
+<div id="panelsBox"></div>
+<div class="nav-buttons"><button class="btn btn-primary" onclick="openPreview()">Предпросмотр и скачивание</button></div>
+</div>
+
+<div id="screen-preview" class="screen">
+<h1 tabindex="-1">Предпросмотр реестра</h1>
+<div class="error-box" id="errorsBox" style="display:none" aria-live="polite"></div>
+<div class="notices-box" id="noticesBox" style="display:none" aria-live="polite"></div>
+<div id="previewBox"></div>
+<div class="nav-buttons">
+<button class="btn btn-secondary" onclick="showScreen('screen-work')">Вернуться к реестру</button>
+<button class="btn btn-primary" id="downloadBtn" onclick="downloadDocx()">Скачать Word</button>
+<button class="btn btn-danger" onclick="restartAll()">Полная очистка</button>
+</div>
+<p id="downloadNote" style="font-size:12px;color:var(--muted);margin-top:8px"></p>
+</div>
+
+</div>
 <script>
-/* ========== КОНСТАНТЫ ========== */
-var STORAGE_KEY = 'sem-obligations-registry-v2';
-var SIGNIFICANCE_KEY = 'sem-ranks-v3'
-var ASPECTS_KEY = 'sem-aspect-records-v3';
+/* ========== СПРАВОЧНИКИ ========== */
+var STORAGE_KEY='sem-obligations-registry-v3';
+var OBL_KEYS=['sem-obligations-registry-v2','sem-obligations-registry-v1'];
+var RANK_KEYS=['sem-ranks-v3','sem-ranks-significance-v3','sem-ranks-v2','sem-ranks-v1'];
+var ASP_KEYS=['sem-aspect-records-v3','sem-aspect-records-v2','sem-aspect-records-v1','sem-chain-constructor-v1'];
+var METHOD='Реестр обязательств по значимым аспектам (учебная методика)';
+var ALGO='2.0';
+var KEYS=['operation','aspect','impact','rank','significance','requirement','reqSource','actions','responsible','deadline','check'];
+var COLS=['ID','Операция','Аспект','Воздействие','Ранг','Значимость','Обязательство','Источник обязательства','Действия','Ответственный','Срок','Сведения для проверки'];
+
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function nl(s){return esc(s).replace(/\n/g,'<br>');}
+function today(){var d=new Date();return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();}
+function resizeIframe(){if(window.parentIFrame&&typeof window.parentIFrame.size==='function')window.parentIFrame.size();}
+function showScreen(id){['screen-intro','screen-work','screen-preview'].forEach(function(s){$(s).classList.remove('active');});$(id).classList.add('active');var h=$(id).querySelector('h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true});}window.scrollTo({top:0,behavior:'smooth'});resizeIframe();}
+function showStorageWarn(){var w=document.querySelectorAll('.storage-warn');for(var i=0;i<w.length;i++)w[i].classList.add('show');resizeIframe();}
+function sig3(r){return ((r.operation||'')+'|'+(r.aspect||'')+'|'+(r.impact||'')).toLowerCase();}
+function srcHash(r){return JSON.stringify([r.operation,r.aspect,r.impact,r.rank,r.significance]);}
 
 /* ========== СОСТОЯНИЕ ========== */
-var state = {
-  meta: { org: '', date: '', author: '' },
-  obligations: [],
-  nextNum: 1,
-  activeId: null,
-  imported: []
-};
-var bodiesById = {};
-var storageOk = true;
-
-/* ========== УТИЛИТЫ ========== */
-function $(id) { return document.getElementById(id); }
-function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
-function nl(s) { return esc(s).replace(/\n/g, '<br>'); }
-function today() {
-  var d = new Date();
-  return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
-}
-function resizeIframe() {
-  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') window.parentIFrame.size();
-}
-function showScreen(id) {
-  ['screen-intro', 'screen-work', 'screen-preview'].forEach(function(s) {
-    $(s).classList.remove('active');
-  });
-  $(id).classList.add('active');
-  var h = $(id).querySelector('h1');
-  if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  resizeIframe();
-}
-function showStorageWarn() {
-  var w = document.querySelectorAll('.storage-warn');
-  for (var i = 0; i < w.length; i++) w[i].classList.add('show');
-  resizeIframe();
-}
+var state={meta:{org:'',date:'',author:''},rows:[],nextNum:1,activeId:null};
+var bodiesById={},storageOk=true;
+function newRow(num){return{id:'O'+String(num).padStart(2,'0'),num:num,operation:'',aspect:'',impact:'',rank:'',significance:'',requirement:'',reqSource:'',actions:'',responsible:'',deadline:'',check:'',imported:false,srcSig:'',srcHash:'',needsReview:false};}
 
 /* ========== ПАМЯТЬ ========== */
-function saveOwn() {
-  if (!storageOk) return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    var d = new Date();
-    $('saveStatus').textContent = 'Черновик сохранен в этом браузере в ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + '.';
-  } catch (e) {
-    storageOk = false;
-    showStorageWarn();
-  }
-}
+function saveOwn(){if(!storageOk)return;try{localStorage.setItem(STORAGE_KEY,JSON.stringify(state));var d=new Date();$('saveStatus').textContent='Черновик сохранен в этом браузере в '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+'.';}catch(e){storageOk=false;showStorageWarn();}}
+function loadOwn(){try{var raw=localStorage.getItem(STORAGE_KEY);if(!raw)return false;var d=JSON.parse(raw);if(!d||!Array.isArray(d.rows))return false;state.meta=Object.assign({org:'',date:'',author:''},d.meta||{});state.nextNum=Number(d.nextNum)||1;state.activeId=d.activeId||null;state.rows=[];d.rows.forEach(function(r){if(!r||!r.id)return;var row=newRow(r.num||0);KEYS.forEach(function(k){if(typeof r[k]==='string')row[k]=r[k];});row.id=r.id;row.imported=!!r.imported;row.srcSig=r.srcSig||'';row.srcHash=r.srcHash||'';row.needsReview=!!r.needsReview;state.rows.push(row);});return state.rows.length>0;}catch(e){return false;}}
+function testStorage(){try{localStorage.setItem(STORAGE_KEY+'-t','1');localStorage.removeItem(STORAGE_KEY+'-t');}catch(e){storageOk=false;showStorageWarn();}}
 
-function loadOwn() {
-  try {
-    var raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return false;
-    var d = JSON.parse(raw);
-    if (!d || !Array.isArray(d.obligations)) return false;
-    state.meta = Object.assign({ org: '', date: '', author: '' }, d.meta || {});
-    state.nextNum = Number(d.nextNum) || 1;
-    state.activeId = d.activeId || null;
-    state.imported = Array.isArray(d.imported) ? d.imported : [];
-    state.obligations = [];
-    d.obligations.forEach(function(o) {
-      if (!o || !o.id) return;
-      state.obligations.push({
-        id: o.id, num: o.num || 0,
-        aspectId: o.aspectId || '',
-        operation: o.operation || '',
-        aspect: o.aspect || '',
-        impact: o.impact || '',
-        rank: o.rank || '',
-        significance: o.significance || '',
-        requirement: o.requirement || '',
-        source: o.source || '',
-        status: o.status || '',
-        actions: o.actions || '',
-        responsible: o.responsible || '',
-        deadline: o.deadline || '',
-        note: o.note || '',
-        imported: !!o.imported,
-        srcId: o.srcId || '',
-        srcHash: o.srcHash || ''
-      });
-    });
-    return state.obligations.length > 0;
-  } catch (e) { return false; }
-}
-
-function testStorage() {
-  try {
-    localStorage.setItem(STORAGE_KEY + '-t', '1');
-    localStorage.removeItem(STORAGE_KEY + '-t');
-  } catch (e) {
-    storageOk = false;
-    showStorageWarn();
-  }
-}
-
-function onMeta(k, v) {
-  state.meta[k] = v;
-  saveOwn();
+/* ========== РАСЧЕТ РАНГА ИЗ ДАННЫХ УРОКА 9 ========== */
+function sigLabel(s){return s==='significant'?'Значимый':s==='notsignificant'?'Не признан значимым':s==='incomplete'?'Оценка не завершена':'';}
+function computeRankSig(r){
+ if(r.manual&&r.manual.on){return{rank:r.manual.rank||'',sigLabel:sigLabel(r.manual.significance)||r.manual.significance||''};}
+ var q=r.q||{},e=r.e||{};var rank=null;
+ if(q.q1==='yes'&&q.q2==='no')rank=1;
+ else if(q.q1==='yes'&&q.q2==='yes'&&q.q3==='yes')rank=2;
+ else if(q.q1==='yes'&&q.q2==='yes'&&q.q3==='no'&&q.qSmall==='yes')rank=3;
+ else if(q.q1==='none')rank=4;
+ var pos=(e.e1==='yes')||(e.e2==='yes')||(e.e3==='yes')||rank===1||rank===2||(r.sQ==='yes');
+ var unk=(e.e1==='unknown')||(e.e2==='unknown')||(e.e3==='unknown')||(r.sQ==='unknown')||(r.sQ==='signal')||(q.q1==='unclear')||(q.q2==='unknown')||(q.q3==='unknown')||(q.qSmall==='unknown')||rank===null;
+ return{rank:rank===null?'':String(rank),sigLabel:sigLabel(pos?'significant':(unk?'incomplete':'notsignificant'))};
 }
 
 /* ========== ИМПОРТ ========== */
-function importAspects() {
-  var msg = $('importMsg');
-  try {
-    var raw = localStorage.getItem(SIGNIFICANCE_KEY);
-    if (!raw) {
-      msg.className = 'import-msg show';
-      msg.textContent = 'Данные из конструктора оценки значимости не найдены. Импорт доступен, если оба конструктора имеют доступ к одному локальному хранилищу. Если записи не найдены, заполните обязательства вручную.';
-      resizeIframe();
-      return;
-    }
-    var d = JSON.parse(raw);
-    var rows = d.rows || [];
-    if (!rows.length) {
-      msg.className = 'import-msg show';
-      msg.textContent = 'В конструкторе оценки значимости нет записей. Сначала заполните его, затем вернитесь сюда.';
-      resizeIframe();
-      return;
-    }
-    var added = 0;
-    rows.forEach(function(r) {
-      if (state.imported.indexOf(r.id) >= 0) return;
-      var rank = r.q && r.q.q1 === 'yes' && r.q.q2 === 'no' ? 1 :
-                 r.q && r.q.q1 === 'yes' && r.q.q2 === 'yes' && r.q.q3 === 'yes' ? 2 :
-                 r.q && r.q.q1 === 'yes' && r.q.q2 === 'yes' && r.q.q3 === 'no' && r.q.qSmall === 'yes' ? 3 :
-                 r.q && r.q.q1 === 'none' ? 4 : null;
-      var e1 = r.e && r.e.e1 === 'yes';
-      var e2 = r.e && r.e.e2 === 'yes';
-      var e3 = r.e && r.e.e3 === 'yes';
-      var sQ = r.sQ === 'yes';
-      var isSignificant = (rank === 1 || rank === 2 || e1 || e2 || e3 || sQ);
-      if (!isSignificant) return;
-      var num = state.nextNum++;
-      var o = {
-        id: 'O' + String(num).padStart(2, '0'),
-        num: num,
-        aspectId: r.id,
-        operation: r.operation || '',
-        aspect: r.aspect || '',
-        impact: r.impact || '',
-        rank: rank || '',
-        significance: isSignificant ? 'Значимый' : 'Не значимый',
-        requirement: '',
-        source: r.source || '',
-        status: '',
-        actions: '',
-        responsible: '',
-        deadline: '',
-        note: '',
-        imported: true,
-        srcId: r.id,
-        srcHash: JSON.stringify([r.operation, r.aspect, r.impact, r.source])
-      };
-      state.obligations.push(o);
-      state.imported.push(r.id);
-      added++;
-    });
-    if (!added) {
-      msg.className = 'import-msg show';
-      msg.textContent = 'Значимых аспектов для импорта не найдено. Все аспекты уже импортированы или не являются значимыми.';
-    } else {
-      msg.className = 'import-msg show';
-      msg.textContent = 'Импортировано обязательств: ' + added + '. Заполните поля для каждого.';
-    }
-    refreshTabs();
-    saveOwn();
-  } catch (e) {
-    msg.className = 'import-msg show';
-    msg.textContent = 'Ошибка импорта: ' + e.message;
+function readRows(keys,map){for(var i=0;i<keys.length;i++){try{var raw=localStorage.getItem(keys[i]);if(!raw)continue;var d=JSON.parse(raw);var arr=d.rows||d.cards||[];if(!Array.isArray(arr)||!arr.length)continue;var out=[];arr.forEach(function(it,idx){var c=map(it,idx);if(c)out.push(c);});if(out.length)return out;}catch(e){}}return[];}
+function importRegistry(){
+ var msg=$('importMsg');var added=0,updated=0,same=0;
+ var taken={};state.rows.forEach(function(r){taken[r.srcSig||sig3(r)]=r;});
+ function merge(ctx,srcId){
+  var s=sig3(ctx);if(!s||s==='||')return;
+  var ex=taken[s];
+  var h=JSON.stringify([ctx.operation,ctx.aspect,ctx.impact,ctx.rank,ctx.significance]);
+  if(ex){
+   if(ex.srcHash===h){same++;return;}
+   ['operation','aspect','impact','rank','significance'].forEach(function(k){if(ctx[k])ex[k]=ctx[k];});
+   ex.srcHash=h;ex.needsReview=true;updated++;return;
   }
-  resizeIframe();
+  var num=state.nextNum++;var row=newRow(num);
+  KEYS.forEach(function(k){row[k]=ctx[k]||'';});
+  row.imported=true;row.srcSig=s;row.srcHash=h;
+  state.rows.push(row);taken[s]=row;added++;
+ }
+ readRows(OBL_KEYS,function(o){if(!o||(!o.operation&&!o.aspect))return null;return{operation:o.operation||'',aspect:o.aspect||'',impact:o.impact||'',rank:o.rank||'',significance:o.significance||'',requirement:o.requirement||'',reqSource:o.reqSource||'',actions:o.actions||'',responsible:o.responsible||'',deadline:o.deadline||'',check:o.check||o.verify||''};}).forEach(function(c){merge(c);});
+ readRows(RANK_KEYS,function(s){if(!s||!s.q)return null;var rs=computeRankSig(s);return{operation:s.operation||'',aspect:s.aspect||'',impact:s.impact||'',rank:rs.rank,significance:rs.sigLabel,requirement:'',reqSource:'',actions:'',responsible:'',deadline:'',check:''};}).forEach(function(c){merge(c);});
+ readRows(ASP_KEYS,function(a){var f=(a&&a.f)?a.f:a;if(!f||(!f.operation&&!f.aspect&&!f.process))return null;return{operation:f.operation||f.process||'',aspect:f.aspect||'',impact:f.impact||'',rank:'',significance:'',requirement:'',reqSource:'',actions:'',responsible:'',deadline:'',check:''};}).forEach(function(c){merge(c);});
+ refreshTabs();saveOwn();
+ msg.className='import-msg show';
+ msg.textContent='Добавлено строк: '+added+'. Обновлено из источника: '+updated+' (помечены как «требует пересмотра»). Уже в реестре: '+same+'. Импорт доступен, если конструкторы имеют доступ к одному локальному хранилищу. Если записи не найдены, перенесите сведения вручную.';
+ showScreen('screen-work');
 }
 
-/* ========== ВКЛАДКИ ========== */
-function startWork() {
-  if (!state.obligations.length) addObligation(true);
-  if (!state.meta.date) state.meta.date = today();
-  $('m-org').value = state.meta.org;
-  $('m-date').value = state.meta.date;
-  $('m-author').value = state.meta.author;
-  refreshTabs();
-  showScreen('screen-work');
+/* ========== ВКЛАДКИ И СТРОКИ ========== */
+function startWork(){
+ if(!state.rows.length)addRow(true);
+ if(!state.meta.date)state.meta.date=today();
+ $('m-org').value=state.meta.org;$('m-date').value=state.meta.date;$('m-author').value=state.meta.author;
+ refreshTabs();showScreen('screen-work');
 }
-
-function refreshTabs() {
-  var bar = $('tabsBar'), box = $('panelsBox');
-  bar.innerHTML = '';
-  state.obligations.forEach(function(o) {
-    if (!bodiesById[o.id]) {
-      var b = buildObligationBody(o);
-      bodiesById[o.id] = b;
-      box.appendChild(b);
-    }
-  });
-  Object.keys(bodiesById).forEach(function(id) {
-    var exists = state.obligations.some(function(o) { return o.id === id; });
-    if (!exists) { bodiesById[id].remove(); delete bodiesById[id]; }
-  });
-  if (!state.obligations.some(function(o) { return o.id === state.activeId; })) {
-    state.activeId = state.obligations.length ? state.obligations[0].id : null;
-  }
-  state.obligations.forEach(function(o) {
-    var t = document.createElement('button');
-    t.type = 'button';
-    t.className = 'tab-btn';
-    t.id = 'tab-' + o.id;
-    t.setAttribute('role', 'tab');
-    t.setAttribute('aria-controls', 'panel-' + o.id);
-    t.setAttribute('aria-selected', o.id === state.activeId ? 'true' : 'false');
-    t.onclick = function() { state.activeId = o.id; applyActive(); saveOwn(); resizeIframe(); };
-    var nm = document.createElement('span');
-    nm.className = 'tab-name';
-    nm.id = 'tabname-' + o.id;
-    nm.textContent = o.operation.trim() ? o.operation.trim().substring(0, 20) : 'обязательство ' + o.id;
-    t.appendChild(document.createTextNode(o.id + ' '));
-    t.appendChild(nm);
-    bar.appendChild(t);
-  });
-  var add = document.createElement('button');
-  add.type = 'button';
-  add.className = 'tab-add';
-  add.textContent = 'Добавить обязательство';
-  add.onclick = function() { addObligation(false); };
-  bar.appendChild(add);
-  applyActive();
+function refreshTabs(){
+ var bar=$('tabsBar'),box=$('panelsBox');bar.innerHTML='';
+ state.rows.forEach(function(r){if(!bodiesById[r.id]){var b=buildRow(r);bodiesById[r.id]=b;box.appendChild(b);}});
+ Object.keys(bodiesById).forEach(function(id){var ex=state.rows.some(function(r){return r.id===id;});if(!ex){bodiesById[id].remove();delete bodiesById[id];}});
+ if(!state.rows.some(function(r){return r.id===state.activeId;}))state.activeId=state.rows.length?state.rows[0].id:null;
+ state.rows.forEach(function(r){
+  var t=document.createElement('button');t.type='button';t.className='tab-btn';t.id='tab-'+r.id;
+  t.setAttribute('role','tab');t.setAttribute('aria-controls','panel-'+r.id);
+  t.setAttribute('aria-selected',r.id===state.activeId?'true':'false');
+  t.onclick=function(){state.activeId=r.id;applyActive();saveOwn();resizeIframe();};
+  var nm=document.createElement('span');nm.className='tab-name';nm.id='tabname-'+r.id;
+  nm.textContent=r.operation.trim()?r.operation.trim():'строка '+r.id;
+  t.appendChild(document.createTextNode(r.id+' '));t.appendChild(nm);bar.appendChild(t);
+ });
+ var add=document.createElement('button');add.type='button';add.className='tab-add';add.textContent='Добавить строку';
+ add.onclick=function(){addRow(false);};bar.appendChild(add);
+ applyActive();
 }
-
-function applyActive() {
-  state.obligations.forEach(function(o) {
-    var p = bodiesById[o.id], t = $('tab-' + o.id);
-    if (p) p.hidden = o.id !== state.activeId;
-    if (t) t.setAttribute('aria-selected', o.id === state.activeId ? 'true' : 'false');
-  });
+function applyActive(){state.rows.forEach(function(r){var p=bodiesById[r.id],t=$('tab-'+r.id);if(p)p.hidden=r.id!==state.activeId;if(t)t.setAttribute('aria-selected',r.id===state.activeId?'true':'false');});}
+function addRow(first){var num=state.nextNum++;var r=newRow(num);state.rows.push(r);state.activeId=r.id;refreshTabs();saveOwn();if(!first){var el=$('f-'+r.id+'-operation');if(el)el.focus();}resizeIframe();}
+function deleteRow(id){var r=null;state.rows.forEach(function(x){if(x.id===id)r=x;});if(!r)return;var filled=r.requirement||r.actions||r.check;if(filled&&!confirm('Удалить строку '+r.id+'? Введенные данные будут потеряны.'))return;state.rows=state.rows.filter(function(x){return x.id!==id;});if(state.activeId===id)state.activeId=state.rows.length?state.rows[0].id:null;refreshTabs();saveOwn();resizeIframe();}
+function fText(r,key,label,hint,req){return '<div class="field"><label for="f-'+r.id+'-'+key+'">'+label+(req?' <span class="req">(обязательное поле)</span>':'')+'</label><input type="text" id="f-'+r.id+'-'+key+'" value="'+esc(r[key])+'"><div class="hint">'+hint+'</div></div>';}
+function buildRow(r){
+ var panel=document.createElement('div');panel.className='tab-panel';panel.id='panel-'+r.id;
+ panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby','tab-'+r.id);
+ var head=document.createElement('div');head.className='panel-head';
+ var left=document.createElement('strong');left.textContent='Строка '+r.id;
+ var del=document.createElement('button');del.type='button';del.className='btn-small';del.textContent='Удалить строку';
+ del.onclick=function(){deleteRow(r.id);};
+ head.appendChild(left);head.appendChild(del);panel.appendChild(head);
+ var body=document.createElement('div');var h='';
+ h+='<details class="blk" open><summary>Запись и оценка</summary><div class="blk-body">';
+ h+=fText(r,'operation','Операция','Что делают на участке: пересыпание сырья, варка стекла, водоотведение.',true);
+ h+=fText(r,'aspect','Аспект','Как работа взаимодействует со средой: выброс пыли, сброс сточных вод.',true);
+ h+=fText(r,'impact','Воздействие','Что меняется в среде: загрязнение атмосферного воздуха, загрязнение водных объектов.',true);
+ h+=fText(r,'rank','Ранг','Цифра 1-4 или «не определен». Заполняется импортом из конструктора значимости, можно вписать или поправить вручную.',false);
+ h+=fText(r,'significance','Значимость','Например: значимый, не признан значимым, оценка не завершена. Заполняется импортом или вручную.',false);
+ h+='</div></details>';
+ h+='<details class="blk" open><summary>Обязательство и действия</summary><div class="blk-body">';
+ h+=fText(r,'requirement','Обязательство (требование)','Конкретное требование или принятое обязательство: норматив, пункт договора, предписание, корпоративное правило.',true);
+ h+=fText(r,'reqSource','Источник обязательства','Документ, где закреплено требование: ПДВ от 15.03.2026, договор с Водоканалом N 123, предписание N 5.',false);
+ h+=fText(r,'actions','Действия','Что сделать, чтобы выполнить обязательство.',true);
+ h+=fText(r,'responsible','Ответственный','Кто отвечает за выполнение.',false);
+ h+=fText(r,'deadline','Срок','Когда должно быть выполнено.',false);
+ h+=fText(r,'check','Сведения для проверки','Записи, измерения, акты или отчет, по которым видно выполнение.',false);
+ h+='</div></details>';
+ h+='<p class="status-line" id="st-'+r.id+'"></p>';
+ body.innerHTML=h;panel.appendChild(body);
+ KEYS.forEach(function(k){
+  var el=body.querySelector('[id="f-'+r.id+'-'+k+'"]');
+  if(el)el.addEventListener('input',function(e){r[k]=e.target.value;if(k==='operation'){var nm=$('tabname-'+r.id);if(nm)nm.textContent=r.operation.trim()?r.operation.trim():'строка '+r.id;}saveOwn();syncStatus(r);});
+ });
+ syncStatus(r,panel);
+ return panel;
 }
-
-function addObligation(first) {
-  var num = state.nextNum++;
-  var o = {
-    id: 'O' + String(num).padStart(2, '0'),
-    num: num,
-    aspectId: '',
-    operation: '',
-    aspect: '',
-    impact: '',
-    rank: '',
-    significance: '',
-    requirement: '',
-    source: '',
-    status: '',
-    actions: '',
-    responsible: '',
-    deadline: '',
-    note: '',
-    imported: false,
-    srcId: '',
-    srcHash: ''
-  };
-  state.obligations.push(o);
-  state.activeId = o.id;
-  refreshTabs();
-  saveOwn();
-  if (!first) {
-    var el = $('f-' + o.id + '-operation');
-    if (el) el.focus();
-  }
-  resizeIframe();
+function missingOf(r){
+ var m=[];
+ if(!r.operation.trim())m.push('операция');
+ if(!r.aspect.trim())m.push('аспект');
+ if(!r.impact.trim())m.push('воздействие');
+ if(!r.requirement.trim())m.push('обязательство');
+ if(!r.actions.trim())m.push('действия');
+ return m;
 }
-
-function deleteObligation(id) {
-  var o = null;
-  state.obligations.forEach(function(x) { if (x.id === id) o = x; });
-  if (!o) return;
-  var filled = o.operation || o.aspect || o.requirement || o.actions;
-  if (filled && !confirm('Удалить обязательство ' + o.id + '? Введенные данные будут потеряны.')) return;
-  state.obligations = state.obligations.filter(function(x) { return x.id !== id; });
-  state.imported = state.imported.filter(function(x) { return x !== o.aspectId; });
-  if (state.activeId === id) state.activeId = state.obligations.length ? state.obligations[0].id : null;
-  refreshTabs();
-  saveOwn();
-  resizeIframe();
+function syncStatus(r,root){
+ root=root||bodiesById[r.id];if(!root)return;
+ var el=root.querySelector('[id="st-'+r.id+'"]');if(!el)return;
+ var h='';
+ if(r.imported)h+='<span class="chip imp">импорт</span>';
+ if(r.needsReview)h+='<span class="chip rev">требует пересмотра</span>';
+ var m=missingOf(r);
+ if(m.length)h+='<span class="chip no">не заполнено: '+esc(m.join(', '))+'</span>';
+ else h+='<span class="chip ok">запись готова к выгрузке</span>';
+ if(!r.rank.trim())h+=' Ранг не указан: впишите вручную или обновите импорт.';
+ if(r.needsReview)h+=' <button type="button" class="btn-small" onclick="clearReview(\''+r.id+'\')">Отметить актуальной</button>';
+ el.innerHTML=h;
 }
+function clearReview(id){state.rows.forEach(function(r){if(r.id===id)r.needsReview=false;});refreshTabs();saveOwn();}
 
-function buildObligationBody(o) {
-  var panel = document.createElement('div');
-  panel.className = 'tab-panel';
-  panel.id = 'panel-' + o.id;
-  panel.setAttribute('role', 'tabpanel');
-  panel.setAttribute('aria-labelledby', 'tab-' + o.id);
-
-  var head = document.createElement('div');
-  head.className = 'panel-head';
-  var left = document.createElement('strong');
-  left.textContent = 'Обязательство ' + o.id + (o.aspectId ? ' (аспект ' + o.aspectId + ')' : '');
-  var del = document.createElement('button');
-  del.type = 'button';
-  del.className = 'btn-small';
-  del.textContent = 'Удалить';
-  del.onclick = function() { deleteObligation(o.id); };
-  head.appendChild(left);
-  head.appendChild(del);
-  panel.appendChild(head);
-
-  var body = document.createElement('div');
-  var h = '';
-
-  if (o.imported && o.operation) {
-    h += '<div class="imported-info">';
-    h += '<div class="ii-title">Импортированные данные из конструктора значимости</div>';
-    h += '<div class="ii-row"><span class="ii-label">Операция:</span> ' + esc(o.operation) + '</div>';
-    h += '<div class="ii-row"><span class="ii-label">Аспект:</span> ' + esc(o.aspect) + '</div>';
-    h += '<div class="ii-row"><span class="ii-label">Воздействие:</span> ' + esc(o.impact) + '</div>';
-    if (o.rank) h += '<div class="ii-row"><span class="ii-label">Ранг:</span> ' + esc(o.rank) + '</div>';
-    if (o.significance) h += '<div class="ii-row"><span class="ii-label">Значимость:</span> ' + esc(o.significance) + '</div>';
-    h += '</div>';
-  }
-
-  h += '<div class="field"><label for="f-' + o.id + '-operation">Операция <span class="req">(обязательное поле)</span></label>';
-  h += '<input type="text" id="f-' + o.id + '-operation" value="' + esc(o.operation) + '">';
-  h += '<div class="hint">Что делают на участке?</div></div>';
-
-  h += '<div class="field"><label for="f-' + o.id + '-aspect">Аспект <span class="req">(обязательное поле)</span></label>';
-  h += '<input type="text" id="f-' + o.id + '-aspect" value="' + esc(o.aspect) + '">';
-  h += '<div class="hint">Как работа взаимодействует со средой?</div></div>';
-
-  h += '<div class="field"><label for="f-' + o.id + '-impact">Воздействие <span class="req">(обязательное поле)</span></label>';
-  h += '<input type="text" id="f-' + o.id + '-impact" value="' + esc(o.impact) + '">';
-  h += '<div class="hint">Что меняется в окружающей среде?</div></div>';
-
-  h += '<div class="field"><label for="f-' + o.id + '-requirement">Обязательство <span class="req">(обязательное поле)</span></label>';
-  h += '<textarea id="f-' + o.id + '-requirement">' + esc(o.requirement) + '</textarea>';
-  h += '<div class="hint">Конкретное требование: норматив, пункт договора, корпоративный стандарт.</div></div>';
-
-  h += '<div class="field"><label for="f-' + o.id + '-source">Источник обязательства</label>';
-  h += '<input type="text" id="f-' + o.id + '-source" value="' + esc(o.source) + '">';
-  h += '<div class="hint">Закон, норматив, договор, стандарт, решение руководства.</div></div>';
-
-  h += '<div class="field"><label for="f-' + o.id + '-status">Статус выполнения</label>';
-  h += '<select id="f-' + o.id + '-status">';
-  h += '<option value="">Не определен</option>';
-  h += '<option value="yes"' + (o.status === 'yes' ? ' selected' : '') + '>Выполняется</option>';
-  h += '<option value="partial"' + (o.status === 'partial' ? ' selected' : '') + '>Выполняется частично</option>';
-  h += '<option value="no"' + (o.status === 'no' ? ' selected' : '') + '>Не выполняется</option>';
-  h += '<option value="unknown"' + (o.status === 'unknown' ? ' selected' : '') + '>Требует проверки</option>';
-  h += '</select></div>';
-
-  h += '<div class="field"><label for="f-' + o.id + '-actions">План действий</label>';
-  h += '<textarea id="f-' + o.id + '-actions">' + esc(o.actions) + '</textarea>';
-  h += '<div class="hint">Что нужно сделать для выполнения обязательства.</div></div>';
-
-  h += '<div class="field"><label for="f-' + o.id + '-responsible">Ответственный</label>';
-  h += '<input type="text" id="f-' + o.id + '-responsible" value="' + esc(o.responsible) + '">';
-  h += '<div class="hint">Кто отвечает за выполнение.</div></div>';
-
-  h += '<div class="field"><label for="f-' + o.id + '-deadline">Срок</label>';
-  h += '<input type="text" id="f-' + o.id + '-deadline" value="' + esc(o.deadline) + '">';
-  h += '<div class="hint">Когда должно быть выполнено.</div></div>';
-
-  h += '<div class="field"><label for="f-' + o.id + '-note">Примечания</label>';
-  h += '<textarea id="f-' + o.id + '-note">' + esc(o.note) + '</textarea>';
-  h += '<div class="hint">Дополнительная информация.</div></div>';
-
-  body.innerHTML = h;
-  panel.appendChild(body);
-
-  ['operation', 'aspect', 'impact', 'requirement', 'source', 'status', 'actions', 'responsible', 'deadline', 'note'].forEach(function(key) {
-    var el = body.querySelector('[id="f-' + o.id + '-' + key + '"]');
-    if (el) {
-      el.addEventListener('input', function(e) {
-        o[key] = e.target.value;
-        if (key === 'operation') {
-          var nm = $('tabname-' + o.id);
-          if (nm) nm.textContent = o.operation.trim() ? o.operation.trim().substring(0, 20) : 'обязательство ' + o.id;
-        }
-        saveOwn();
-      });
-    }
-  });
-
-  return panel;
+/* ========== ПРЕДПРОСМОТР И WORD ========== */
+function sigClass(t){t=(t||'').toLowerCase();if(t.indexOf('не признан')>=0)return 'not';if(t.indexOf('не завершена')>=0)return 'inc';if(t.indexOf('значимый')>=0)return 'sig';return '';}
+function counters(){var c={total:state.rows.length,sig:0,not:0,inc:0,obl:0,rev:0};state.rows.forEach(function(r){var s=sigClass(r.significance);if(s==='sig')c.sig++;if(s==='not')c.not++;if(s==='inc')c.inc++;if(r.requirement.trim())c.obl++;if(r.needsReview)c.rev++;});return c;}
+function tableHtml(){
+ var h='<div class="scroll-x"><table class="reg"><thead><tr>'+COLS.map(function(t){return '<th>'+t+'</th>';}).join('')+'</tr></thead><tbody>';
+ state.rows.forEach(function(r){
+  h+='<tr><td>'+r.id+'</td>'+KEYS.map(function(k){return '<td>'+esc(r[k]||'-')+'</td>';}).join('')+'</tr>';
+ });
+ return h+'</tbody></table></div>';
 }
-
-/* ========== ПРЕДПРОСМОТР ========== */
-function openPreview() {
-  renderPreview();
-  showScreen('screen-preview');
+function openPreview(){renderPreview();showScreen('screen-preview');}
+function renderPreview(){
+ var c=counters();
+ var errs=[];state.rows.forEach(function(r){var m=missingOf(r);if(m.length)errs.push('Строка '+r.id+': не заполнено - '+m.join(', ')+'.');});
+ var errBox=$('errorsBox');errBox.style.display=errs.length?'block':'none';
+ if(errs.length)errBox.innerHTML='<strong>Незавершенные записи.</strong><ul>'+errs.map(function(e){return '<li>'+esc(e)+'</li>';}).join('')+'</ul>';
+ $('downloadBtn').disabled=!state.rows.length;
+ $('downloadNote').textContent=state.rows.length?'Допускается выгрузка незавершенного черновика: пустые ячейки обозначаются прочерком.':'Добавьте хотя бы одну строку.';
+ var nt=[];state.rows.forEach(function(r){if(!r.rank.trim())nt.push('Строка '+r.id+': ранг не указан. Впишите вручную или обновите импорт.');if(r.needsReview)nt.push('Строка '+r.id+': исходные сведения изменились, оценка требует пересмотра.');});
+ var ntBox=$('noticesBox');ntBox.style.display=nt.length?'block':'none';
+ if(nt.length)ntBox.innerHTML='<strong>Что дополнить.</strong><ul>'+nt.map(function(n){return '<li>'+esc(n)+'</li>';}).join('')+'</ul>';
+ var h='<div class="note-box accent">Всего записей: '+c.total+'. Значимых: '+c.sig+'. Не признанных значимыми: '+c.not+'. С незавершенной оценкой: '+c.inc+'. С заполненным обязательством: '+c.obl+'. Требующих пересмотра: '+c.rev+'.</div>';
+ h+='<h2>Сводная таблица</h2>'+tableHtml();
+ h+='<div class="note-box">В следующем курсе проверьте применимые обязательства и возьмите значимые аспекты, обязательства, риски и возможности в политику, цели и план действий с ресурсами и сроками.</div>';
+ $('previewBox').innerHTML=h;resizeIframe();
 }
-
-function renderPreview() {
-  var errs = [];
-  state.obligations.forEach(function(o) {
-    if (!o.operation.trim() || !o.aspect.trim() || !o.impact.trim() || !o.requirement.trim()) {
-      errs.push('Обязательство ' + o.id + ': не заполнены обязательные поля.');
-    }
-  });
-  var errBox = $('errorsBox');
-  errBox.style.display = errs.length ? 'block' : 'none';
-  if (errs.length) errBox.innerHTML = '<strong>Незавершенные записи.</strong><ul>' + errs.map(function(e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul>';
-
-  $('downloadBtn').disabled = !state.obligations.length;
-  $('downloadNote').textContent = state.obligations.length ? 'Допускается выгрузка незавершенного черновика.' : 'Добавьте хотя бы одно обязательство.';
-
-  var nt = [];
-  state.obligations.forEach(function(o) {
-    if (!o.actions.trim()) nt.push('Обязательство ' + o.id + ': не указан план действий.');
-    if (!o.responsible.trim()) nt.push('Обязательство ' + o.id + ': не указан ответственный.');
-  });
-  var ntBox = $('noticesBox');
-  ntBox.style.display = nt.length ? 'block' : 'none';
-  if (nt.length) ntBox.innerHTML = '<strong>Что дополнить.</strong><ul>' + nt.map(function(n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>';
-
-  var h = '<div class="note-box accent">Всего обязательств: ' + state.obligations.length + '. Связь «требование → работа → действие → сведения для проверки».</div>';
-
-  h += '<h2>Сводный реестр</h2>';
-  h += '<div class="scroll-x"><table class="reg"><thead><tr><th>ID</th><th>Операция</th><th>Аспект</th><th>Воздействие</th><th>Ранг</th><th>Значимость</th><th>Обязательство</th><th>План действий</th><th>Ответственный</th><th>Срок</th></tr></thead><tbody>';
-  state.obligations.forEach(function(o) {
-    h += '<tr><td>' + o.id + '</td><td>' + esc(o.operation || '-') + '</td><td>' + esc(o.aspect || '-') + '</td><td>' + esc(o.impact || '-') + '</td><td>' + esc(o.rank || '-') + '</td><td>' + esc(o.significance || '-') + '</td><td>' + esc(o.requirement || '-') + '</td><td>' + esc(o.actions || '-') + '</td><td>' + esc(o.responsible || '-') + '</td><td>' + esc(o.deadline || '-') + '</td></tr>';
-  });
-  h += '</tbody></table></div>';
-
-  h += '<h2>Подробности</h2>';
-  state.obligations.forEach(function(o) {
-    h += '<details class="det"><summary>' + o.id + '. ' + esc(o.operation || 'Операция не указана') + '</summary><div class="det-body">';
-    h += '<p><strong>Аспект:</strong> ' + esc(o.aspect || '-') + '</p>';
-    h += '<p><strong>Воздействие:</strong> ' + esc(o.impact || '-') + '</p>';
-    if (o.rank) h += '<p><strong>Ранг:</strong> ' + esc(o.rank) + '</p>';
-    if (o.significance) h += '<p><strong>Значимость:</strong> ' + esc(o.significance) + '</p>';
-    h += '<p><strong>Обязательство:</strong> ' + esc(o.requirement || '-') + '</p>';
-    h += '<p><strong>Источник:</strong> ' + esc(o.source || '-') + '</p>';
-    h += '<p><strong>Статус:</strong> ' + (o.status === 'yes' ? 'Выполняется' : o.status === 'partial' ? 'Выполняется частично' : o.status === 'no' ? 'Не выполняется' : o.status === 'unknown' ? 'Требует проверки' : 'Не определен') + '</p>';
-    h += '<p><strong>План действий:</strong> ' + esc(o.actions || '-') + '</p>';
-    h += '<p><strong>Ответственный:</strong> ' + esc(o.responsible || '-') + '</p>';
-    h += '<p><strong>Срок:</strong> ' + esc(o.deadline || '-') + '</p>';
-    h += '<p><strong>Примечания:</strong> ' + esc(o.note || '-') + '</p>';
-    h += '</div></details>';
-  });
-
-  h += '<div class="note-box">Теперь вы дополнили шаблон реестра аспектов обязательствами. В шаблон внесли не просто название документа, а составили связь «требование → работа → действие → сведения для проверки». В следующем уроке разберете, что может помешать выполнить обязательства и какие возможности помогут улучшить работу.</div>';
-
-  $('previewBox').innerHTML = h;
-  resizeIframe();
-}
-
-function restartAll() {
-  if (!confirm('Полная очистка: удалить все данные?')) return;
-  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-  state = { meta: { org: '', date: today(), author: '' }, obligations: [], nextNum: 1, activeId: null, imported: [] };
-  bodiesById = {};
-  $('panelsBox').innerHTML = '';
-  $('m-org').value = '';
-  $('m-date').value = state.meta.date;
-  $('m-author').value = '';
-  addObligation(true);
-  showScreen('screen-work');
+function restartAll(){
+ if(!confirm('Полная очистка: удалить строки, метаданные и счетчик новых записей?'))return;
+ try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+ state={meta:{org:'',date:today(),author:''},rows:[],nextNum:1,activeId:null};
+ bodiesById={};$('panelsBox').innerHTML='';
+ $('m-org').value='';$('m-date').value=state.meta.date;$('m-author').value='';$('saveStatus').textContent='';
+ addRow(true);showScreen('screen-work');
 }
 
 /* ========== DOCX ========== */
-function xmlEsc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); }
-function run(t, o) {
-  o = o || {};
-  var r = '';
-  if (o.b) r += '<w:b/>';
-  if (o.i) r += '<w:i/>';
-  if (o.color) r += '<w:color w:val="' + o.color + '"/>';
-  if (o.sz) r += '<w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/>';
-  return '<w:r>' + (r ? '<w:rPr>' + r + '</w:rPr>' : '') + '<w:t xml:space="preserve">' + xmlEsc(t) + '</w:t></w:r>';
+function xmlEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}
+function run(t,o){o=o||{};var r='';if(o.b)r+='<w:b/>';if(o.i)r+='<w:i/>';if(o.color)r+='<w:color w:val="'+o.color+'"/>';if(o.sz)r+='<w:sz w:val="'+o.sz+'"/><w:szCs w:val="'+o.sz+'"/>';return '<w:r>'+(r?'<w:rPr>'+r+'</w:rPr>':'')+'<w:t xml:space="preserve">'+xmlEsc(t)+'</w:t></w:r>';}
+function para(t,o){o=o||{};var p='';if(o.style)p+='<w:pStyle w:val="'+o.style+'"/>';if(o.before||o.after)p+='<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after||0)+'"/>';return '<w:p>'+(p?'<w:pPr>'+p+'</w:pPr>':'')+run(t,o)+'</w:p>';}
+function paraMulti(t,o){return String(t==null?'':t).split(/\r?\n/).map(function(l){return para(l,o);}).join('');}
+function cell(w,x,f){return '<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(f?'<w:shd w:val="clear" w:color="auto" w:fill="'+f+'"/>':'')+'<w:vAlign w:val="top"/></w:tcPr>'+(x||'<w:p/>')+'</w:tc>';}
+var TBL='<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
+var CMAR='<w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar>';
+var RW=[600,1300,1300,1300,600,1100,2570,1200,1700,900,800,1200];
+function buildDoc(){
+ var b=[];
+ b.push(para('Реестр обязательств по значимым аспектам. Проект',{style:'Title'}));
+ b.push(para('Статус: черновик на данных предприятия. Дата: '+(state.meta.date||today())+'. Автор: '+(state.meta.author||'не указан')+'. Предприятие: '+(state.meta.org||'не указано')+'.',{i:true,color:'6B7280',sz:20,after:120}));
+ b.push(para('Методика: '+METHOD+'. Версия: '+ALGO+'. Связка строки: требование - работа - действие - сведения для проверки.',{after:200}));
+ b.push(para('1. Сводная таблица',{style:'Heading1'}));
+ var head='<w:tr>'+COLS.map(function(t,i){return cell(RW[i],para(t,{b:true,sz:16}),'F8FAFC');}).join('')+'</w:tr>';
+ var rows='';
+ state.rows.forEach(function(r){
+  rows+='<w:tr>'+cell(RW[0],para(r.id,{sz:16}))+KEYS.map(function(k,i){return cell(RW[i+1],paraMulti(r[k]||'-',{sz:16}));}).join('')+'</w:tr>';
+ });
+ b.push('<w:tbl><w:tblPr><w:tblW w:w="14570" w:type="dxa"/>'+TBL+CMAR+'<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+RW.map(function(w){return '<w:gridCol w:w="'+w+'"/>';}).join('')+'</w:tblGrid>'+head+rows+'</w:tbl>');
+ b.push(para('2. Пробелы и вопросы',{style:'Heading1'}));
+ var gaps=[];
+ state.rows.forEach(function(r){
+  var m=missingOf(r);if(m.length)gaps.push(r.id+': не заполнено - '+m.join(', ')+'.');
+  if(!r.rank.trim())gaps.push(r.id+': ранг не указан.');
+  if(r.needsReview)gaps.push(r.id+': исходные сведения изменились, оценку требуется пересмотреть.');
+ });
+ if(!gaps.length)b.push(para('Пробелы не отмечены.',{i:true,color:'6B7280'}));
+ gaps.forEach(function(g){b.push(para(g,{after:40}));});
+ b.push(para('В следующем курсе проверьте применимые обязательства и возьмите значимые аспекты, обязательства, риски и возможности в политику, цели и план действий с ресурсами и сроками. Отдельная экологическая цель не обязательна для каждого значимого аспекта: это поясняет А.6.2 ГОСТ Р ИСО 14001-2016.',{i:true,color:'6B7280',sz:20,before:240}));
+ b.push(para('Документ содержит результат применения учебного правила к введенным и импортированным сведениям. Конструктор не проверяет достоверность источников, полноту требований и соответствие СЭМ стандарту.',{i:true,color:'6B7280',sz:20}));
+ b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>'+b.join('')+'</w:body></w:document>';
 }
-function para(t, o) {
-  o = o || {};
-  var p = '';
-  if (o.style) p += '<w:pStyle w:val="' + o.style + '"/>';
-  if (o.before || o.after) p += '<w:spacing w:before="' + (o.before || 0) + '" w:after="' + (o.after || 0) + '"/>';
-  return '<w:p>' + (p ? '<w:pPr>' + p + '</w:pPr>' : '') + run(t, o) + '</w:p>';
-}
-function paraMulti(t, o) { return String(t == null ? '' : t).split(/\r?\n/).map(function(l) { return para(l, o); }).join(''); }
-function cell(w, x, f) {
-  return '<w:tc><w:tcPr><w:tcW w:w="' + w + '" w:type="dxa"/>' + (f ? '<w:shd w:val="clear" w:color="auto" w:fill="' + f + '"/>' : '') + '<w:vAlign w:val="top"/></w:tcPr>' + (x || '<w:p/>') + '</w:tc>';
-}
-var TBL = '<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
-var CMAR = '<w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar>';
-var RW = [600, 1200, 1200, 1200, 600, 800, 1400, 1400, 800, 800];
-
-function buildDoc() {
-  var b = [];
-  b.push(para('Реестр обязательств по значимым аспектам. Проект', { style: 'Title' }));
-  b.push(para('Статус: учебный черновик. Дата оценки: ' + (state.meta.date || today()) + '. Автор: ' + (state.meta.author || 'не указан') + '. Предприятие: ' + (state.meta.org || 'не указано') + '.', { i: true, color: '6B7280', sz: 20, after: 120 }));
-  b.push(para('Связь «требование → работа → действие → сведения для проверки».', { after: 200 }));
-
-  b.push(para('1. Сводный реестр', { style: 'Heading1' }));
-  var rows = '<w:tr>' + ['ID', 'Операция', 'Аспект', 'Воздействие', 'Ранг', 'Значимость', 'Обязательство', 'План действий', 'Ответственный', 'Срок'].map(function(t, i) {
-    return cell(RW[i], para(t, { b: true, sz: 16 }), 'F8FAFC');
-  }).join('') + '</w:tr>';
-  state.obligations.forEach(function(o) {
-    rows += '<w:tr>' + cell(RW[0], para(o.id, { sz: 16 })) + cell(RW[1], paraMulti(o.operation || '-', { sz: 16 })) + cell(RW[2], paraMulti(o.aspect || '-', { sz: 16 })) + cell(RW[3], paraMulti(o.impact || '-', { sz: 16 })) + cell(RW[4], para(o.rank || '-', { sz: 16 })) + cell(RW[5], para(o.significance || '-', { sz: 16 })) + cell(RW[6], paraMulti(o.requirement || '-', { sz: 16 })) + cell(RW[7], paraMulti(o.actions || '-', { sz: 16 })) + cell(RW[8], paraMulti(o.responsible || '-', { sz: 16 })) + cell(RW[9], paraMulti(o.deadline || '-', { sz: 16 })) + '</w:tr>';
-  });
-  b.push('<w:tbl><w:tblPr><w:tblW w:w="10000" w:type="dxa"/>' + TBL + CMAR + '<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>' + RW.map(function(w) { return '<w:gridCol w:w="' + w + '"/>'; }).join('') + '</w:tblGrid>' + rows + '</w:tbl>');
-
-  b.push(para('2. Подробный разбор', { style: 'Heading1' }));
-  state.obligations.forEach(function(o) {
-    b.push(para(o.id + '. ' + (o.operation || 'Операция не указана'), { style: 'Heading2' }));
-    b.push(para('Аспект: ' + (o.aspect || '-') + '. Воздействие: ' + (o.impact || '-') + '.', { after: 60 }));
-    if (o.rank) b.push(para('Ранг: ' + o.rank + '. Значимость: ' + o.significance + '.', { after: 60 }));
-    b.push(para('Обязательство: ' + (o.requirement || '-') + '.', { after: 60 }));
-    b.push(para('Источник: ' + (o.source || '-') + '.', { after: 60 }));
-    b.push(para('Статус: ' + (o.status === 'yes' ? 'Выполняется' : o.status === 'partial' ? 'Выполняется частично' : o.status === 'no' ? 'Не выполняется' : o.status === 'unknown' ? 'Требует проверки' : 'Не определен') + '.', { after: 60 }));
-    b.push(para('План действий: ' + (o.actions || '-') + '.', { after: 60 }));
-    b.push(para('Ответственный: ' + (o.responsible || '-') + '. Срок: ' + (o.deadline || '-') + '.', { after: 60 }));
-    b.push(para('Примечания: ' + (o.note || '-') + '.', { after: 60 }));
-  });
-
-  b.push(para('Теперь вы дополнили шаблон реестра аспектов обязательствами. В шаблон внесли не просто название документа, а составили связь «требование → работа → действие → сведения для проверки». В следующем уроке разберете, что может помешать выполнить обязательства и какие возможности помогут улучшить работу.', { i: true, color: '6B7280', sz: 20, before: 240 }));
-  b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
-  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>' + b.join('') + '</w:body></w:document>';
-}
-
-var CT_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
-var RELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
-var DRELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
-var FOOTER_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:fldSimple w:instr=" PAGE "><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
-var STYLES_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="334155"/></w:rPr></w:style></w:styles>';
-
-var CRC_TABLE = (function() {
-  var t = new Uint32Array(256);
-  for (var n = 0; n < 256; n++) {
-    var c = n;
-    for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-    t[n] = c >>> 0;
-  }
-  return t;
-})();
-
-function crc32(u) {
-  var c = 0xFFFFFFFF;
-  for (var i = 0; i < u.length; i++) c = CRC_TABLE[(c ^ u[i]) & 0xFF] ^ (c >>> 8);
-  return (c ^ 0xFFFFFFFF) >>> 0;
-}
-
-function zipStore(files) {
-  var enc = new TextEncoder(), now = new Date();
-  var dt = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xFFFF;
-  var dd = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xFFFF;
-  var loc = [], cen = [], off = 0;
-  files.forEach(function(f) {
-    var nb = enc.encode(f.name), data = f.data, crc = crc32(data);
-    var lh = new Uint8Array(30 + nb.length), dv = new DataView(lh.buffer);
-    dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true); dv.setUint16(6, 0, true); dv.setUint16(8, 0, true);
-    dv.setUint16(10, dt, true); dv.setUint16(12, dd, true);
-    dv.setUint32(14, crc, true); dv.setUint32(18, data.length, true); dv.setUint32(22, data.length, true);
-    dv.setUint16(26, nb.length, true); dv.setUint16(28, 0, true);
-    lh.set(nb, 30); loc.push(lh, data);
-    var ch = new Uint8Array(46 + nb.length), cv = new DataView(ch.buffer);
-    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true); cv.setUint16(8, 0, true); cv.setUint16(10, 0, true);
-    cv.setUint16(12, dt, true); cv.setUint16(14, dd, true);
-    cv.setUint32(16, crc, true); cv.setUint32(20, data.length, true); cv.setUint32(24, data.length, true);
-    cv.setUint16(28, nb.length, true); cv.setUint16(30, 0, true); cv.setUint16(32, 0, true);
-    cv.setUint16(34, 0, true); cv.setUint16(36, 0, true); cv.setUint32(38, 0, true); cv.setUint32(42, off, true);
-    ch.set(nb, 46); cen.push(ch);
-    off += lh.length + data.length;
-  });
-  var cs = 0; cen.forEach(function(p) { cs += p.length; });
-  var eo = new Uint8Array(22), ev = new DataView(eo.buffer);
-  ev.setUint32(0, 0x06054b50, true); ev.setUint16(4, 0, true); ev.setUint16(6, 0, true);
-  ev.setUint16(8, files.length, true); ev.setUint16(10, files.length, true);
-  ev.setUint32(12, cs, true); ev.setUint32(16, off, true); ev.setUint16(20, 0, true);
-  var tot = 0; loc.forEach(function(p) { tot += p.length; }); cen.forEach(function(p) { tot += p.length; }); tot += 22;
-  var out = new Uint8Array(tot), o = 0;
-  loc.forEach(function(p) { out.set(p, o); o += p.length; });
-  cen.forEach(function(p) { out.set(p, o); o += p.length; });
-  out.set(eo, o);
-  return out;
-}
-
-function downloadDocx() {
-  if (!state.obligations.length) { renderPreview(); return; }
-  var enc = new TextEncoder();
-  var files = [
-    { name: '[Content_Types].xml', data: enc.encode(CT_XML) },
-    { name: '_rels/.rels', data: enc.encode(RELS_XML) },
-    { name: 'word/document.xml', data: enc.encode(buildDoc()) },
-    { name: 'word/styles.xml', data: enc.encode(STYLES_XML) },
-    { name: 'word/footer1.xml', data: enc.encode(FOOTER_XML) },
-    { name: 'word/_rels/document.xml.rels', data: enc.encode(DRELS_XML) }
-  ];
-  var bytes = zipStore(files);
-  var blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url; a.download = 'reestr-obyazatelstv.docx';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
-  $('downloadNote').textContent = 'Запрос на скачивание отправлен. Проверьте сохранение файла.';
-  resizeIframe();
+var CT_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
+var RELS_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+var DRELS_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+var FOOTER_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:fldSimple w:instr=" PAGE "><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
+var STYLES_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="334155"/></w:rPr></w:style></w:styles>';
+var CRC_TABLE=(function(){var t=new Uint32Array(256);for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(u){var c=0xFFFFFFFF;for(var i=0;i<u.length;i++)c=CRC_TABLE[(c^u[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipStore(files){var enc=new TextEncoder(),now=new Date();var dt=((now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1))&0xFFFF;var dd=(((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate())&0xFFFF;var loc=[],cen=[],off=0;files.forEach(function(f){var nb=enc.encode(f.name),data=f.data,crc=crc32(data);var lh=new Uint8Array(30+nb.length),dv=new DataView(lh.buffer);dv.setUint32(0,0x04034b50,true);dv.setUint16(4,20,true);dv.setUint16(6,0,true);dv.setUint16(8,0,true);dv.setUint16(10,dt,true);dv.setUint16(12,dd,true);dv.setUint32(14,crc,true);dv.setUint32(18,data.length,true);dv.setUint32(22,data.length,true);dv.setUint16(26,nb.length,true);dv.setUint16(28,0,true);lh.set(nb,30);loc.push(lh,data);var ch=new Uint8Array(46+nb.length),cv=new DataView(ch.buffer);cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint16(8,0,true);cv.setUint16(10,0,true);cv.setUint16(12,dt,true);cv.setUint16(14,dd,true);cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,nb.length,true);cv.setUint16(30,0,true);cv.setUint16(32,0,true);cv.setUint16(34,0,true);cv.setUint16(36,0,true);cv.setUint32(38,0,true);cv.setUint32(42,off,true);ch.set(nb,46);cen.push(ch);off+=lh.length+data.length;});var cs=0;cen.forEach(function(p){cs+=p.length;});var eo=new Uint8Array(22),ev=new DataView(eo.buffer);ev.setUint32(0,0x06054b50,true);ev.setUint16(4,0,true);ev.setUint16(6,0,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);ev.setUint32(12,cs,true);ev.setUint32(16,off,true);ev.setUint16(20,0,true);var tot=0;loc.forEach(function(p){tot+=p.length;});cen.forEach(function(p){tot+=p.length;});tot+=22;var out=new Uint8Array(tot),o=0;loc.forEach(function(p){out.set(p,o);o+=p.length;});cen.forEach(function(p){out.set(p,o);o+=p.length;});out.set(eo,o);return out;}
+function downloadDocx(){
+ if(!state.rows.length){renderPreview();return;}
+ var enc=new TextEncoder();
+ var files=[{name:'[Content_Types].xml',data:enc.encode(CT_XML)},{name:'_rels/.rels',data:enc.encode(RELS_XML)},{name:'word/document.xml',data:enc.encode(buildDoc())},{name:'word/styles.xml',data:enc.encode(STYLES_XML)},{name:'word/footer1.xml',data:enc.encode(FOOTER_XML)},{name:'word/_rels/document.xml.rels',data:enc.encode(DRELS_XML)}];
+ var bytes=zipStore(files);
+ var blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+ var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='reestr-obyazatelstv.docx';
+ document.body.appendChild(a);a.click();document.body.removeChild(a);
+ setTimeout(function(){URL.revokeObjectURL(url);},4000);
+ $('downloadNote').textContent='Запрос на скачивание отправлен. Проверьте сохранение файла.';
+ resizeIframe();
 }
 
 /* ========== СТАРТ ========== */
-document.addEventListener('DOMContentLoaded', function() {
-  testStorage();
-  var restored = loadOwn();
-  if (restored) $('restoreNote').style.display = 'block';
-  resizeIframe();
-  if ('ResizeObserver' in window) {
-    var ro = new ResizeObserver(function() { resizeIframe(); });
-    ro.observe(document.body);
-  }
+document.addEventListener('DOMContentLoaded',function(){
+ testStorage();
+ var restored=loadOwn();
+ if(restored)$('restoreNote').style.display='block';
+ ['m-org','m-date','m-author'].forEach(function(id){$(id).addEventListener('input',function(e){var k=id==='m-org'?'org':id==='m-date'?'date':'author';state.meta[k]=e.target.value;saveOwn();});});
+ resizeIframe();
+ if('ResizeObserver' in window){var ro=new ResizeObserver(function(){resizeIframe();});ro.observe(document.body);}
 });
-window.addEventListener('load', function() { resizeIframe(); });
+window.addEventListener('load',function(){resizeIframe();});
 </script>
-
 </body>
 </html>
