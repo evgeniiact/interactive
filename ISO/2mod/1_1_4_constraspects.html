@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
-<title>Конструктор оценки значимости экологических аспектов</title>
+<title>Конструктор первичных записей об экологических аспектах</title>
 <style>
 :root{--bg:#fff;--primary:#1e293b;--muted:#64748b;--border:#e2e8f0;--gray:#f8fafc;--accent:#2563eb;--accent-d:#1d4ed8;
 --ok:#16a34a;--ok-bg:#f0fdf4;--ok-bd:#bbf7d0;--warn:#ea580c;--warn-bg:#fff7ed;--warn-bd:#fed7aa;--bad:#991b1b;--bad-bg:#fef2f2;--bad-bd:#fecaca;--r:12px}
@@ -41,16 +41,10 @@ h2{font-size:16px;font-weight:700;margin:16px 0 8px}
 .ex-btn[aria-expanded="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
 .ex-box{display:none;background:var(--ok-bg);border-left:3px solid var(--ok);border-radius:0 8px 8px 0;padding:8px 12px;margin-top:6px;font-size:12.5px;color:var(--primary)}
 .ex-box.show{display:block}
+.field .live-hint{display:none;background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:8px;padding:8px 10px;font-size:12.5px;color:var(--warn);margin-top:6px}
+.field .live-hint.show{display:block}
 .check-row{display:flex;gap:8px;align-items:flex-start;background:var(--gray);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin:10px 0;font-size:13px}
 .check-row input{width:auto;margin-top:3px}
-.imp-note{font-size:12px;color:var(--muted);background:var(--gray);border:1px dashed var(--border);border-radius:8px;padding:6px 10px;margin:6px 0}
-.rank-panel{border:2px solid var(--accent);border-radius:10px;background:#eff6ff;padding:12px 14px;margin:12px 0;font-size:13.5px}
-.rank-panel p{margin:0 0 6px}.rank-panel p:last-child{margin:0}
-.rank-chip{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:800;border:1px solid;margin-right:6px}
-.rank-chip.r{background:var(--accent);color:#fff;border-color:var(--accent)}
-.rank-chip.sig{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-bd)}
-.rank-chip.ins{background:var(--gray);color:var(--muted);border-color:var(--border)}
-.rank-chip.inc{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-bd)}
 details.blk{border:1px solid var(--border);border-radius:10px;margin:10px 0;background:#fff;overflow:hidden}
 details.blk>summary{cursor:pointer;padding:11px 14px;font-size:13.5px;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--gray)}
 details.blk>summary::-webkit-details-marker{display:none}
@@ -58,10 +52,15 @@ details.blk>summary::after{content:"+";color:var(--muted);font-weight:800;font-s
 details.blk[open]>summary::after{content:"−"}
 details.blk[open]>summary{border-bottom:1px solid var(--border)}
 .blk-body{padding:12px 14px}
-.blk-body ul{margin:4px 0;padding-left:18px}
-.blk-body li{margin-bottom:5px;font-size:13px}
-.blk-tag{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-left:6px}
 .status-line{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.proc-card{border:1px solid var(--border);border-radius:10px;margin:10px 0;background:#fff;overflow:hidden}
+.proc-head{background:var(--gray);padding:8px 12px;font-weight:700;font-size:13.5px;border-bottom:1px solid var(--border)}
+.cond-tiles{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;padding:10px 12px}
+.cond-tile{border:2px solid var(--border);border-radius:10px;padding:8px 10px;font-size:12px;background:#fff}
+.cond-tile.has{border-color:var(--ok-bd);background:var(--ok-bg)}
+.cond-tile.none{border-color:var(--warn-bd);background:var(--warn-bg)}
+.cond-tile .ct-name{font-weight:700;display:block;margin-bottom:4px}
+.cond-tile .ct-state{display:block;color:var(--muted);margin-bottom:6px}
 .tabs-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;margin:14px 0 0}
 .tab-btn{border:1px solid var(--border);border-radius:10px 10px 0 0;padding:9px 12px;background:var(--gray);color:var(--muted);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;max-width:230px}
 .tab-btn .tab-name{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
@@ -80,16 +79,15 @@ details.blk[open]>summary{border-bottom:1px solid var(--border)}
 .btn-danger{background:#fff;border:1px solid var(--bad-bd);color:var(--bad)}
 .btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
 .scroll-x{overflow-x:auto}
-.scroll-x table.reg{min-width:1200px}
+.scroll-x table.reg{min-width:980px}
 table.reg{width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0}
 table.reg th,table.reg td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top}
 table.reg th{background:var(--gray);font-weight:700}
 table.reg td.tbd{color:var(--muted);font-style:italic}
-.cmp-table{width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0}
-.cmp-table th,.cmp-table td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top}
-.cmp-table th{background:var(--gray)}
+table.reg td.grp{background:#e2e8f0;font-weight:700;text-align:center}
+table.reg td.cond{background:var(--gray);font-weight:600}
 button:focus-visible,summary:focus-visible{outline:3px solid var(--accent-d);outline-offset:2px}
-@media (max-width:640px){body{padding:12px}h1{font-size:20px}.nav-buttons{flex-direction:column}.btn{width:100%}}
+@media (max-width:640px){body{padding:12px}h1{font-size:20px}.cond-tiles{grid-template-columns:1fr}.nav-buttons{flex-direction:column}.btn{width:100%}}
 </style>
 </head>
 <body>
@@ -97,14 +95,13 @@ button:focus-visible,summary:focus-visible{outline:3px solid var(--accent-d);out
 <div id="bootError" class="error-box" style="display:none"></div>
 
 <div id="screen-intro" class="screen active">
-<h1 tabindex="-1">Оценка значимости: ранг и вывод по каждому аспекту</h1>
-<p class="lead">Здесь вы узнаете, какие аспекты требуют управления в первую очередь. Конструктор берет записи из реестра аспектов под их сквозными номерами, задает три вопроса о требованиях и мерах, сам считает ранг и значимость, а вы добавляете короткое обоснование своими словами.</p>
-<div class="note-box accent">Ранг показывает состояние требований и мер: 1 - требования не выполняются, 2 - выполнение держится на специальных мерах, 3 - выполнение без специальных мер, 4 - применимые требования не выявлены. Ранги 1 и 2 дают значимый аспект, ранги 3 и 4 - незначимый. Ранг 3 или 4 не отменяет значимость, если есть подтвержденные экологические основания: для них есть отдельное поле.</div>
-<div class="note-box">Свернуто то, что уже заполнено или пришло из прошлых шагов. Раскрыто то, где есть пустые поля этого шага: так видно, с чем работать сейчас.</div>
+<h1 tabindex="-1">Реестр экологических аспектов: первые записи</h1>
+<p class="lead">Здесь вы соберете первый документ своей системы экологического менеджмента: что предприятие делает, как это соприкасается со средой и что меняется в среде. Записи получат сквозные номера и пройдут с вами весь курс: значимость, обязательства, риски, цели и план.</p>
+<div class="note-box accent">Вы получите таблицу в Word и форму в Excel: их можно обсудить с коллегами, дополнить количествами и приоритетами и принести на рабочее совещание. Черновик хранится в этом браузере, а единый файл курса переносит данные всех шагов программы между устройствами.</div>
 <div class="warn-box storage-warn">Браузер не сохранил черновик. Скачайте Word, Excel или единый файл курса перед закрытием страницы.</div>
 <div class="note-box" id="restoreNote" style="display:none">Найден сохраненный черновик. Записи восстановлены.</div>
 <div class="nav-buttons">
-<button class="btn btn-primary" onclick="startWork()">Начать оценку</button>
+<button class="btn btn-primary" onclick="startWork()">Начать записи</button>
 <button class="btn btn-secondary" onclick="showScreen('screen-example')">Посмотреть пример</button>
 <button class="btn btn-secondary" onclick="semToggleRules(this)">Правила и передача данных</button>
 </div>
@@ -112,32 +109,30 @@ button:focus-visible,summary:focus-visible{outline:3px solid var(--accent-d);out
 </div>
 
 <div id="screen-example" class="screen">
-<h1 tabindex="-1">Пример оценки на учебном заводе</h1>
-<p class="lead">Пример показывает, как ответы на три вопроса превращаются в ранг, значимость и обоснование. Обстоятельства учебные: это не характеристики реального предприятия.</p>
+<h1 tabindex="-1">Пример записи на учебном заводе</h1>
+<p class="lead">Пример показывает, как выглядят поля заполненными и как запись встает в форму реестра. Обстоятельства учебные: это не характеристики реального предприятия.</p>
 <table class="reg"><tbody>
-<tr><th>Запись</th><td>2. Пересыпание сырья, обычная работа</td></tr>
-<tr><th>Аспект и воздействие</th><td>Выброс пыли в атмосферный воздух при пересыпании сырья - загрязнение атмосферного воздуха. Тип: прямой</td></tr>
-<tr><th>Требования установлены</th><td>Да, требования установлены</td></tr>
-<tr><th>Выполнение подтверждено</th><td>Да, выполняются полностью</td></tr>
-<tr><th>Зависит от специальных мер</th><td>Да, выполнение держится на специальных мерах</td></tr>
-<tr><th>Меры</th><td>Укрытие узла пересыпки, порядок уборки просыпей, контроль состояния укрытия</td></tr>
-<tr><th>Ранг и значимость</th><td>Ранг 2, аспект значимый</td></tr>
-<tr><th>Обоснование ранга</th><td>Требование выполняется, но только пока работают укрытие и порядок уборки: без этих мер пыление вернется, поэтому ранг 2</td></tr>
+<tr><th>Операция или процесс</th><td>Пересыпание сырья</td></tr>
+<tr><th>Условия работы</th><td>Обычная работа</td></tr>
+<tr><th>Экологический аспект</th><td>Выброс пыли в атмосферный воздух при пересыпании сырья</td></tr>
+<tr><th>Воздействие на среду</th><td>Загрязнение атмосферного воздуха</td></tr>
+<tr><th>Тип аспекта</th><td>Прямой: предприятие управляет работой участка само</td></tr>
+<tr><th>Часть сведений уточняется</th><td>Да. Что уточнить и где: когда усиливается пыление и какие меры применяют на участке; где доступны сведения о количестве и составе выброса</td></tr>
 </tbody></table>
-<div class="note-box">Обоснование объясняет причину ранга, а не повторяет его номер. Чек-лист под вопросами помогает собрать мысли: класс опасности, валовые объемы и их доля, вероятность превышения, юридические последствия, масштаб воздействия. Конструктор не использует баллы и пороги: если методика предприятия применяет балльную оценку, ее выполняют отдельно и называют в обосновании.</div>
+<div class="note-box">Обратите внимание: аспект называет источник влияния на среду, воздействие - изменение в среде, а отметка об уточнении не прячет известный текст, а добавляет к нему вопрос. Для процесса нужны записи по трем условиям работы: обычная работа, пуск и останов, аварии и инциденты.</div>
 <div class="nav-buttons">
 <button class="btn btn-secondary" onclick="showScreen('screen-intro')">К началу</button>
+<button class="btn btn-secondary" onclick="downloadExample()">Скачать пример (Word)</button>
 </div>
 <div class="sem-rules" hidden></div>
 </div>
 
 <div id="screen-work" class="screen">
-<h1 tabindex="-1">Оценка значимости аспектов</h1>
-<p class="lead">Каждая запись реестра аспектов получает вкладку с тем же номером. Блок с данными прошлых шагов свернут, если данные на месте; блок этого шага раскрыт, пока в нем есть пустые поля.</p>
+<h1 tabindex="-1">Записи об аспектах и воздействиях</h1>
+<p class="lead">Одна запись - одна строка будущего реестра: процесс, условия работы, аспект, воздействие, тип. Карта условий выше вкладок показывает, какие из трех режимов работы уже разобраны по каждому процессу.</p>
 <div class="warn-box storage-warn">Браузер не сохранил черновик. Скачайте Word, Excel или единый файл курса перед закрытием страницы.</div>
 <div class="save-line" id="saveStatus"></div>
 <div class="nav-buttons" style="margin-top:0">
-<button class="btn btn-secondary" onclick="importRegistry()">Импорт из реестра аспектов</button>
 <button class="btn btn-secondary" onclick="exportJson()">Скачать единый файл курса (JSON)</button>
 <button class="btn btn-secondary" onclick="document.getElementById('jsonFile').click()">Загрузить единый файл (JSON)</button>
 <input type="file" id="jsonFile" accept=".json,application/json" style="display:none" onchange="importJson(this)">
@@ -145,27 +140,17 @@ button:focus-visible,summary:focus-visible{outline:3px solid var(--accent-d);out
 </div>
 <div class="note-box" id="jsonMsg" style="display:none"></div>
 <div class="sem-rules" hidden></div>
+<div id="condMap" style="margin:12px 0"></div>
 <div class="field" style="max-width:320px;display:inline-block;margin-right:8px"><label for="m-org">Предприятие (необязательно)</label><input type="text" id="m-org"></div>
-<div class="field" style="max-width:150px;display:inline-block;margin-right:8px"><label for="m-date">Дата оценки</label><input type="text" id="m-date"></div>
-<div class="field" style="max-width:200px;display:inline-block"><label for="m-author">Оценил (необязательно)</label><input type="text" id="m-author"></div>
+<div class="field" style="max-width:150px;display:inline-block;margin-right:8px"><label for="m-date">Дата</label><input type="text" id="m-date"></div>
+<div class="field" style="max-width:200px;display:inline-block"><label for="m-author">Подготовил (необязательно)</label><input type="text" id="m-author"></div>
 <div class="tabs-bar" id="tabsBar" role="tablist" aria-label="Записи реестра"></div>
 <div id="panelsBox"></div>
-<div class="nav-buttons"><button class="btn btn-primary" onclick="openPreview()">Посмотреть таблицу и скачать</button></div>
-</div>
-
-<div id="screen-compare" class="screen">
-<h1 tabindex="-1">В исходной записи изменились сведения</h1>
-<p class="lead">В реестре аспектов запись обновили. Посмотрите различия и выберите, как поступить: ваша оценка при обновлении будет помечена для пересмотра.</p>
-<div id="cmpBox"></div>
-<div class="nav-buttons">
-<button class="btn btn-secondary" onclick="cmpKeep()">Оставить мою версию</button>
-<button class="btn btn-secondary" onclick="cmpUpdate()">Обновить из источника и пересмотреть оценку</button>
-<button class="btn btn-secondary" onclick="cmpCopy()">Создать отдельную копию</button>
-</div>
+<div class="nav-buttons"><button class="btn btn-primary" onclick="openPreview()">Посмотреть форму и скачать</button></div>
 </div>
 
 <div id="screen-preview" class="screen">
-<h1 tabindex="-1">Таблица значимости перед скачиванием</h1>
+<h1 tabindex="-1">Форма реестра перед скачиванием</h1>
 <div class="error-box" id="errorsBox" style="display:none" aria-live="polite"></div>
 <div class="notices-box" id="noticesBox" style="display:none" aria-live="polite"></div>
 <div id="previewBox"></div>
@@ -182,11 +167,11 @@ button:focus-visible,summary:focus-visible{outline:3px solid var(--accent-d);out
 
 </div>
 <script>
-/* ========== ЗАЩИТНЫЙ СТАРТ ========== */
+/* ========== ЗАЩИТНЫЙ СТАРТ: ошибка видна, а не молчит ========== */
 function showBoot(msg){var b=document.getElementById('bootError');if(b){b.style.display='block';b.textContent='Конструктор не запустился: '+msg;}}
 window.addEventListener('error',function(ev){showBoot((ev&&ev.message)||'ошибка скрипта')+' (строка '+((ev&&ev.lineno)||'?')+')';});
 
-/* ========== МОДУЛЬ SEM-BUNDLE v1.1 ========== */
+/* ========== МОДУЛЬ SEM-BUNDLE v1.1: единый файл всей программы СЭМ ========== */
 var SEM_BUNDLE_KEY='sem_bundle';
 var SEM_STEPS=[
  {name:'swot',title:'Курс 2: условия и границы (SWOT)',keys:['sem_swot']},
@@ -276,6 +261,7 @@ function semParseImport(text,selfName){
   var rows=Array.isArray(d)?d:(d.rows||d.cards);
   var wrap={schema:'sem.bundle.v1',program:'СЭМ: курсы 2-4 и финал',exportedAt:new Date().toISOString(),steps:{}};
   wrap.steps[selfName]={schema:d.schema||'',rev:d.rev||1,updatedAt:d.updatedAt||'',meta:d.meta||{},rows:rows};
+  if(d.marks)wrap.steps[selfName].marks=d.marks;
   return{bundle:wrap,ownRows:rows,format:'step'};
  }
  return null;
@@ -283,21 +269,18 @@ function semParseImport(text,selfName){
 
 /* ========== ПРАВИЛА ДЛЯ УЧЕНИКА ========== */
 var SEM_RULES=[
- 'Конструктор считает ранг и значимость по вашим ответам и оформляет черновик в Word и Excel: таблицу можно обсудить с коллегами и дополнить в редакторе.',
- 'Номер записи сквозной: запись пришла из реестра аспектов под своим номером и сохранит его в обязательствах, рисках, целях и плане.',
- 'Блоки записи ведут себя по правилу: заполненное или привезенное из прошлых шагов свернуто, блок с пустыми полями этого шага раскрыт. Так видно, с чем работать сейчас.',
- 'Ранг присваивается автоматически по ответам о требованиях и мерах и не правится вручную: так разные записи оцениваются одинаково. Свое мнение сверх правила запишите в обоснование и в поле экологических оснований.',
- 'Ранг 3 или 4 не отменяет значимость, если подтверждены экологические основания или есть сигнал стороны либо надзора: для этого есть отдельное поле, и оно меняет итоговую значимость.',
- 'Конструктор не использует баллы и пороги. Чек-лист под вопросами помогает собрать обоснование словами; балльную методику предприятия применяют отдельно и называют в обосновании.',
- 'Импортированные поля открыты для правок: уточнить их можно здесь. Источник хранит свою версию, поэтому после правки импортированного обновите запись и в реестре аспектов, чтобы версии не разошлись.',
- 'При повторном импорте конструктор сравнивает версии: если источник изменился, он покажет различия и предложит оставить вашу версию, обновить из источника или создать копию.',
- 'Единый файл курса содержит черновики всех шагов программы и скачивается из любого конструктора. При загрузке свой шаг сливается по правилу: заполненные поля не перезаписываются, дополняются только пустые.',
- 'Шаги других ступеней возвращаются в этот браузер при загрузке единого файла, если их здесь нет; существующие не трогаются.',
+ 'Конструктор собирает черновик документа СЭМ и оформляет его в Word и в форму Excel: таблицу можно обсудить с коллегами и дополнить деталями в редакторе.',
+ 'Номер записи сквозной на всю программу: номер, полученный здесь, сохранится в оценке значимости, обязательствах, рисках, целях и плане. Так записи разных шагов всегда можно сопоставить.',
+ 'Единый файл курса содержит черновики всех шагов программы: условия и границы, карта сторон, область применения, аспекты, значимость, обязательства, риски, политика, цели, план и финальный пакет. Скачивается он из любого конструктора.',
+ 'Шаги, которых еще нет в плане курса, тоже попадают в единый файл: любой черновик или итог тренажера с ключом sem_ переносится как есть и возвращается на новом устройстве под своим ключом.',
+ 'При загрузке единого файла свой шаг сливается по правилу: заполненные поля не перезаписываются, дополняются только пустые. Шаги других ступеней возвращаются в этот браузер, если их здесь нет; существующие не трогаются.',
  'Черновик хранится только в этом браузере на этом устройстве. На сервер ничего не отправляется.',
  'Черновик пропадет, если открыть курс в другом браузере или на другом устройстве, работать в приватном режиме, очистить данные сайтов или если платформа откроет конструктор с другого адреса.',
- 'Надежные копии - три файла. Word это документ для обсуждения и согласования. Excel это рабочая форма для количеств, приоритетов и пометок редактора. Единый файл JSON это данные всей программы для переноса.',
- 'Полная очистка удаляет только черновик этого шага. Данные других шагов программы остаются.',
- 'Конструктор не проверяет данные и не подтверждает соответствие СЭМ стандарту. Он помогает посчитать ранг по единому правилу и ничего не потерять.'
+ 'Надежные копии - три файла. Word это документ для согласования. Excel это рабочая форма предприятия. Единый файл JSON это данные всей программы для переноса.',
+ 'Автоматической передачи данных между конструкторами нет: импорт происходит только после нажатия кнопки и только в том же браузере.',
+ 'Отметка «часть сведений уточняется» добавляет статус и вопрос, но не прячет известный текст: он выходит в документы вместе со статусом.',
+ 'Полная очистка удаляет только черновик этого шага. Данные других шагов и единый файл остаются нетронутыми.',
+ 'Конструктор не проверяет данные и не подтверждает соответствие СЭМ стандарту. Он помогает собрать черновик и ничего не потерять.'
 ];
 function semToggleRules(btn){
  var screen=btn.closest('.screen');
@@ -363,107 +346,51 @@ function semExample(btn){
  });
 }
 
-/* ========== СЛУЖЕБНОЕ ========== */
-var STORAGE_KEY='sem_significance';
-var SCHEMA='sem.significance.v3';
-var SOURCE_KEY='sem_aspects';
-var SOURCE_ALIASES=['sem-aspect-records-v3','sem-aspect-records-v2','sem-aspect-records-v1','sem-chain-constructor-v1'];
+/* ========== СЛУЖЕБНОЕ КОНСТРУКТОРА ========== */
+var STORAGE_KEY='sem_aspects';
+var SCHEMA='sem.aspects.v2';
 var CONDITIONS=[['normal','Обычная работа'],['startup','Пуск и останов'],['accident','Аварии и инциденты']];
 var TYPES=[['direct','Прямой'],['indirect','Непрямой']];
-var Q1=[['','Еще не отвечено'],['yes','Да, требования установлены'],['none','Проверка завершена, применимые требования не выявлены'],['unclear','Проверка не завершена или нужно уточнить применимость']];
-var Q2=[['','Еще не отвечено'],['full','Да, выполняются полностью'],['partial','Да, но частично'],['no','Нет, не выполняются']];
-var Q3=[['','Еще не отвечено'],['yes','Да, выполнение держится на специальных мерах'],['no','Нет, специальные меры не требуются']];
-var ECO=[['','Оснований сверх ранга нет'],['yes','Да, подтверждено воздействие, которое не отменяется рангом'],['signal','Есть сигнал стороны или надзора, обстоятельства проверяются']];
+var ASPECT_WORDS=['выброс','сброс','загрязн'];
+var MGMT_WORDS=['процедур','инструкц','контрол','обучен','приказ','разработ','провед','утверд','совещан'];
+var APPROVAL=['Составил(и)','Проверил (ответственный за экологический менеджмент)','Согласовал (ведущий специалист по экологическому менеджменту)','Руководитель подразделения','Утверждаю (начальник службы охраны окружающей среды)'];
 function $(id){return document.getElementById(id);}
 function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
 function today(){var d=new Date();return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();}
 function condLabel(v){for(var i=0;i<CONDITIONS.length;i++)if(CONDITIONS[i][0]===v)return CONDITIONS[i][1];return v||'-';}
 function typeLabel(v){for(var i=0;i<TYPES.length;i++)if(TYPES[i][0]===v)return TYPES[i][1];return v||'-';}
-function qLabel(opts,v){for(var i=0;i<opts.length;i++)if(opts[i][0]===v)return opts[i][1];return 'еще не отвечено';}
 function resizeIframe(){if(window.parentIFrame&&typeof window.parentIFrame.size==='function')window.parentIFrame.size();}
-function showScreen(id){['screen-intro','screen-example','screen-work','screen-compare','screen-preview'].forEach(function(s){$(s).classList.remove('active');});$(id).classList.add('active');var h=$(id).querySelector('h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true});}window.scrollTo(0,0);resizeIframe();}
+function showScreen(id){['screen-intro','screen-example','screen-work','screen-preview'].forEach(function(s){$(s).classList.remove('active');});$(id).classList.add('active');var h=$(id).querySelector('h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true});}window.scrollTo(0,0);resizeIframe();}
 function showStorageWarn(){var w=document.querySelectorAll('.storage-warn');for(var i=0;i<w.length;i++)w[i].classList.add('show');resizeIframe();}
-function sigOfRow(r){return ((r.operation||'')+'|'+(r.aspect||'')+'|'+(r.impact||'')).toLowerCase();}
-function ctxHash(r){return JSON.stringify([r.operation,r.conditions,r.aspect,r.impact,r.aspectType]);}
-
-/* ========== РАСЧЕТ РАНГА И ЗНАЧИМОСТИ ========== */
-function computeResult(r){
- var rank=null;
- if(r.q1==='yes'){
-  if(r.q2==='no'||r.q2==='partial')rank=1;
-  else if(r.q2==='full'){
-   if(r.q3==='yes')rank=2;
-   else if(r.q3==='no')rank=3;
-  }
- } else if(r.q1==='none')rank=4;
- var sig,why;
- if(r.ecoGround==='yes'){sig='significant';why='значимость по подтвержденному экологическому основанию, ранг ее не отменяет';}
- else if(rank===1||rank===2){sig='significant';why='ранг '+rank+' по учебному правилу';}
- else if(r.ecoGround==='signal'){sig='incomplete';why='сигнал стороны или надзора проверяется, оценка не завершена';}
- else if(rank===null){sig='incomplete';why='сведений для ранга не хватает, оценка не завершена';}
- else{sig='notsignificant';why='ранг '+rank+', положительных оснований сверх ранга нет';}
- return{rank:rank,sig:sig,why:why};
-}
-function sigLabel(s){return s==='significant'?'Значимый':s==='notsignificant'?'Не значимый':'Оценка не завершена';}
-function sigChip(s){return s==='significant'?'sig':s==='notsignificant'?'ins':'inc';}
-
-/* ========== ГОТОВНОСТЬ БЛОКОВ ========== */
-function ctxIncomplete(r){return !r.operation.trim()||!r.aspect.trim()||!r.impact.trim();}
-function stepIncomplete(r){
- if(!r.q1)return true;
- if(r.q1==='yes'&&!r.q2)return true;
- if(r.q1==='yes'&&r.q2==='full'&&!r.q3)return true;
- if(r.q1==='yes'&&r.q2==='full'&&r.q3==='yes'&&!r.measures.trim())return true;
- if(computeResult(r).rank!==null&&!r.rankNote.trim())return true;
- if((r.ecoGround==='yes'||r.ecoGround==='signal')&&!r.ecoGroundNote.trim())return true;
- return false;
-}
-function autoBlock(r,which){
- var root=bodiesById[r.num];if(!root)return;
- var el=root.querySelector(which==='ctx'?'[id="blk-ctx-'+r.num+'"]':'[id="blk-step-'+r.num+'"]');
- if(!el)return;
- var want=which==='ctx'?ctxIncomplete(r):stepIncomplete(r);
- if(el.open!==want){
-  var sum=el.querySelector('summary');
-  semKeepPlace(sum,function(){el.open=want;});
- }
-}
 
 /* ========== СОСТОЯНИЕ ========== */
-var state={meta:{org:'',date:'',author:''},rows:[],activeNum:null,rev:1};
-var bodiesById={},storageOk=true,pendingQueue=[],pendingCmp=null;
-function newRow(num){return{num:num,operation:'',conditions:'normal',aspect:'',impact:'',aspectType:'direct',q1:'',q2:'',q3:'',measures:'',rankNote:'',ecoGround:'',ecoGroundNote:'',clarify:false,clarifyText:'',srcSig:'',srcHash:'',imported:false,srcName:'',needsReview:false};}
+var state={meta:{org:'',date:'',author:''},rows:[],nextNum:1,activeNum:null,rev:1,marks:[]};
+var bodiesById={},storageOk=true,condProcs=[];
+function newRow(){var n=state.nextNum++;return{num:n,operation:'',conditions:'normal',aspect:'',impact:'',aspectType:'direct',clarify:false,clarifyText:'',scope:'',inputs:'',management:'',basis:'',srcSig:'',imported:false,srcName:''};}
 
 /* ========== ПАМЯТЬ И МИГРАЦИЯ ========== */
-function saveOwn(){if(!storageOk)return;try{state.rev++;localStorage.setItem(STORAGE_KEY,JSON.stringify({schema:SCHEMA,rev:state.rev,updatedAt:new Date().toISOString(),meta:state.meta,rows:state.rows,activeNum:state.activeNum}));var d=new Date();$('saveStatus').textContent='Черновик сохранен в этом браузере в '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+'.';}catch(e){storageOk=false;showStorageWarn();}}
+function saveOwn(){if(!storageOk)return;try{state.rev++;localStorage.setItem(STORAGE_KEY,JSON.stringify({schema:SCHEMA,rev:state.rev,updatedAt:new Date().toISOString(),meta:state.meta,rows:state.rows,marks:state.marks,nextNum:state.nextNum,activeNum:state.activeNum}));var d=new Date();$('saveStatus').textContent='Черновик сохранен в этом браузере в '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+'.';}catch(e){storageOk=false;showStorageWarn();}}
 function migrate(r,num){
- var row=newRow(num||r.num||0);
- ['operation','conditions','aspect','impact','aspectType','q1','q2','q3','measures','rankNote','ecoGround','ecoGroundNote','clarifyText','srcSig','srcHash','srcName'].forEach(function(k){if(r[k]!==undefined&&r[k]!==null)row[k]=r[k];});
- row.clarify=!!r.clarify;row.imported=!!r.imported;row.needsReview=!!r.needsReview;
+ var f=r.f||r;
+ var row={num:num,operation:f.operation||f.process||'',conditions:f.conditions||'normal',aspect:f.aspect||'',impact:f.impact||'',aspectType:f.aspectType||'direct',clarify:false,clarifyText:'',scope:f.scope||f.context||'',inputs:f.inputs||f.sourceInfo||'',management:f.management||f.mgmtContext||'',basis:f.basis||f.source||'',srcSig:'',imported:!!r.imported,srcName:r.srcName||''};
  if(typeof row.conditions==='string'&&row.conditions.indexOf('авар')>=0)row.conditions='accident';
  else if(typeof row.conditions==='string'&&row.conditions.indexOf('пуск')>=0)row.conditions='startup';
  else if(typeof row.conditions==='string'&&row.conditions.indexOf('орм')>=0)row.conditions='normal';
- if(!row.q1&&r.q){row.q1=r.q.q1||'';row.q2=r.q.q2==='yes'?'full':(r.q.q2==='no'?'no':(r.q.q2||''));row.q3=r.q.q3||'';}
- if(!row.ecoGround){
-  var e=r.e||{};
-  if(e.e1==='yes'||e.e2==='yes'||e.e3==='yes')row.ecoGround='yes';
-  else if(r.sQ==='yes')row.ecoGround='yes';
-  else if(r.sQ==='signal')row.ecoGround='signal';
- }
- if(!row.rankNote)row.rankNote=r.note||'';
- if(!row.clarifyText)row.clarifyText=r.missing||'';
+ var flags=r.flags||{};
+ if(r.clarify||Object.keys(flags).length)row.clarify=true;
+ row.clarifyText=r.clarifyText||f.clarifyText||f.missing||'';
  return row;
 }
 function loadOwn(){
  try{
   var raw=localStorage.getItem(STORAGE_KEY);
-  if(raw){var d=JSON.parse(raw);var arr=d.rows||[];if(Array.isArray(arr)){state.meta=Object.assign({org:'',date:'',author:''},d.meta||{});state.activeNum=d.activeNum||null;state.rev=Number(d.rev)||1;state.rows=arr.map(function(r,i){return migrate(r,r.num||i+1);});return true;}}
-  var aliases=['sem-ranks-v3','sem-ranks-significance-v3','sem-ranks-v2','sem-ranks-v1'];
+  if(raw){var d=JSON.parse(raw);var arr=d.rows||[];if(Array.isArray(arr)){state.meta=Object.assign({org:'',date:'',author:''},d.meta||{});state.nextNum=Number(d.nextNum)||1;state.activeNum=d.activeNum||null;state.rev=Number(d.rev)||1;state.marks=Array.isArray(d.marks)?d.marks:[];state.rows=arr.map(function(r,i){return migrate(r,r.num||i+1);});if(state.nextNum<=state.rows.length)state.nextNum=state.rows.length+1;return true;}}
+  var aliases=['sem-aspect-records-v3','sem-aspect-records-v2','sem-aspect-records-v1','sem-chain-constructor-v1'];
   for(var i=0;i<aliases.length;i++){
    raw=localStorage.getItem(aliases[i]);if(!raw)continue;
    var ld=JSON.parse(raw);var src=ld.rows||ld.cards||[];if(!Array.isArray(src)||!src.length)continue;
    state.rows=src.map(function(r,idx){return migrate(r,idx+1);});
-   state.activeNum=state.rows.length?state.rows[0].num:null;
+   state.marks=[];state.nextNum=state.rows.length+1;state.activeNum=state.rows.length?state.rows[0].num:null;
    return true;
   }
  }catch(e){}
@@ -471,7 +398,7 @@ function loadOwn(){
 }
 function testStorage(){try{localStorage.setItem(STORAGE_KEY+'-t','1');localStorage.removeItem(STORAGE_KEY+'-t');}catch(e){storageOk=false;showStorageWarn();}}
 
-/* ========== ЕДИНЫЙ ФАЙЛ ========== */
+/* ========== ЕДИНЫЙ ФАЙЛ: КНОПКИ КОНСТРУКТОРА ========== */
 function exportJson(){
  var present=semExportBundle();
  jsonMsg('Скачан единый файл программы. В нем шаги: '+(present.length?present.join(', '):'пока только этот черновик')+'. Шаги, которых нет в этом браузере, добавлены из кеша переноса, если вы раньше загружали единый файл.');
@@ -480,10 +407,10 @@ function importJson(input){
  var f=input.files&&input.files[0];if(!f)return;
  var rd=new FileReader();
  rd.onload=function(){
-  var parsed=semParseImport(rd.result,'significance');
+  var parsed=semParseImport(rd.result,'aspects');
   if(!parsed){jsonMsg('Файл не похож на данные программы: не распознан ни единый файл, ни черновик шага.');input.value='';return;}
   semCacheBundle(parsed.bundle);
-  var res=semRestoreMissingSteps(parsed.bundle,'significance');
+  var res=semRestoreMissingSteps(parsed.bundle,'aspects');
   var extra='';
   if(res.restored.length)extra=' Вернул в этот браузер отсутствовавшие шаги программы: '+res.restored.length+'. Их увидите в своих конструкторах при импорте.';
   else if(res.skipped.length)extra=' Шаги, которые уже есть в этом браузере, не перезаписаны.';
@@ -491,8 +418,8 @@ function importJson(input){
   (parsed.ownRows||[]).forEach(function(it){
    var m=migrate(it,it.num||0);
    var ex=null;state.rows.forEach(function(r){if(r.num===m.num)ex=r;});
-   if(ex){['operation','conditions','aspect','impact','aspectType','q1','q2','q3','measures','rankNote','ecoGround','ecoGroundNote','clarifyText'].forEach(function(k){if(m[k]&&!ex[k]){ex[k]=m[k];filled++;}});}
-   else{if(!m.num||state.rows.some(function(r){return r.num===m.num;})){var max=0;state.rows.forEach(function(r){if(r.num>max)max=r.num;});m.num=max+1;}state.rows.push(m);added++;}
+   if(ex){['operation','conditions','aspect','impact','aspectType','scope','inputs','management','basis','clarifyText'].forEach(function(k){if(m[k]&&!ex[k]){ex[k]=m[k];filled++;}});if(m.clarify&&!ex.clarify)ex.clarify=m.clarify;}
+   else{if(!m.num||state.rows.some(function(r){return r.num===m.num;}))m.num=state.nextNum++;state.rows.push(m);added++;}
   });
   state.rows.sort(function(a,b){return a.num-b.num;});
   if(!state.activeNum&&state.rows.length)state.activeNum=state.rows[0].num;
@@ -504,88 +431,59 @@ function importJson(input){
 }
 function jsonMsg(t){var m=$('jsonMsg');m.style.display='block';m.textContent=t;resizeIframe();}
 
-/* ========== ИМПОРТ ИЗ РЕЕСТРА АСПЕКТОВ ========== */
-function readSource(){
- var keys=[SOURCE_KEY].concat(SOURCE_ALIASES);
- for(var i=0;i<keys.length;i++){
-  try{var raw=localStorage.getItem(keys[i]);if(!raw)continue;var d=JSON.parse(raw);var arr=d.rows||d.cards||[];if(Array.isArray(arr)&&arr.length)return arr;}catch(e){}
- }
- return null;
+/* ========== МЯГКИЕ ПОДСКАЗКИ И КАРТА УСЛОВИЙ ========== */
+function aspectHint(r){var a=(r.aspect||'').toLowerCase();for(var i=0;i<ASPECT_WORDS.length;i++){if(a.indexOf(ASPECT_WORDS[i])>=0)return 'Проверьте пару полей: аспект называет источник влияния на среду, воздействие - что меняется в среде. Сравните с примерами под полями.';}return '';}
+function impactHint(r){var t=(r.impact||'').toLowerCase();for(var i=0;i<MGMT_WORDS.length;i++){if(t.indexOf(MGMT_WORDS[i])>=0)return 'Это похоже на действие, а не на изменение среды. Примеры воздействия: загрязнение атмосферного воздуха, загрязнение водного объекта, накопление отходов.';}return '';}
+function markFind(proc,cond){var m=null;state.marks.forEach(function(x){if(x.process===proc.toLowerCase()&&x.condition===cond)m=x;});return m;}
+function markNote(proc,cond){var m=markFind(proc,cond);return m?'просмотрено, отдельного аспекта нет. Причина: '+(m.note||'не указана'):'записей для этих условий пока нет';}
+function conditionGaps(){
+ var by={};state.rows.forEach(function(r){var p=(r.operation||'').trim().toLowerCase();if(!p)return;if(!by[p])by[p]={name:r.operation,set:{}};by[p].set[r.conditions]=1;});
+ var g=[];Object.keys(by).forEach(function(p){var hasMark=state.marks.some(function(m){return m.process===p&&m.condition!=='normal';});if(!by[p].set.startup&&!by[p].set.accident&&!hasMark)g.push(by[p].name);});
+ return g;
 }
-function importRegistry(){
- var src=readSource();
- if(!src){jsonMsg('Записи реестра аспектов не найдены в этом браузере. Импорт доступен, если оба конструктора имеют доступ к одному локальному хранилищу. Если записей нет, заполните строки вручную или загрузите единый файл.');resizeIframe();return;}
- var added=0,skipped=0,changed=0;
- var taken={};state.rows.forEach(function(r){taken[r.srcSig||sigOfRow(r)]=r;});
- src.forEach(function(it){
-  var f=it.f||it;
-  var ctx={operation:f.operation||f.process||'',conditions:f.conditions||'normal',aspect:f.aspect||'',impact:f.impact||'',aspectType:f.aspectType||'direct'};
-  if(typeof ctx.conditions==='string'&&ctx.conditions.indexOf('авар')>=0)ctx.conditions='accident';
-  else if(typeof ctx.conditions==='string'&&ctx.conditions.indexOf('пуск')>=0)ctx.conditions='startup';
-  else if(typeof ctx.conditions==='string'&&ctx.conditions.indexOf('орм')>=0)ctx.conditions='normal';
-  if(!ctx.operation&&!ctx.aspect)return;
-  var s=sigOfRow(ctx);
-  var ex=taken[s];
-  var h=ctxHash(ctx);
-  if(ex){
-   if(ex.srcHash===h){skipped++;return;}
-   changed++;pendingQueue.push({ctx:ctx,h:h,row:ex,clarify:!!(it.clarify||f.clarify),clarifyText:f.clarifyText||f.missing||''});
-   return;
-  }
-  var num=it.num||0;
-  if(!num||state.rows.some(function(r){return r.num===num;})){var max=0;state.rows.forEach(function(r){if(r.num>max)max=r.num;});num=max+1;}
-  var row=newRow(num);
-  ['operation','conditions','aspect','impact','aspectType'].forEach(function(k){row[k]=ctx[k];});
-  row.clarify=!!(it.clarify||f.clarify);row.clarifyText=f.clarifyText||f.missing||'';
-  row.imported=true;row.srcSig=s;row.srcHash=h;row.srcName='Реестр аспектов';
-  state.rows.push(row);taken[s]=row;added++;
+function renderCondMap(){
+ var box=$('condMap');if(!box)return;
+ condProcs=[];
+ var by={};
+ state.rows.forEach(function(r){
+  var p=(r.operation||'').trim();if(!p)return;
+  var k=p.toLowerCase();
+  if(!by[k])by[k]={name:p,conds:{}};
+  var c=r.conditions||'normal';
+  (by[k].conds[c]=by[k].conds[c]||[]).push(r.num);
  });
- state.rows.sort(function(a,b){return a.num-b.num;});
- refreshTabs();saveOwn();
- jsonMsg('Импорт завершен. Перенесено записей: '+added+'. Уже в реестре: '+skipped+'. Требует сравнения: '+changed+'. Блоки с привезенными данными свернуты, блок вопросов этого шага раскрыт.');
- if(pendingQueue.length)openNextCompare();else showScreen('screen-work');
- resizeIframe();
-}
-function openNextCompare(){
- var pc=pendingQueue.shift();if(!pc){showScreen('screen-work');return;}
- pendingCmp=pc;
- var rows='';
- [['operation','Операция'],['conditions','Условия'],['aspect','Аспект'],['impact','Воздействие'],['aspectType','Тип аспекта']].forEach(function(p){
-  var cur=pc.row[p[0]]||'';var srcv=pc.ctx[p[0]]||'';
-  if(p[0]==='conditions'){cur=condLabel(cur);srcv=condLabel(srcv);}
-  if(p[0]==='aspectType'){cur=typeLabel(cur);srcv=typeLabel(srcv);}
-  if(String(cur)===String(srcv))return;
-  rows+='<tr><th>'+p[1]+'</th><td>'+esc(cur||'(пусто)')+'</td><td>'+esc(srcv||'(пусто)')+'</td></tr>';
+ var keys=Object.keys(by);
+ if(!keys.length){box.innerHTML='<div class="note-box">Карта условий появится, когда вы укажете процесс в первой записи: по каждому процессу видны три режима работы и то, что по ним уже собрано.</div>';return;}
+ var h='';
+ keys.forEach(function(k){
+  var idx=condProcs.length;
+  condProcs.push(by[k]);
+  h+='<div class="proc-card"><div class="proc-head">'+esc(by[k].name)+': три режима работы</div><div class="cond-tiles">';
+  CONDITIONS.forEach(function(c){
+   var nums=by[k].conds[c[0]]||[];
+   var m=markFind(by[k].name,c[0]);
+   var cls=nums.length?'has':(m?'none':'');
+   h+='<div class="cond-tile '+cls+'"><span class="ct-name">'+esc(c[1])+'</span>';
+   h+='<span class="ct-state">'+(nums.length?'записи: '+nums.join(', '):(m?'отдельного аспекта нет':'записей пока нет'))+'</span>';
+   if(nums.length)h+='<button type="button" class="ex-btn" onclick="openNum('+nums[0]+')">Открыть запись</button> ';
+   h+='<button type="button" class="ex-btn" onclick="addRowForProc('+idx+',\''+c[0]+'\')">Добавить запись</button> ';
+   if(!nums.length)h+='<button type="button" class="ex-btn" onclick="toggleMarkProc('+idx+',\''+c[0]+'\')">'+(m?'Снять отметку':'Отметить: аспекта нет')+'</button>';
+   h+='</div>';
+  });
+  h+='</div></div>';
  });
- $('cmpBox').innerHTML='<table class="cmp-table"><thead><tr><th>Поле</th><th>Моя запись '+pc.row.num+'</th><th>В реестре аспектов</th></tr></thead><tbody>'+rows+'</tbody></table>';
- showScreen('screen-compare');
+ box.innerHTML=h;
 }
-function afterCmp(){pendingCmp=null;if(pendingQueue.length)openNextCompare();else{refreshTabs();saveOwn();showScreen('screen-work');}}
-function cmpKeep(){if(pendingCmp){pendingCmp.row.srcHash=pendingCmp.h;}afterCmp();}
-function cmpUpdate(){
- if(pendingCmp){
-  var r=pendingCmp.row;
-  ['operation','conditions','aspect','impact','aspectType'].forEach(function(k){r[k]=pendingCmp.ctx[k];});
-  if(pendingCmp.clarifyText)r.clarifyText=pendingCmp.clarifyText;
-  r.clarify=r.clarify||pendingCmp.clarify;
-  r.srcHash=pendingCmp.h;r.needsReview=true;
-  var body=bodiesById[r.num];
-  if(body){body.remove();delete bodiesById[r.num];refreshTabs();}
- }
- afterCmp();
+function addRowForProc(idx,cond){var p=condProcs[idx];if(!p)return;addRowFor(p.name,cond);}
+function toggleMarkProc(idx,cond){var p=condProcs[idx];if(!p)return;toggleMark(p.name,cond);}
+function openNum(num){state.activeNum=num;applyActive();saveOwn();window.scrollTo(0,0);resizeIframe();}
+function addRowFor(proc,cond){var r=newRow();r.operation=proc;r.conditions=cond;state.rows.push(r);state.activeNum=r.num;refreshTabs();saveOwn();var el=$('f-'+r.num+'-aspect');if(el)el.focus();}
+function toggleMark(proc,cond){
+ var m=markFind(proc,cond);
+ if(m){state.marks=state.marks.filter(function(x){return x!==m;});}
+ else{var note=prompt('Почему для процесса «'+proc+'» в этих условиях нет отдельного аспекта? Причина попадет в форму и в документы.');if(note===null)return;state.marks.push({process:proc.toLowerCase(),condition:cond,note:note});}
+ saveOwn();renderCondMap();
 }
-function cmpCopy(){
- if(pendingCmp){
-  var max=0;state.rows.forEach(function(r){if(r.num>max)max=r.num;});
-  var row=newRow(max+1);
-  ['operation','conditions','aspect','impact','aspectType'].forEach(function(k){row[k]=pendingCmp.ctx[k];});
-  row.clarify=pendingCmp.clarify;row.clarifyText=pendingCmp.clarifyText;
-  row.imported=true;row.srcSig=pendingCmp.row.srcSig;row.srcHash=pendingCmp.h;row.srcName='Реестр аспектов';
-  state.rows.push(row);
- }
- afterCmp();
-}
-function clearReview(num){state.rows.forEach(function(r){if(r.num===num)r.needsReview=false;});refreshTabs();saveOwn();}
 
 /* ========== ВКЛАДКИ И ЗАПИСИ ========== */
 function startWork(){
@@ -610,11 +508,11 @@ function refreshTabs(){
  });
  var add=document.createElement('button');add.type='button';add.className='tab-add';add.textContent='Добавить запись';
  add.onclick=function(){addRow(false);};bar.appendChild(add);
- applyActive();
+ applyActive();renderCondMap();
 }
 function applyActive(){state.rows.forEach(function(r){var p=bodiesById[r.num],t=$('tab-'+r.num);if(p)p.hidden=r.num!==state.activeNum;if(t)t.setAttribute('aria-selected',r.num===state.activeNum?'true':'false');});}
-function addRow(first){var max=0;state.rows.forEach(function(r){if(r.num>max)max=r.num;});var r=newRow(max+1);state.rows.push(r);state.activeNum=r.num;refreshTabs();saveOwn();if(!first){var el=$('f-'+r.num+'-operation');if(el)el.focus();}resizeIframe();}
-function deleteRow(num){var r=null;state.rows.forEach(function(x){if(x.num===num)r=x;});if(!r)return;if((r.rankNote||r.q1)&&!confirm('Удалить запись '+r.num+'? Ответы и обоснование будут потеряны.'))return;state.rows=state.rows.filter(function(x){return x.num!==num;});if(state.activeNum===num)state.activeNum=state.rows.length?state.rows[0].num:null;refreshTabs();saveOwn();resizeIframe();}
+function addRow(first){var r=newRow();state.rows.push(r);state.activeNum=r.num;refreshTabs();saveOwn();if(!first){var el=$('f-'+r.num+'-operation');if(el)el.focus();}resizeIframe();}
+function deleteRow(num){var r=null;state.rows.forEach(function(x){if(x.num===num)r=x;});if(!r)return;if((r.aspect||r.impact)&&!confirm('Удалить запись '+r.num+'? Введенный текст будет потерян.'))return;state.rows=state.rows.filter(function(x){return x.num!==num;});if(state.activeNum===num)state.activeNum=state.rows.length?state.rows[0].num:null;refreshTabs();saveOwn();resizeIframe();}
 function exBtn(id){return '<button type="button" class="ex-btn" aria-expanded="false" onclick="semExample(this)">Показать пример</button><div class="ex-box" id="ex-'+id+'"></div>';}
 function buildRow(r){
  var panel=document.createElement('div');panel.className='tab-panel';panel.id='panel-'+r.num;
@@ -625,156 +523,115 @@ function buildRow(r){
  del.onclick=function(){deleteRow(r.num);};
  head.appendChild(left);head.appendChild(del);panel.appendChild(head);
  var b=document.createElement('div');var h='';
- if(r.imported)h+='<div class="imp-note">Запись импортирована из шага «'+esc(r.srcName||'Реестр аспектов')+'» под своим номером. Ее блок свернут, если данные на месте; поля открыты для правок: правьте здесь и при необходимости обновите запись в источнике, чтобы версии не разошлись.</div>';
- var ctxOpen=ctxIncomplete(r);
- var stepOpen=stepIncomplete(r);
- h+='<details class="blk" id="blk-ctx-'+r.num+'"'+(ctxOpen?' open':'')+'><summary>Запись из реестра аспектов<span class="blk-tag">'+(ctxOpen?'заполните пропуски':'данные на месте, свернуто')+'</span></summary><div class="blk-body">';
- h+='<div class="field"><label for="f-'+r.num+'-operation">Операция или процесс <span class="req">(обязательное поле)</span></label><input type="text" id="f-'+r.num+'-operation" value="'+esc(r.operation)+'">'+exBtn(r.num+'-operation')+'</div>';
- h+='<div class="field"><label for="f-'+r.num+'-conditions">Условия работы</label><select id="f-'+r.num+'-conditions">'+CONDITIONS.map(function(c){return '<option value="'+c[0]+'"'+(r.conditions===c[0]?' selected':'')+'>'+c[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-conditions')+'</div>';
- h+='<div class="field"><label for="f-'+r.num+'-aspect">Экологический аспект <span class="req">(обязательное поле)</span></label><input type="text" id="f-'+r.num+'-aspect" value="'+esc(r.aspect)+'">'+exBtn(r.num+'-aspect')+'</div>';
- h+='<div class="field"><label for="f-'+r.num+'-impact">Воздействие на среду <span class="req">(обязательное поле)</span></label><input type="text" id="f-'+r.num+'-impact" value="'+esc(r.impact)+'">'+exBtn(r.num+'-impact')+'</div>';
- h+='<div class="field"><label for="f-'+r.num+'-aspectType">Тип аспекта</label><select id="f-'+r.num+'-aspectType">'+TYPES.map(function(t){return '<option value="'+t[0]+'"'+(r.aspectType===t[0]?' selected':'')+'>'+t[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-aspectType')+'</div>';
- h+='</div></details>';
- h+='<details class="blk" id="blk-step-'+r.num+'"'+(stepOpen?' open':'')+'><summary>Оценка на этом шаге: вопросы, обоснование, основания<span class="blk-tag">'+(stepOpen?'есть пустые поля':'шаг заполнен, свернуто')+'</span></summary><div class="blk-body">';
- h+='<div class="field"><label for="f-'+r.num+'-q1">По результатам проверки установлены применимые требования к этому аспекту или связанным действиям?</label><select id="f-'+r.num+'-q1">'+Q1.map(function(o){return '<option value="'+o[0]+'"'+(r.q1===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-q1')+'</div>';
- h+='<div class="field" id="wrap-'+r.num+'-q2" style="'+(r.q1==='yes'?'':'display:none')+'"><label for="f-'+r.num+'-q2">Выполнение этих требований подтверждено доступными сведениями?</label><select id="f-'+r.num+'-q2">'+Q2.map(function(o){return '<option value="'+o[0]+'"'+(r.q2===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-q2')+'</div>';
- h+='<div class="field" id="wrap-'+r.num+'-q3" style="'+(r.q1==='yes'&&r.q2==='full'?'':'display:none')+'"><label for="f-'+r.num+'-q3">Выполнение зависит от конкретных технических или организационных мер?</label><select id="f-'+r.num+'-q3">'+Q3.map(function(o){return '<option value="'+o[0]+'"'+(r.q3===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-q3')+'</div>';
- h+='<div class="field" id="wrap-'+r.num+'-measures" style="'+(r.q3==='yes'?'':'display:none')+'"><label for="f-'+r.num+'-measures">Какие меры обеспечивают выполнение требования</label><input type="text" id="f-'+r.num+'-measures" value="'+esc(r.measures)+'">'+exBtn(r.num+'-measures')+'<div class="hint">Назовите оборудование, действия или правила работы. Измерения показывают результат, но не объясняют, за счет чего он достигается.</div></div>';
- h+='<details class="blk"><summary>Чек-лист для обоснования</summary><div class="blk-body"><ul>'+
-  '<li>Класс опасности вещества: к какому классу относится и установлен ли он; если класс не определен, запишите это как вопрос, а не как вывод.</li>'+
-  '<li>Валовый выброс, сброс или объем отхода за год и его доля в общем объеме предприятия: заметная доля усиливает обоснование, ничтожная - ослабляет.</li>'+
-  '<li>Вероятность превышения норматива или лимита: как часто возможны отклонения и что показывают данные мониторинга.</li>'+
-  '<li>Юридические последствия отступления: что грозит при отклонении от норм, от штрафа до приостановки деятельности или ущерба людям и водному объекту.</li>'+
-  '<li>Масштаб воздействия: в пределах площадки, за ее пределами, чувствительные природные объекты.</li>'+
-  '</ul><div class="hint">Это опора для обоснования, а не поля формы: выводы запишите своими словами в поле ниже. Конструктор не использует баллы и пороги. Если методика вашего предприятия применяет балльную оценку, выполните ее отдельно и назовите методику в обосновании: расчет конструктора от этого не меняется.</div></div></details>';
- h+='<div class="field"><label for="f-'+r.num+'-rankNote">Обоснование ранга <span class="req">(обязательное поле)</span></label><textarea id="f-'+r.num+'-rankNote">'+esc(r.rankNote)+'</textarea>'+exBtn(r.num+'-rankNote')+'<div class="hint">Одно-два предложения: почему такой ранг и что за ним стоит.</div></div>';
- h+='<div class="field"><label for="f-'+r.num+'-ecoGround">Экологические основания и сигналы сверх ранга</label><select id="f-'+r.num+'-ecoGround">'+ECO.map(function(o){return '<option value="'+o[0]+'"'+(r.ecoGround===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-ecoGround')+'<div class="hint">Ранг 3 или 4 не отменяет значимость, если подтверждены тяжелые, длительные или выходящие за площадку последствия, либо есть сигнал стороны или надзора.</div></div>';
- h+='<div class="field" id="wrap-'+r.num+'-ecoGroundNote" style="'+(r.ecoGround?'':'display:none')+'"><label for="f-'+r.num+'-ecoGroundNote">Основание или что проверяется</label><input type="text" id="f-'+r.num+'-ecoGroundNote" value="'+esc(r.ecoGroundNote)+'">'+exBtn(r.num+'-ecoGroundNote')+'<div class="hint">Ссылка на данные мониторинга, заключение эксперта, обращение стороны или предписание.</div></div>';
- h+='</div></details>';
- h+='<div class="rank-panel" id="res-'+r.num+'"></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-operation">Операция или процесс <span class="req">(обязательное поле)</span></label><input type="text" id="f-'+r.num+'-operation" value="'+esc(r.operation)+'">'+exBtn(r.num+'-operation')+'<div class="hint">Что делают на участке. В форме реестра это заголовок группы строк.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-conditions">Условия работы <span class="req">(обязательное поле)</span></label><select id="f-'+r.num+'-conditions">'+CONDITIONS.map(function(c){return '<option value="'+c[0]+'"'+(r.conditions===c[0]?' selected':'')+'>'+c[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-conditions')+'<div class="hint">На каждые условия добавьте отдельную запись: так реестр видит разницу между режимом и инцидентом.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-aspect">Экологический аспект <span class="req">(обязательное поле)</span></label><input type="text" id="f-'+r.num+'-aspect" value="'+esc(r.aspect)+'">'+exBtn(r.num+'-aspect')+'<div class="hint">Источник влияния на среду.</div><div class="live-hint" id="ha-'+r.num+'"></div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-impact">Воздействие на среду <span class="req">(обязательное поле)</span></label><input type="text" id="f-'+r.num+'-impact" value="'+esc(r.impact)+'">'+exBtn(r.num+'-impact')+'<div class="hint">Что меняется в среде.</div><div class="live-hint" id="hi-'+r.num+'"></div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-aspectType">Тип аспекта <span class="req">(обязательное поле)</span></label><select id="f-'+r.num+'-aspectType">'+TYPES.map(function(t){return '<option value="'+t[0]+'"'+(r.aspectType===t[0]?' selected':'')+'>'+t[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-aspectType')+'<div class="hint">Прямой - предприятие управляет аспектом само. Непрямой - аспект проявляется через подрядчиков, поставщиков или пользователей продукции.</div></div>';
  h+='<div class="check-row"><input type="checkbox" id="f-'+r.num+'-clarify"'+(r.clarify?' checked':'')+'><label for="f-'+r.num+'-clarify" style="margin:0;font-weight:600">Часть сведений в этой записи еще уточняется</label></div>';
- h+='<div class="field" id="wrap-'+r.num+'-clarifyText" style="'+(r.clarify?'':'display:none')+'"><label for="f-'+r.num+'-clarifyText">Что уточнить и где</label><textarea id="f-'+r.num+'-clarifyText">'+esc(r.clarifyText)+'</textarea>'+exBtn(r.num+'-clarifyText')+'</div>';
+ h+='<div class="field" id="wrap-'+r.num+'-clarifyText" style="'+(r.clarify?'':'display:none')+'"><label for="f-'+r.num+'-clarifyText">Что уточнить и где</label><textarea id="f-'+r.num+'-clarifyText">'+esc(r.clarifyText)+'</textarea>'+exBtn(r.num+'-clarifyText')+'<div class="hint">Запишите вопрос к каждому уточняемому полю: он выйдет в форму и в Word со статусом уточнения.</div></div>';
+ h+='<details class="blk"><summary>Дополнить описание</summary><div class="blk-body">';
+ h+='<div class="field"><label for="f-'+r.num+'-scope">Область рассмотрения</label><input type="text" id="f-'+r.num+'-scope" value="'+esc(r.scope)+'">'+exBtn(r.num+'-scope')+'</div>';
+ h+='<div class="field"><label for="f-'+r.num+'-inputs">Входы и выходы процесса</label><input type="text" id="f-'+r.num+'-inputs" value="'+esc(r.inputs)+'">'+exBtn(r.num+'-inputs')+'</div>';
+ h+='<div class="field"><label for="f-'+r.num+'-management">Управление или влияние</label><input type="text" id="f-'+r.num+'-management" value="'+esc(r.management)+'">'+exBtn(r.num+'-management')+'</div>';
+ h+='<div class="field"><label for="f-'+r.num+'-basis">Основание записи</label><input type="text" id="f-'+r.num+'-basis" value="'+esc(r.basis)+'">'+exBtn(r.num+'-basis')+'<div class="hint">Если отметки об уточнении нет, основание попадет в примечания формы.</div></div>';
+ h+='</div></details>';
  h+='<p class="status-line" id="st-'+r.num+'"></p>';
  b.innerHTML=h;panel.appendChild(b);
  var EX={operation:'Пример: пересыпание сырья, варка стекломассы, очистка сточных вод.',
   conditions:'Пример: обычная работа - пересыпка по графику; пуск и останов - прогрев печи; аварии и инциденты - просыпь при разрыве рукава.',
-  aspect:'Пример: выброс пыли в атмосферный воздух при пересыпании сырья.',
-  impact:'Пример: загрязнение атмосферного воздуха.',
-  aspectType:'Пример: прямой - выброс из своей трубы; непрямой - перевозка отходов подрядчиком.',
-  q1:'Пример: ПДВ для выбросов, договор с Водоканалом по сбросам, нормативы образования отходов - требования установлены. Если проверка не нашла требований - выберите второй вариант.',
-  q2:'Пример: протокол контроля в пределах норматива - выполняются полностью; превышение по одному показателю - частично; претензия Водоканала - не выполняются.',
-  q3:'Пример: газоочистка, замена фильтров по графику, журналы контроля - меры есть; воздействие мало и обходится без специальных мер - второй вариант.',
-  measures:'Пример: укрытие узла пересыпки и порядок уборки просыпей; локальные очистные сооружения; график замены фильтров.',
-  rankNote:'Пример: превышение по нефтепродуктам подтверждено анализом и претензией, требование договора не выполняется - ранг 1.',
-  ecoGround:'Пример: заключение эколога о длительном накоплении тяжелых металлов в почве - основание сверх ранга; жалоба жителей на запах без замеров - сигнал на проверке.',
-  ecoGroundNote:'Пример: протокол замеров почвы от 12.04; обращение жителей от 03.05, замеры запланированы.',
-  clarifyText:'Пример: где взять результаты последнего контроля; кто подтвердит состав просыпей.'};
+  aspect:'Пример: выброс пыли в атмосферный воздух при пересыпании сырья; образование просыпей шихты.',
+  impact:'Пример: загрязнение атмосферного воздуха; загрязнение почвы на участке пересыпки.',
+  aspectType:'Пример: прямой - выброс из своей трубы; непрямой - перевозка отходов подрядчиком или электроэнергия с внешней генерации.',
+  clarifyText:'Пример: условия - когда усиливается пыление; основание - где взять результаты контроля.',
+  scope:'Пример: площадка завода, запись относится к участку пересыпания.',
+  inputs:'Пример: используют сыпучее сырье, часть пыли поступает в атмосферный воздух.',
+  management:'Пример: предприятие само устанавливает порядок работы на участке.',
+  basis:'Пример: данные производственного контроля, договор, карточка наблюдения.'};
  Object.keys(EX).forEach(function(k){var box=b.querySelector('[id="ex-'+r.num+'-'+k+'"]');if(box)box.textContent=EX[k];});
- ['operation','aspect','impact'].forEach(function(k){
+ ['operation','aspect','impact','scope','inputs','management','basis','clarifyText'].forEach(function(k){
   var el=b.querySelector('[id="f-'+r.num+'-'+k+'"]');
-  if(el)el.addEventListener('input',function(e){r[k]=e.target.value;if(k==='operation'){var nm=$('tabname-'+r.num);if(nm)nm.textContent=r.operation.trim()?r.operation.trim():'новая запись';}saveOwn();autoBlock(r,'ctx');syncRow(r);});
+  if(el)el.addEventListener('input',function(e){r[k]=e.target.value;if(k==='operation'){var nm=$('tabname-'+r.num);if(nm)nm.textContent=r.operation.trim()?r.operation.trim():'новая запись';renderCondMap();}if(k==='aspect'||k==='impact')showLive(r);saveOwn();syncStatus(r);});
  });
  ['conditions','aspectType'].forEach(function(k){
   var el=b.querySelector('[id="f-'+r.num+'-'+k+'"]');
-  if(el)el.addEventListener('change',function(e){r[k]=e.target.value;saveOwn();autoBlock(r,'ctx');syncRow(r);});
- });
- ['measures','rankNote','ecoGroundNote','clarifyText'].forEach(function(k){
-  var el=b.querySelector('[id="f-'+r.num+'-'+k+'"]');
-  if(el)el.addEventListener('input',function(e){r[k]=e.target.value;saveOwn();autoBlock(r,'step');syncRow(r);});
- });
- ['q1','q2','q3','ecoGround'].forEach(function(k){
-  var el=b.querySelector('[id="f-'+r.num+'-'+k+'"]');
-  if(el)el.addEventListener('change',function(e){
-   r[k]=e.target.value;
-   if(k==='q1'&&r.q1!=='yes'){r.q2='';r.q3='';r.measures='';}
-   if(k==='q2'&&r.q2!=='full'){r.q3='';r.measures='';}
-   if(k==='q3'&&r.q3!=='yes'){r.measures='';}
-   ['q2','q3','measures'].forEach(function(k2){var el2=b.querySelector('[id="f-'+r.num+'-'+k2+'"]');if(el2)el2.value=r[k2];});
-   semKeepPlace(el,function(){
-    var w2=b.querySelector('[id="wrap-'+r.num+'-q2"]');if(w2)w2.style.display=r.q1==='yes'?'':'none';
-    var w3=b.querySelector('[id="wrap-'+r.num+'-q3"]');if(w3)w3.style.display=(r.q1==='yes'&&r.q2==='full')?'':'none';
-    var wm=b.querySelector('[id="wrap-'+r.num+'-measures"]');if(wm)wm.style.display=r.q3==='yes'?'':'none';
-    var we=b.querySelector('[id="wrap-'+r.num+'-ecoGroundNote"]');if(we)we.style.display=r.ecoGround?'':'none';
-   });
-   saveOwn();autoBlock(r,'step');syncRow(r);
-  });
+  if(el)el.addEventListener('change',function(e){r[k]=e.target.value;renderCondMap();saveOwn();syncStatus(r);});
  });
  var cb=b.querySelector('[id="f-'+r.num+'-clarify"]');
  if(cb)cb.addEventListener('change',function(e){
   r.clarify=e.target.checked;
   semKeepPlace(cb,function(){var w=b.querySelector('[id="wrap-'+r.num+'-clarifyText"]');if(w)w.style.display=r.clarify?'':'none';});
-  saveOwn();syncRow(r);
+  saveOwn();syncStatus(r);
  });
- syncRow(r,b);
+ showLive(r,b);syncStatus(r,b);
  return panel;
 }
-function syncRow(r,root){
+function showLive(r,root){
  root=root||bodiesById[r.num];if(!root)return;
- var rp=root.querySelector('[id="res-'+r.num+'"]');
- if(rp){
-  var res=computeResult(r);
-  var h='<p><span class="rank-chip r">Ранг: '+(res.rank===null?'не определен':res.rank)+'</span><span class="rank-chip '+sigChip(res.sig)+'">'+sigLabel(res.sig)+'</span></p>';
-  h+='<p>Почему так: '+esc(res.why)+'.</p>';
-  if(res.rank===1)h+='<p>Требования не выполняются: разберите причину и определите дальнейшие действия. Цель и программа автоматически не назначаются.</p>';
-  if(res.rank===2)h+='<p>Выполнение держится на мерах: держите их в рабочем состоянии и контролируйте.</p>';
-  if(res.rank===3)h+='<p>Выполнение без специальных мер: дальнейшие действия определяют с учетом требований и условий работы.</p>';
-  if(res.rank===4)h+='<p>Применимые требования не выявлены: вернитесь к оценке при новых нормативах, сигналах или изменениях технологии.</p>';
-  if(res.rank===null)h+='<p>Сведений для ранга не хватает: ответьте на оставшиеся вопросы или отметьте запись как уточняемую.</p>';
-  if(r.ecoGround==='yes'&&!r.ecoGroundNote.trim())h+='<p>Добавьте основание экологической значимости: без него вывод опирается только на отметку.</p>';
-  if(res.rank!==null&&!r.rankNote.trim())h+='<p>Добавьте обоснование ранга: без него запись выйдет с пометкой о пропуске.</p>';
-  if(r.needsReview)h+='<p><button type="button" class="btn-small" onclick="clearReview('+r.num+')">Отметить актуальной</button> Исходная запись изменилась: проверьте ответы и обоснование.</p>';
-  rp.innerHTML=h;
- }
- var st=root.querySelector('[id="st-'+r.num+'"]');
- if(st){
-  var m=[];
-  if(ctxIncomplete(r))m.push('данные записи');
-  if(stepIncomplete(r))m.push('вопросы или обоснование этого шага');
-  if(m.length)st.textContent='Открыты блоки, где не хватает: '+m.join(', ')+'. Остальное свернуто.';
-  else if(r.clarify)st.textContent='Все блоки заполнены и свернуты. Запись готова к выгрузке с пометкой: часть сведений уточняется.';
-  else st.textContent='Все блоки заполнены и свернуты. Запись готова к выгрузке.';
- }
- var ctxTag=root.querySelector('[id="blk-ctx-'+r.num+'"] summary .blk-tag');
- if(ctxTag)ctxTag.textContent=ctxIncomplete(r)?'заполните пропуски':'данные на месте, свернуто';
- var stepTag=root.querySelector('[id="blk-step-'+r.num+'"] summary .blk-tag');
- if(stepTag)stepTag.textContent=stepIncomplete(r)?'есть пустые поля':'шаг заполнен, свернуто';
+ var ha=root.querySelector('[id="ha-'+r.num+'"]'),hi=root.querySelector('[id="hi-'+r.num+'"]');
+ var ta=aspectHint(r);if(ha){ha.textContent=ta;ha.classList.toggle('show',!!ta);}
+ var ti=impactHint(r);if(hi){hi.textContent=ti;hi.classList.toggle('show',!!ti);}
+}
+function missingOf(r){var m=[];if(!r.operation.trim())m.push('операция');if(!r.aspect.trim())m.push('аспект');if(!r.impact.trim())m.push('воздействие');return m;}
+function syncStatus(r,root){
+ root=root||bodiesById[r.num];if(!root)return;
+ var el=root.querySelector('[id="st-'+r.num+'"]');if(!el)return;
+ var m=missingOf(r);
+ if(m.length)el.textContent='Осталось заполнить: '+m.join(', ')+'. Остальные поля можно дополнить позже.';
+ else if(r.clarify)el.textContent='Запись готова к выгрузке с пометкой: часть сведений уточняется.';
+ else el.textContent='Запись готова к выгрузке.';
 }
 
 /* ========== ПРЕДПРОСМОТР ========== */
+function groupRows(){
+ var order=[],by={};
+ state.rows.forEach(function(r){var p=r.operation.trim()||'Процесс не указан';if(!by[p]){by[p]={};order.push(p);}var c=r.conditions||'normal';if(!by[p][c])by[p][c]=[];by[p][c].push(r);});
+ return{order:order,by:by};
+}
+function noteOf(r){if(r.clarify)return 'уточняется: '+(r.clarifyText||'вопрос еще не записан');return r.basis||'-';}
+function formTableHtml(){
+ var g=groupRows();
+ var h='<div class="scroll-x"><table class="reg"><thead><tr><th>№ п/п</th><th>Наименование экологического аспекта</th><th>Основные характеристики (воздействие на среду)</th><th>Возможности регулирования: прямой / непрямой</th><th>Количественные характеристики: факт</th><th>Количественные характеристики: норматив</th><th>Приоритетность (экспертная оценка)</th><th>Примечания</th></tr></thead><tbody>';
+ g.order.forEach(function(p){
+  h+='<tr><td class="grp" colspan="8">'+esc(p)+'</td></tr>';
+  CONDITIONS.forEach(function(c){
+   h+='<tr><td class="cond" colspan="8">'+esc(c[1])+'</td></tr>';
+   var list=(g.by[p]&&g.by[p][c[0]])||[];
+   if(!list.length){h+='<tr><td></td><td colspan="7" class="tbd">'+esc(markNote(p,c[0]))+'</td></tr>';}
+   list.forEach(function(r){
+    h+='<tr><td>'+r.num+'</td><td>'+esc(r.aspect||'-')+'</td><td>'+esc(r.impact||'-')+'</td><td>'+esc(typeLabel(r.aspectType))+'</td><td class="tbd">в редакторе</td><td class="tbd">в редакторе</td><td class="tbd">в редакторе</td><td>'+esc(noteOf(r))+'</td></tr>';
+   });
+  });
+ });
+ h+='</tbody></table></div>';
+ return h;
+}
 function openPreview(){renderPreview();showScreen('screen-preview');}
 function renderPreview(){
- var errs=[];state.rows.forEach(function(r){var m=[];if(!r.operation.trim())m.push('операция');if(!r.aspect.trim())m.push('аспект');if(!r.impact.trim())m.push('воздействие');if(m.length)errs.push('Запись '+r.num+': не заполнено - '+m.join(', ')+'.');});
+ var errs=[];state.rows.forEach(function(r){var m=missingOf(r);if(m.length)errs.push('Запись '+r.num+': осталось заполнить - '+m.join(', ')+'.');});
  var errBox=$('errorsBox');errBox.style.display=errs.length?'block':'none';
  if(errs.length)errBox.innerHTML='<strong>Незавершенные записи.</strong><ul>'+errs.map(function(e){return '<li>'+esc(e)+'</li>';}).join('')+'</ul>';
  $('downloadBtn').disabled=!state.rows.length;
- $('downloadNote').textContent=state.rows.length?'Черновик можно скачать даже с пропусками: пустые ячейки помечены для заполнения в редакторе.':'Добавьте хотя бы одну запись.';
- var cnt={total:state.rows.length,sig:0,ins:0,inc:0,noNote:0,rev:0};
- state.rows.forEach(function(r){var res=computeResult(r);if(res.sig==='significant')cnt.sig++;if(res.sig==='notsignificant')cnt.ins++;if(res.sig==='incomplete')cnt.inc++;if(!r.rankNote.trim())cnt.noNote++;if(r.needsReview)cnt.rev++;});
- var nt=[];
- if(cnt.noNote)nt.push('Обоснование ранга не заполнено в записях: '+cnt.noNote+'. В документе они выйдут с пометкой, что обоснование предстоит добавить.');
- if(cnt.rev)nt.push('Записей с пометкой о пересмотре: '+cnt.rev+'. Откройте их и снимите пометку после проверки.');
- var ntBox=$('noticesBox');ntBox.style.display=nt.length?'block':'none';
- if(nt.length)ntBox.innerHTML='<strong>Что дополнить.</strong><ul>'+nt.map(function(n){return '<li>'+esc(n)+'</li>';}).join('')+'</ul>';
- var h='<div class="note-box accent">Всего записей: '+cnt.total+'. Значимых: '+cnt.sig+'. Не значимых: '+cnt.ins+'. С незавершенной оценкой: '+cnt.inc+'. Счетчики считаются по итоговой значимости, а не по номеру ранга.</div>';
- h+='<h2>Таблица значимости</h2><div class="scroll-x"><table class="reg"><thead><tr><th>№</th><th>Процесс</th><th>Условия</th><th>Аспект</th><th>Воздействие</th><th>Тип</th><th>Требования</th><th>Выполнение</th><th>Меры</th><th>Ранг</th><th>Значимость</th><th>Обоснование</th></tr></thead><tbody>';
- state.rows.forEach(function(r){
-  var res=computeResult(r);
-  h+='<tr><td>'+r.num+'</td><td>'+esc(r.operation||'-')+'</td><td>'+esc(condLabel(r.conditions))+'</td><td>'+esc(r.aspect||'-')+'</td><td>'+esc(r.impact||'-')+'</td><td>'+esc(typeLabel(r.aspectType))+'</td><td>'+esc(qLabel(Q1,r.q1))+'</td><td>'+esc(r.q1==='yes'?qLabel(Q2,r.q2):'-')+'</td><td>'+esc(r.q2==='full'?qLabel(Q3,r.q3):'-')+'</td><td>'+(res.rank===null?'-':res.rank)+'</td><td>'+sigLabel(res.sig)+'</td><td>'+esc(r.rankNote||'-')+'</td></tr>';
- });
- h+='</tbody></table></div>';
+ $('downloadNote').textContent=state.rows.length?'Черновик можно скачать даже с пропусками: пустые ячейки формы помечены для заполнения в редакторе.':'Добавьте хотя бы одну запись.';
+ var gaps=conditionGaps();
+ var ntBox=$('noticesBox');
+ if(gaps.length){ntBox.style.display='block';ntBox.innerHTML='<strong>Условия работы.</strong><ul><li>Для процессов добавлены записи только об обычной работе: '+gaps.map(esc).join('; ')+'. Добавьте записи для пуска и останова, аварий и инцидентов или поставьте отметку, что отдельного аспекта для этих условий нет.</li></ul>';}
+ else ntBox.style.display='none';
  var clar=state.rows.filter(function(r){return r.clarify;});
+ var h='<div class="note-box accent">Записей: '+state.rows.length+'. Процессов в форме: '+groupRows().order.length+'. Записей с пометкой об уточнении: '+clar.length+'. Записей для нештатных условий: '+state.rows.filter(function(r){return r.conditions!=='normal';}).length+'.</div>';
+ h+='<h2>Форма реестра экологических аспектов</h2>'+formTableHtml();
  if(clar.length){
   h+='<h2>Что уточняется</h2><ul style="font-size:13px;padding-left:20px">';
   clar.forEach(function(r){h+='<li>Запись '+r.num+' ('+esc(r.operation||'операция не указана')+'): '+esc(r.clarifyText||'вопрос еще не записан')+'</li>';});
   h+='</ul>';
  }
- h+='<div class="note-box">В Word и Excel к таблице добавляются пустые колонки для редактора: количества факт и норматив, ссылка на нормативный документ, дата следующей переоценки. Конструктор сознательно не запрашивает их сейчас.</div>';
+ h+='<div class="note-box">В Word и Excel после таблицы идет блок полей для самостоятельного заполнения: количества факт и норматив, приоритетность, примечания, ссылки на источники и ответственный за сбор. Конструктор сознательно не запрашивает их сейчас.</div>';
  $('previewBox').innerHTML=h;resizeIframe();
 }
 function restartAll(){
- if(!confirm('Полная очистка: удалить записи оценки этого шага из браузера? Данные других шагов программы останутся.'))return;
+ if(!confirm('Полная очистка: удалить записи и отметки этого шага из браузера? Данные других шагов программы останутся.'))return;
  try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
- state={meta:{org:'',date:today(),author:''},rows:[],activeNum:null,rev:1};
+ state={meta:{org:'',date:today(),author:''},rows:[],nextNum:1,activeNum:null,rev:1,marks:[]};
  bodiesById={};$('panelsBox').innerHTML='';
  $('m-org').value='';$('m-date').value=state.meta.date;$('m-author').value='';$('saveStatus').textContent='';
  addRow(true);showScreen('screen-work');
@@ -783,51 +640,77 @@ function restartAll(){
 /* ========== WORD ========== */
 function xmlEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}
 function run(t,o){o=o||{};var r='';if(o.b)r+='<w:b/>';if(o.i)r+='<w:i/>';if(o.color)r+='<w:color w:val="'+o.color+'"/>';if(o.sz)r+='<w:sz w:val="'+o.sz+'"/><w:szCs w:val="'+o.sz+'"/>';return '<w:r>'+(r?'<w:rPr>'+r+'</w:rPr>':'')+'<w:t xml:space="preserve">'+xmlEsc(t)+'</w:t></w:r>';}
-function para(t,o){o=o||{};var p='';if(o.style)p+='<w:pStyle w:val="'+o.style+'"/>';if(o.before||o.after)p+='<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after||0)+'"/>';return '<w:p>'+(p?'<w:pPr>'+p+'</w:pPr>':'')+run(t,o)+'</w:p>';}
+function para(t,o){o=o||{};var p='';if(o.style)p+='<w:pStyle w:val="'+o.style+'"/>';if(o.before||o.after)p+='<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after||0)+'"/>';if(o.jc)p+='<w:jc w:val="'+o.jc+'"/>';return '<w:p>'+(p?'<w:pPr>'+p+'</w:pPr>':'')+run(t,o)+'</w:p>';}
 function paraMulti(t,o){return String(t==null?'':t).split(/\r?\n/).map(function(l){return para(l,o);}).join('');}
-function cell(w,x,f){return '<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(f?'<w:shd w:val="clear" w:color="auto" w:fill="'+f+'"/>':'')+'<w:vAlign w:val="top"/></w:tcPr>'+(x||'<w:p/>')+'</w:tc>';}
+function cell(w,x,f,span){return '<w:tc><w:tcPr>'+(span?'<w:gridSpan w:val="'+span+'"/>':'')+'<w:tcW w:w="'+w+'" w:type="dxa"/>'+(f?'<w:shd w:val="clear" w:color="auto" w:fill="'+f+'"/>':'')+'<w:vAlign w:val="top"/></w:tcPr>'+(x||'<w:p/>')+'</w:tc>';}
 var TBL='<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
 var CMAR='<w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar>';
-var RW=[500,1200,900,1400,1300,700,900,900,900,450,900,1300,800,800,900,620];
+var RW=[600,2400,2400,1300,1200,1200,1300,2170];
 var YELLOW='FFF2CC';
-function measuresText(r){if(r.q2!=='full')return '-';if(r.q3==='yes')return r.measures||'меры не описаны';if(r.q3==='no')return 'специальные меры не требуются';return '-';}
+function approvalXml(){
+ var AW=[8570,3000,3000];var rows='';
+ APPROVAL.forEach(function(role){rows+='<w:tr>'+cell(AW[0],para(role,{sz:18}))+cell(AW[1],para('',{sz:18}))+cell(AW[2],para('',{sz:18}))+'</w:tr>';});
+ return '<w:tbl><w:tblPr><w:tblW w:w="14570" w:type="dxa"/>'+TBL+CMAR+'<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+AW.map(function(w){return '<w:gridCol w:w="'+w+'"/>';}).join('')+'</w:tblGrid><w:tr>'+cell(AW[0],para('Роль',{b:true,sz:18}),'F8FAFC')+cell(AW[1],para('Подпись',{b:true,sz:18}),'F8FAFC')+cell(AW[2],para('Дата',{b:true,sz:18}),'F8FAFC')+'</w:tr>'+rows+'</w:tbl>';
+}
+function formTableXml(rows){
+ var g=(function(){var order=[],by={};rows.forEach(function(r){var p=r.operation.trim()||'Процесс не указан';if(!by[p]){by[p]={};order.push(p);}var c=r.conditions||'normal';if(!by[p][c])by[p][c]=[];by[p][c].push(r);});return{order:order,by:by};})();
+ var head='<w:tr>'+['№ п/п','Наименование экологического аспекта','Основные характеристики (воздействие на среду)','Возможности регулирования: прямой / непрямой','Количественные характеристики: факт','Количественные характеристики: норматив','Приоритетность (экспертная оценка)','Примечания'].map(function(t,i){return cell(RW[i],para(t,{b:true,sz:16}),'F8FAFC');}).join('')+'</w:tr>';
+ var body='';
+ g.order.forEach(function(p){
+  body+='<w:tr>'+cell(14570,para(p,{b:true,sz:16,jc:'center'}),'DDE3EA',8)+'</w:tr>';
+  CONDITIONS.forEach(function(c){
+   body+='<w:tr>'+cell(14570,para(c[1],{b:true,sz:16}),'F8FAFC',8)+'</w:tr>';
+   var list=(g.by[p]&&g.by[p][c[0]])||[];
+   if(!list.length){body+='<w:tr>'+cell(RW[0],para('',{sz:16}))+cell(13970,para(markNote(p,c[0]),{i:true,color:'6B7280',sz:16}),null,7)+'</w:tr>';}
+   list.forEach(function(r){
+    body+='<w:tr>'+cell(RW[0],para(String(r.num),{sz:16}))+cell(RW[1],paraMulti(r.aspect||'-',{sz:16}))+cell(RW[2],paraMulti(r.impact||'-',{sz:16}))+cell(RW[3],para(typeLabel(r.aspectType),{sz:16}))+cell(RW[4],para('',{sz:16}),YELLOW)+cell(RW[5],para('',{sz:16}),YELLOW)+cell(RW[6],para('',{sz:16}),YELLOW)+cell(RW[7],paraMulti(noteOf(r),{sz:16}))+'</w:tr>';
+   });
+  });
+ });
+ return '<w:tbl><w:tblPr><w:tblW w:w="14570" w:type="dxa"/>'+TBL+CMAR+'<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+RW.map(function(w){return '<w:gridCol w:w="'+w+'"/>';}).join('')+'</w:tblGrid>'+head+body+'</w:tbl>';
+}
 function buildDoc(rows,edu){
  var b=[];
- b.push(para(edu?'Оценка значимости экологических аспектов: учебный пример':'Реестр экологических аспектов: ранг и значимость. Проект',{style:'Title'}));
- b.push(para('Статус: '+(edu?'учебный пример на условных данных':'черновик на данных предприятия')+'. Дата оценки: '+(state.meta.date||today())+'. Оценил: '+(state.meta.author||'не указан')+'. Предприятие: '+(state.meta.org||'не указано')+'.',{i:true,color:'6B7280',sz:20,after:120}));
- b.push(para('Методика: оценка значимости экологических аспектов по рангам, учебная. Версия алгоритма: 3.0. Номера записей сквозные: они совпадают с номерами реестра аспектов и сохранятся в обязательствах, рисках, целях и плане.',{after:120}));
- b.push(para('Краткое правило: ранг 1 - требования установлены и не выполняются; ранг 2 - выполняются благодаря специальным мерам; ранг 3 - выполняются без специальных мер; ранг 4 - проверка завершена и применимые требования не выявлены; ранг не определен - сведений не хватает. Ранги 1 и 2 дают значимый аспект, ранги 3 и 4 - незначимый. Ранг 3 или 4 не отменяет значимость при подтвержденном экологическом основании или сигнале стороны и надзора. Ранг считается по ответам и не правится вручную, обоснование пишет специалист.',{after:200}));
- b.push(para('1. Таблица значимости',{style:'Heading1'}));
- var heads=['№','Процесс','Условия','Аспект','Воздействие','Тип','Требования','Выполнение','Специальные меры','Ранг','Значимость','Обоснование','Кол-во: факт','Кол-во: норматив','Нормативный документ','Дата переоценки'];
- var head='<w:tr>'+heads.map(function(t,i){return cell(RW[i],para(t,{b:true,sz:14}),'F8FAFC');}).join('')+'</w:tr>';
- var trs='';
- rows.forEach(function(r){
-  var res=computeResult(r);
-  trs+='<w:tr>'+cell(RW[0],para(String(r.num),{sz:14}))+cell(RW[1],paraMulti(r.operation||'-',{sz:14}))+cell(RW[2],para(condLabel(r.conditions),{sz:14}))+cell(RW[3],paraMulti(r.aspect||'-',{sz:14}))+cell(RW[4],paraMulti(r.impact||'-',{sz:14}))+cell(RW[5],para(typeLabel(r.aspectType),{sz:14}))+cell(RW[6],para(qLabel(Q1,r.q1),{sz:14}))+cell(RW[7],para(r.q1==='yes'?qLabel(Q2,r.q2):'-',{sz:14}))+cell(RW[8],para(measuresText(r),{sz:14}))+cell(RW[9],para(res.rank===null?'-':String(res.rank),{sz:14,b:true}))+cell(RW[10],para(sigLabel(res.sig),{sz:14}))+cell(RW[11],paraMulti(r.rankNote||'-',{sz:14}))+cell(RW[12],para('',{sz:14}),YELLOW)+cell(RW[13],para('',{sz:14}),YELLOW)+cell(RW[14],para('',{sz:14}),YELLOW)+cell(RW[15],para('',{sz:14}),YELLOW)+'</w:tr>';
- });
- b.push('<w:tbl><w:tblPr><w:tblW w:w="14470" w:type="dxa"/>'+TBL+CMAR+'<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+RW.map(function(w){return '<w:gridCol w:w="'+w+'"/>';}).join('')+'</w:tblGrid>'+head+trs+'</w:tbl>');
+ b.push(para(edu?'Реестр экологических аспектов: учебный пример':'Реестр экологических аспектов. Проект',{style:'Title'}));
+ b.push(para('Статус: '+(edu?'учебный пример на условных данных':'черновик первичных записей')+'. Дата: '+(state.meta.date||today())+'. Подготовил: '+(state.meta.author||'не указан')+'. Предприятие: '+(state.meta.org||'не указано')+'.',{i:true,color:'6B7280',sz:20,after:120}));
+ b.push(para('Номера записей сквозные на всю программу: они сохранятся в оценке значимости, обязательствах, рисках, целях и плане. Форма таблицы повторяет реестр экологических аспектов предприятия.',{after:200}));
+ b.push(para('Лист согласования',{style:'Heading1'}));
+ b.push(approvalXml());
+ b.push(para('1. Форма реестра',{style:'Heading1'}));
+ b.push(formTableXml(rows));
  var clar=rows.filter(function(r){return r.clarify;});
  if(clar.length){
   b.push(para('2. Сведения уточняются',{style:'Heading1'}));
-  clar.forEach(function(r){b.push(para('Запись '+r.num+' ('+(r.operation||'операция не указана')+'): '+(r.clarifyText||'вопрос еще не записан')+'. Известные ответы записи сохранены в таблице выше.',{after:60}));});
+  clar.forEach(function(r){b.push(para('Запись '+r.num+' ('+(r.operation||'операция не указана')+'): '+(r.clarifyText||'вопрос еще не записан')+'. Известный текст записи сохранен в таблице выше.',{after:60}));});
  }
  b.push(para((clar.length?'3':'2')+'. Поля для самостоятельного заполнения',{style:'Heading1'}));
- b.push(para('Количественные характеристики: факт и норматив по каждому аспекту. Впишите валовые выбросы или сбросы, массы отходов и пределы, с которыми сравниваете. В таблице эти ячейки отмечены цветом.',{after:60}));
- b.push(para('Нормативный документ: номер и дата документа, где закреплено требование: разрешение, ПДВ, договор, предписание.',{after:60}));
- b.push(para('Дата следующей переоценки: когда запись вернется на проверку независимо от изменений.',{after:60}));
- b.push(para('Документ содержит результат применения учебного правила к введенным и импортированным сведениям. Конструктор не проверяет достоверность источников и не подтверждает соответствие СЭМ стандарту. Пустые ячейки предназначены для заполнения в редакторе и не являются выводами. В следующем уроке проверьте применимые обязательства и при необходимости уточните оценки.',{i:true,color:'6B7280',sz:20,before:240}));
+ b.push(para('Количественные характеристики: факт и норматив. Впишите показатели по каждому аспекту: валовый выброс или сброс за год, масса отхода, объем потребления и предел, с которым сравниваете. В таблице эти ячейки отмечены цветом.',{after:60}));
+ b.push(para('Приоритетность: низкая, средняя или высокая. Проставьте после обсуждения записей с руководителями подразделений.',{after:60}));
+ b.push(para('Примечания: ссылки на источники данных, протоколы измерений, ответственный за сбор сведений и условия пересмотра записи.',{after:60}));
+ var gaps=conditionGaps();
+ if(gaps.length&&!edu)b.push(para('Обратите внимание: для операций добавлены записи только об обычной работе: '+gaps.join('; ')+'. Добавьте строки для пуска и останова, аварий и инцидентов или поясните, почему других условий нет.',{i:true,color:'92400E',sz:20,before:120}));
+ b.push(para('Документ содержит черновик первичных записей. Конструктор не проверяет достоверность источников и не подтверждает соответствие СЭМ стандарту. Пустые ячейки формы предназначены для заполнения в редакторе и не являются выводами.',{i:true,color:'6B7280',sz:20,before:240}));
  b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>'+b.join('')+'</w:body></w:document>';
 }
 /* ========== EXCEL ========== */
 function buildXls(rows){
+ var g=(function(){var order=[],by={};rows.forEach(function(r){var p=r.operation.trim()||'Процесс не указан';if(!by[p]){by[p]={};order.push(p);}var c=r.conditions||'normal';if(!by[p][c])by[p][c]=[];by[p][c].push(r);});return{order:order,by:by};})();
  var h='<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><head><meta charset="UTF-8"></head><body><table border="1" style="border-collapse:collapse">';
- h+='<tr><td colspan="16"><b>РЕЕСТР ЭКОЛОГИЧЕСКИХ АСПЕКТОВ: РАНГ И ЗНАЧИМОСТЬ. Черновик от '+esc(state.meta.date||today())+'</b></td></tr>';
- h+='<tr><td colspan="16">Методика: ранг по требованиям и мерам, значимость по рангу и экологическим основаниям. Ранги 1-2 дают значимый аспект, ранги 3-4 - незначимый; ранг 3 или 4 не отменяет значимость при подтвержденном экологическом основании. Желтые ячейки заполняются в редакторе после обсуждения.</td></tr>';
- h+='<tr><td>№</td><td>Процесс</td><td>Условия</td><td>Аспект</td><td>Воздействие</td><td>Тип</td><td>Требования</td><td>Выполнение</td><td>Специальные меры</td><td>Ранг</td><td>Значимость</td><td>Обоснование</td><td bgcolor="#FFFF00">Кол-во: факт</td><td bgcolor="#FFFF00">Кол-во: норматив</td><td bgcolor="#FFFF00">Нормативный документ</td><td bgcolor="#FFFF00">Дата переоценки</td></tr>';
- rows.forEach(function(r){
-  var res=computeResult(r);
-  h+='<tr><td>'+r.num+'</td><td>'+esc(r.operation||'-')+'</td><td>'+esc(condLabel(r.conditions))+'</td><td>'+esc(r.aspect||'-')+'</td><td>'+esc(r.impact||'-')+'</td><td>'+esc(typeLabel(r.aspectType))+'</td><td>'+esc(qLabel(Q1,r.q1))+'</td><td>'+esc(r.q1==='yes'?qLabel(Q2,r.q2):'-')+'</td><td>'+esc(measuresText(r))+'</td><td>'+(res.rank===null?'-':res.rank)+'</td><td>'+sigLabel(res.sig)+'</td><td>'+esc(r.rankNote||'-')+'</td><td bgcolor="#FFFF00"></td><td bgcolor="#FFFF00"></td><td bgcolor="#FFFF00"></td><td bgcolor="#FFFF00"></td></tr>';
+ h+='<tr><td colspan="8"><b>РЕЕСТР ЭКОЛОГИЧЕСКИХ АСПЕКТОВ № ______ от '+esc(state.meta.date||today())+'</b></td></tr>';
+ APPROVAL.forEach(function(role){h+='<tr><td colspan="4">'+esc(role)+'</td><td>Подпись:</td><td colspan="3">Дата:</td></tr>';});
+ h+='<tr><td rowspan="2">№ п/п</td><td rowspan="2">Наименование экологического аспекта</td><td rowspan="2">Основные характеристики (воздействие на ОС)</td><td rowspan="2">Возможности регулирования прямой / непрямой экологический аспект</td><td colspan="2">Количественные характеристики</td><td rowspan="2">Приоритетность (экспертная оценка) Низкая/средняя/высокая</td><td rowspan="2">Примечания</td></tr>';
+ h+='<tr><td bgcolor="#FFFF00">факт</td><td bgcolor="#FFFF00">норматив</td></tr>';
+ g.order.forEach(function(p){
+  h+='<tr><td colspan="8" style="text-align:center"><b>'+esc(p)+'</b></td></tr>';
+  CONDITIONS.forEach(function(c){
+   h+='<tr><td></td><td>'+esc(c[1])+'</td><td></td><td></td><td></td><td></td><td></td><td></td></tr>';
+   var list=(g.by[p]&&g.by[p][c[0]])||[];
+   list.forEach(function(r){
+    h+='<tr><td>'+r.num+'</td><td>'+esc(r.aspect||'')+'</td><td>'+esc(r.impact||'')+'</td><td>'+esc(typeLabel(r.aspectType))+'</td><td bgcolor="#FFFF00"></td><td bgcolor="#FFFF00"></td><td bgcolor="#FFFF00"></td><td>'+esc(noteOf(r))+'</td></tr>';
+   });
+   if(!list.length){h+='<tr><td></td><td>'+esc(markNote(p,c[0]))+'</td><td></td><td></td><td bgcolor="#FFFF00"></td><td bgcolor="#FFFF00"></td><td bgcolor="#FFFF00"></td><td></td></tr>';}
+  });
  });
  h+='</table></body></html>';
  return h;
@@ -835,11 +718,9 @@ function buildXls(rows){
 function downloadXls(){
  if(!state.rows.length){renderPreview();return;}
  var blob=new Blob(['\ufeff'+buildXls(state.rows)],{type:'application/vnd.ms-excel'});
- var url=URL.createObjectURL(blob);var a=document.createElement('a');
- a.href=url;a.download='Ocenka_znachimosti_'+today()+'.xls';
- document.body.appendChild(a);a.click();document.body.removeChild(a);
- setTimeout(function(){URL.revokeObjectURL(url);},4000);
- $('downloadNote').textContent='Файл Excel сохранится как рабочая форма шага. Excel может показать предупреждение о формате: это таблица в формате Excel-HTML, ячейки и заливка на месте.';
+ var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download='Reestr_EA_'+today()+'.xls';
+ document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},4000);
+ $('downloadNote').textContent='Файл Excel сохранится как форма реестра. Excel может показать предупреждение о формате: это таблица в формате Excel-HTML, лист и ячейки на месте.';
  resizeIframe();
 }
 /* ========== СКАЧИВАНИЕ WORD ========== */
@@ -859,9 +740,13 @@ function saveBlob(bytes,name){
 function docFiles(xml){var enc=new TextEncoder();return[{name:'[Content_Types].xml',data:enc.encode(CT_XML)},{name:'_rels/.rels',data:enc.encode(RELS_XML)},{name:'word/document.xml',data:enc.encode(xml)},{name:'word/styles.xml',data:enc.encode(STYLES_XML)},{name:'word/footer1.xml',data:enc.encode(FOOTER_XML)},{name:'word/_rels/document.xml.rels',data:enc.encode(DRELS_XML)}];}
 function downloadDocx(){
  if(!state.rows.length){renderPreview();return;}
- saveBlob(zipStore(docFiles(buildDoc(state.rows,false))),'Reestr_znachimosti_'+today()+'.docx');
+ saveBlob(zipStore(docFiles(buildDoc(state.rows,false))),'Reestr_aspekty_'+today()+'.docx');
  $('downloadNote').textContent='Запрос на скачивание отправлен. Проверьте сохранение файла.';
  resizeIframe();
+}
+function downloadExample(){
+ var ex=[{num:1,operation:'Пересыпание сырья',conditions:'normal',aspect:'Выброс пыли в атмосферный воздух при пересыпании сырья',impact:'Загрязнение атмосферного воздуха',aspectType:'direct',clarify:true,clarifyText:'Когда усиливается пыление и какие меры применяют на участке; где доступны сведения о количестве и составе выброса',scope:'Площадка учебного завода, запись относится к участку пересыпания',inputs:'Используют сыпучее сырье, часть пыли поступает в атмосферный воздух',management:'Предприятие само устанавливает порядок работы на участке',basis:'Учебная карточка: поступление пыли в воздух задано условием',srcSig:'',imported:false,srcName:''}];
+ saveBlob(zipStore(docFiles(buildDoc(ex,true))),'Primer_reestr_aspekty_'+today()+'.docx');
 }
 
 /* ========== СТАРТ ========== */
