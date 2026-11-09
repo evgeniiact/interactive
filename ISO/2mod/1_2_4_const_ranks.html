@@ -6,1747 +6,818 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
 <title>Конструктор оценки значимости экологических аспектов</title>
 <style>
-:root {
-  --bg: #ffffff;
-  --primary: #1e293b;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --gray: #f8fafc;
-  --accent: #2563eb;
-  --accent-d: #1d4ed8;
-  --ok: #16a34a;
-  --ok-bg: #f0fdf4;
-  --ok-bd: #bbf7d0;
-  --warn: #ea580c;
-  --warn-bg: #fff7ed;
-  --warn-bd: #fed7aa;
-  --bad: #991b1b;
-  --bad-bg: #fef2f2;
-  --bad-bd: #fecaca;
-  --r: 12px;
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0; padding: 20px; background: var(--bg);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  color: var(--primary); font-size: 15px; line-height: 1.6;
-}
-.container { max-width: 720px; margin: 0 auto; }
-.screen { display: none; }
-.screen.active { display: block; animation: fadeIn .3s ease-out; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-h1 { font-size: 22px; font-weight: 800; margin: 0 0 8px; }
-h2 { font-size: 16px; font-weight: 700; margin: 16px 0 8px; }
-.lead { font-size: 14px; margin: 0 0 12px; color: var(--muted); }
-.note-box {
-  background: var(--gray); border: 1px solid var(--border);
-  border-left: 4px solid var(--muted); border-radius: 0 8px 8px 0;
-  padding: 10px 14px; font-size: 13px; color: var(--muted); margin: 10px 0;
-}
-.note-box.accent { border-left-color: var(--accent); color: var(--primary); }
-.warn-box {
-  background: var(--warn-bg); border-left: 3px solid var(--warn-bd);
-  border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 13px;
-  color: var(--warn); margin: 10px 0;
-}
-.error-box {
-  background: var(--bad-bg); border: 1px solid var(--bad-bd);
-  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--bad); margin: 12px 0;
-}
-.error-box ul, .notices-box ul { margin: 6px 0 0; padding-left: 20px; }
-.notices-box {
-  background: var(--warn-bg); border: 1px solid var(--warn-bd);
-  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--warn); margin: 12px 0;
-}
-.error-box li, .notices-box li { margin-bottom: 4px; }
-.storage-warn { display: none; }
-.storage-warn.show { display: block; }
-.save-line { font-size: 12px; color: var(--muted); margin: 4px 0; }
-
-.mode-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 14px 0; }
-.mode-card {
-  border: 2px solid var(--border); border-radius: var(--r); padding: 16px;
-  background: #fff; cursor: pointer; font-family: inherit; text-align: left;
-  transition: border-color .15s;
-}
-.mode-card:hover { border-color: var(--accent); }
-.mode-card h3 { margin: 0 0 6px; color: var(--accent); font-size: 15px; }
-.mode-card p { margin: 0; font-size: 13px; color: var(--muted); }
-
-.field { margin-bottom: 12px; }
-.field-header {
-  display: flex; align-items: baseline; justify-content: space-between;
-  gap: 8px; margin-bottom: 4px; flex-wrap: wrap;
-}
-.field label { font-size: 13px; font-weight: 700; }
-.field .req { color: var(--bad); font-weight: 600; font-size: 12px; }
-.field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
-.field input, .field textarea, .field select {
-  width: 100%; padding: 10px 12px; border: 1px solid var(--border);
-  border-radius: 8px; font-family: inherit; font-size: 14px; background: #fff;
-}
-.field textarea { min-height: 56px; resize: vertical; }
-.field input:focus, .field textarea:focus, .field select:focus {
-  outline: 3px solid var(--accent-d); outline-offset: 2px;
-}
-.btn-example {
-  padding: 4px 10px; font-size: 11px; font-weight: 600;
-  border: 1px solid var(--border); background: #fff; color: var(--accent);
-  border-radius: 6px; cursor: pointer; white-space: nowrap;
-}
-.btn-example:hover { background: var(--gray); }
-.btn-example[aria-expanded="true"] { background: var(--accent); color: #fff; border-color: var(--accent); }
-.example-box {
-  display: none; background: var(--ok-bg); border-left: 3px solid var(--ok);
-  border-radius: 0 8px 8px 0; padding: 10px 12px; margin-top: 6px;
-  font-size: 12.5px; color: var(--primary); line-height: 1.5;
-}
-.example-box.show { display: block; }
-.example-box strong { color: var(--ok); font-size: 11px; display: block; margin-bottom: 4px; }
-
-details.block {
-  border: 1px solid var(--border); border-radius: var(--r);
-  margin: 12px 0; background: #fff; overflow: hidden;
-  transition: border-color .2s;
-}
-details.block.highlight {
-  border-color: var(--warn-bd);
-  background: var(--warn-bg);
-}
-details.block > summary {
-  cursor: pointer; padding: 12px 16px; font-size: 14px; font-weight: 700;
-  list-style: none; display: flex; justify-content: space-between; align-items: center;
-  background: var(--gray);
-}
-details.block > summary::-webkit-details-marker { display: none; }
-details.block > summary::after {
-  content: "＋"; color: var(--muted); font-weight: 800; font-size: 18px;
-}
-details.block[open] > summary::after { content: "－"; }
-details.block[open] > summary { background: #eef2ff; border-bottom: 1px solid var(--border); }
-.block-body { padding: 14px 16px; }
-.block-intro { font-size: 13px; color: var(--muted); margin: 0 0 10px; }
-
-.qrow { margin: 10px 0; padding: 10px 0; border-top: 1px dashed var(--border); }
-.qrow:first-of-type { border-top: none; padding-top: 0; }
-.qrow .qlabel { font-size: 13.5px; font-weight: 600; margin: 0 0 6px; }
-.qrow select {
-  width: 100%; padding: 9px 12px; border: 1px solid var(--border);
-  border-radius: 8px; font-family: inherit; font-size: 14px; background: #fff;
-}
-.qrow select:focus { outline: 3px solid var(--accent-d); outline-offset: 2px; }
-.qrow .basis-wrap { margin-top: 6px; }
-.qrow .basis-wrap label { display: block; font-weight: 600; margin-bottom: 3px; font-size: 12px; }
-.qrow .basis-wrap input {
-  width: 100%; padding: 7px 10px; border: 1px solid var(--border);
-  border-radius: 6px; font-family: inherit; font-size: 13px; background: #fff;
-}
-.qrow .basis-wrap input:focus { outline: 3px solid var(--accent-d); outline-offset: 2px; }
-.qstatus {
-  display: inline-block; font-size: 11px; font-weight: 700;
-  border-radius: 20px; padding: 2px 8px; border: 1px solid; margin-top: 6px;
-}
-.qstatus.nobasis { background: var(--warn-bg); color: var(--warn); border-color: var(--warn-bd); }
-.qstatus.inactive { background: var(--gray); color: var(--muted); border-color: var(--border); }
-.qrow.inactive { opacity: .6; background: var(--gray); border-radius: 8px; padding: 8px; }
-
-.chip {
-  display: inline-block; padding: 4px 10px; border-radius: 20px;
-  font-size: 12px; font-weight: 700; border: 1px solid; margin: 2px 6px 2px 0;
-}
-.chip.rank { background: var(--accent); color: #fff; border-color: var(--accent); }
-.chip.sig { background: var(--ok-bg); color: var(--ok); border-color: var(--ok-bd); }
-.chip.ins { background: var(--gray); color: var(--muted); border-color: var(--border); }
-.chip.inc { background: var(--warn-bg); color: var(--warn); border-color: var(--warn-bd); }
-.chip.rev { background: var(--bad-bg); color: var(--bad); border-color: var(--bad-bd); }
-
-.result-panel {
-  border: 1px solid var(--border); border-left: 5px solid var(--accent);
-  border-radius: 10px; padding: 14px 16px; margin: 12px 0; background: #fff; font-size: 13px;
-}
-.result-panel p { margin: 0 0 6px; }
-.result-panel p:last-child { margin: 0; }
-
-.contra {
-  background: var(--warn-bg); border: 1px solid var(--warn-bd);
-  border-radius: 8px; padding: 8px 10px; font-size: 12.5px; color: var(--warn); margin: 8px 0;
-}
-
-.tabs-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; margin: 14px 0 0; }
-.tab-btn {
-  border: 1px solid var(--border); border-radius: 10px 10px 0 0;
-  padding: 9px 12px; background: var(--gray); color: var(--muted);
-  font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
-  display: inline-flex; align-items: center; gap: 6px; max-width: 210px;
-}
-.tab-btn .tab-name {
-  font-weight: 500; overflow: hidden; text-overflow: ellipsis;
-  white-space: nowrap; max-width: 130px;
-}
-.tab-btn[aria-selected="true"] { background: #fff; color: var(--accent); border-color: var(--accent); }
-.tab-add {
-  border: 1px dashed var(--accent); color: var(--accent); background: #fff;
-  border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 700;
-  cursor: pointer; font-family: inherit;
-}
-.tab-add:hover { background: #eff6ff; }
-.tab-panel {
-  border: 1px solid var(--border); border-radius: 0 10px 10px 10px;
-  padding: 16px; background: #fff; margin-top: -1px;
-}
-.tab-panel[hidden] { display: none; }
-.panel-head {
-  display: flex; justify-content: space-between; align-items: center;
-  gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
-}
-.panel-head strong { font-size: 15px; }
-.btn-small {
-  padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 6px;
-  border: 1px solid var(--border); background: #fff; color: var(--primary);
-  cursor: pointer; font-family: inherit;
-}
-.btn-small:hover { background: var(--gray); }
-
-.nav-buttons { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-.btn {
-  padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
-  cursor: pointer; border: none; font-family: inherit; transition: background .2s;
-}
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-d); }
-.btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--primary); }
-.btn-secondary:hover { background: var(--gray); }
-.btn-danger { background: #fff; border: 1px solid var(--bad-bd); color: var(--bad); }
-.btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
-
-.import-msg {
-  display: none; background: #eff6ff; border: 1px solid #bfdbfe;
-  border-radius: 10px; padding: 10px 14px; font-size: 13px; color: var(--accent-d); margin: 10px 0;
-}
-.import-msg.show { display: block; }
-
-.edu-facts {
-  border: 1px solid var(--border); border-left: 4px solid var(--accent);
-  border-radius: 0 10px 10px 0; background: var(--gray); padding: 10px 14px;
-  font-size: 13px; margin: 10px 0;
-}
-.edu-facts ul { margin: 4px 0 0; padding-left: 18px; }
-.edu-facts li { margin-bottom: 4px; }
-
-.scroll-x { overflow-x: auto; }
-.scroll-x table.reg { min-width: 720px; }
-table.reg { width: 100%; border-collapse: collapse; font-size: 12.5px; margin: 10px 0; }
-table.reg th, table.reg td {
-  border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top;
-}
-table.reg th { background: var(--gray); font-weight: 700; }
-details.det {
-  border: 1px solid var(--border); border-radius: 10px; background: #fff; margin-bottom: 8px;
-}
-details.det > summary {
-  cursor: pointer; padding: 10px 14px; font-size: 13px; font-weight: 700;
-  list-style: none; display: flex; justify-content: space-between; gap: 8px;
-}
-details.det > summary::-webkit-details-marker { display: none; }
-details.det > summary::after { content: "＋"; color: var(--muted); font-weight: 800; }
-details.det[open] > summary::after { content: "－"; }
-details.det[open] > summary { background: var(--gray); }
-.det-body { padding: 0 14px 12px; font-size: 13px; }
-.det-body p { margin: 0 0 6px; }
-
-button:focus-visible, summary:focus-visible {
-  outline: 3px solid var(--accent-d); outline-offset: 2px;
-}
-
-@media (max-width: 600px) {
-  body { padding: 12px; }
-  h1 { font-size: 20px; }
-  .mode-grid { grid-template-columns: 1fr; }
-  .nav-buttons { flex-direction: column; }
-  .btn { width: 100%; }
-}
+:root{--bg:#fff;--primary:#1e293b;--muted:#64748b;--border:#e2e8f0;--gray:#f8fafc;--accent:#2563eb;--accent-d:#1d4ed8;
+--ok:#16a34a;--ok-bg:#f0fdf4;--ok-bd:#bbf7d0;--warn:#ea580c;--warn-bg:#fff7ed;--warn-bd:#fed7aa;--bad:#991b1b;--bad-bg:#fef2f2;--bad-bd:#fecaca;--r:12px}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--primary);font-size:15px;line-height:1.6}
+.container{max-width:760px;margin:0 auto}
+.screen{display:none}.screen.active{display:block;animation:fi .3s ease-out}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:22px;font-weight:800;margin:0 0 8px;outline:none}
+h2{font-size:16px;font-weight:700;margin:16px 0 8px}
+.lead{font-size:14px;margin:0 0 12px;color:var(--muted)}
+.note-box{background:var(--gray);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--muted);margin:10px 0}
+.note-box.accent{border-left-color:var(--accent);color:var(--primary)}
+.warn-box{background:var(--warn-bg);border-left:3px solid var(--warn-bd);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--warn);margin:10px 0}
+.error-box{background:var(--bad-bg);border:1px solid var(--bad-bd);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--bad);margin:12px 0}
+.error-box ul,.notices-box ul{margin:6px 0 0;padding-left:20px}
+.notices-box{background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--warn);margin:12px 0}
+.error-box li,.notices-box li{margin-bottom:4px}
+.storage-warn{display:none}.storage-warn.show{display:block}
+.save-line{font-size:12px;color:var(--muted);margin:4px 0}
+.sem-rules{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;background:var(--gray);padding:12px 16px;margin:12px 0;font-size:13px}
+.sem-rules h2{font-size:15px;margin:0 0 8px}
+.sem-rules ol{margin:0;padding-left:20px}
+.sem-rules li{margin-bottom:6px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:4px}
+.field .req{color:var(--bad);font-weight:600}
+.field .hint{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;background:#fff;color:var(--primary)}
+.field textarea{min-height:46px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{outline:3px solid var(--accent-d);outline-offset:2px}
+.ex-btn{display:inline-block;margin-top:6px;padding:4px 10px;font-size:11px;font-weight:600;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--accent);cursor:pointer;font-family:inherit}
+.ex-btn:hover{background:var(--gray)}
+.ex-btn[aria-expanded="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ex-box{display:none;background:var(--ok-bg);border-left:3px solid var(--ok);border-radius:0 8px 8px 0;padding:8px 12px;margin-top:6px;font-size:12.5px;color:var(--primary)}
+.ex-box.show{display:block}
+.check-row{display:flex;gap:8px;align-items:flex-start;background:var(--gray);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin:10px 0;font-size:13px}
+.check-row input{width:auto;margin-top:3px}
+.imp-note{font-size:12px;color:var(--muted);background:var(--gray);border:1px dashed var(--border);border-radius:8px;padding:6px 10px;margin:6px 0}
+.rank-panel{border:2px solid var(--accent);border-radius:10px;background:#eff6ff;padding:12px 14px;margin:12px 0;font-size:13.5px}
+.rank-panel p{margin:0 0 6px}.rank-panel p:last-child{margin:0}
+.rank-chip{display:inline-block;padding:4px 12px;border-radius:20px;font-size:12px;font-weight:800;border:1px solid;margin-right:6px}
+.rank-chip.r{background:var(--accent);color:#fff;border-color:var(--accent)}
+.rank-chip.sig{background:var(--ok-bg);color:var(--ok);border-color:var(--ok-bd)}
+.rank-chip.ins{background:var(--gray);color:var(--muted);border-color:var(--border)}
+.rank-chip.inc{background:var(--warn-bg);color:var(--warn);border-color:var(--warn-bd)}
+details.blk{border:1px solid var(--border);border-radius:10px;margin:10px 0;background:#fff;overflow:hidden}
+details.blk>summary{cursor:pointer;padding:11px 14px;font-size:13.5px;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--gray)}
+details.blk>summary::-webkit-details-marker{display:none}
+details.blk>summary::after{content:"+";color:var(--muted);font-weight:800;font-size:16px}
+details.blk[open]>summary::after{content:"−"}
+details.blk[open]>summary{border-bottom:1px solid var(--border)}
+.blk-body{padding:12px 14px}
+.blk-body ul{margin:4px 0;padding-left:18px}
+.blk-body li{margin-bottom:5px;font-size:13px}
+.status-line{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.tabs-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;margin:14px 0 0}
+.tab-btn{border:1px solid var(--border);border-radius:10px 10px 0 0;padding:9px 12px;background:var(--gray);color:var(--muted);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;max-width:230px}
+.tab-btn .tab-name{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:150px}
+.tab-btn[aria-selected="true"]{background:#fff;color:var(--accent);border-color:var(--accent)}
+.tab-add{border:1px dashed var(--accent);color:var(--accent);background:#fff;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.tab-panel{border:1px solid var(--border);border-radius:0 10px 10px 10px;padding:16px;background:#fff;margin-top:-1px}
+.tab-panel[hidden]{display:none}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.panel-head strong{font-size:15px}
+.btn-small{padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--primary);cursor:pointer;font-family:inherit}
+.btn-small:hover{background:var(--gray)}
+.nav-buttons{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent-d)}
+.btn-secondary{background:#fff;border:1px solid var(--border);color:var(--primary)}.btn-secondary:hover{background:var(--gray)}
+.btn-danger{background:#fff;border:1px solid var(--bad-bd);color:var(--bad)}
+.btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
+.scroll-x{overflow-x:auto}
+.scroll-x table.reg{min-width:1200px}
+table.reg{width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0}
+table.reg th,table.reg td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top}
+table.reg th{background:var(--gray);font-weight:700}
+table.reg td.tbd{color:var(--muted);font-style:italic}
+.cmp-table{width:100%;border-collapse:collapse;font-size:12.5px;margin:10px 0}
+.cmp-table th,.cmp-table td{border:1px solid var(--border);padding:6px 8px;text-align:left;vertical-align:top}
+.cmp-table th{background:var(--gray)}
+button:focus-visible,summary:focus-visible{outline:3px solid var(--accent-d);outline-offset:2px}
+@media (max-width:640px){body{padding:12px}h1{font-size:20px}.nav-buttons{flex-direction:column}.btn{width:100%}}
 </style>
 </head>
 <body>
-
 <div class="container">
+<div id="bootError" class="error-box" style="display:none"></div>
 
-  <!-- ВВОДНЫЙ ЭКРАН -->
-  <div id="screen-intro" class="screen active">
-    <h1>Конструктор оценки значимости экологических аспектов</h1>
-    <p class="lead">Оцените экологические аспекты по единой методике: определите ранг по требованиям и мерам, затем итоговую значимость по всем критериям. Скачайте черновик реестра в Word.</p>
-    <div class="mode-grid" role="group" aria-label="Выбор режима">
-      <button type="button" class="mode-card" onclick="chooseMode('edu')">
-        <h3>Учебный завод</h3>
-        <p>Четыре карточки с примерами. Потренируйтесь на условных ситуациях стекольного завода.</p>
-      </button>
-      <button type="button" class="mode-card" onclick="chooseMode('own')">
-        <h3>Мое предприятие</h3>
-        <p>Свой реестр. Заполните поля, получите ранг и значимость, скачайте документ.</p>
-      </button>
-    </div>
-    <div class="note-box accent">
-      <strong>Как это работает.</strong> Ранг показывает состояние применимых требований и мер. Значимость считается отдельно по экологическим критериям, рангу 1-2 и вопросам сторон. Ранг сам по себе не определяет итоговую значимость.
-    </div>
-    <div class="note-box">Черновик сохраняется в этом браузере, если его настройки разрешают локальное хранилище. На другом устройстве записи могут быть недоступны. Скачайте Word, чтобы сохранить отдельную копию.</div>
-    <div class="warn-box storage-warn" id="warnIntro">Браузер не сохранил черновик. Скачайте Word перед закрытием страницы.</div>
-    <div class="note-box" id="restoreNote" style="display:none">Найден сохраненный черновик. Данные восстановлены.</div>
-  </div>
-
-  <!-- УЧЕБНЫЙ РЕЖИМ -->
-  <div id="screen-edu" class="screen">
-    <div class="nav-buttons" style="margin-top:0">
-      <button class="btn btn-secondary" onclick="showScreen('screen-intro')">К выбору режимов</button>
-    </div>
-    <div id="eduBox"></div>
-  </div>
-
-  <!-- СВОЙ РЕЖИМ -->
-  <div id="screen-own" class="screen">
-    <h1>Реестр значимости вашего предприятия</h1>
-    <p class="lead">Каждая строка реестра на своей вкладке. Заполните поля, ответьте на вопросы, получите ранг и значимость. Черновик сохраняется автоматически.</p>
-    <div class="warn-box storage-warn" id="warnOwn">Браузер не сохранил черновик. Скачайте Word перед закрытием страницы.</div>
-    <div class="save-line" id="saveStatus"></div>
-    <div class="nav-buttons" style="margin-top:0">
-      <button class="btn btn-secondary" onclick="startImport()">Импорт из конструктора аспектов</button>
-      <button class="btn btn-secondary" onclick="showScreen('screen-intro')">К выбору режимов</button>
-    </div>
-    <div class="import-msg" id="importMsg" aria-live="polite"></div>
-    <div class="field" style="max-width:320px;display:inline-block;margin-right:8px">
-      <label for="m-org">Предприятие (необязательно)</label>
-      <input type="text" id="m-org" oninput="onMeta('org',this.value)">
-    </div>
-    <div class="field" style="max-width:150px;display:inline-block;margin-right:8px">
-      <label for="m-date">Дата</label>
-      <input type="text" id="m-date" oninput="onMeta('date',this.value)">
-    </div>
-    <div class="field" style="max-width:200px;display:inline-block">
-      <label for="m-author">Автор (необязательно)</label>
-      <input type="text" id="m-author" oninput="onMeta('author',this.value)">
-    </div>
-    <div class="tabs-bar" id="tabsBar" role="tablist" aria-label="Строки реестра"></div>
-    <div id="panelsBox"></div>
-    <div class="nav-buttons">
-      <button class="btn btn-primary" onclick="openPreview()">Предпросмотр и скачивание</button>
-    </div>
-  </div>
-
-  <!-- ЭКРАН СРАВНЕНИЯ ПРИ ИМПОРТЕ -->
-  <div id="screen-compare" class="screen">
-    <h1>Исходная запись изменилась</h1>
-    <p class="lead">В конструкторе аспектов изменились сведения. Посмотрите различия перед обновлением.</p>
-    <div id="cmpBox"></div>
-    <div class="nav-buttons">
-      <button class="btn btn-secondary" onclick="cmpKeep()">Сохранить текущую запись</button>
-      <button class="btn btn-secondary" onclick="cmpUpdate()">Обновить и пересмотреть оценку</button>
-      <button class="btn btn-secondary" onclick="cmpCopy()">Создать отдельную копию</button>
-    </div>
-  </div>
-
-  <!-- ПРЕДПРОСМОТР -->
-  <div id="screen-preview" class="screen">
-    <h1>Предпросмотр реестра</h1>
-    <div class="error-box" id="errorsBox" style="display:none" aria-live="polite"></div>
-    <div class="notices-box" id="noticesBox" style="display:none" aria-live="polite"></div>
-    <div id="previewBox"></div>
-    <div class="nav-buttons">
-      <button class="btn btn-secondary" onclick="showScreen('screen-own')">Вернуться к реестру</button>
-      <button class="btn btn-primary" id="downloadBtn" onclick="downloadDocx()">Скачать Word</button>
-      <button class="btn btn-danger" onclick="restartOwn()">Полная очистка</button>
-    </div>
-    <p id="downloadNote" style="font-size:12px;color:var(--muted);margin-top:8px"></p>
-  </div>
-
+<div id="screen-intro" class="screen active">
+<h1 tabindex="-1">Оценка значимости: ранг и вывод по каждому аспекту</h1>
+<p class="lead">Здесь вы узнаете, какие аспекты требуют управления в первую очередь. Конструктор берет записи из реестра аспектов под их сквозными номерами, задает три вопроса о требованиях и мерах, сам считает ранг и значимость, а вы добавляете короткое обоснование своими словами.</p>
+<div class="note-box accent">Ранг показывает состояние требований и мер: 1 - требования не выполняются, 2 - выполнение держится на специальных мерах, 3 - выполнение без специальных мер, 4 - применимые требования не выявлены. Ранги 1 и 2 дают значимый аспект, ранги 3 и 4 - незначимый. Ранг 3 или 4 не отменяет значимость, если есть подтвержденные экологические основания: для них есть отдельное поле.</div>
+<div class="warn-box storage-warn">Браузер не сохранил черновик. Скачайте Word или единый файл курса перед закрытием страницы.</div>
+<div class="note-box" id="restoreNote" style="display:none">Найден сохраненный черновик. Записи восстановлены.</div>
+<div class="nav-buttons">
+<button class="btn btn-primary" onclick="startWork()">Начать оценку</button>
+<button class="btn btn-secondary" onclick="showScreen('screen-example')">Посмотреть пример</button>
+<button class="btn btn-secondary" onclick="semToggleRules(this)">Правила и передача данных</button>
+</div>
+<div class="sem-rules" hidden></div>
 </div>
 
+<div id="screen-example" class="screen">
+<h1 tabindex="-1">Пример оценки на учебном заводе</h1>
+<p class="lead">Пример показывает, как ответы на три вопроса превращаются в ранг, значимость и обоснование. Обстоятельства учебные: это не характеристики реального предприятия.</p>
+<table class="reg"><tbody>
+<tr><th>Запись</th><td>2. Пересыпание сырья, обычная работа</td></tr>
+<tr><th>Аспект и воздействие</th><td>Выброс пыли в атмосферный воздух при пересыпании сырья - загрязнение атмосферного воздуха. Тип: прямой</td></tr>
+<tr><th>Требования установлены</th><td>Да, требования установлены</td></tr>
+<tr><th>Выполнение подтверждено</th><td>Да, выполняются полностью</td></tr>
+<tr><th>Зависит от специальных мер</th><td>Да, выполнение держится на специальных мерах</td></tr>
+<tr><th>Меры</th><td>Укрытие узла пересыпки, порядок уборки просыпей, контроль состояния укрытия</td></tr>
+<tr><th>Ранг и значимость</th><td>Ранг 2, аспект значимый</td></tr>
+<tr><th>Обоснование ранга</th><td>Требование выполняется, но только пока работают укрытие и порядок уборки: без этих мер пыление вернется, поэтому ранг 2</td></tr>
+</tbody></table>
+<div class="note-box">Обоснование объясняет причину ранга, а не повторяет его номер. В чек-листе под вопросами есть опорные критерии: класс опасности, вероятность превышения, юридические последствия, масштаб воздействия. Пороги в вашей методике могут отличаться: чек-лист опора для обоснования, а не поля формы.</div>
+<div class="nav-buttons">
+<button class="btn btn-secondary" onclick="showScreen('screen-intro')">К началу</button>
+</div>
+<div class="sem-rules" hidden></div>
+</div>
+
+<div id="screen-work" class="screen">
+<h1 tabindex="-1">Оценка значимости аспектов</h1>
+<p class="lead">Каждая запись реестра аспектов получает вкладку с тем же номером. Ответьте на три вопроса о требованиях и мерах, конструктор посчитает ранг и значимость, затем добавьте обоснование и, если нужно, экологические основания значимости.</p>
+<div class="warn-box storage-warn">Браузер не сохранил черновик. Скачайте Word или единый файл курса перед закрытием страницы.</div>
+<div class="save-line" id="saveStatus"></div>
+<div class="nav-buttons" style="margin-top:0">
+<button class="btn btn-secondary" onclick="importRegistry()">Импорт из реестра аспектов</button>
+<button class="btn btn-secondary" onclick="exportJson()">Скачать единый файл курса (JSON)</button>
+<button class="btn btn-secondary" onclick="document.getElementById('jsonFile').click()">Загрузить единый файл (JSON)</button>
+<input type="file" id="jsonFile" accept=".json,application/json" style="display:none" onchange="importJson(this)">
+<button class="btn btn-secondary" onclick="semToggleRules(this)">Правила и передача данных</button>
+</div>
+<div class="note-box" id="jsonMsg" style="display:none"></div>
+<div class="sem-rules" hidden></div>
+<div class="field" style="max-width:320px;display:inline-block;margin-right:8px"><label for="m-org">Предприятие (необязательно)</label><input type="text" id="m-org"></div>
+<div class="field" style="max-width:150px;display:inline-block;margin-right:8px"><label for="m-date">Дата оценки</label><input type="text" id="m-date"></div>
+<div class="field" style="max-width:200px;display:inline-block"><label for="m-author">Оценил (необязательно)</label><input type="text" id="m-author"></div>
+<div class="tabs-bar" id="tabsBar" role="tablist" aria-label="Записи реестра"></div>
+<div id="panelsBox"></div>
+<div class="nav-buttons"><button class="btn btn-primary" onclick="openPreview()">Посмотреть таблицу и скачать</button></div>
+</div>
+
+<div id="screen-compare" class="screen">
+<h1 tabindex="-1">В исходной записи изменились сведения</h1>
+<p class="lead">В реестре аспектов запись обновили. Посмотрите различия и выберите, как поступить: ваша оценка при обновлении будет помечена для пересмотра.</p>
+<div id="cmpBox"></div>
+<div class="nav-buttons">
+<button class="btn btn-secondary" onclick="cmpKeep()">Оставить мою версию</button>
+<button class="btn btn-secondary" onclick="cmpUpdate()">Обновить из источника и пересмотреть оценку</button>
+<button class="btn btn-secondary" onclick="cmpCopy()">Создать отдельную копию</button>
+</div>
+</div>
+
+<div id="screen-preview" class="screen">
+<h1 tabindex="-1">Таблица значимости перед скачиванием</h1>
+<div class="error-box" id="errorsBox" style="display:none" aria-live="polite"></div>
+<div class="notices-box" id="noticesBox" style="display:none" aria-live="polite"></div>
+<div id="previewBox"></div>
+<div class="nav-buttons">
+<button class="btn btn-secondary" onclick="showScreen('screen-work')">Вернуться к записям</button>
+<button class="btn btn-primary" id="downloadBtn" onclick="downloadDocx()">Скачать Word</button>
+<button class="btn btn-danger" onclick="restartAll()">Полная очистка</button>
+<button class="btn btn-secondary" onclick="semToggleRules(this)">Правила и передача данных</button>
+</div>
+<div class="sem-rules" hidden></div>
+<p id="downloadNote" style="font-size:12px;color:var(--muted);margin-top:8px"></p>
+</div>
+
+</div>
 <script>
-/* ========== КОНСТАНТЫ ========== */
-var ALGO_VERSION = '3.0';
-var METHOD_NAME = 'Учебная методика оценки значимости экологических аспектов';
-var STORAGE_KEY = 'sem-ranks-v3';
-var IMPORT_KEYS = ['sem-chain-constructor-v1', 'sem-aspect-records-v3', 'sem-aspect-records-v2', 'sem-aspect-records-v1'];
+/* ========== ЗАЩИТНЫЙ СТАРТ ========== */
+function showBoot(msg){var b=document.getElementById('bootError');if(b){b.style.display='block';b.textContent='Конструктор не запустился: '+msg;}}
+window.addEventListener('error',function(ev){showBoot((ev&&ev.message)||'ошибка скрипта')+' (строка '+((ev&&ev.lineno)||'?')+')';});
 
-var QUESTIONS = {
-  e1: 'Подтверждены ли тяжелые последствия для компонентов окружающей среды в рассматриваемых условиях?',
-  e2: 'Подтверждено ли, что последствия могут быть длительными или трудноустранимыми?',
-  e3: 'Подтверждено ли существенное воздействие за пределами места операции или на чувствительный природный объект?',
-  q1: 'По результатам проверки установлены применимые требования к этому аспекту или связанным действиям?',
-  q2: 'Выполнение этих требований подтверждено доступными сведениями?',
-  q3: 'Выполнение зависит от конкретных технических или организационных мер?',
-  qSmall: 'Подтверждено небольшое воздействие в рассматриваемых условиях?',
-  sQ: 'Есть ли существенный обоснованный вопрос заинтересованной стороны, связанный с этим воздействием?'
-};
-
-var EXAMPLES = {
-  operation: 'Например: пересыпание сырья, варка стекла, водоотведение, уборка территории',
-  aspect: 'Например: выброс пыли в атмосферный воздух, сброс сточных вод, потребление электроэнергии, образование отходов',
-  impact: 'Например: загрязнение атмосферного воздуха, загрязнение водных объектов, косвенные выбросы при генерации электроэнергии',
-  e1: 'Например: выброс токсичных веществ в реку, используемую для водоснабжения населенного пункта. Или: загрязнение почвы тяжелыми металлами на территории жилой застройки.',
-  e2: 'Например: накопление стойких органических загрязнителей в почве. Или: необратимое изменение экосистемы водного объекта.',
-  e3: 'Например: выбросы, достигающие жилой зоны за пределами площадки. Или: сброс в водный объект, используемый для рыболовства или рекреации.',
-  q1: 'Например: ПДВ для выбросов, НДС для сбросов, нормативы образования отходов, требования договора с Водоканалом, разрешения на пользование недрами.',
-  q2: 'Например: данные производственного контроля, результаты инструментальных замеров, отчеты о соблюдении нормативов, отсутствие претензий от надзорных органов.',
-  q3: 'Например: работа газоочистных установок, система очистки сточных вод, регулярная замена фильтров, процедуры контроля и ведения журналов, инструкции для персонала.',
-  qSmall: 'Например: воздействие ограничено территорией предприятия, не выходит за пределы площадки, не влияет на чувствительные объекты, обратимо в короткие сроки.',
-  sQ: 'Например: жалоба жителей на запах, обращение надзорного органа, требование заказчика по экологическим критериям, вопрос от общественной организации.',
-  measures: 'Например: газоочистка с каталитическим нейтрализатором, замена фильтров каждые 3 месяца, ежеквартальный контроль параметров, ведение журнала учета',
-  sWho: 'Например: жители пожаловались на запах, надзорный орган указал на отсутствие учета',
-  sSrc: 'Например: обращение № 123 от 15.03.2024, протокол совещания, запись в журнале',
-  sCheck: 'Например: провести замеры, запросить данные у подрядчика, уточнить в договоре',
-  source: 'Например: ПДВ от 15.03.2024, договор с Водоканалом № 123, результаты анализа от 10.10.2024',
-  note: 'Любые дополнительные сведения, которые важно сохранить',
-  next: 'Например: уточнить состав выброса, согласовать с руководством, провести повторный замер'
-};
-
-/* ========== УЧЕБНЫЕ КАРТОЧКИ ========== */
-var EDU_CARDS = [
-  {
-    title: 'Карточка 1. Требования выполняются благодаря конкретным мерам',
-    operation: 'Варка стекла в печи',
-    aspect: 'Выброс оксидов азота в атмосферный воздух',
-    impact: 'Загрязнение атмосферного воздуха',
-    facts: [
-      'Для печи варки установлены предельно допустимые выбросы (ПДВ) по оксидам азота.',
-      'Последний инструментальный контроль показал, что выбросы находятся в пределах ПДВ.',
-      'Соблюдение нормативов обеспечивается работой газоочистной установки с каталитическим нейтрализатором.',
-      'Требуется регулярная замена катализатора, ежеквартальный контроль параметров и ведение журнала учета.'
-    ],
-    hints: {
-      e1: 'В фактах нет данных о тяжелых последствиях для природы. Воздействие локализовано.',
-      e2: 'Последствия обратимы, длительных или трудноустранимых эффектов не описано.',
-      e3: 'Воздействие не выходит за пределы санитарно-защитной зоны завода.',
-      q1: 'В фактах прямо указано: установлены ПДВ. Это применимое требование.',
-      q2: 'Последний инструментальный контроль показал соблюдение нормативов — выполнение подтверждено.',
-      q3: 'Соблюдение держится на газоочистной установке, замене катализатора и контроле. Без этих мер выполнение было бы под вопросом.',
-      qSmall: 'Вопрос не применяется: выполнение зависит от специальных мер, ранг определяется по ветке q3="да".',
-      sQ: 'В фактах нет упоминания жалоб, обращений надзора или вопросов сторон.'
-    },
-    expectedAnswers: {
-      e1: { v: 'no', basis: 'Воздействие локализовано, тяжелых последствий не описано' },
-      e2: { v: 'no', basis: 'Последствия обратимы' },
-      e3: { v: 'no', basis: 'Не выходит за пределы санитарно-защитной зоны' },
-      q1: { v: 'yes', basis: 'ПДВ для печи варки установлены разрешением' },
-      q2: { v: 'yes', basis: 'Протокол инструментального контроля' },
-      q3: { v: 'yes', basis: 'Газоочистная установка с каталитическим нейтрализатором, замена катализатора по графику, ежеквартальный контроль' },
-      qSmall: { v: '', basis: '' },
-      sQ: { v: 'no', basis: 'Жалоб и обращений не поступало' }
-    },
-    expected: { rank: 2, significance: 'significant',
-      reason: 'Ранг 2: требования установлены и выполняются благодаря конкретным мерам. Значимый по учебному правилу, потому что ранг 1 или 2.' },
-    walkthrough: '1. Проверяем экологические критерии (e1, e2, e3): в фактах нет подтверждений тяжелых, длительных или трансграничных последствий — все три ответа «нет».\n' +
-      '2. Проверяем требования (q1): ПДВ установлены — ответ «да».\n' +
-      '3. Проверяем выполнение (q2): инструментальный контроль подтвердил соблюдение — ответ «да».\n' +
-      '4. Проверяем меры (q3): соблюдение держится на газоочистке, замене катализатора и контроле — ответ «да». Открывается поле «Какие меры».\n' +
-      '5. Ранг: требования установлены и выполняются благодаря мерам → ранг 2.\n' +
-      '6. Значимость: ранг 1 или 2 автоматически дает значимость по учебному правилу. Экологические критерии не нужны.'
-  },
-  {
-    title: 'Карточка 2. Требования не выявлены, но есть экологический критерий',
-    operation: 'Учебная запись об аспекте и воздействии',
-    aspect: 'Воздействие на компонент окружающей среды',
-    impact: 'Длительные трудноустранимые последствия',
-    facts: [
-      'Проверка применимых требований завершена. Требования к этому воздействию не выявлены.',
-      'Материалы задания подтверждают, что последствия могут быть длительными и трудноустранимыми.',
-      'Дополнительных сигналов от сторон не поступало.'
-    ],
-    hints: {
-      e1: 'В фактах не сказано о тяжелых последствиях — только о длительности и трудноустранимости.',
-      e2: 'Прямо указано: последствия могут быть длительными и трудноустранимыми. Это подтвержденный экологический критерий.',
-      e3: 'В фактах нет данных о воздействии за пределами площадки или на чувствительный объект.',
-      q1: 'Проверка завершена, требования не выявлены — это специальный ответ «нет, проверка завершена».',
-      q2: 'Вопрос не применяется: требований нет.',
-      q3: 'Вопрос не применяется.',
-      qSmall: 'Вопрос не применяется.',
-      sQ: 'В фактах прямо сказано: дополнительных сигналов от сторон не поступало.'
-    },
-    expectedAnswers: {
-      e1: { v: 'no', basis: 'Тяжелые последствия не подтверждены' },
-      e2: { v: 'yes', basis: 'Материалы задания подтверждают длительные и трудноустранимые последствия' },
-      e3: { v: 'no', basis: 'Воздействие за пределами площадки не описано' },
-      q1: { v: 'none', basis: 'Проверка завершена, применимые требования не выявлены' },
-      q2: { v: '', basis: '' },
-      q3: { v: '', basis: '' },
-      qSmall: { v: '', basis: '' },
-      sQ: { v: 'no', basis: 'Сигналов от сторон не поступало' }
-    },
-    expected: { rank: 4, significance: 'significant',
-      reason: 'Ранг 4: проверка завершена, требования не выявлены. Значимый по экологическому критерию e2 — подтверждены длительные трудноустранимые последствия. Ранг сам по себе не определяет итоговую значимость.' },
-    walkthrough: '1. Экологические критерии: e2 подтвержден (длительные трудноустранимые последствия) — это уже дает значимость.\n' +
-      '2. Требования (q1): проверка завершена, требования не выявлены — ответ «none».\n' +
-      '3. Ранг: при ответе «none» на q1 и отсутствии сигналов от сторон (sQ="no") → ранг 4.\n' +
-      '4. Значимость: несмотря на ранг 4, экологический критерий e2 подтвержден → значимый по учебному правилу.\n' +
-      '5. Вывод: ранг и значимость считаются независимо. Ранг 4 не отменяет значимость по экологическому критерию.'
-  },
-  {
-    title: 'Карточка 3. Требования выполняются без специальных мер, воздействие небольшое',
-    operation: 'Уборка территории участка',
-    aspect: 'Сбор и передача отходов уборки',
-    impact: 'Небольшое локальное обратимое воздействие',
-    facts: [
-      'Применимое требование к обращению с отходами уборки установлено (договор с лицензированным перевозчиком).',
-      'Выполнение подтверждено: отходы передаются перевозчику, акты передачи ведутся.',
-      'Специальные меры не требуются: воздействие небольшое, локальное и обратимое.',
-      'Воздействие ограничено территорией предприятия, не выходит за пределы площадки, не влияет на чувствительные объекты.',
-      'Дополнительные основания (экологические критерии, вопросы сторон) проверены и не выявлены.'
-    ],
-    hints: {
-      e1: 'Воздействие небольшое и локальное, тяжелых последствий нет.',
-      e2: 'Воздействие обратимое, длительных последствий нет.',
-      e3: 'Воздействие не выходит за пределы площадки.',
-      q1: 'Требование установлено договором с перевозчиком — ответ «да».',
-      q2: 'Акты передачи отходов подтверждают выполнение — ответ «да».',
-      q3: 'В фактах прямо сказано: специальные меры не требуются. Выполнение держится само по себе.',
-      qSmall: 'В фактах прямо сказано: воздействие небольшое, локальное и обратимое. Подтверждено.',
-      sQ: 'Дополнительные основания проверены и не выявлены — ответ «нет».'
-    },
-    expectedAnswers: {
-      e1: { v: 'no', basis: 'Воздействие небольшое и локальное' },
-      e2: { v: 'no', basis: 'Воздействие обратимое' },
-      e3: { v: 'no', basis: 'Не выходит за пределы площадки' },
-      q1: { v: 'yes', basis: 'Требование договора с лицензированным перевозчиком' },
-      q2: { v: 'yes', basis: 'Акты передачи отходов' },
-      q3: { v: 'no', basis: 'Специальные меры не требуются' },
-      qSmall: { v: 'yes', basis: 'Воздействие небольшое, локальное, обратимое, в пределах площадки' },
-      sQ: { v: 'no', basis: 'Дополнительные основания не выявлены' }
-    },
-    expected: { rank: 3, significance: 'notsignificant',
-      reason: 'Ранг 3: требования выполняются без специальных мер, небольшое воздействие подтверждено. Положительных оснований значимости нет — не признан значимым по учебному правилу.' },
-    walkthrough: '1. Экологические критерии: все три ответа «нет» — тяжелых, длительных или трансграничных последствий нет.\n' +
-      '2. Требования (q1): установлены договором — «да».\n' +
-      '3. Выполнение (q2): подтверждено актами — «да».\n' +
-      '4. Меры (q3): не требуются — «нет». Открывается вопрос о небольшом воздействии.\n' +
-      '5. Небольшое воздействие (qSmall): подтверждено фактами — «да».\n' +
-      '6. Ранг: требования выполняются без специальных мер и небольшое воздействие подтверждено → ранг 3.\n' +
-      '7. Значимость: положительных оснований нет (экологические критерии «нет», ранг не 1-2, вопрос стороны «нет») → не признан значимым.'
-  },
-  {
-    title: 'Карточка 4. Сведений недостаточно',
-    operation: 'Пересыпание сырья',
-    aspect: 'Выброс пыли в атмосферный воздух',
-    impact: 'Загрязнение атмосферного воздуха',
-    facts: [
-      'Сведения о последствиях для окружающей среды не приведены.',
-      'Проверка применимых требований не завершена: неясно, установлены ли ПДВ для этого участка.',
-      'Данных мониторинга нет, жалоб от сторон не поступало, но проверка не завершена.'
-    ],
-    hints: {
-      e1: 'Сведений о последствиях нет — нельзя ответить ни «да», ни «нет». Это «пока неизвестно».',
-      e2: 'Аналогично — неизвестно.',
-      e3: 'Аналогично — неизвестно.',
-      q1: 'Проверка не завершена, применимость неясна — это специальный ответ «проверка не завершена».',
-      q2: 'Вопрос не применяется: требования не установлены.',
-      q3: 'Вопрос не применяется.',
-      qSmall: 'Вопрос не применяется.',
-      sQ: 'Жалоб не поступало, но проверка не завершена — это «пока неизвестно».'
-    },
-    expectedAnswers: {
-      e1: { v: 'unknown', basis: 'Сведения о последствиях не приведены' },
-      e2: { v: 'unknown', basis: 'Сведения не приведены' },
-      e3: { v: 'unknown', basis: 'Сведения не приведены' },
-      q1: { v: 'unclear', basis: 'Проверка применимых требований не завершена' },
-      q2: { v: '', basis: '' },
-      q3: { v: '', basis: '' },
-      qSmall: { v: '', basis: '' },
-      sQ: { v: 'unknown', basis: 'Проверка не завершена' }
-    },
-    expected: { rank: null, significance: 'incomplete',
-      reason: 'Ранг не определен: проверка требований не завершена. Значимость: оценка не завершена, пока есть неизвестные сведения. Это рабочий статус, а не вывод об отсутствии значимости.' },
-    walkthrough: '1. Экологические критерии: сведений нет — все три ответа «unknown».\n' +
-      '2. Требования (q1): проверка не завершена — ответ «unclear».\n' +
-      '3. Ранг: при ответе «unclear» на q1 ранг не определяется → «не определен».\n' +
-      '4. Значимость: есть неизвестные сведения (e1, e2, e3, sQ = «unknown») → оценка не завершена.\n' +
-      '5. Вывод: это рабочий статус. Нужно завершить проверку требований и собрать сведения о последствиях, после чего пересчитать ранг и значимость.'
-  }
+/* ========== МОДУЛЬ SEM-BUNDLE v1.1 ========== */
+var SEM_BUNDLE_KEY='sem_bundle';
+var SEM_STEPS=[
+ {name:'swot',title:'Курс 2: условия и границы (SWOT)',keys:['sem_swot']},
+ {name:'parties',title:'Курс 2: карта заинтересованных сторон',keys:['sem_parties']},
+ {name:'scope',title:'Курс 2: область применения',keys:['sem_scope']},
+ {name:'aspects',title:'Реестр аспектов',keys:['sem_aspects','sem-aspect-records-v3','sem-aspect-records-v2','sem-aspect-records-v1','sem-chain-constructor-v1']},
+ {name:'significance',title:'Оценка значимости',keys:['sem_significance','sem-ranks-v3','sem-ranks-significance-v3','sem-ranks-v2','sem-ranks-v1']},
+ {name:'obligations',title:'Реестр обязательств',keys:['sem_obligations','sem-obligations-registry-v3','sem-obligations-registry-v2','sem-obligations-registry-v1']},
+ {name:'risks',title:'Риски и возможности',keys:['sem_risks','sem-risks-opps-v2','sem-risks-opps-v1']},
+ {name:'policy',title:'Курс 4: экологическая политика',keys:['sem_policy']},
+ {name:'goals',title:'Курс 4: цели и показатели',keys:['sem_goals']},
+ {name:'plan',title:'Курс 4: план действий',keys:['sem_plan']},
+ {name:'rollout',title:'Финал: план внедрения',keys:['sem_rollout']}
 ];
+function semKnownKeys(){var m={};SEM_STEPS.forEach(function(s){s.keys.forEach(function(k){m[k]=s.name;});});return m;}
+function semHasLive(key){try{var raw=localStorage.getItem(key);if(!raw)return false;var d=JSON.parse(raw);return !!(d&&((Array.isArray(d.rows)&&d.rows.length)||(Array.isArray(d.cards)&&d.cards.length)||d.result));}catch(e){return false;}}
+function semReadLiveStep(step){for(var i=0;i<step.keys.length;i++){if(semHasLive(step.keys[i])){try{return JSON.parse(localStorage.getItem(step.keys[i]));}catch(e){}}}return null;}
+function semReadCache(){try{var raw=localStorage.getItem(SEM_BUNDLE_KEY);if(!raw)return{steps:{}};var d=JSON.parse(raw);return (d&&d.steps)?d:{steps:{}};}catch(e){return{steps:{}};}}
+function semWriteCache(cache){try{localStorage.setItem(SEM_BUNDLE_KEY,JSON.stringify(cache));return true;}catch(e){return false;}}
+function semExtraLive(){
+ var extra={},known=semKnownKeys();
+ try{
+  for(var i=0;i<localStorage.length;i++){
+   var k=localStorage.key(i);
+   if(!k||k.indexOf('sem_')!==0||k===SEM_BUNDLE_KEY||known[k])continue;
+   try{var d=JSON.parse(localStorage.getItem(k));if(d&&((Array.isArray(d.rows)&&d.rows.length)||d.result))extra[k]=d;}catch(e){}
+  }
+ }catch(e){}
+ return extra;
+}
+function semBuildBundle(){
+ var cache=semReadCache();var steps={};
+ SEM_STEPS.forEach(function(s){steps[s.name]=semReadLiveStep(s)||cache.steps[s.name]||null;});
+ Object.keys(cache.steps).forEach(function(k){if(steps[k]===undefined)steps[k]=cache.steps[k];});
+ var extra=semExtraLive();
+ Object.keys(extra).forEach(function(k){if(steps[k]===undefined)steps[k]=extra[k];});
+ return{schema:'sem.bundle.v1',program:'СЭМ: курсы 2-4 и финал',exportedAt:new Date().toISOString(),steps:steps};
+}
+function semExportBundle(){
+ var bundle=semBuildBundle();
+ var present=[];
+ SEM_STEPS.forEach(function(s){if(bundle.steps[s.name])present.push(s.title);});
+ Object.keys(bundle.steps).forEach(function(k){
+  var known=false;SEM_STEPS.forEach(function(s){if(s.name===k)known=true;});
+  if(!known&&bundle.steps[k])present.push('шаг '+k);
+ });
+ var blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
+ var url=URL.createObjectURL(blob);var a=document.createElement('a');
+ a.href=url;a.download='SEM_programma_polnyy_nabor_'+today()+'.json';
+ document.body.appendChild(a);a.click();document.body.removeChild(a);
+ setTimeout(function(){URL.revokeObjectURL(url);},4000);
+ return present;
+}
+function semCacheBundle(bundle){
+ var cache=semReadCache();
+ Object.keys(bundle.steps||{}).forEach(function(name){
+  var p=bundle.steps[name];
+  if(!p||!(Array.isArray(p.rows)&&p.rows.length)&&!p.result)return;
+  var old=cache.steps[name];
+  if(!old||(p.rows&&p.rows.length>(old.rows||[]).length)||Number(p.rev||0)>Number(old.rev||0))cache.steps[name]=p;
+ });
+ cache.savedAt=new Date().toISOString();
+ return semWriteCache(cache);
+}
+function semRestoreMissingSteps(bundle,exceptName){
+ var restored=[],skipped=[];
+ Object.keys(bundle.steps||{}).forEach(function(name){
+  if(name===exceptName)return;
+  var p=bundle.steps[name];
+  if(!p||!(Array.isArray(p.rows)&&p.rows.length)&&!p.result)return;
+  var key=null;
+  SEM_STEPS.forEach(function(s){if(s.name===name)key=s.keys[0];});
+  if(!key)key=name;
+  if(typeof key!=='string'||key.indexOf('sem_')!==0)key='sem_'+name;
+  if(semHasLive(key)){skipped.push(name);return;}
+  try{localStorage.setItem(key,JSON.stringify(p));restored.push(name);}catch(e){}
+ });
+ return{restored:restored,skipped:skipped};
+}
+function semParseImport(text,selfName){
+ var d;try{d=JSON.parse(text);}catch(e){return null;}
+ if(d&&d.steps&&typeof d.steps==='object'){
+  var own=d.steps[selfName];
+  return{bundle:d,ownRows:(own&&own.rows)||[],format:'bundle'};
+ }
+ if(d&&(Array.isArray(d.rows)||Array.isArray(d.cards)||Array.isArray(d))){
+  var rows=Array.isArray(d)?d:(d.rows||d.cards);
+  var wrap={schema:'sem.bundle.v1',program:'СЭМ: курсы 2-4 и финал',exportedAt:new Date().toISOString(),steps:{}};
+  wrap.steps[selfName]={schema:d.schema||'',rev:d.rev||1,updatedAt:d.updatedAt||'',meta:d.meta||{},rows:rows};
+  return{bundle:wrap,ownRows:rows,format:'step'};
+ }
+ return null;
+}
 
-/* ========== ОТРИСОВКА УЧЕБНОЙ КАРТОЧКИ ========== */
-function renderEdu() {
-  var box = $('eduBox');
-  var c = EDU_CARDS[eduState.i];
-  var ans = eduState.answers;
+/* ========== ПРАВИЛА ДЛЯ УЧЕНИКА ========== */
+var SEM_RULES=[
+ 'Конструктор считает ранг и значимость по вашим ответам и оформляет черновик в Word: таблицу можно обсудить с коллегами и дополнить в редакторе.',
+ 'Номер записи сквозной: запись пришла из реестра аспектов под своим номером и сохранит его в обязательствах, рисках, целях и плане.',
+ 'Ранг присваивается автоматически по ответам о требованиях и мерах и не правится вручную: так разные записи оцениваются одинаково. Свое мнение сверх правила запишите в обоснование и в поле экологических оснований.',
+ 'Ранг 3 или 4 не отменяет значимость, если подтверждены экологические основания или есть сигнал стороны либо надзора: для этого есть отдельное поле, и оно меняет итоговую значимость.',
+ 'Импортированные поля открыты для правок: уточнить их можно здесь. Источник хранит свою версию, поэтому после правки импортированного обновите запись и в реестре аспектов, чтобы версии не разошлись.',
+ 'При повторном импорте конструктор сравнивает версии: если источник изменился, он покажет различия и предложит оставить вашу версию, обновить из источника или создать копию.',
+ 'Единый файл курса содержит черновики всех шагов программы и скачивается из любого конструктора. При загрузке свой шаг сливается по правилу: заполненные поля не перезаписываются, дополняются только пустые.',
+ 'Шаги других ступеней возвращаются в этот браузер при загрузке единого файла, если их здесь нет; существующие не трогаются.',
+ 'Черновик хранится только в этом браузере на этом устройстве. На сервер ничего не отправляется.',
+ 'Черновик пропадет, если открыть курс в другом браузере или на другом устройстве, работать в приватном режиме, очистить данные сайтов или если платформа откроет конструктор с другого адреса.',
+ 'Надежные копии - два файла. Word это документ для обсуждения и согласования. Единый файл JSON это данные всей программы для переноса.',
+ 'Полная очистка удаляет только черновик этого шага. Данные других шагов программы остаются.',
+ 'Конструктор не проверяет данные и не подтверждает соответствие СЭМ стандарту. Он помогает посчитать ранг по единому правилу и ничего не потерять.'
+];
+function semToggleRules(btn){
+ var screen=btn.closest('.screen');
+ var wrap=screen?screen.querySelector('.sem-rules'):null;
+ if(!wrap)return;
+ semKeepPlace(btn,function(){
+  var show=wrap.hidden;
+  wrap.hidden=!show;
+  if(show&&!wrap.innerHTML){
+   var h='<h2>Правила и передача данных</h2><ol>';
+   SEM_RULES.forEach(function(p){h+='<li>'+esc(p)+'</li>';});
+   h+='</ol>';
+   wrap.innerHTML=h;
+  }
+ });
+}
 
-  var h = '<span class="chip rank">Карточка ' + (eduState.i + 1) + ' из ' + EDU_CARDS.length + '</span>';
-  h += '<h1>Учебный завод: ' + esc(c.title) + '</h1>';
-  h += '<div class="edu-facts"><strong>Исходные данные</strong><ul>';
-  c.facts.forEach(function(f) { h += '<li>' + esc(f) + '</li>'; });
-  h += '</ul></div>';
-
-  h += '<details class="block" open><summary>Экологические критерии</summary><div class="block-body">';
-  ['e1', 'e2', 'e3'].forEach(function(k) {
-    h += eduField(k, QUESTIONS[k], c.hints[k], ans[k] || '');
-  });
-  h += '</div></details>';
-
-  h += '<details class="block" open><summary>Требования и меры</summary><div class="block-body">';
-  h += eduField('q1', QUESTIONS.q1, c.hints.q1, ans.q1 || '');
-  if (ans.q1 === 'yes') {
-    h += eduField('q2', QUESTIONS.q2, c.hints.q2, ans.q2 || '');
-    if (ans.q2 === 'yes') {
-      h += eduField('q3', QUESTIONS.q3, c.hints.q3, ans.q3 || '');
-      if (ans.q3 === 'no') h += eduField('qSmall', QUESTIONS.qSmall, c.hints.qSmall, ans.qSmall || '');
+/* ========== ПРИВЯЗКА К МЕСТУ ========== */
+function semKeepPlace(el,mutate){
+ var before=el.getBoundingClientRect().top+window.pageYOffset;
+ mutate();
+ resizeIframe();
+ var after=el.getBoundingClientRect().top+window.pageYOffset;
+ var delta=after-before;
+ if(Math.abs(delta)>2)window.scrollTo(0,Math.max(0,window.pageYOffset+delta));
+ semParentHold(el);
+}
+function semParentHold(el){
+ try{
+  if(!window.parentIFrame||typeof window.parentIFrame.getPageInfo!=='function')return;
+  var yInIframe=el.getBoundingClientRect().top+window.pageYOffset;
+  window.parentIFrame.getPageInfo(function(info){
+   try{
+    var yInView=info.iframeTop+yInIframe-info.scrollTop;
+    if(yInView<0||yInView>info.clientHeight-90){
+     if(typeof window.parentIFrame.scrollTo==='function')window.parentIFrame.scrollTo(0,Math.max(0,yInIframe-60));
     }
-  }
-  h += '</div></details>';
-
-  h += '<details class="block" open><summary>Вопрос заинтересованной стороны</summary><div class="block-body">';
-  h += eduField('sQ', QUESTIONS.sQ, c.hints.sQ, ans.sQ || '');
-  h += '</div></details>';
-
-  var fakeRow = {
-    e: { e1: ans.e1 || '', e2: ans.e2 || '', e3: ans.e3 || '' },
-    q: { q1: ans.q1 || '', q2: ans.q2 || '', q3: ans.q3 || '', qSmall: ans.qSmall || '' },
-    sQ: ans.sQ || ''
-  };
-  var rankRes = deriveRank(fakeRow);
-  var sigRes = deriveSignificance(fakeRow);
-  var contradictions = findContradictions(fakeRow);
-
-  h += '<div class="result-panel">';
-  h += '<p><span class="chip rank">Ранг: ' + rankLabel(rankRes.rank) + '</span>';
-  h += '<span class="chip ' + sigChip(sigRes.significance) + '">' + sigLabel(sigRes.significance) + '</span></p>';
-  if (rankRes.reason) h += '<p><strong>Основание ранга:</strong> ' + esc(rankRes.reason) + '</p>';
-  if (sigRes.reasons.length) h += '<p><strong>Причины значимости:</strong> ' + esc(sigRes.reasons.join('; ')) + '</p>';
-  if (contradictions.length) contradictions.forEach(function(cc) { h += '<div class="contra">' + esc(cc) + '</div>'; });
-  h += '</div>';
-
-  var match = checkMatch(fakeRow, c.expectedAnswers);
-  if (match.all) {
-    h += '<div class="result-panel"><p><strong>Все ответы совпали с разбором карточки.</strong></p><p>' + esc(c.expected.reason) + '</p></div>';
-    h += '<div class="nav-buttons"><button class="btn btn-primary" onclick="eduNext()">' + (eduState.i < EDU_CARDS.length - 1 ? 'Следующая карточка' : 'К выбору режимов') + '</button></div>';
-  } else {
-    h += '<div class="warn-box">Есть расхождения с ожидаемыми ответами. Проверьте факты карточки и подсказки под каждым вопросом, либо откройте полный разбор.</div>';
-    h += '<div class="nav-buttons">';
-    h += '<button class="btn btn-secondary" onclick="eduExplain()">Открыть разбор</button>';
-    h += '<button class="btn btn-primary" onclick="eduNext()">' + (eduState.i < EDU_CARDS.length - 1 ? 'Следующая карточка' : 'К выбору режимов') + '</button>';
-    h += '</div>';
-  }
-
-  h += '<div class="nav-buttons"><button class="btn btn-secondary" onclick="showScreen(\'screen-intro\')">К выбору режимов</button></div>';
-  box.innerHTML = h;
-  resizeIframe();
-}
-
-function eduField(key, question, hint, cur) {
-  var h = '<div class="field">';
-  h += '<div class="field-header"><label>' + question + '</label>';
-  h += '<button type="button" class="btn-example" onclick="toggleExample(this)">Подсказка</button></div>';
-  h += '<div class="example-box"><strong>Как думать об этом вопросе</strong>' + esc(hint) + '</div>';
-  h += '<select onchange="eduAnswer(\'' + key + '\',this.value)">';
-  h += '<option value="">Еще не отвечено</option>';
-  if (key === 'q1') {
-    h += '<option value="yes"' + (cur === 'yes' ? ' selected' : '') + '>Да, требования установлены</option>';
-    h += '<option value="none"' + (cur === 'none' ? ' selected' : '') + '>Нет, проверка завершена, применимые требования не выявлены</option>';
-    h += '<option value="unclear"' + (cur === 'unclear' ? ' selected' : '') + '>Проверка не завершена или применимость неясна</option>';
-  } else if (key === 'sQ') {
-    h += '<option value="yes"' + (cur === 'yes' ? ' selected' : '') + '>Да, основание подтверждено</option>';
-    h += '<option value="signal"' + (cur === 'signal' ? ' selected' : '') + '>Есть сигнал, обстоятельства еще проверяются</option>';
-    h += '<option value="no"' + (cur === 'no' ? ' selected' : '') + '>Нет, проверка завершена</option>';
-    h += '<option value="unknown"' + (cur === 'unknown' ? ' selected' : '') + '>Пока неизвестно</option>';
-  } else {
-    h += '<option value="yes"' + (cur === 'yes' ? ' selected' : '') + '>Да</option>';
-    h += '<option value="no"' + (cur === 'no' ? ' selected' : '') + '>Нет</option>';
-    h += '<option value="unknown"' + (cur === 'unknown' ? ' selected' : '') + '>Пока неизвестно</option>';
-  }
-  h += '</select></div>';
-  return h;
-}
-
-function eduAnswer(key, val) {
-  eduState.answers[key] = val;
-  if (key === 'q1' && val !== 'yes') {
-    eduState.answers.q2 = ''; eduState.answers.q3 = ''; eduState.answers.qSmall = '';
-  }
-  if (key === 'q2' && val !== 'yes') {
-    eduState.answers.q3 = ''; eduState.answers.qSmall = '';
-  }
-  if (key === 'q3' && val !== 'no') {
-    eduState.answers.qSmall = '';
-  }
-  renderEdu();
-}
-
-function checkMatch(row, expected) {
-  var keys = ['e1', 'e2', 'e3', 'q1', 'q2', 'q3', 'qSmall', 'sQ'];
-  var ok = {}, miss = [];
-  keys.forEach(function(k) {
-    var got = row[k] || '';
-    var want = expected[k] ? expected[k].v : '';
-    if (got === want) ok[k] = true;
-    else { ok[k] = false; miss.push(k); }
+   }catch(e){}
   });
-  return { all: miss.length === 0, ok: ok, miss: miss };
+ }catch(e){}
 }
-
-function eduExplain() {
-  var c = EDU_CARDS[eduState.i];
-  var box = $('eduBox');
-  var fakeRow = {
-    e: { e1: eduState.answers.e1 || '', e2: eduState.answers.e2 || '', e3: eduState.answers.e3 || '' },
-    q: { q1: eduState.answers.q1 || '', q2: eduState.answers.q2 || '', q3: eduState.answers.q3 || '', qSmall: eduState.answers.qSmall || '' },
-    sQ: eduState.answers.sQ || ''
-  };
-  var match = checkMatch(fakeRow, c.expectedAnswers);
-
-  var h = '<div class="result-panel"><p><strong>Разбор карточки.</strong></p>';
-  h += '<p>Ожидаемый результат: ' + (c.expected.rank === null ? 'ранг не определен' : 'ранг ' + c.expected.rank) + ', «' + sigLabel(c.expected.significance) + '».</p>';
-  h += '<p>' + esc(c.expected.reason) + '</p>';
-
-  if (match.miss.length > 0) {
-    h += '<p><strong>Где расхождение с ожидаемыми ответами:</strong></p><ul>';
-    match.miss.forEach(function(k) {
-      var got = fakeRow[k] || '(не отвечено)';
-      var want = c.expectedAnswers[k] ? c.expectedAnswers[k].v : '(не требуется)';
-      var wantLabel = want === '' ? 'не требуется' : want === 'yes' ? 'Да' : want === 'no' ? 'Нет' : want === 'unknown' ? 'Пока неизвестно' : want === 'none' ? 'Нет, проверка завершена' : want === 'unclear' ? 'Проверка не завершена' : want === 'signal' ? 'Есть сигнал' : want;
-      var gotLabel = got === '' ? 'не отвечено' : got === 'yes' ? 'Да' : got === 'no' ? 'Нет' : got === 'unknown' ? 'Пока неизвестно' : got === 'none' ? 'Нет, проверка завершена' : got === 'unclear' ? 'Проверка не завершена' : got === 'signal' ? 'Есть сигнал' : got;
-      h += '<li><strong>' + QUESTIONS[k] + '</strong> — ваш ответ: «' + gotLabel + '», ожидаемый: «' + wantLabel + '». Подсказка: ' + esc(c.hints[k]) + '</li>';
-    });
-    h += '</ul>';
-  } else {
-    h += '<p>Все ответы совпали с ожидаемыми.</p>';
-  }
-
-  h += '<p><strong>Пошаговый разбор:</strong></p><pre style="white-space:pre-wrap;font-family:inherit;font-size:13px;background:var(--gray);padding:10px;border-radius:8px;">' + esc(c.walkthrough) + '</pre>';
-  h += '<p>Карточка отмечена как «разобрана с пояснением».</p></div>';
-
-  h += '<div class="nav-buttons"><button class="btn btn-primary" onclick="eduNext()">' + (eduState.i < EDU_CARDS.length - 1 ? 'Следующая карточка' : 'К выбору режимов') + '</button></div>';
-  box.insertAdjacentHTML('beforeend', h);
+document.addEventListener('click',function(e){
+ var s=e.target&&e.target.closest?e.target.closest('details>summary'):null;
+ if(!s)return;
+ var before=s.getBoundingClientRect().top+window.pageYOffset;
+ setTimeout(function(){
+  var after=s.getBoundingClientRect().top+window.pageYOffset;
+  var delta=after-before;
+  if(Math.abs(delta)>2)window.scrollTo(0,Math.max(0,window.pageYOffset+delta));
   resizeIframe();
+  semParentHold(s);
+ },0);
+},true);
+function semExample(btn){
+ var box=btn.nextElementSibling;
+ if(!box)return;
+ semKeepPlace(btn,function(){
+  var show=box.style.display!=='block';
+  box.style.display=show?'block':'none';
+  box.classList.toggle('show',show);
+  btn.textContent=show?'Скрыть пример':'Показать пример';
+  btn.setAttribute('aria-expanded',show?'true':'false');
+ });
 }
 
-function eduNext() {
-  eduState.i++;
-  eduState.answers = {};
-  if (eduState.i >= EDU_CARDS.length) {
-    showScreen('screen-intro');
-  } else {
-    renderEdu();
+/* ========== СЛУЖЕБНОЕ ========== */
+var STORAGE_KEY='sem_significance';
+var SCHEMA='sem.significance.v3';
+var SOURCE_KEY='sem_aspects';
+var SOURCE_ALIASES=['sem-aspect-records-v3','sem-aspect-records-v2','sem-aspect-records-v1','sem-chain-constructor-v1'];
+var CONDITIONS=[['normal','Обычная работа'],['startup','Пуск и останов'],['accident','Аварии и инциденты']];
+var TYPES=[['direct','Прямой'],['indirect','Непрямой']];
+var Q1=[['','Еще не отвечено'],['yes','Да, требования установлены'],['none','Проверка завершена, применимые требования не выявлены'],['unclear','Проверка не завершена или нужно уточнить применимость']];
+var Q2=[['','Еще не отвечено'],['full','Да, выполняются полностью'],['partial','Да, но частично'],['no','Нет, не выполняются']];
+var Q3=[['','Еще не отвечено'],['yes','Да, выполнение держится на специальных мерах'],['no','Нет, специальные меры не требуются']];
+var ECO=[['','Оснований сверх ранга нет'],['yes','Да, подтверждено воздействие, которое не отменяется рангом'],['signal','Есть сигнал стороны или надзора, обстоятельства проверяются']];
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function today(){var d=new Date();return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();}
+function condLabel(v){for(var i=0;i<CONDITIONS.length;i++)if(CONDITIONS[i][0]===v)return CONDITIONS[i][1];return v||'-';}
+function typeLabel(v){for(var i=0;i<TYPES.length;i++)if(TYPES[i][0]===v)return TYPES[i][1];return v||'-';}
+function qLabel(opts,v){for(var i=0;i<opts.length;i++)if(opts[i][0]===v)return opts[i][1];return 'еще не отвечено';}
+function resizeIframe(){if(window.parentIFrame&&typeof window.parentIFrame.size==='function')window.parentIFrame.size();}
+function showScreen(id){['screen-intro','screen-example','screen-work','screen-compare','screen-preview'].forEach(function(s){$(s).classList.remove('active');});$(id).classList.add('active');var h=$(id).querySelector('h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true});}window.scrollTo(0,0);resizeIframe();}
+function showStorageWarn(){var w=document.querySelectorAll('.storage-warn');for(var i=0;i<w.length;i++)w[i].classList.add('show');resizeIframe();}
+function sigOfRow(r){return ((r.operation||'')+'|'+(r.aspect||'')+'|'+(r.impact||'')).toLowerCase();}
+function ctxHash(r){return JSON.stringify([r.operation,r.conditions,r.aspect,r.impact,r.aspectType]);}
+
+/* ========== РАСЧЕТ РАНГА И ЗНАЧИМОСТИ ========== */
+function computeResult(r){
+ var rank=null;
+ if(r.q1==='yes'){
+  if(r.q2==='no'||r.q2==='partial')rank=1;
+  else if(r.q2==='full'){
+   if(r.q3==='yes')rank=2;
+   else if(r.q3==='no')rank=3;
   }
+ } else if(r.q1==='none')rank=4;
+ var sig,why;
+ if(r.ecoGround==='yes'){sig='significant';why='значимость по подтвержденному экологическому основанию, ранг ее не отменяет';}
+ else if(rank===1||rank===2){sig='significant';why='ранг '+rank+' по учебному правилу';}
+ else if(r.ecoGround==='signal'){sig='incomplete';why='сигнал стороны или надзора проверяется, оценка не завершена';}
+ else if(rank===null){sig='incomplete';why='сведений для ранга не хватает, оценка не завершена';}
+ else{sig='notsignificant';why='ранг '+rank+', положительных оснований сверх ранга нет';}
+ return{rank:rank,sig:sig,why:why};
 }
+function sigLabel(s){return s==='significant'?'Значимый':s==='notsignificant'?'Не значимый':'Оценка не завершена';}
+function sigChip(s){return s==='significant'?'sig':s==='notsignificant'?'ins':'inc';}
 
 /* ========== СОСТОЯНИЕ ========== */
-var state = {
-  meta: { org: '', date: '', author: '' },
-  rows: [],
-  nextNum: 1,
-  activeId: null,
-  imported: []
-};
-var bodiesById = {};
-var storageOk = true;
-var pendingCmp = null;
+var state={meta:{org:'',date:'',author:''},rows:[],activeNum:null,rev:1};
+var bodiesById={},storageOk=true,pendingQueue=[],pendingCmp=null;
+function newRow(num){return{num:num,operation:'',conditions:'normal',aspect:'',impact:'',aspectType:'direct',q1:'',q2:'',q3:'',measures:'',rankNote:'',ecoGround:'',ecoGroundNote:'',clarify:false,clarifyText:'',srcSig:'',srcHash:'',imported:false,srcName:'',needsReview:false};}
 
-/* ========== УТИЛИТЫ ========== */
-function $(id) { return document.getElementById(id); }
-function esc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;'); }
-function nl(s) { return esc(s).replace(/\n/g, '<br>'); }
-function today() {
-  var d = new Date();
-  return String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
+/* ========== ПАМЯТЬ И МИГРАЦИЯ ========== */
+function saveOwn(){if(!storageOk)return;try{state.rev++;localStorage.setItem(STORAGE_KEY,JSON.stringify({schema:SCHEMA,rev:state.rev,updatedAt:new Date().toISOString(),meta:state.meta,rows:state.rows,activeNum:state.activeNum}));var d=new Date();$('saveStatus').textContent='Черновик сохранен в этом браузере в '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+'.';}catch(e){storageOk=false;showStorageWarn();}}
+function migrate(r,num){
+ var row=newRow(num||r.num||0);
+ ['operation','conditions','aspect','impact','aspectType','q1','q2','q3','measures','rankNote','ecoGround','ecoGroundNote','clarifyText','srcSig','srcHash','srcName'].forEach(function(k){if(r[k]!==undefined&&r[k]!==null)row[k]=r[k];});
+ row.clarify=!!r.clarify;row.imported=!!r.imported;row.needsReview=!!r.needsReview;
+ if(typeof row.conditions==='string'&&row.conditions.indexOf('авар')>=0)row.conditions='accident';
+ else if(typeof row.conditions==='string'&&row.conditions.indexOf('пуск')>=0)row.conditions='startup';
+ else if(typeof row.conditions==='string'&&row.conditions.indexOf('орм')>=0)row.conditions='normal';
+ if(!row.q1&&r.q){row.q1=r.q.q1||'';row.q2=r.q.q2==='yes'?'full':(r.q.q2==='no'?'no':(r.q.q2||''));row.q3=r.q.q3||'';}
+ if(!row.ecoGround){
+  var e=r.e||{};
+  if(e.e1==='yes'||e.e2==='yes'||e.e3==='yes')row.ecoGround='yes';
+  else if(r.sQ==='yes')row.ecoGround='yes';
+  else if(r.sQ==='signal')row.ecoGround='signal';
+ }
+ if(!row.rankNote)row.rankNote=r.note||'';
+ if(!row.clarifyText)row.clarifyText=r.missing||'';
+ return row;
 }
-function resizeIframe() {
-  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') window.parentIFrame.size();
+function loadOwn(){
+ try{
+  var raw=localStorage.getItem(STORAGE_KEY);
+  if(raw){var d=JSON.parse(raw);var arr=d.rows||[];if(Array.isArray(arr)){state.meta=Object.assign({org:'',date:'',author:''},d.meta||{});state.activeNum=d.activeNum||null;state.rev=Number(d.rev)||1;state.rows=arr.map(function(r,i){return migrate(r,r.num||i+1);});return true;}}
+  var aliases=['sem-ranks-v3','sem-ranks-significance-v3','sem-ranks-v2','sem-ranks-v1'];
+  for(var i=0;i<aliases.length;i++){
+   raw=localStorage.getItem(aliases[i]);if(!raw)continue;
+   var ld=JSON.parse(raw);var src=ld.rows||ld.cards||[];if(!Array.isArray(src)||!src.length)continue;
+   state.rows=src.map(function(r,idx){return migrate(r,idx+1);});
+   state.activeNum=state.rows.length?state.rows[0].num:null;
+   return true;
+  }
+ }catch(e){}
+ return false;
 }
-function showScreen(id) {
-  ['screen-intro', 'screen-edu', 'screen-own', 'screen-compare', 'screen-preview'].forEach(function(s) {
-    $(s).classList.remove('active');
+function testStorage(){try{localStorage.setItem(STORAGE_KEY+'-t','1');localStorage.removeItem(STORAGE_KEY+'-t');}catch(e){storageOk=false;showStorageWarn();}}
+
+/* ========== ЕДИНЫЙ ФАЙЛ ========== */
+function exportJson(){
+ var present=semExportBundle();
+ jsonMsg('Скачан единый файл программы. В нем шаги: '+(present.length?present.join(', '):'пока только этот черновик')+'. Шаги, которых нет в этом браузере, добавлены из кеша переноса, если вы раньше загружали единый файл.');
+}
+function importJson(input){
+ var f=input.files&&input.files[0];if(!f)return;
+ var rd=new FileReader();
+ rd.onload=function(){
+  var parsed=semParseImport(rd.result,'significance');
+  if(!parsed){jsonMsg('Файл не похож на данные программы: не распознан ни единый файл, ни черновик шага.');input.value='';return;}
+  semCacheBundle(parsed.bundle);
+  var res=semRestoreMissingSteps(parsed.bundle,'significance');
+  var extra='';
+  if(res.restored.length)extra=' Вернул в этот браузер отсутствовавшие шаги программы: '+res.restored.length+'. Их увидите в своих конструкторах при импорте.';
+  else if(res.skipped.length)extra=' Шаги, которые уже есть в этом браузере, не перезаписаны.';
+  var added=0,filled=0;
+  (parsed.ownRows||[]).forEach(function(it){
+   var m=migrate(it,it.num||0);
+   var ex=null;state.rows.forEach(function(r){if(r.num===m.num)ex=r;});
+   if(ex){['operation','conditions','aspect','impact','aspectType','q1','q2','q3','measures','rankNote','ecoGround','ecoGroundNote','clarifyText'].forEach(function(k){if(m[k]&&!ex[k]){ex[k]=m[k];filled++;}});}
+   else{if(!m.num||state.rows.some(function(r){return r.num===m.num;})){var max=0;state.rows.forEach(function(r){if(r.num>max)max=r.num;});m.num=max+1;}state.rows.push(m);added++;}
   });
-  $(id).classList.add('active');
-  var h = $(id).querySelector('h1');
-  if (h) { h.setAttribute('tabindex', '-1'); h.focus({ preventScroll: true }); }
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  resizeIframe();
+  state.rows.sort(function(a,b){return a.num-b.num;});
+  if(!state.activeNum&&state.rows.length)state.activeNum=state.rows[0].num;
+  refreshTabs();saveOwn();
+  jsonMsg('Данные загружены. Новых записей этого шага: '+added+'. Дополнено пустых полей: '+filled+'. Заполненные ранее поля не перезаписаны.'+extra);
+  input.value='';
+ };
+ rd.readAsText(f);
 }
-function showStorageWarn() {
-  var w = document.querySelectorAll('.storage-warn');
-  for (var i = 0; i < w.length; i++) w[i].classList.add('show');
-  resizeIframe();
-}
+function jsonMsg(t){var m=$('jsonMsg');m.style.display='block';m.textContent=t;resizeIframe();}
 
-/* ========== РАСЧЕТЫ ========== */
-function deriveRank(row) {
-  var q = row.q;
-  if (q.q1 === 'yes') {
-    if (q.q2 === 'no') return { rank: 1, reason: 'Требования установлены, но не выполняются' };
-    if (q.q2 === 'yes') {
-      if (q.q3 === 'yes') return { rank: 2, reason: 'Выполнение зависит от конкретных мер' };
-      if (q.q3 === 'no') {
-        if (q.qSmall === 'yes') return { rank: 3, reason: 'Выполнение без специальных мер, небольшое воздействие подтверждено' };
-        if (q.qSmall === 'no' || q.qSmall === 'unknown') return { rank: null, reason: 'Небольшое воздействие не подтверждено: ранг 3 не присваивается автоматически' };
-        return { rank: null, reason: 'Не хватает ответа о небольшом воздействии' };
-      }
-      return { rank: null, reason: 'Не хватает ответа о мерах' };
-    }
-    return { rank: null, reason: 'Не хватает ответа о выполнении' };
+/* ========== ИМПОРТ ИЗ РЕЕСТРА АСПЕКТОВ ========== */
+function readSource(){
+ var keys=[SOURCE_KEY].concat(SOURCE_ALIASES);
+ for(var i=0;i<keys.length;i++){
+  try{var raw=localStorage.getItem(keys[i]);if(!raw)continue;var d=JSON.parse(raw);var arr=d.rows||d.cards||[];if(Array.isArray(arr)&&arr.length)return arr;}catch(e){}
+ }
+ return null;
+}
+function importRegistry(){
+ var src=readSource();
+ if(!src){jsonMsg('Записи реестра аспектов не найдены в этом браузере. Импорт доступен, если оба конструктора имеют доступ к одному локальному хранилищу. Если записей нет, заполните строки вручную или загрузите единый файл.');resizeIframe();return;}
+ var added=0,skipped=0,changed=0;
+ var taken={};state.rows.forEach(function(r){taken[r.srcSig||sigOfRow(r)]=r;});
+ src.forEach(function(it){
+  var f=it.f||it;
+  var ctx={operation:f.operation||f.process||'',conditions:f.conditions||'normal',aspect:f.aspect||'',impact:f.impact||'',aspectType:f.aspectType||'direct'};
+  if(typeof ctx.conditions==='string'&&ctx.conditions.indexOf('авар')>=0)ctx.conditions='accident';
+  else if(typeof ctx.conditions==='string'&&ctx.conditions.indexOf('пуск')>=0)ctx.conditions='startup';
+  else if(typeof ctx.conditions==='string'&&ctx.conditions.indexOf('орм')>=0)ctx.conditions='normal';
+  if(!ctx.operation&&!ctx.aspect)return;
+  var s=sigOfRow(ctx);
+  var ex=taken[s];
+  var h=ctxHash(ctx);
+  if(ex){
+   if(ex.srcHash===h){skipped++;return;}
+   changed++;pendingQueue.push({ctx:ctx,h:h,row:ex,clarify:!!(it.clarify||f.clarify),clarifyText:f.clarifyText||f.missing||'',num:it.num||0});
+   return;
   }
-  if (q.q1 === 'none') return { rank: 4, reason: 'Проверка завершена, применимые требования не выявлены' };
-  if (q.q1 === 'unclear') return { rank: null, reason: 'Проверка требований не завершена или применимость неясна' };
-  return { rank: null, reason: 'Не хватает ответа о требованиях' };
+  var num=it.num||0;
+  if(!num||state.rows.some(function(r){return r.num===num;})){var max=0;state.rows.forEach(function(r){if(r.num>max)max=r.num;});num=max+1;}
+  var row=newRow(num);
+  ['operation','conditions','aspect','impact','aspectType'].forEach(function(k){row[k]=ctx[k];});
+  row.clarify=!!(it.clarify||f.clarify);row.clarifyText=f.clarifyText||f.missing||'';
+  row.imported=true;row.srcSig=s;row.srcHash=h;row.srcName='Реестр аспектов';
+  state.rows.push(row);taken[s]=row;added++;
+ });
+ state.rows.sort(function(a,b){return a.num-b.num;});
+ refreshTabs();saveOwn();
+ jsonMsg('Импорт завершен. Перенесено записей: '+added+'. Уже в реестре: '+skipped+'. Требует сравнения: '+changed+'.');
+ if(pendingQueue.length)openNextCompare();else showScreen('screen-work');
+ resizeIframe();
 }
+function openNextCompare(){
+ var pc=pendingQueue.shift();if(!pc){showScreen('screen-work');return;}
+ pendingCmp=pc;
+ var rows='';
+ [['operation','Операция'],['conditions','Условия'],['aspect','Аспект'],['impact','Воздействие'],['aspectType','Тип аспекта']].forEach(function(p){
+  var cur=pc.row[p[0]]||'';var srcv=pc.ctx[p[0]]||'';
+  if(p[0]==='conditions'){cur=condLabel(cur);srcv=condLabel(srcv);}
+  if(p[0]==='aspectType'){cur=typeLabel(cur);srcv=typeLabel(srcv);}
+  if(String(cur)===String(srcv))return;
+  rows+='<tr><th>'+p[1]+'</th><td>'+esc(cur||'(пусто)')+'</td><td>'+esc(srcv||'(пусто)')+'</td></tr>';
+ });
+ $('cmpBox').innerHTML='<table class="cmp-table"><thead><tr><th>Поле</th><th>Моя запись '+pc.row.num+'</th><th>В реестре аспектов</th></tr></thead><tbody>'+rows+'</tbody></table>';
+ showScreen('screen-compare');
+}
+function afterCmp(){pendingCmp=null;if(pendingQueue.length)openNextCompare();else{refreshTabs();saveOwn();showScreen('screen-work');}}
+function cmpKeep(){if(pendingCmp){pendingCmp.row.srcHash=pendingCmp.h;}afterCmp();}
+function cmpUpdate(){
+ if(pendingCmp){
+  var r=pendingCmp.row;
+  ['operation','conditions','aspect','impact','aspectType'].forEach(function(k){r[k]=pendingCmp.ctx[k];});
+  if(pendingCmp.clarifyText)r.clarifyText=pendingCmp.clarifyText;
+  r.clarify=r.clarify||pendingCmp.clarify;
+  r.srcHash=pendingCmp.h;r.needsReview=true;
+ }
+ afterCmp();
+}
+function cmpCopy(){
+ if(pendingCmp){
+  var max=0;state.rows.forEach(function(r){if(r.num>max)max=r.num;});
+  var row=newRow(max+1);
+  ['operation','conditions','aspect','impact','aspectType'].forEach(function(k){row[k]=pendingCmp.ctx[k];});
+  row.clarify=pendingCmp.clarify;row.clarifyText=pendingCmp.clarifyText;
+  row.imported=true;row.srcSig=pendingCmp.row.srcSig;row.srcHash=pendingCmp.h;row.srcName='Реестр аспектов';
+  state.rows.push(row);
+ }
+ afterCmp();
+}
+function clearReview(num){state.rows.forEach(function(r){if(r.num===num)r.needsReview=false;});refreshTabs();saveOwn();}
 
-function deriveSignificance(row) {
-  var reasons = [], unknowns = [];
-  ['e1', 'e2', 'e3'].forEach(function(k) {
-    if (row.e[k] === 'yes') reasons.push('Экологический критерий ' + k.toUpperCase());
-    if (row.e[k] === 'unknown') unknowns.push(k.toUpperCase());
+/* ========== ВКЛАДКИ И ЗАПИСИ ========== */
+function startWork(){
+ if(!state.rows.length)addRow(true);
+ if(!state.meta.date)state.meta.date=today();
+ $('m-org').value=state.meta.org;$('m-date').value=state.meta.date;$('m-author').value=state.meta.author;
+ refreshTabs();showScreen('screen-work');
+}
+function refreshTabs(){
+ var bar=$('tabsBar'),box=$('panelsBox');bar.innerHTML='';
+ state.rows.forEach(function(r){if(!bodiesById[r.num]){var b=buildRow(r);bodiesById[r.num]=b;box.appendChild(b);}});
+ Object.keys(bodiesById).forEach(function(n){var ex=state.rows.some(function(r){return r.num===Number(n);});if(!ex){bodiesById[n].remove();delete bodiesById[n];}});
+ if(!state.rows.some(function(r){return r.num===state.activeNum;}))state.activeNum=state.rows.length?state.rows[0].num:null;
+ state.rows.forEach(function(r){
+  var t=document.createElement('button');t.type='button';t.className='tab-btn';t.id='tab-'+r.num;
+  t.setAttribute('role','tab');t.setAttribute('aria-controls','panel-'+r.num);
+  t.setAttribute('aria-selected',r.num===state.activeNum?'true':'false');
+  t.onclick=function(){state.activeNum=r.num;applyActive();saveOwn();window.scrollTo(0,0);resizeIframe();};
+  var nm=document.createElement('span');nm.className='tab-name';nm.id='tabname-'+r.num;
+  nm.textContent=r.operation.trim()?r.operation.trim():'новая запись';
+  t.appendChild(document.createTextNode(r.num+'. '));t.appendChild(nm);bar.appendChild(t);
+ });
+ var add=document.createElement('button');add.type='button';add.className='tab-add';add.textContent='Добавить запись';
+ add.onclick=function(){addRow(false);};bar.appendChild(add);
+ applyActive();
+}
+function applyActive(){state.rows.forEach(function(r){var p=bodiesById[r.num],t=$('tab-'+r.num);if(p)p.hidden=r.num!==state.activeNum;if(t)t.setAttribute('aria-selected',r.num===state.activeNum?'true':'false');});}
+function addRow(first){var max=0;state.rows.forEach(function(r){if(r.num>max)max=r.num;});var r=newRow(max+1);state.rows.push(r);state.activeNum=r.num;refreshTabs();saveOwn();if(!first){var el=$('f-'+r.num+'-operation');if(el)el.focus();}resizeIframe();}
+function deleteRow(num){var r=null;state.rows.forEach(function(x){if(x.num===num)r=x;});if(!r)return;if((r.rankNote||r.q1)&&!confirm('Удалить запись '+r.num+'? Ответы и обоснование будут потеряны.'))return;state.rows=state.rows.filter(function(x){return x.num!==num;});if(state.activeNum===num)state.activeNum=state.rows.length?state.rows[0].num:null;refreshTabs();saveOwn();resizeIframe();}
+function exBtn(id){return '<button type="button" class="ex-btn" aria-expanded="false" onclick="semExample(this)">Показать пример</button><div class="ex-box" id="ex-'+id+'"></div>';}
+function buildRow(r){
+ var panel=document.createElement('div');panel.className='tab-panel';panel.id='panel-'+r.num;
+ panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby','tab-'+r.num);
+ var head=document.createElement('div');head.className='panel-head';
+ var left=document.createElement('strong');left.textContent='Запись '+r.num;
+ var del=document.createElement('button');del.type='button';del.className='btn-small';del.textContent='Удалить запись';
+ del.onclick=function(){deleteRow(r.num);};
+ head.appendChild(left);head.appendChild(del);panel.appendChild(head);
+ var b=document.createElement('div');var h='';
+ if(r.imported)h+='<div class="imp-note">Запись импортирована из шага «'+esc(r.srcName||'Реестр аспектов')+'» под своим номером. Поля открыты для уточнения: правьте здесь и при необходимости обновите запись в источнике, чтобы версии не разошлись.</div>';
+ h+='<details class="blk" open><summary>Запись из реестра аспектов</summary><div class="blk-body">';
+ h+='<div class="field"><label for="f-'+r.num+'-operation">Операция или процесс <span class="req">(обязательное поле)</span></label><input type="text" id="f-'+r.num+'-operation" value="'+esc(r.operation)+'">'+exBtn(r.num+'-operation')+'</div>';
+ h+='<div class="field"><label for="f-'+r.num+'-conditions">Условия работы</label><select id="f-'+r.num+'-conditions">'+CONDITIONS.map(function(c){return '<option value="'+c[0]+'"'+(r.conditions===c[0]?' selected':'')+'>'+c[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-conditions')+'</div>';
+ h+='<div class="field"><label for="f-'+r.num+'-aspect">Экологический аспект <span class="req">(обязательное поле)</span></label><input type="text" id="f-'+r.num+'-aspect" value="'+esc(r.aspect)+'">'+exBtn(r.num+'-aspect')+'</div>';
+ h+='<div class="field"><label for="f-'+r.num+'-impact">Воздействие на среду <span class="req">(обязательное поле)</span></label><input type="text" id="f-'+r.num+'-impact" value="'+esc(r.impact)+'">'+exBtn(r.num+'-impact')+'</div>';
+ h+='<div class="field"><label for="f-'+r.num+'-aspectType">Тип аспекта</label><select id="f-'+r.num+'-aspectType">'+TYPES.map(function(t){return '<option value="'+t[0]+'"'+(r.aspectType===t[0]?' selected':'')+'>'+t[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-aspectType')+'</div>';
+ h+='</div></details>';
+ h+='<details class="blk" open><summary>Вопросы о требованиях и мерах</summary><div class="blk-body">';
+ h+='<div class="field"><label for="f-'+r.num+'-q1">По результатам проверки установлены применимые требования к этому аспекту или связанным действиям?</label><select id="f-'+r.num+'-q1">'+Q1.map(function(o){return '<option value="'+o[0]+'"'+(r.q1===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-q1')+'</div>';
+ h+='<div class="field" id="wrap-'+r.num+'-q2" style="'+(r.q1==='yes'?'':'display:none')+'"><label for="f-'+r.num+'-q2">Выполнение этих требований подтверждено доступными сведениями?</label><select id="f-'+r.num+'-q2">'+Q2.map(function(o){return '<option value="'+o[0]+'"'+(r.q2===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-q2')+'</div>';
+ h+='<div class="field" id="wrap-'+r.num+'-q3" style="'+(r.q1==='yes'&&r.q2==='full'?'':'display:none')+'"><label for="f-'+r.num+'-q3">Выполнение зависит от конкретных технических или организационных мер?</label><select id="f-'+r.num+'-q3">'+Q3.map(function(o){return '<option value="'+o[0]+'"'+(r.q3===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-q3')+'</div>';
+ h+='<div class="field" id="wrap-'+r.num+'-measures" style="'+(r.q3==='yes'?'':'display:none')+'"><label for="f-'+r.num+'-measures">Какие меры обеспечивают выполнение требования</label><input type="text" id="f-'+r.num+'-measures" value="'+esc(r.measures)+'">'+exBtn(r.num+'-measures')+'<div class="hint">Назовите оборудование, действия или правила работы. Измерения показывают результат, но не объясняют, за счет чего он достигается.</div></div>';
+h+='<details class="blk"><summary>Чек-лист для обоснования</summary><div class="blk-body"><ul>'+
+ '<li>Класс опасности вещества: к какому классу относится и установлен ли он; если класс не определен, запишите это как вопрос, а не как вывод.</li>'+
+ '<li>Валовый выброс, сброс или объем отхода за год и его доля в общем объеме предприятия: заметная доля усиливает обоснование, ничтожная - ослабляет.</li>'+
+ '<li>Вероятность превышения норматива или лимита: как часто возможны отклонения и что показывают данные мониторинга.</li>'+
+ '<li>Юридические последствия отступления: что грозит при отклонении от норм, от штрафа до приостановки деятельности или ущерба людям и водному объекту.</li>'+
+ '<li>Масштаб воздействия: в пределах площадки, за ее пределами, чувствительные природные объекты.</li>'+
+ '</ul><div class="hint">Это опора для обоснования, а не поля формы: выводы запишите своими словами в поле ниже. Конструктор не использует баллы и пороги. Если методика вашего предприятия применяет балльную оценку, выполните ее отдельно и назовите методику в обосновании: расчет конструктора от этого не меняется.</div></div></details>';
+ h+='</div></details>';
+ h+='<div class="field"><label for="f-'+r.num+'-rankNote">Обоснование ранга <span class="req">(обязательное поле)</span></label><textarea id="f-'+r.num+'-rankNote">'+esc(r.rankNote)+'</textarea>'+exBtn(r.num+'-rankNote')+'<div class="hint">Одно-два предложения: почему такой ранг и что за ним стоит.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-ecoGround">Экологические основания и сигналы сверх ранга</label><select id="f-'+r.num+'-ecoGround">'+ECO.map(function(o){return '<option value="'+o[0]+'"'+(r.ecoGround===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-ecoGround')+'<div class="hint">Ранг 3 или 4 не отменяет значимость, если подтверждены тяжелые, длительные или выходящие за площадку последствия, либо есть сигнал стороны или надзора.</div></div>';
+ h+='<div class="field" id="wrap-'+r.num+'-ecoGroundNote" style="'+(r.ecoGround?'':'display:none')+'"><label for="f-'+r.num+'-ecoGroundNote">Основание или что проверяется</label><input type="text" id="f-'+r.num+'-ecoGroundNote" value="'+esc(r.ecoGroundNote)+'">'+exBtn(r.num+'-ecoGroundNote')+'<div class="hint">Ссылка на данные мониторинга, заключение эксперта, обращение стороны или предписание.</div></div>';
+ h+='<div class="rank-panel" id="res-'+r.num+'"></div>';
+ h+='<div class="check-row"><input type="checkbox" id="f-'+r.num+'-clarify"'+(r.clarify?' checked':'')+'><label for="f-'+r.num+'-clarify" style="margin:0;font-weight:600">Часть сведений в этой записи еще уточняется</label></div>';
+ h+='<div class="field" id="wrap-'+r.num+'-clarifyText" style="'+(r.clarify?'':'display:none')+'"><label for="f-'+r.num+'-clarifyText">Что уточнить и где</label><textarea id="f-'+r.num+'-clarifyText">'+esc(r.clarifyText)+'</textarea>'+exBtn(r.num+'-clarifyText')+'</div>';
+ h+='<p class="status-line" id="st-'+r.num+'"></p>';
+ b.innerHTML=h;panel.appendChild(b);
+ var EX={operation:'Пример: пересыпание сырья, варка стекломассы, очистка сточных вод.',
+  conditions:'Пример: обычная работа - пересыпка по графику; пуск и останов - прогрев печи; аварии и инциденты - просыпь при разрыве рукава.',
+  aspect:'Пример: выброс пыли в атмосферный воздух при пересыпании сырья.',
+  impact:'Пример: загрязнение атмосферного воздуха.',
+  aspectType:'Пример: прямой - выброс из своей трубы; непрямой - перевозка отходов подрядчиком.',
+  q1:'Пример: ПДВ для выбросов, договор с Водоканалом по сбросам, нормативы образования отходов - требования установлены. Если проверка не нашла требований - выберите второй вариант.',
+  q2:'Пример: протокол контроля в пределах норматива - выполняются полностью; превышение по одному показателю - частично; претензия Водоканала - не выполняются.',
+  q3:'Пример: газоочистка, замена фильтров по графику, журналы контроля - меры есть; воздействие мало и обходится без специальных мер - второй вариант.',
+  measures:'Пример: укрытие узла пересыпки и порядок уборки просыпей; локальные очистные сооружения; график замены фильтров.',
+  rankNote:'Пример: превышение по нефтепродуктам подтверждено анализом и претензией, требование договора не выполняется - ранг 1.',
+  ecoGround:'Пример: заключение эколога о длительном накоплении тяжелых металлов в почве - основание сверх ранга; жалоба жителей на запах без замеров - сигнал на проверке.',
+  ecoGroundNote:'Пример: протокол замеров почвы от 12.04; обращение жителей от 03.05, замеры запланированы.',
+  clarifyText:'Пример: где взять результаты последнего контроля; кто подтвердит состав просыпей.'};
+ Object.keys(EX).forEach(function(k){var box=b.querySelector('[id="ex-'+r.num+'-'+k+'"]');if(box)box.textContent=EX[k];});
+ ['operation','aspect','impact','measures','rankNote','ecoGroundNote','clarifyText'].forEach(function(k){
+  var el=b.querySelector('[id="f-'+r.num+'-'+k+'"]');
+  if(el)el.addEventListener('input',function(e){r[k]=e.target.value;if(k==='operation'){var nm=$('tabname-'+r.num);if(nm)nm.textContent=r.operation.trim()?r.operation.trim():'новая запись';}saveOwn();syncRow(r);});
+ });
+ ['conditions','aspectType','q1','q2','q3','ecoGround'].forEach(function(k){
+  var el=b.querySelector('[id="f-'+r.num+'-'+k+'"]');
+  if(el)el.addEventListener('change',function(e){
+   r[k]=e.target.value;
+   if(k==='q1'&&r.q1!=='yes'){r.q2='';r.q3='';r.measures='';}
+   if(k==='q2'&&r.q2!=='full'){r.q3='';r.measures='';}
+   if(k==='q3'&&r.q3!=='yes'){r.measures='';}
+   ['q2','q3','measures'].forEach(function(k2){var el2=b.querySelector('[id="f-'+r.num+'-'+k2+'"]');if(el2)el2.value=r[k2];});
+   semKeepPlace(el,function(){
+    var w2=b.querySelector('[id="wrap-'+r.num+'-q2"]');if(w2)w2.style.display=r.q1==='yes'?'':'none';
+    var w3=b.querySelector('[id="wrap-'+r.num+'-q3"]');if(w3)w3.style.display=(r.q1==='yes'&&r.q2==='full')?'':'none';
+    var wm=b.querySelector('[id="wrap-'+r.num+'-measures"]');if(wm)wm.style.display=r.q3==='yes'?'':'none';
+    var we=b.querySelector('[id="wrap-'+r.num+'-ecoGroundNote"]');if(we)we.style.display=r.ecoGround?'':'none';
+   });
+   saveOwn();syncRow(r);
   });
-  var rankRes = deriveRank(row);
-  if (rankRes.rank === 1 || rankRes.rank === 2) reasons.push('Ранг ' + rankRes.rank);
-  if (row.sQ === 'yes') reasons.push('Вопрос заинтересованной стороны подтвержден');
-  if (row.sQ === 'signal' || row.sQ === 'unknown') unknowns.push('Вопрос стороны');
-  if (row.q.q1 === 'unclear') unknowns.push('Применимость требований');
-  ['q2', 'q3', 'qSmall'].forEach(function(k) { if (row.q[k] === 'unknown') unknowns.push(k); });
-
-  var significance;
-  if (reasons.length) significance = 'significant';
-  else if (unknowns.length || rankRes.rank === null) significance = 'incomplete';
-  else significance = 'notsignificant';
-  return { significance: significance, reasons: reasons, unknowns: unknowns };
+ });
+ var cb=b.querySelector('[id="f-'+r.num+'-clarify"]');
+ if(cb)cb.addEventListener('change',function(e){
+  r.clarify=e.target.checked;
+  semKeepPlace(cb,function(){var w=b.querySelector('[id="wrap-'+r.num+'-clarifyText"]');if(w)w.style.display=r.clarify?'':'none';});
+  saveOwn();syncRow(r);
+ });
+ syncRow(r,b);
+ return panel;
 }
-
-function findContradictions(row) {
-  var envYes = ['e1', 'e2', 'e3'].some(function(k) { return row.e[k] === 'yes'; });
-  var qsYes = row.q.qSmall === 'yes';
-  return (envYes && qsYes) ? ['Ответы требуют проверки. Вы указали существенные последствия и одновременно подтвердили небольшое воздействие. Уточните условия и основания.'] : [];
+function missingOf(r){
+ var m=[];
+ if(!r.operation.trim())m.push('операция');
+ if(!r.aspect.trim())m.push('аспект');
+ if(!r.impact.trim())m.push('воздействие');
+ if(!r.q1)m.push('вопрос о требованиях');
+ else if(r.q1==='yes'&&!r.q2)m.push('вопрос о выполнении');
+ else if(r.q1==='yes'&&r.q2==='full'&&!r.q3)m.push('вопрос о мерах');
+ return m;
 }
-
-function sigLabel(sig) {
-  return sig === 'significant' ? 'Значимый' : (sig === 'notsignificant' ? 'Не признан значимым' : 'Оценка не завершена');
-}
-function sigChip(sig) {
-  return sig === 'significant' ? 'sig' : (sig === 'notsignificant' ? 'ins' : 'inc');
-}
-function rankLabel(rank) {
-  return rank === null ? 'не определен' : String(rank);
-}
-
-/* ========== ПАМЯТЬ ========== */
-function saveOwn() {
-  if (!storageOk) return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-    var d = new Date();
-    $('saveStatus').textContent = 'Черновик сохранен в этом браузере в ' + String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0') + '.';
-  } catch (e) {
-    storageOk = false;
-    showStorageWarn();
-  }
-}
-
-function loadOwn() {
-  try {
-    var raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return false;
-    var d = JSON.parse(raw);
-    if (!d || !Array.isArray(d.rows)) return false;
-    state.meta = Object.assign({ org: '', date: '', author: '' }, d.meta || {});
-    state.nextNum = Number(d.nextNum) || 1;
-    state.activeId = d.activeId || null;
-    state.imported = Array.isArray(d.imported) ? d.imported : [];
-    state.rows = [];
-    d.rows.forEach(function(r) {
-      if (!r || !r.id) return;
-      var row = {
-        id: r.id, num: r.num || 0,
-        operation: r.operation || '', aspect: r.aspect || '', impact: r.impact || '',
-        context: r.context || '', sourceInfo: r.sourceInfo || '', conditions: r.conditions || '',
-        mgmtContext: r.mgmtContext || '', source: r.source || '', missing: r.missing || '',
-        note: r.note || '', next: r.next || '', measures: r.measures || '',
-        e: { e1: r.e && r.e.e1 || '', e2: r.e && r.e.e2 || '', e3: r.e && r.e.e3 || '' },
-        q: { q1: r.q && r.q.q1 || '', q2: r.q && r.q.q2 || '', q3: r.q && r.q.q3 || '', qSmall: r.q && r.q.qSmall || '' },
-        sQ: r.sQ || '',
-        sWho: r.sWho || '', sSrc: r.sSrc || '', sCheck: r.sCheck || '',
-        manual: r.manual || { on: false, rank: '', significance: '' },
-        imported: !!r.imported, srcId: r.srcId || '', srcHash: r.srcHash || '', needsReview: !!r.needsReview
-      };
-      state.rows.push(row);
-    });
-    return state.rows.length > 0;
-  } catch (e) { return false; }
-}
-
-function testStorage() {
-  try {
-    localStorage.setItem(STORAGE_KEY + '-t', '1');
-    localStorage.removeItem(STORAGE_KEY + '-t');
-  } catch (e) {
-    storageOk = false;
-    showStorageWarn();
-  }
-}
-
-function onMeta(k, v) {
-  state.meta[k] = v;
-  saveOwn();
-}
-
-/* ========== ИМПОРТ ========== */
-function srcHash(o) {
-  return JSON.stringify([o.operation, o.aspect, o.impact, o.source]);
-}
-
-function readSource() {
-  for (var i = 0; i < IMPORT_KEYS.length; i++) {
-    try {
-      var raw = localStorage.getItem(IMPORT_KEYS[i]);
-      if (!raw) continue;
-      var d = JSON.parse(raw);
-      var arr = d.rows || d.cards || d.chains || [];
-      if (!Array.isArray(arr) || !arr.length) continue;
-      var items = [];
-      arr.forEach(function(it, idx) {
-        var f = (it && it.f) ? it.f : it || {};
-        var op = f.process || f.oper || f.operation || '';
-        var as = f.aspect || '';
-        var im = f.impact || '';
-        if (!String(op).trim() && !String(as).trim()) return;
-        items.push({
-          srcId: String(it && it.id ? it.id : 'idx' + i + '_' + idx),
-          operation: String(op), aspect: String(as), impact: String(im),
-          source: f.basis || f.source || '',
-          note: f.missing || f.clarify || ''
-        });
-      });
-      if (items.length) return items;
-    } catch (e) {}
-  }
-  return null;
-}
-
-function startImport() {
-  var msg = $('importMsg');
-  var items = readSource();
-  if (!items) {
-    msg.className = 'import-msg show';
-    msg.textContent = 'Записи не найдены. Импорт доступен, если оба конструктора имеют доступ к одному локальному хранилищу. Если записи не найдены, перенесите сведения вручную.';
-    resizeIframe();
-    return;
-  }
-  var added = 0, changed = 0, same = 0;
-  items.forEach(function(it) {
-    var h = srcHash(it);
-    var ex = null;
-    state.imported.forEach(function(im) { if (im.srcId === it.srcId) ex = im; });
-    if (ex) {
-      var row = null;
-      state.rows.forEach(function(r) { if (r.id === ex.rowId) row = r; });
-      if (!row || ex.hash === h) { same++; return; }
-      changed++;
-      pendingCmp = { it: it, h: h, row: row };
-    } else {
-      var num = state.nextNum++;
-      var row2 = {
-        id: 'A' + String(num).padStart(2, '0'), num: num,
-        operation: it.operation, aspect: it.aspect, impact: it.impact,
-        context: '', sourceInfo: '', conditions: '', mgmtContext: '',
-        source: it.source, missing: '', note: it.note, next: '', measures: '',
-        e: { e1: '', e2: '', e3: '' },
-        q: { q1: '', q2: '', q3: '', qSmall: '' },
-        sQ: '',
-        sWho: '', sSrc: '', sCheck: '',
-        manual: { on: false, rank: '', significance: '' },
-        imported: true, srcId: it.srcId, srcHash: h, needsReview: false
-      };
-      state.rows.push(row2);
-      state.imported.push({ srcId: it.srcId, hash: h, rowId: row2.id });
-      added++;
-    }
-  });
-  if (pendingCmp) openCompare(pendingCmp);
-  refreshTabs();
-  saveOwn();
-  msg.className = 'import-msg show';
-  msg.textContent = 'Перенесено новых записей: ' + added + '. Без изменений: ' + same + '. Требует сравнения: ' + changed + '.';
-  if (!changed) showScreen('screen-own');
-}
-
-function openCompare(pc) {
-  var rows = '';
-  ['operation', 'aspect', 'impact', 'source', 'note'].forEach(function(k) {
-    var cur = pc.row[k] || '';
-    var src = pc.it[k] || '';
-    if (cur === src) return;
-    rows += '<tr><th>' + k + '</th><td>' + nl(cur || '(пусто)') + '</td><td>' + nl(src || '(пусто)') + '</td></tr>';
-  });
-  $('cmpBox').innerHTML = '<table class="reg"><thead><tr><th>Поле</th><th>Текущая запись ' + pc.row.id + '</th><th>Исходный черновик</th></tr></thead><tbody>' + rows + '</tbody></table>';
-  showScreen('screen-compare');
-}
-
-function cmpKeep() {
-  if (pendingCmp) {
-    pendingCmp.row.srcHash = pendingCmp.h;
-    var im = state.imported.find(function(x) { return x.srcId === pendingCmp.it.srcId; });
-    if (im) im.hash = pendingCmp.h;
-    pendingCmp.row.needsReview = false;
-  }
-  pendingCmp = null;
-  saveOwn();
-  showScreen('screen-own');
-}
-
-function cmpUpdate() {
-  if (pendingCmp) {
-    ['operation', 'aspect', 'impact', 'source', 'note'].forEach(function(k) {
-      pendingCmp.row[k] = pendingCmp.it[k] || '';
-    });
-    pendingCmp.row.srcHash = pendingCmp.h;
-    pendingCmp.row.needsReview = true;
-    var im = state.imported.find(function(x) { return x.srcId === pendingCmp.it.srcId; });
-    if (im) im.hash = pendingCmp.h;
-    refreshTabs();
-  }
-  pendingCmp = null;
-  saveOwn();
-  showScreen('screen-own');
-}
-
-function cmpCopy() {
-  if (pendingCmp) {
-    var num = state.nextNum++;
-    var r = {
-      id: 'A' + String(num).padStart(2, '0'), num: num,
-      operation: pendingCmp.it.operation, aspect: pendingCmp.it.aspect, impact: pendingCmp.it.impact,
-      context: '', sourceInfo: '', conditions: '', mgmtContext: '',
-      source: pendingCmp.it.source, missing: '', note: pendingCmp.it.note, next: '', measures: '',
-      e: { e1: '', e2: '', e3: '' },
-      q: { q1: '', q2: '', q3: '', qSmall: '' },
-      sQ: '',
-      sWho: '', sSrc: '', sCheck: '',
-      manual: { on: false, rank: '', significance: '' },
-      imported: true, srcId: pendingCmp.it.srcId + '-copy', srcHash: pendingCmp.h, needsReview: false
-    };
-    state.rows.push(r);
-    state.imported.push({ srcId: r.srcId, hash: r.srcHash, rowId: r.id });
-    refreshTabs();
-  }
-  pendingCmp = null;
-  saveOwn();
-  showScreen('screen-own');
-}
-
-/* ========== РЕЖИМЫ ========== */
-function chooseMode(m) {
-  if (m === 'edu') {
-    eduState = { i: 0, answers: {}, history: [] };
-    renderEdu();
-    showScreen('screen-edu');
-  } else {
-    if (!state.rows.length) addRow(true);
-    if (!state.meta.date) state.meta.date = today();
-    $('m-org').value = state.meta.org;
-    $('m-date').value = state.meta.date;
-    $('m-author').value = state.meta.author;
-    refreshTabs();
-    showScreen('screen-own');
-  }
-}
-
-/* ========== УЧЕБНЫЙ РЕЖИМ ========== */
-var eduState = { i: 0, answers: {}, history: [] };
-
-function renderEdu() {
-  var box = $('eduBox');
-  var c = EDU_CARDS[eduState.i];
-  var ans = eduState.answers;
-
-  var h = '<div class="nav-buttons" style="margin-top:0"><button class="btn btn-secondary" onclick="showScreen(\'screen-intro\')">К выбору режимов</button></div>';
-  h += '<span class="chip rank">Карточка ' + (eduState.i + 1) + ' из ' + EDU_CARDS.length + '</span>';
-  h += '<h1>Учебный завод: ' + esc(c.title) + '</h1>';
-  h += '<div class="edu-facts"><strong>Исходные данные</strong><ul>';
-  c.facts.forEach(function(f) { h += '<li>' + esc(f) + '</li>'; });
-  h += '</ul></div>';
-
-  h += '<details class="block" open><summary>Экологические критерии</summary><div class="block-body">';
-  ['e1', 'e2', 'e3'].forEach(function(k) {
-    h += eduField(k, QUESTIONS[k], EXAMPLES[k], ans[k] || '');
-  });
-  h += '</div></details>';
-
-  h += '<details class="block" open><summary>Требования и меры</summary><div class="block-body">';
-  h += eduField('q1', QUESTIONS.q1, EXAMPLES.q1, ans.q1 || '');
-  if (ans.q1 === 'yes') {
-    h += eduField('q2', QUESTIONS.q2, EXAMPLES.q2, ans.q2 || '');
-    if (ans.q2 === 'yes') {
-      h += eduField('q3', QUESTIONS.q3, EXAMPLES.q3, ans.q3 || '');
-      if (ans.q3 === 'no') h += eduField('qSmall', QUESTIONS.qSmall, EXAMPLES.qSmall, ans.qSmall || '');
-    }
-  }
-  h += '</div></details>';
-
-  h += '<details class="block" open><summary>Вопрос заинтересованной стороны</summary><div class="block-body">';
-  h += eduField('sQ', QUESTIONS.sQ, EXAMPLES.sQ, ans.sQ || '');
-  h += '</div></details>';
-
-  var fakeRow = {
-    e: { e1: ans.e1 || '', e2: ans.e2 || '', e3: ans.e3 || '' },
-    q: { q1: ans.q1 || '', q2: ans.q2 || '', q3: ans.q3 || '', qSmall: ans.qSmall || '' },
-    sQ: ans.sQ || ''
-  };
-  var rankRes = deriveRank(fakeRow);
-  var sigRes = deriveSignificance(fakeRow);
-  var contradictions = findContradictions(fakeRow);
-
-  h += '<div class="result-panel">';
-  h += '<p><span class="chip rank">Ранг: ' + rankLabel(rankRes.rank) + '</span>';
-  h += '<span class="chip ' + sigChip(sigRes.significance) + '">' + sigLabel(sigRes.significance) + '</span></p>';
-  if (rankRes.reason) h += '<p><strong>Основание ранга:</strong> ' + esc(rankRes.reason) + '</p>';
-  if (sigRes.reasons.length) h += '<p><strong>Причины значимости:</strong> ' + esc(sigRes.reasons.join('; ')) + '</p>';
-  if (contradictions.length) contradictions.forEach(function(c) { h += '<div class="contra">' + esc(c) + '</div>'; });
-  h += '</div>';
-
-  var match = (rankRes.rank === c.expected.rank) && (sigRes.significance === c.expected.significance);
-  if (match) {
-    h += '<div class="result-panel"><p><strong>Результат совпадает с разбором карточки.</strong> ' + esc(c.expected.reason) + '</p></div>';
-    h += '<div class="nav-buttons"><button class="btn btn-primary" onclick="eduNext()">' + (eduState.i < EDU_CARDS.length - 1 ? 'Следующая карточка' : 'К выбору режимов') + '</button></div>';
-  } else {
-    h += '<div class="warn-box">Результат отличается от разбора карточки. Проверьте факты и ответы или откройте пояснение.</div>';
-    h += '<div class="nav-buttons">';
-    h += '<button class="btn btn-secondary" onclick="eduExplain()">Открыть пояснение</button>';
-    h += '<button class="btn btn-primary" onclick="eduNext()">' + (eduState.i < EDU_CARDS.length - 1 ? 'Следующая карточка' : 'К выбору режимов') + '</button>';
-    h += '</div>';
-  }
-
-  box.innerHTML = h;
-  resizeIframe();
-}
-
-function eduField(key, question, example, cur) {
-  var h = '<div class="field">';
-  h += '<div class="field-header"><label>' + question + '</label>';
-  h += '<button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
-  h += '<div class="example-box"><strong>Пример</strong>' + esc(example) + '</div>';
-  h += '<select onchange="eduAnswer(\'' + key + '\',this.value)">';
-  h += '<option value="">Еще не отвечено</option>';
-  if (key === 'q1') {
-    h += '<option value="yes"' + (cur === 'yes' ? ' selected' : '') + '>Да, требования установлены</option>';
-    h += '<option value="none"' + (cur === 'none' ? ' selected' : '') + '>Нет, проверка завершена, применимые требования не выявлены</option>';
-    h += '<option value="unclear"' + (cur === 'unclear' ? ' selected' : '') + '>Проверка не завершена или применимость неясна</option>';
-  } else if (key === 'sQ') {
-    h += '<option value="yes"' + (cur === 'yes' ? ' selected' : '') + '>Да, основание подтверждено</option>';
-    h += '<option value="signal"' + (cur === 'signal' ? ' selected' : '') + '>Есть сигнал, обстоятельства еще проверяются</option>';
-    h += '<option value="no"' + (cur === 'no' ? ' selected' : '') + '>Нет, проверка завершена</option>';
-    h += '<option value="unknown"' + (cur === 'unknown' ? ' selected' : '') + '>Пока неизвестно</option>';
-  } else {
-    h += '<option value="yes"' + (cur === 'yes' ? ' selected' : '') + '>Да</option>';
-    h += '<option value="no"' + (cur === 'no' ? ' selected' : '') + '>Нет</option>';
-    h += '<option value="unknown"' + (cur === 'unknown' ? ' selected' : '') + '>Пока неизвестно</option>';
-  }
-  h += '</select></div>';
-  return h;
-}
-
-function eduAnswer(key, val) {
-  eduState.answers[key] = val;
-  if (key === 'q1' && val !== 'yes') {
-    eduState.answers.q2 = '';
-    eduState.answers.q3 = '';
-    eduState.answers.qSmall = '';
-  }
-  if (key === 'q2' && val !== 'yes') {
-    eduState.answers.q3 = '';
-    eduState.answers.qSmall = '';
-  }
-  if (key === 'q3' && val !== 'no') {
-    eduState.answers.qSmall = '';
-  }
-  renderEdu();
-}
-
-function eduExplain() {
-  var c = EDU_CARDS[eduState.i];
-  var box = $('eduBox');
-  box.insertAdjacentHTML('beforeend', '<div class="result-panel"><p><strong>Пояснение к карточке.</strong> ' + esc(c.expected.reason) + '</p></div>');
-  resizeIframe();
-}
-
-function eduNext() {
-  eduState.i++;
-  eduState.answers = {};
-  if (eduState.i >= EDU_CARDS.length) {
-    showScreen('screen-intro');
-  } else {
-    renderEdu();
-  }
-}
-
-function toggleExample(btn) {
-  var box = btn.parentElement.nextElementSibling;
-  var show = !box.classList.contains('show');
-  box.classList.toggle('show', show);
-  btn.setAttribute('aria-expanded', show ? 'true' : 'false');
-  btn.textContent = show ? 'Скрыть пример' : 'Пример';
-  resizeIframe();
-}
-
-/* ========== СВОЙ РЕЖИМ ========== */
-function newRow(num) {
-  return {
-    id: 'A' + String(num).padStart(2, '0'), num: num,
-    operation: '', aspect: '', impact: '',
-    context: '', sourceInfo: '', conditions: '', mgmtContext: '',
-    source: '', missing: '', note: '', next: '', measures: '',
-    e: { e1: '', e2: '', e3: '' },
-    q: { q1: '', q2: '', q3: '', qSmall: '' },
-    sQ: '',
-    sWho: '', sSrc: '', sCheck: '',
-    manual: { on: false, rank: '', significance: '' },
-    imported: false, srcId: '', srcHash: '', needsReview: false
-  };
-}
-
-function refreshTabs() {
-  var bar = $('tabsBar'), box = $('panelsBox');
-  bar.innerHTML = '';
-  state.rows.forEach(function(r) {
-    if (!bodiesById[r.id]) {
-      var b = buildRowBody(r);
-      bodiesById[r.id] = b;
-      box.appendChild(b);
-    }
-  });
-  Object.keys(bodiesById).forEach(function(id) {
-    var exists = state.rows.some(function(r) { return r.id === id; });
-    if (!exists) { bodiesById[id].remove(); delete bodiesById[id]; }
-  });
-  if (!state.rows.some(function(r) { return r.id === state.activeId; })) {
-    state.activeId = state.rows.length ? state.rows[0].id : null;
-  }
-  state.rows.forEach(function(r) {
-    var t = document.createElement('button');
-    t.type = 'button'; t.className = 'tab-btn'; t.id = 'tab-' + r.id;
-    t.setAttribute('role', 'tab'); t.setAttribute('aria-controls', 'panel-' + r.id);
-    t.setAttribute('aria-selected', r.id === state.activeId ? 'true' : 'false');
-    t.onclick = function() { state.activeId = r.id; applyActive(); saveOwn(); resizeIframe(); };
-    var nm = document.createElement('span');
-    nm.className = 'tab-name'; nm.id = 'tabname-' + r.id;
-    nm.textContent = r.operation.trim() ? r.operation.trim() : 'строка ' + r.id;
-    t.appendChild(document.createTextNode(r.id + ' '));
-    t.appendChild(nm);
-    bar.appendChild(t);
-  });
-  var add = document.createElement('button');
-  add.type = 'button'; add.className = 'tab-add'; add.textContent = 'Добавить строку';
-  add.onclick = function() { addRow(false); };
-  bar.appendChild(add);
-  applyActive();
-}
-
-function applyActive() {
-  state.rows.forEach(function(r) {
-    var p = bodiesById[r.id], t = $('tab-' + r.id);
-    if (p) p.hidden = r.id !== state.activeId;
-    if (t) t.setAttribute('aria-selected', r.id === state.activeId ? 'true' : 'false');
-  });
-}
-
-function addRow(first) {
-  var num = state.nextNum++;
-  var r = newRow(num);
-  state.rows.push(r);
-  state.activeId = r.id;
-  refreshTabs();
-  saveOwn();
-  if (!first) {
-    var el = $('f-' + r.id + '-operation');
-    if (el) el.focus();
-  }
-  resizeIframe();
-}
-
-function deleteRow(id) {
-  var r = null;
-  state.rows.forEach(function(x) { if (x.id === id) r = x; });
-  if (!r) return;
-  var filled = r.operation || r.aspect || r.impact || r.note || r.source;
-  if (filled && !confirm('Удалить строку ' + r.id + '? Введенные данные будут потеряны.')) return;
-  state.rows = state.rows.filter(function(x) { return x.id !== id; });
-  state.imported = state.imported.filter(function(im) { return im.rowId !== id; });
-  if (state.activeId === id) state.activeId = state.rows.length ? state.rows[0].id : null;
-  refreshTabs();
-  saveOwn();
-  resizeIframe();
-}
-
-function buildRowBody(r) {
-  var panel = document.createElement('div');
-  panel.className = 'tab-panel';
-  panel.id = 'panel-' + r.id;
-  panel.setAttribute('role', 'tabpanel');
-  panel.setAttribute('aria-labelledby', 'tab-' + r.id);
-
-  var head = document.createElement('div');
-  head.className = 'panel-head';
-  var left = document.createElement('span');
-  left.innerHTML = '<strong>Строка ' + r.id + '</strong>' + (r.imported ? ' <span class="chip ins">импорт</span>' : '') + (r.needsReview ? ' <span class="chip rev">требует пересмотра</span>' : '');
-  var del = document.createElement('button');
-  del.type = 'button'; del.className = 'btn-small'; del.textContent = 'Удалить строку';
-  del.onclick = function() { deleteRow(r.id); };
-  head.appendChild(left); head.appendChild(del);
-  panel.appendChild(head);
-
-  var body = document.createElement('div');
-  var h = '';
-
-  h += '<div class="block"><p class="block-title">Сведения о записи</p>';
-  h += '<div class="field"><div class="field-header"><label for="f-' + r.id + '-operation">Операция <span class="req">(обязательное поле)</span></label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
-  h += '<input type="text" id="f-' + r.id + '-operation" value="' + esc(r.operation) + '">';
-  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.operation) + '</div>';
-  h += '<div class="hint">Что делают на участке? Назовите конкретную работу.</div></div>';
-
-  h += '<div class="field"><div class="field-header"><label for="f-' + r.id + '-aspect">Аспект <span class="req">(обязательное поле)</span></label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
-  h += '<input type="text" id="f-' + r.id + '-aspect" value="' + esc(r.aspect) + '">';
-  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.aspect) + '</div>';
-  h += '<div class="hint">Как работа взаимодействует со средой?</div></div>';
-
-  h += '<div class="field"><div class="field-header"><label for="f-' + r.id + '-impact">Воздействие <span class="req">(обязательное поле)</span></label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
-  h += '<input type="text" id="f-' + r.id + '-impact" value="' + esc(r.impact) + '">';
-  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.impact) + '</div>';
-  h += '<div class="hint">Что меняется в окружающей среде?</div></div>';
-  h += '</div>';
-
-  h += '<details class="block" id="blk-eco-' + r.id + '"><summary>Экологические критерии</summary><div class="block-body">';
-  h += '<div class="warn-box">Это критерии учебной методики. Для своего предприятия конкретизируйте их и примите порядок оценки в установленном порядке. Слова «тяжелые», «длительные» и «существенные» не являются точными границами ГОСТ: раскройте их фактами и основаниями.</div>';
-  ['e1', 'e2', 'e3'].forEach(function(k) {
-    h += buildQuestionField(r, k, QUESTIONS[k], EXAMPLES[k], ['yes', 'no', 'unknown', '']);
-  });
-  h += '</div></details>';
-
-  h += '<details class="block" id="blk-req-' + r.id + '"><summary>Требования и меры</summary><div class="block-body">';
-  h += buildQuestionField(r, 'q1', QUESTIONS.q1, EXAMPLES.q1, ['yes', 'none', 'unclear', '']);
-  h += buildQuestionField(r, 'q2', QUESTIONS.q2, EXAMPLES.q2, ['yes', 'no', 'unknown', ''], 'q1 === "yes"');
-  h += buildQuestionField(r, 'q3', QUESTIONS.q3, EXAMPLES.q3, ['yes', 'no', 'unknown', ''], 'q1 === "yes" && q2 === "yes"');
-  h += '<div class="field" id="field-measures-' + r.id + '" style="display:none"><div class="field-header"><label for="f-' + r.id + '-measures">Какие меры влияют на выполнение требования?</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
-  h += '<textarea id="f-' + r.id + '-measures">' + esc(r.measures) + '</textarea>';
-  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.measures) + '</div>';
-  h += '<div class="hint">Назовите оборудование, действия или правила работы. Измерения показывают результат, но не объясняют, за счет чего он достигается.</div></div>';
-  h += buildQuestionField(r, 'qSmall', QUESTIONS.qSmall, EXAMPLES.qSmall, ['yes', 'no', 'unknown', ''], 'q1 === "yes" && q2 === "yes" && q3 === "no"');
-  h += '</div></details>';
-
-  h += '<details class="block" id="blk-party-' + r.id + '"><summary>Вопрос заинтересованной стороны</summary><div class="block-body">';
-  h += '<div class="note-box" style="margin-top:0">Любая жалоба не является автоматическим доказательством воздействия. Но и вывод «не значим» нельзя делать только потому, что обстоятельства пока не выяснены.</div>';
-  h += buildQuestionField(r, 'sQ', QUESTIONS.sQ, EXAMPLES.sQ, ['yes', 'signal', 'no', 'unknown', '']);
-  h += '<div class="field" id="field-sWho-' + r.id + '" style="display:none"><div class="field-header"><label for="f-' + r.id + '-sWho">Сторона и вопрос</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
-  h += '<input type="text" id="f-' + r.id + '-sWho" value="' + esc(r.sWho) + '">';
-  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.sWho) + '</div></div>';
-  h += '<div class="field" id="field-sSrc-' + r.id + '" style="display:none"><div class="field-header"><label for="f-' + r.id + '-sSrc">Источник</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
-  h += '<input type="text" id="f-' + r.id + '-sSrc" value="' + esc(r.sSrc) + '">';
-  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.sSrc) + '</div></div>';
-  h += '<div class="field" id="field-sCheck-' + r.id + '" style="display:none"><div class="field-header"><label for="f-' + r.id + '-sCheck">Что проверить</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
-  h += '<input type="text" id="f-' + r.id + '-sCheck" value="' + esc(r.sCheck) + '">';
-  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.sCheck) + '</div></div>';
-  h += '</div></details>';
-
-  h += '<div class="result-panel" id="res-' + r.id + '"></div>';
-
-  h += '<details class="block"><summary>Дополнительно</summary><div class="block-body">';
-  h += '<div class="field"><div class="field-header"><label for="f-' + r.id + '-source">Источник и основание</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
-  h += '<textarea id="f-' + r.id + '-source">' + esc(r.source) + '</textarea>';
-  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.source) + '</div></div>';
-  h += '<div class="field"><div class="field-header"><label for="f-' + r.id + '-note">Примечания</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
-  h += '<textarea id="f-' + r.id + '-note">' + esc(r.note) + '</textarea>';
-  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.note) + '</div></div>';
-  h += '<div class="field"><div class="field-header"><label for="f-' + r.id + '-next">Следующий шаг</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
-  h += '<textarea id="f-' + r.id + '-next">' + esc(r.next) + '</textarea>';
-  h += '<div class="example-box"><strong>Пример</strong>' + esc(EXAMPLES.next) + '</div></div>';
-  h += '<div class="field"><label><input type="checkbox" id="mn-' + r.id + '"' + (r.manual.on ? ' checked' : '') + '> Ручной вывод: отключить автоматический расчет</label></div>';
-  h += '<div class="field" id="mbox-' + r.id + '" style="display:' + (r.manual.on ? 'block' : 'none') + '">';
-  h += '<label for="mr-' + r.id + '">Ранг вручную</label>';
-  h += '<select id="mr-' + r.id + '"><option value="">Не выбран</option><option value="1"' + (r.manual.rank === '1' ? ' selected' : '') + '>1</option><option value="2"' + (r.manual.rank === '2' ? ' selected' : '') + '>2</option><option value="3"' + (r.manual.rank === '3' ? ' selected' : '') + '>3</option><option value="4"' + (r.manual.rank === '4' ? ' selected' : '') + '>4</option></select>';
-  h += '<label for="ms-' + r.id + '" style="margin-top:6px;display:block">Значимость вручную</label>';
-  h += '<select id="ms-' + r.id + '"><option value="">Не выбрана</option><option value="significant"' + (r.manual.significance === 'significant' ? ' selected' : '') + '>Значимый</option><option value="notsignificant"' + (r.manual.significance === 'notsignificant' ? ' selected' : '') + '>Не признан значимым</option><option value="incomplete"' + (r.manual.significance === 'incomplete' ? ' selected' : '') + '>Оценка не завершена</option></select>';
-  h += '</div>';
-  h += '</div></details>';
-
-  body.innerHTML = h;
-  panel.appendChild(body);
-
-  ['operation', 'aspect', 'impact', 'measures', 'sWho', 'sSrc', 'sCheck', 'source', 'note', 'next'].forEach(function(k) {
-    var el = body.querySelector('[id="f-' + r.id + '-' + k + '"]');
-    if (el) {
-      el.addEventListener('input', function(e) {
-        r[k] = e.target.value;
-        if (k === 'operation') {
-          var nm = $('tabname-' + r.id);
-          if (nm) nm.textContent = r.operation.trim() ? r.operation.trim() : 'строка ' + r.id;
-        }
-        saveOwn();
-        syncRow(r);
-      });
-    }
-  });
-
-  ['e1', 'e2', 'e3'].forEach(function(k) {
-    var s = body.querySelector('[id="s-' + r.id + '-' + k + '"]');
-    if (s) s.addEventListener('change', function(e) { r.e[k] = e.target.value; saveOwn(); syncRow(r); });
-  });
-
-  ['q1', 'q2', 'q3', 'qSmall'].forEach(function(k) {
-    var s = body.querySelector('[id="s-' + r.id + '-' + k + '"]');
-    if (s) {
-      s.addEventListener('change', function(e) {
-        r.q[k] = e.target.value;
-        if (k === 'q1') { if (r.q.q1 !== 'yes') { r.q.q2 = ''; r.q.q3 = ''; r.q.qSmall = ''; } }
-        if (k === 'q2' && r.q.q2 !== 'yes') { r.q.q3 = ''; r.q.qSmall = ''; }
-        if (k === 'q3' && r.q.q3 !== 'no') { r.q.qSmall = ''; }
-        saveOwn();
-        syncRow(r);
-      });
-    }
-  });
-
-  var sQ = body.querySelector('[id="s-' + r.id + '-sQ"]');
-  if (sQ) sQ.addEventListener('change', function(e) { r.sQ = e.target.value; saveOwn(); syncRow(r); });
-
-  var mn = body.querySelector('[id="mn-' + r.id + '"]');
-  if (mn) mn.addEventListener('change', function(e) { r.manual.on = e.target.checked; var mb = body.querySelector('[id="mbox-' + r.id + '"]'); if (mb) mb.style.display = r.manual.on ? 'block' : 'none'; saveOwn(); syncRow(r); });
-  var mr = body.querySelector('[id="mr-' + r.id + '"]');
-  if (mr) mr.addEventListener('change', function(e) { r.manual.rank = e.target.value; saveOwn(); syncRow(r); });
-  var ms = body.querySelector('[id="ms-' + r.id + '"]');
-  if (ms) ms.addEventListener('change', function(e) { r.manual.significance = e.target.value; saveOwn(); syncRow(r); });
-
-  syncRow(r, body);
-  return panel;
-}
-
-function buildQuestionField(r, key, question, example, options, condition) {
-  var show = condition ? evalCondition(condition, r) : true;
-  var val = ['e1', 'e2', 'e3'].indexOf(key) >= 0 ? r.e[key] : key === 'sQ' ? r.sQ : r.q[key];
-  var h = '<div class="field" id="field-' + key + '-' + r.id + '" style="display:' + (show ? 'block' : 'none') + '">';
-  h += '<div class="field-header"><label>' + question + '</label><button type="button" class="btn-example" onclick="toggleExample(this)">Пример</button></div>';
-  h += '<div class="example-box"><strong>Пример</strong>' + esc(example) + '</div>';
-  h += '<select id="s-' + r.id + '-' + key + '">';
-  h += '<option value="">Еще не отвечено</option>';
-  options.forEach(function(opt) {
-    if (opt === '') return;
-    var label = opt === 'yes' ? 'Да' : opt === 'no' ? 'Нет' : opt === 'unknown' ? 'Пока неизвестно' : opt === 'none' ? 'Нет, проверка завершена, применимые требования не выявлены' : opt === 'unclear' ? 'Проверка не завершена или применимость неясна' : opt === 'signal' ? 'Есть сигнал, обстоятельства еще проверяются' : opt;
-    h += '<option value="' + opt + '"' + (val === opt ? ' selected' : '') + '>' + label + '</option>';
-  });
-  h += '</select></div>';
-  return h;
-}
-
-function evalCondition(cond, r) {
-  if (cond === 'q1 === "yes"') return r.q.q1 === 'yes';
-  if (cond === 'q1 === "yes" && q2 === "yes"') return r.q.q1 === 'yes' && r.q.q2 === 'yes';
-  if (cond === 'q1 === "yes" && q2 === "yes" && q3 === "no"') return r.q.q1 === 'yes' && r.q.q2 === 'yes' && r.q.q3 === 'no';
-  return true;
-}
-
-function syncRow(r, root) {
-  root = root || bodiesById[r.id];
-  if (!root) return;
-
-  var showQ2 = r.q.q1 === 'yes';
-  var showQ3 = r.q.q1 === 'yes' && r.q.q2 === 'yes';
-  var showQSmall = r.q.q1 === 'yes' && r.q.q2 === 'yes' && r.q.q3 === 'no';
-  var showMeasures = r.q.q1 === 'yes' && r.q.q2 === 'yes' && r.q.q3 === 'yes';
-  var showParty = r.sQ === 'yes' || r.sQ === 'signal';
-
-  ['q2', 'q3', 'qSmall'].forEach(function(k) {
-    var el = root.querySelector('[id="field-' + k + '-' + r.id + '"]');
-    if (el) {
-      var show = (k === 'q2' && showQ2) || (k === 'q3' && showQ3) || (k === 'qSmall' && showQSmall);
-      el.style.display = show ? 'block' : 'none';
-    }
-  });
-  var mw = root.querySelector('[id="field-measures-' + r.id + '"]');
-  if (mw) mw.style.display = showMeasures ? 'block' : 'none';
-  ['sWho', 'sSrc', 'sCheck'].forEach(function(k) {
-    var el = root.querySelector('[id="field-' + k + '-' + r.id + '"]');
-    if (el) el.style.display = showParty ? 'block' : 'none';
-  });
-
-  var rankRes = r.manual.on ? { rank: r.manual.rank ? Number(r.manual.rank) : null, reason: 'Ручной вывод' } : deriveRank(r);
-  var sigRes = r.manual.on ? { significance: r.manual.significance || 'incomplete', reasons: ['Ручной вывод'], unknowns: [] } : deriveSignificance(r);
-  var contradictions = findContradictions(r);
-
-  var rp = root.querySelector('[id="res-' + r.id + '"]');
-  if (rp) {
-    var h = '<p><span class="chip rank">Ранг: ' + rankLabel(rankRes.rank) + '</span>';
-    h += '<span class="chip ' + sigChip(sigRes.significance) + '">' + sigLabel(sigRes.significance) + '</span>';
-    if (r.needsReview) h += '<span class="chip rev">Требует пересмотра</span>';
-    h += '</p>';
-    if (rankRes.reason) h += '<p><strong>Основание ранга:</strong> ' + esc(rankRes.reason) + '</p>';
-    if (sigRes.reasons.length) h += '<p><strong>Причины значимости:</strong> ' + esc(sigRes.reasons.join('; ')) + '</p>';
-    if (sigRes.unknowns.length) h += '<p><strong>Неизвестные сведения:</strong> ' + esc(sigRes.unknowns.join(', ')) + '</p>';
-    contradictions.forEach(function(c) { h += '<div class="contra">' + esc(c) + '</div>'; });
-    rp.innerHTML = h;
-  }
+function syncRow(r,root){
+ root=root||bodiesById[r.num];if(!root)return;
+ var rp=root.querySelector('[id="res-'+r.num+'"]');
+ if(rp){
+  var res=computeResult(r);
+  var h='<p><span class="rank-chip r">Ранг: '+(res.rank===null?'не определен':res.rank)+'</span><span class="rank-chip '+sigChip(res.sig)+'">'+sigLabel(res.sig)+'</span></p>';
+  h+='<p>Почему так: '+esc(res.why)+'.</p>';
+  if(res.rank===1)h+='<p>Требования не выполняются: разберите причину и определите дальнейшие действия. Цель и программа автоматически не назначаются.</p>';
+  if(res.rank===2)h+='<p>Выполнение держится на мерах: держите их в рабочем состоянии и контролируйте.</p>';
+  if(res.rank===3)h+='<p>Выполнение без специальных мер: дальнейшие действия определяют с учетом требований и условий работы.</p>';
+  if(res.rank===4)h+='<p>Применимые требования не выявлены: вернитесь к оценке при новых нормативах, сигналах или изменениях технологии.</p>';
+  if(res.rank===null)h+='<p>Сведений для ранга не хватает: ответьте на оставшиеся вопросы или отметьте запись как уточняемую.</p>';
+  if(r.ecoGround==='yes'&&!r.ecoGroundNote.trim())h+='<p>Добавьте основание экологической значимости: без него вывод опирается только на отметку.</p>';
+  if(res.rank!==null&&!r.rankNote.trim())h+='<p>Добавьте обоснование ранга: без него запись выйдет с пометкой о пропуске.</p>';
+  if(r.needsReview)h+='<p><button type="button" class="btn-small" onclick="clearReview('+r.num+')">Отметить актуальной</button> Исходная запись изменилась: проверьте ответы и обоснование.</p>';
+  rp.innerHTML=h;
+ }
+ var st=root.querySelector('[id="st-'+r.num+'"]');
+ if(st){
+  var m=missingOf(r);
+  var res2=computeResult(r);
+  if(m.length)st.textContent='Осталось ответить или заполнить: '+m.join(', ')+'.';
+  else if(res2.rank!==null&&!r.rankNote.trim())st.textContent='Ответы собраны, ранг посчитан. Осталось обоснование ранга.';
+  else if(r.clarify)st.textContent='Запись готова к выгрузке с пометкой: часть сведений уточняется.';
+  else st.textContent='Запись готова к выгрузке.';
+ }
 }
 
 /* ========== ПРЕДПРОСМОТР ========== */
-function openPreview() {
-  renderPreview();
-  showScreen('screen-preview');
+function openPreview(){renderPreview();showScreen('screen-preview');}
+function renderPreview(){
+ var errs=[];state.rows.forEach(function(r){var m=missingOf(r);if(m.length)errs.push('Запись '+r.num+': осталось ответить или заполнить - '+m.join(', ')+'.');});
+ var errBox=$('errorsBox');errBox.style.display=errs.length?'block':'none';
+ if(errs.length)errBox.innerHTML='<strong>Незавершенные записи.</strong><ul>'+errs.map(function(e){return '<li>'+esc(e)+'</li>';}).join('')+'</ul>';
+ $('downloadBtn').disabled=!state.rows.length;
+ $('downloadNote').textContent=state.rows.length?'Черновик можно скачать даже с пропусками: пустые ячейки помечены для заполнения в редакторе.':'Добавьте хотя бы одну запись.';
+ var cnt={total:state.rows.length,sig:0,ins:0,inc:0,noNote:0,rev:0};
+ state.rows.forEach(function(r){var res=computeResult(r);if(res.sig==='significant')cnt.sig++;if(res.sig==='notsignificant')cnt.ins++;if(res.sig==='incomplete')cnt.inc++;if(!r.rankNote.trim())cnt.noNote++;if(r.needsReview)cnt.rev++;});
+ var nt=[];
+ if(cnt.noNote)nt.push('Обоснование ранга не заполнено в записях: '+cnt.noNote+'. В документе они выйдут с пометкой, что обоснование предстоит добавить.');
+ if(cnt.rev)nt.push('Записей с пометкой о пересмотре: '+cnt.rev+'. Откройте их и снимите пометку после проверки.');
+ var ntBox=$('noticesBox');ntBox.style.display=nt.length?'block':'none';
+ if(nt.length)ntBox.innerHTML='<strong>Что дополнить.</strong><ul>'+nt.map(function(n){return '<li>'+esc(n)+'</li>';}).join('')+'</ul>';
+ var h='<div class="note-box accent">Всего записей: '+cnt.total+'. Значимых: '+cnt.sig+'. Не значимых: '+cnt.ins+'. С незавершенной оценкой: '+cnt.inc+'. Счетчики считаются по итоговой значимости, а не по номеру ранга.</div>';
+ h+='<h2>Таблица значимости</h2><div class="scroll-x"><table class="reg"><thead><tr><th>№</th><th>Процесс</th><th>Условия</th><th>Аспект</th><th>Воздействие</th><th>Тип</th><th>Требования</th><th>Выполнение</th><th>Меры</th><th>Ранг</th><th>Значимость</th><th>Обоснование</th></tr></thead><tbody>';
+ state.rows.forEach(function(r){
+  var res=computeResult(r);
+  h+='<tr><td>'+r.num+'</td><td>'+esc(r.operation||'-')+'</td><td>'+esc(condLabel(r.conditions))+'</td><td>'+esc(r.aspect||'-')+'</td><td>'+esc(r.impact||'-')+'</td><td>'+esc(typeLabel(r.aspectType))+'</td><td>'+esc(qLabel(Q1,r.q1))+'</td><td>'+esc(r.q1==='yes'?qLabel(Q2,r.q2):'-')+'</td><td>'+esc(r.q2==='full'?qLabel(Q3,r.q3):'-')+'</td><td>'+(res.rank===null?'-':res.rank)+'</td><td>'+sigLabel(res.sig)+'</td><td>'+esc(r.rankNote||'-')+'</td></tr>';
+ });
+ h+='</tbody></table></div>';
+ var clar=state.rows.filter(function(r){return r.clarify;});
+ if(clar.length){
+  h+='<h2>Что уточняется</h2><ul style="font-size:13px;padding-left:20px">';
+  clar.forEach(function(r){h+='<li>Запись '+r.num+' ('+esc(r.operation||'операция не указана')+'): '+esc(r.clarifyText||'вопрос еще не записан')+'</li>';});
+  h+='</ul>';
+ }
+ h+='<div class="note-box">В Word к таблице добавляются пустые колонки для редактора: количества факт и норматив, ссылка на нормативный документ, дата следующей переоценки. Конструктор сознательно не запрашивает их сейчас.</div>';
+ $('previewBox').innerHTML=h;resizeIframe();
+}
+function restartAll(){
+ if(!confirm('Полная очистка: удалить записи оценки этого шага из браузера? Данные других шагов программы останутся.'))return;
+ try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+ state={meta:{org:'',date:today(),author:''},rows:[],activeNum:null,rev:1};
+ bodiesById={};$('panelsBox').innerHTML='';
+ $('m-org').value='';$('m-date').value=state.meta.date;$('m-author').value='';$('saveStatus').textContent='';
+ addRow(true);showScreen('screen-work');
 }
 
-function renderPreview() {
-  var errs = [];
-  state.rows.forEach(function(r) {
-    if (!r.operation.trim() || !r.aspect.trim() || !r.impact.trim()) {
-      errs.push('Строка ' + r.id + ': не заполнены операция, аспект или воздействие.');
-    }
-  });
-  var errBox = $('errorsBox');
-  errBox.style.display = errs.length ? 'block' : 'none';
-  if (errs.length) errBox.innerHTML = '<strong>Незавершенные записи.</strong><ul>' + errs.map(function(e) { return '<li>' + esc(e) + '</li>'; }).join('') + '</ul>';
-
-  $('downloadBtn').disabled = !state.rows.length;
-  $('downloadNote').textContent = state.rows.length ? 'Допускается выгрузка незавершенного черновика.' : 'Добавьте хотя бы одну строку.';
-
-  var nt = [];
-  state.rows.forEach(function(r) {
-    var sigRes = deriveSignificance(r);
-    if (sigRes.significance === 'incomplete') nt.push('Строка ' + r.id + ': оценка не завершена.');
-  });
-  var ntBox = $('noticesBox');
-  ntBox.style.display = nt.length ? 'block' : 'none';
-  if (nt.length) ntBox.innerHTML = '<strong>Что дополнить.</strong><ul>' + nt.map(function(n) { return '<li>' + esc(n) + '</li>'; }).join('') + '</ul>';
-
-  var cnt = { total: state.rows.length, sig: 0, not: 0, inc: 0, rev: 0 };
-  state.rows.forEach(function(r) {
-    var sigRes = deriveSignificance(r);
-    if (r.needsReview) cnt.rev++;
-    if (sigRes.significance === 'significant') cnt.sig++;
-    else if (sigRes.significance === 'notsignificant') cnt.not++;
-    else cnt.inc++;
-  });
-
-  var h = '<div class="note-box accent">Всего записей: ' + cnt.total + '. Значимых: ' + cnt.sig + '. Не признанных значимыми: ' + cnt.not + '. С незавершенной оценкой: ' + cnt.inc + '. Требующих пересмотра: ' + cnt.rev + '.</div>';
-
-  h += '<h2>Сводный реестр</h2>';
-  h += '<div class="scroll-x"><table class="reg"><thead><tr><th>ID</th><th>Операция</th><th>Аспект</th><th>Воздействие</th><th>Ранг</th><th>Итоговая значимость</th><th>Краткое основание</th><th>Статус</th></tr></thead><tbody>';
-  state.rows.forEach(function(r) {
-    var rankRes = deriveRank(r);
-    var sigRes = deriveSignificance(r);
-    h += '<tr><td>' + r.id + '</td><td>' + esc(r.operation || '-') + '</td><td>' + esc(r.aspect || '-') + '</td><td>' + esc(r.impact || '-') + '</td><td>' + rankLabel(rankRes.rank) + '</td><td>' + sigLabel(sigRes.significance) + '</td><td>' + esc(sigRes.reasons.join('; ') || '-') + '</td><td>' + (r.needsReview ? 'Требует пересмотра' : 'Актуален') + '</td></tr>';
-  });
-  h += '</tbody></table></div>';
-
-  h += '<h2>Подробности строк</h2>';
-  state.rows.forEach(function(r) {
-    var rankRes = deriveRank(r);
-    var sigRes = deriveSignificance(r);
-    h += '<details class="det"><summary>' + r.id + '. ' + esc(r.operation || 'Операция не указана') + ' - ' + sigLabel(sigRes.significance) + '</summary><div class="det-body">';
-    h += '<p><strong>Условия и источники:</strong> ' + (r.source ? nl(r.source) : 'не указаны') + '.</p>';
-    h += '<p><strong>Экологические ответы:</strong> ' + ['e1', 'e2', 'e3'].map(function(k) { return k.toUpperCase() + ' - ' + (r.e[k] ? optText([['yes', 'Да'], ['no', 'Нет'], ['unknown', 'Пока неизвестно']], r.e[k]) : 'еще не отвечено'); }).join('; ') + '.</p>';
-    h += '<p><strong>Требования и выполнение:</strong> q1 - ' + (r.q.q1 ? optText([['yes', 'Да, требования установлены'], ['none', 'Нет, проверка завершена'], ['unclear', 'Проверка не завершена']], r.q.q1) : 'еще не отвечено') + '; q2 - ' + (r.q.q2 ? optText([['yes', 'Да'], ['no', 'Нет'], ['unknown', 'Пока неизвестно']], r.q.q2) : 'не применимо') + '; q3 - ' + (r.q.q3 ? optText([['yes', 'Да'], ['no', 'Нет'], ['unknown', 'Пока неизвестно']], r.q.q3) : 'не применимо') + '; небольшое воздействие - ' + (r.q.qSmall ? optText([['yes', 'Да'], ['no', 'Нет'], ['unknown', 'Пока неизвестно']], r.q.qSmall) : 'не применимо') + '.</p>';
-    h += '<p><strong>Действующие меры:</strong> ' + (r.measures ? nl(r.measures) : 'не указаны') + '.</p>';
-    h += '<p><strong>Вопросы сторон:</strong> ' + (r.sQ ? optText([['yes', 'Да'], ['signal', 'Есть сигнал'], ['no', 'Нет'], ['unknown', 'Пока неизвестно']], r.sQ) : 'еще не отвечено') + (r.sWho ? ' | Сторона: ' + esc(r.sWho) : '') + (r.sSrc ? ' | Источник: ' + esc(r.sSrc) : '') + (r.sCheck ? ' | Проверить: ' + esc(r.sCheck) : '') + '.</p>';
-    h += '<p><strong>Неизвестные сведения:</strong> ' + ((sigRes.unknowns && sigRes.unknowns.length) ? esc(sigRes.unknowns.join(', ')) : 'не отмечены') + '; недостающие сведения: ' + (r.missing ? nl(r.missing) : 'не указаны') + '.</p>';
-    h += '<p><strong>Примечания:</strong> ' + (r.note ? nl(r.note) : 'нет') + '.</p>';
-    h += '<p><strong>Следующий шаг:</strong> ' + (r.next ? nl(r.next) : 'не указан') + '.</p>';
-    h += '</div></details>';
-  });
-
-  var qs = [];
-  state.rows.forEach(function(r) {
-    var sigRes = deriveSignificance(r);
-    if (r.missing.trim()) qs.push(r.id + ': ' + r.missing.trim());
-    sigRes.unknowns.forEach(function(u) { qs.push(r.id + ': ' + u + ' - пока неизвестно.'); });
-  });
-  h += '<h2>Вопросы для уточнения</h2>';
-  h += qs.length ? '<ul style="font-size:13px;padding-left:20px;margin:0">' + qs.map(function(q) { return '<li>' + esc(q) + '</li>'; }).join('') + '</ul>' : '<p class="lead" style="color:var(--muted)">Вы пока не записали вопросы для уточнения.</p>';
-
-  var rev = state.rows.filter(function(r) { return r.needsReview; });
-  h += '<h2>Записи, требующие пересмотра</h2>';
-  h += rev.length ? '<ul style="font-size:13px;padding-left:20px;margin:0">' + rev.map(function(r) { return '<li>' + r.id + ': пересмотреть оценку после изменения исходных сведений; прежние основания сохранены.</li>'; }).join('') + '</ul>' : '<p class="lead" style="color:var(--muted)">Записей, требующих пересмотра, нет.</p>';
-
-  h += '<div class="note-box">Документ содержит результат применения учебного правила к введенным сведениям. Конструктор не проверяет достоверность источников, полноту требований и соответствие СЭМ стандарту. Ранг сам по себе не определяет итоговую значимость. Отдельная экологическая цель не обязательна для каждого значимого аспекта (пояснение А.6.2 ГОСТ Р ИСО 14001-2016).</div>';
-
-  $('previewBox').innerHTML = h;
-  resizeIframe();
+/* ========== WORD ========== */
+function xmlEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}
+function run(t,o){o=o||{};var r='';if(o.b)r+='<w:b/>';if(o.i)r+='<w:i/>';if(o.color)r+='<w:color w:val="'+o.color+'"/>';if(o.sz)r+='<w:sz w:val="'+o.sz+'"/><w:szCs w:val="'+o.sz+'"/>';return '<w:r>'+(r?'<w:rPr>'+r+'</w:rPr>':'')+'<w:t xml:space="preserve">'+xmlEsc(t)+'</w:t></w:r>';}
+function para(t,o){o=o||{};var p='';if(o.style)p+='<w:pStyle w:val="'+o.style+'"/>';if(o.before||o.after)p+='<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after||0)+'"/>';return '<w:p>'+(p?'<w:pPr>'+p+'</w:pPr>':'')+run(t,o)+'</w:p>';}
+function paraMulti(t,o){return String(t==null?'':t).split(/\r?\n/).map(function(l){return para(l,o);}).join('');}
+function cell(w,x,f){return '<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(f?'<w:shd w:val="clear" w:color="auto" w:fill="'+f+'"/>':'')+'<w:vAlign w:val="top"/></w:tcPr>'+(x||'<w:p/>')+'</w:tc>';}
+var TBL='<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
+var CMAR='<w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar>';
+var RW=[500,1200,900,1400,1300,700,900,900,900,450,900,1300,800,800,900,620];
+var YELLOW='FFF2CC';
+function measuresText(r){if(r.q2!=='full')return '-';if(r.q3==='yes')return r.measures||'меры не описаны';if(r.q3==='no')return 'специальные меры не требуются';return '-';}
+function buildDoc(rows,edu){
+ var b=[];
+ b.push(para(edu?'Оценка значимости экологических аспектов: учебный пример':'Реестр экологических аспектов: ранг и значимость. Проект',{style:'Title'}));
+ b.push(para('Статус: '+(edu?'учебный пример на условных данных':'черновик на данных предприятия')+'. Дата оценки: '+(state.meta.date||today())+'. Оценил: '+(state.meta.author||'не указан')+'. Предприятие: '+(state.meta.org||'не указано')+'.',{i:true,color:'6B7280',sz:20,after:120}));
+ b.push(para('Методика: оценка значимости экологических аспектов по рангам, учебная. Версия алгоритма: 3.0. Номера записей сквозные: они совпадают с номерами реестра аспектов и сохранятся в обязательствах, рисках, целях и плане.',{after:120}));
+ b.push(para('Краткое правило: ранг 1 - требования установлены и не выполняются; ранг 2 - выполняются благодаря специальным мерам; ранг 3 - выполняются без специальных мер; ранг 4 - проверка завершена и применимые требования не выявлены; ранг не определен - сведений не хватает. Ранги 1 и 2 дают значимый аспект, ранги 3 и 4 - незначимый. Ранг 3 или 4 не отменяет значимость при подтвержденном экологическом основании или сигнале стороны и надзора. Ранг считается по ответам и не правится вручную, обоснование пишет специалист.',{after:200}));
+ b.push(para('1. Таблица значимости',{style:'Heading1'}));
+ var heads=['№','Процесс','Условия','Аспект','Воздействие','Тип','Требования','Выполнение','Специальные меры','Ранг','Значимость','Обоснование','Кол-во: факт','Кол-во: норматив','Нормативный документ','Дата переоценки'];
+ var head='<w:tr>'+heads.map(function(t,i){return cell(RW[i],para(t,{b:true,sz:14}),'F8FAFC');}).join('')+'</w:tr>';
+ var trs='';
+ rows.forEach(function(r){
+  var res=computeResult(r);
+  trs+='<w:tr>'+cell(RW[0],para(String(r.num),{sz:14}))+cell(RW[1],paraMulti(r.operation||'-',{sz:14}))+cell(RW[2],para(condLabel(r.conditions),{sz:14}))+cell(RW[3],paraMulti(r.aspect||'-',{sz:14}))+cell(RW[4],paraMulti(r.impact||'-',{sz:14}))+cell(RW[5],para(typeLabel(r.aspectType),{sz:14}))+cell(RW[6],para(qLabel(Q1,r.q1),{sz:14}))+cell(RW[7],para(r.q1==='yes'?qLabel(Q2,r.q2):'-',{sz:14}))+cell(RW[8],para(measuresText(r),{sz:14}))+cell(RW[9],para(res.rank===null?'-':String(res.rank),{sz:14,b:true}))+cell(RW[10],para(sigLabel(res.sig),{sz:14}))+cell(RW[11],paraMulti(r.rankNote||'-',{sz:14}))+cell(RW[12],para('',{sz:14}),YELLOW)+cell(RW[13],para('',{sz:14}),YELLOW)+cell(RW[14],para('',{sz:14}),YELLOW)+cell(RW[15],para('',{sz:14}),YELLOW)+'</w:tr>';
+ });
+ b.push('<w:tbl><w:tblPr><w:tblW w:w="14470" w:type="dxa"/>'+TBL+CMAR+'<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+RW.map(function(w){return '<w:gridCol w:w="'+w+'"/>';}).join('')+'</w:tblGrid>'+head+trs+'</w:tbl>');
+ var clar=rows.filter(function(r){return r.clarify;});
+ if(clar.length){
+  b.push(para('2. Сведения уточняются',{style:'Heading1'}));
+  clar.forEach(function(r){b.push(para('Запись '+r.num+' ('+(r.operation||'операция не указана')+'): '+(r.clarifyText||'вопрос еще не записан')+'. Известные ответы записи сохранены в таблице выше.',{after:60}));});
+ }
+ b.push(para((clar.length?'3':'2')+'. Поля для самостоятельного заполнения',{style:'Heading1'}));
+ b.push(para('Количественные характеристики: факт и норматив по каждому аспекту. Впишите валовые выбросы или сбросы, массы отходов и пределы, с которыми сравниваете. В таблице эти ячейки отмечены цветом.',{after:60}));
+ b.push(para('Нормативный документ: номер и дата документа, где закреплено требование: разрешение, ПДВ, договор, предписание.',{after:60}));
+ b.push(para('Дата следующей переоценки: когда запись вернется на проверку независимо от изменений.',{after:60}));
+ b.push(para('Документ содержит результат применения учебного правила к введенным и импортированным сведениям. Конструктор не проверяет достоверность источников и не подтверждает соответствие СЭМ стандарту. Пустые ячейки предназначены для заполнения в редакторе и не являются выводами. В следующем уроке проверьте применимые обязательства и при необходимости уточните оценки.',{i:true,color:'6B7280',sz:20,before:240}));
+ b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>'+b.join('')+'</w:body></w:document>';
 }
-
-function optText(opts, v) {
-  if (v === '') return 'еще не отвечено';
-  for (var i = 0; i < opts.length; i++) if (opts[i][0] === v) return opts[i][1];
-  return v;
+var CT_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
+var RELS_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+var DRELS_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+var FOOTER_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:fldSimple w:instr=" PAGE "><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
+var STYLES_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="334155"/></w:rPr></w:style></w:styles>';
+var CRC_TABLE=(function(){var t=new Uint32Array(256);for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(u){var c=0xFFFFFFFF;for(var i=0;i<u.length;i++)c=CRC_TABLE[(c^u[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipStore(files){var enc=new TextEncoder(),now=new Date();var dt=((now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1))&0xFFFF;var dd=(((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate())&0xFFFF;var loc=[],cen=[],off=0;files.forEach(function(f){var nb=enc.encode(f.name),data=f.data,crc=crc32(data);var lh=new Uint8Array(30+nb.length),dv=new DataView(lh.buffer);dv.setUint32(0,0x04034b50,true);dv.setUint16(4,20,true);dv.setUint16(6,0,true);dv.setUint16(8,0,true);dv.setUint16(10,dt,true);dv.setUint16(12,dd,true);dv.setUint32(14,crc,true);dv.setUint32(18,data.length,true);dv.setUint32(22,data.length,true);dv.setUint16(26,nb.length,true);dv.setUint16(28,0,true);lh.set(nb,30);loc.push(lh,data);var ch=new Uint8Array(46+nb.length),cv=new DataView(ch.buffer);cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint16(8,0,true);cv.setUint16(10,0,true);cv.setUint16(12,dt,true);cv.setUint16(14,dd,true);cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,nb.length,true);cv.setUint16(30,0,true);cv.setUint16(32,0,true);cv.setUint16(34,0,true);cv.setUint16(36,0,true);cv.setUint32(38,0,true);cv.setUint32(42,off,true);ch.set(nb,46);cen.push(ch);off+=lh.length+data.length;});var cs=0;cen.forEach(function(p){cs+=p.length;});var eo=new Uint8Array(22),ev=new DataView(eo.buffer);ev.setUint32(0,0x06054b50,true);ev.setUint16(4,0,true);ev.setUint16(6,0,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);ev.setUint32(12,cs,true);ev.setUint32(16,off,true);ev.setUint16(20,0,true);var tot=0;loc.forEach(function(p){tot+=p.length;});cen.forEach(function(p){tot+=p.length;});tot+=22;var out=new Uint8Array(tot),o=0;loc.forEach(function(p){out.set(p,o);o+=p.length;});cen.forEach(function(p){out.set(p,o);o+=p.length;});out.set(eo,o);return out;}
+function saveBlob(bytes,name){
+ var blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+ var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=name;
+ document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},4000);
 }
-
-function restartOwn() {
-  if (!confirm('Полная очистка: удалить все данные?')) return;
-  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-  state = { meta: { org: '', date: today(), author: '' }, rows: [], nextNum: 1, activeId: null, imported: [] };
-  bodiesById = {};
-  $('panelsBox').innerHTML = '';
-  $('m-org').value = '';
-  $('m-date').value = state.meta.date;
-  $('m-author').value = '';
-  addRow(true);
-  showScreen('screen-own');
-}
-
-/* ========== DOCX ========== */
-function xmlEsc(s) { return String(s == null ? '' : s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;'); }
-function run(t, o) {
-  o = o || {};
-  var r = '';
-  if (o.b) r += '<w:b/>';
-  if (o.i) r += '<w:i/>';
-  if (o.color) r += '<w:color w:val="' + o.color + '"/>';
-  if (o.sz) r += '<w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/>';
-  return '<w:r>' + (r ? '<w:rPr>' + r + '</w:rPr>' : '') + '<w:t xml:space="preserve">' + xmlEsc(t) + '</w:t></w:r>';
-}
-function para(t, o) {
-  o = o || {};
-  var p = '';
-  if (o.style) p += '<w:pStyle w:val="' + o.style + '"/>';
-  if (o.before || o.after) p += '<w:spacing w:before="' + (o.before || 0) + '" w:after="' + (o.after || 0) + '"/>';
-  return '<w:p>' + (p ? '<w:pPr>' + p + '</w:pPr>' : '') + run(t, o) + '</w:p>';
-}
-function paraMulti(t, o) { return String(t == null ? '' : t).split(/\r?\n/).map(function(l) { return para(l, o); }).join(''); }
-function cell(w, x, f) {
-  return '<w:tc><w:tcPr><w:tcW w:w="' + w + '" w:type="dxa"/>' + (f ? '<w:shd w:val="clear" w:color="auto" w:fill="' + f + '"/>' : '') + '<w:vAlign w:val="top"/></w:tcPr>' + (x || '<w:p/>') + '</w:tc>';
-}
-var TBL = '<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
-var CMAR = '<w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar>';
-var RW = [700, 1400, 1400, 1400, 600, 1200, 2900];
-
-function buildDoc() {
-  var b = [];
-  b.push(para('Реестр экологических аспектов: ранг и значимость. Проект', { style: 'Title' }));
-  b.push(para('Статус: учебный черновик. Дата оценки: ' + (state.meta.date || today()) + '. Автор: ' + (state.meta.author || 'не указан') + '. Предприятие: ' + (state.meta.org || 'не указано') + '.', { i: true, color: '6B7280', sz: 20, after: 120 }));
-  b.push(para('Методика: ' + METHOD_NAME + '. Версия алгоритма: ' + ALGO_VERSION + '.', { after: 120 }));
-  b.push(para('Краткое правило: ранг отражает состояние применимых требований и мер. Итоговая значимость считается отдельно: значим при подтвержденном экологическом критерии, ранге 1 или 2, подтвержденном вопросе стороны; оценка не завершена при неизвестных сведениях; иначе не признан значимым по принятому правилу.', { after: 200 }));
-
-  b.push(para('1. Сводный реестр', { style: 'Heading1' }));
-  var rows = '<w:tr>' + ['ID', 'Операция', 'Аспект', 'Воздействие', 'Ранг', 'Значимость', 'Основание'].map(function(t, i) {
-    return cell(RW[i], para(t, { b: true, sz: 18 }), 'F8FAFC');
-  }).join('') + '</w:tr>';
-  state.rows.forEach(function(r) {
-    var rankRes = deriveRank(r);
-    var sigRes = deriveSignificance(r);
-    rows += '<w:tr>' + cell(RW[0], para(r.id, { sz: 18 })) + cell(RW[1], paraMulti(r.operation || '-', { sz: 18 })) + cell(RW[2], paraMulti(r.aspect || '-', { sz: 18 })) + cell(RW[3], paraMulti(r.impact || '-', { sz: 18 })) + cell(RW[4], para(rankLabel(rankRes.rank), { sz: 18, b: true })) + cell(RW[5], para(sigLabel(sigRes.significance), { sz: 18 })) + cell(RW[6], paraMulti(sigRes.reasons.join('; ') || '-', { sz: 18 })) + '</w:tr>';
-  });
-  b.push('<w:tbl><w:tblPr><w:tblW w:w="9600" w:type="dxa"/>' + TBL + CMAR + '<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>' + RW.map(function(w) { return '<w:gridCol w:w="' + w + '"/>'; }).join('') + '</w:tblGrid>' + rows + '</w:tbl>');
-
-  b.push(para('2. Подробный разбор строк', { style: 'Heading1' }));
-  state.rows.forEach(function(r) {
-    var rankRes = deriveRank(r);
-    var sigRes = deriveSignificance(r);
-    b.push(para(r.id + '. ' + (r.operation || 'Операция не указана'), { style: 'Heading2' }));
-    b.push(para('Аспект: ' + (r.aspect || '-') + '. Воздействие: ' + (r.impact || '-') + '.', { after: 60 }));
-    b.push(para('Экологические ответы: e1 - ' + (r.e.e1 || 'не отвечено') + '; e2 - ' + (r.e.e2 || 'не отвечено') + '; e3 - ' + (r.e.e3 || 'не отвечено') + '.', { after: 60 }));
-    b.push(para('Требования: q1 - ' + (r.q.q1 || 'не отвечено') + '; q2 - ' + (r.q.q2 || 'не применимо') + '; q3 - ' + (r.q.q3 || 'не применимо') + '; небольшое воздействие - ' + (r.q.qSmall || 'не применимо') + '.', { after: 60 }));
-    b.push(para('Действующие меры: ' + (r.measures || 'не указаны') + '.', { after: 60 }));
-    b.push(para('Вопрос стороны: ' + (r.sQ || 'не отвечено') + (r.sWho ? '. Сторона: ' + r.sWho : '') + (r.sSrc ? '. Источник: ' + r.sSrc : '') + (r.sCheck ? '. Проверить: ' + r.sCheck : '') + '.', { after: 60 }));
-    b.push(para('Ранг: ' + rankLabel(rankRes.rank) + '. Значимость: ' + sigLabel(sigRes.significance) + '. Основание: ' + (sigRes.reasons.join('; ') || 'положительные основания не подтверждены') + '.', { after: 60 }));
-    b.push(para('Неизвестные сведения: ' + ((sigRes.unknowns && sigRes.unknowns.length) ? sigRes.unknowns.join(', ') : 'не отмечены') + '. Примечания: ' + (r.note || 'нет') + '. Следующий шаг: ' + (r.next || 'не указан') + '.', { after: 60 }));
-  });
-
-  b.push(para('3. Вопросы для уточнения', { style: 'Heading1' }));
-  var qs = [];
-  state.rows.forEach(function(r) {
-    var sigRes = deriveSignificance(r);
-    if (r.missing.trim()) qs.push(r.id + ': ' + r.missing.trim());
-    sigRes.unknowns.forEach(function(u) { qs.push(r.id + ': ' + u + ' - пока неизвестно.'); });
-  });
-  if (!qs.length) b.push(para('Вопросы для уточнения не записаны.', { i: true, color: '6B7280' }));
-  qs.forEach(function(q) { b.push(para(q, { after: 40 })); });
-
-  b.push(para('4. Записи, требующие пересмотра', { style: 'Heading1' }));
-  var rev = state.rows.filter(function(r) { return r.needsReview; });
-  if (!rev.length) b.push(para('Записей, требующих пересмотра, нет.', { i: true, color: '6B7280' }));
-  rev.forEach(function(r) { b.push(para(r.id + ': пересмотреть оценку после изменения исходных сведений.', { after: 40 })); });
-
-  b.push(para('Границы инструмента: документ содержит результат применения учебного правила к введенным сведениям. Конструктор не проверяет достоверность источников, полноту требований и соответствие СЭМ стандарту. Ранг сам по себе не определяет итоговую значимость. Отдельная экологическая цель не обязательна для каждого значимого аспекта (пояснение А.6.2 ГОСТ Р ИСО 14001-2016). В следующем уроке проверьте применимые обязательства и при необходимости уточните оценки.', { i: true, color: '6B7280', sz: 20, before: 240 }));
-  b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
-  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>' + b.join('') + '</w:body></w:document>';
-}
-
-var CT_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
-var RELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
-var DRELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
-var FOOTER_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:fldSimple w:instr=" PAGE "><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
-var STYLES_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="334155"/></w:rPr></w:style></w:styles>';
-
-var CRC_TABLE = (function() {
-  var t = new Uint32Array(256);
-  for (var n = 0; n < 256; n++) {
-    var c = n;
-    for (var k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
-    t[n] = c >>> 0;
-  }
-  return t;
-})();
-
-function crc32(u) {
-  var c = 0xFFFFFFFF;
-  for (var i = 0; i < u.length; i++) c = CRC_TABLE[(c ^ u[i]) & 0xFF] ^ (c >>> 8);
-  return (c ^ 0xFFFFFFFF) >>> 0;
-}
-
-function zipStore(files) {
-  var enc = new TextEncoder(), now = new Date();
-  var dt = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xFFFF;
-  var dd = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xFFFF;
-  var loc = [], cen = [], off = 0;
-  files.forEach(function(f) {
-    var nb = enc.encode(f.name), data = f.data, crc = crc32(data);
-    var lh = new Uint8Array(30 + nb.length), dv = new DataView(lh.buffer);
-    dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true); dv.setUint16(6, 0, true); dv.setUint16(8, 0, true);
-    dv.setUint16(10, dt, true); dv.setUint16(12, dd, true);
-    dv.setUint32(14, crc, true); dv.setUint32(18, data.length, true); dv.setUint32(22, data.length, true);
-    dv.setUint16(26, nb.length, true); dv.setUint16(28, 0, true);
-    lh.set(nb, 30); loc.push(lh, data);
-    var ch = new Uint8Array(46 + nb.length), cv = new DataView(ch.buffer);
-    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true); cv.setUint16(8, 0, true); cv.setUint16(10, 0, true);
-    cv.setUint16(12, dt, true); cv.setUint16(14, dd, true);
-    cv.setUint32(16, crc, true); cv.setUint32(20, data.length, true); cv.setUint32(24, data.length, true);
-    cv.setUint16(28, nb.length, true); cv.setUint16(30, 0, true); cv.setUint16(32, 0, true);
-    cv.setUint16(34, 0, true); cv.setUint16(36, 0, true); cv.setUint32(38, 0, true); cv.setUint32(42, off, true);
-    ch.set(nb, 46); cen.push(ch);
-    off += lh.length + data.length;
-  });
-  var cs = 0; cen.forEach(function(p) { cs += p.length; });
-  var eo = new Uint8Array(22), ev = new DataView(eo.buffer);
-  ev.setUint32(0, 0x06054b50, true); ev.setUint16(4, 0, true); ev.setUint16(6, 0, true);
-  ev.setUint16(8, files.length, true); ev.setUint16(10, files.length, true);
-  ev.setUint32(12, cs, true); ev.setUint32(16, off, true); ev.setUint16(20, 0, true);
-  var tot = 0; loc.forEach(function(p) { tot += p.length; }); cen.forEach(function(p) { tot += p.length; }); tot += 22;
-  var out = new Uint8Array(tot), o = 0;
-  loc.forEach(function(p) { out.set(p, o); o += p.length; });
-  cen.forEach(function(p) { out.set(p, o); o += p.length; });
-  out.set(eo, o);
-  return out;
-}
-
-function downloadDocx() {
-  if (!state.rows.length) { renderPreview(); return; }
-  var enc = new TextEncoder();
-  var files = [
-    { name: '[Content_Types].xml', data: enc.encode(CT_XML) },
-    { name: '_rels/.rels', data: enc.encode(RELS_XML) },
-    { name: 'word/document.xml', data: enc.encode(buildDoc()) },
-    { name: 'word/styles.xml', data: enc.encode(STYLES_XML) },
-    { name: 'word/footer1.xml', data: enc.encode(FOOTER_XML) },
-    { name: 'word/_rels/document.xml.rels', data: enc.encode(DRELS_XML) }
-  ];
-  var bytes = zipStore(files);
-  var blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-  var url = URL.createObjectURL(blob);
-  var a = document.createElement('a');
-  a.href = url; a.download = 'reestr-znachimosti.docx';
-  document.body.appendChild(a); a.click(); document.body.removeChild(a);
-  setTimeout(function() { URL.revokeObjectURL(url); }, 4000);
-  $('downloadNote').textContent = 'Запрос на скачивание отправлен. Проверьте сохранение файла.';
-  resizeIframe();
+function docFiles(xml){var enc=new TextEncoder();return[{name:'[Content_Types].xml',data:enc.encode(CT_XML)},{name:'_rels/.rels',data:enc.encode(RELS_XML)},{name:'word/document.xml',data:enc.encode(xml)},{name:'word/styles.xml',data:enc.encode(STYLES_XML)},{name:'word/footer1.xml',data:enc.encode(FOOTER_XML)},{name:'word/_rels/document.xml.rels',data:enc.encode(DRELS_XML)}];}
+function downloadDocx(){
+ if(!state.rows.length){renderPreview();return;}
+ saveBlob(zipStore(docFiles(buildDoc(state.rows,false))),'Reestr_znachimost_'+today()+'.docx');
+ $('downloadNote').textContent='Запрос на скачивание отправлен. Проверьте сохранение файла.';
+ resizeIframe();
 }
 
 /* ========== СТАРТ ========== */
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded',function(){
+ try{
   testStorage();
-  var restored = loadOwn();
-  if (restored) $('restoreNote').style.display = 'block';
+  if(loadOwn())$('restoreNote').style.display='block';
+  ['m-org','m-date','m-author'].forEach(function(id){$(id).addEventListener('input',function(e){var k=id==='m-org'?'org':id==='m-date'?'date':'author';state.meta[k]=e.target.value;saveOwn();});});
   resizeIframe();
-  if ('ResizeObserver' in window) {
-    var ro = new ResizeObserver(function() { resizeIframe(); });
-    ro.observe(document.body);
-  }
+  if('ResizeObserver' in window){var ro=new ResizeObserver(function(){resizeIframe();});ro.observe(document.body);}
+ }catch(e){showBoot(e.message);}
 });
-window.addEventListener('load', function() { resizeIframe(); });
+window.addEventListener('load',function(){resizeIframe();});
 </script>
-
 </body>
 </html>
