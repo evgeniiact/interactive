@@ -4,1221 +4,801 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
-<title>Реестр заинтересованных сторон и матрица значимости и влияния</title>
+<title>Заинтересованные стороны: требования, матрица, реестр</title>
 <style>
-:root {
-  --bg: #ffffff;
-  --primary: #1e293b;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --gray-light: #f8fafc;
-  --accent: #2563eb;
-  --accent-dark: #1d4ed8;
-  --warn-bg: #fffbeb;
-  --warn-border: #fde68a;
-  --warn-text: #92400e;
-  --bad-bg: #fef2f2;
-  --bad-border: #fecaca;
-  --bad-text: #991b1b;
-  --zb-bg: #e6f4ea; --zb-bd: #cfe8d4;
-  --zad-bg: #fdf6e7; --zad-bd: #eadfc3;
-  --zc-bg: #f1f5f9; --zc-bd: #dbe3ec;
-  --radius: 12px;
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0; padding: 20px; background: var(--bg);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  color: var(--primary); font-size: 15px; line-height: 1.6;
-}
-.container { max-width: 720px; margin: 0 auto; }
-.screen { display: none; animation: fadeIn .3s ease-out; }
-.screen.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-h1 { font-size: 22px; font-weight: 800; margin: 0 0 10px; }
-h2 { font-size: 17px; font-weight: 700; margin: 18px 0 8px; }
-h3 { font-size: 14px; font-weight: 700; margin: 0 0 6px; }
-.lead { font-size: 14px; margin: 0 0 12px; line-height: 1.6; }
-.subtitle {
-  font-size: 13px; color: var(--muted); text-transform: uppercase;
-  letter-spacing: .5px; margin-bottom: 10px; font-weight: 600;
-}
-.note-box {
-  background: var(--gray-light); border: 1px solid var(--border);
-  border-left: 4px solid var(--muted); border-radius: 0 8px 8px 0;
-  padding: 10px 14px; font-size: 13px; color: var(--muted); margin: 10px 0;
-}
-.note-box.accent { border-left-color: var(--accent); color: var(--primary); }
-.warn-box {
-  background: var(--warn-bg); border-left: 3px solid var(--warn-border);
-  border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 13px;
-  color: var(--warn-text); margin: 10px 0; line-height: 1.5;
-}
-.error-box {
-  background: var(--bad-bg); border: 1px solid var(--bad-border);
-  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--bad-text); margin: 12px 0;
-}
-.error-box ul { margin: 6px 0 0; padding-left: 20px; }
-.error-box li { margin-bottom: 4px; }
-.notices-box {
-  background: var(--warn-bg); border: 1px solid var(--warn-border);
-  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--warn-text); margin: 12px 0;
-}
-.notices-box ul { margin: 6px 0 0; padding-left: 20px; }
-.notices-box li { margin-bottom: 4px; }
-
-.steps-nav { display: flex; gap: 8px; margin: 14px 0 18px; flex-wrap: wrap; }
-.step-btn {
-  flex: 1 1 140px; padding: 10px 12px; border: 2px solid var(--border); border-radius: 10px;
-  background: #fff; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--muted);
-  cursor: pointer; transition: all .15s; text-align: center;
-}
-.step-btn.active { border-color: var(--accent); color: var(--accent); background: #eff6ff; }
-
-.field { margin-bottom: 12px; }
-.field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-.field .req { color: var(--bad-text); font-weight: 600; }
-.field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
-.field input[type="text"], .field textarea, .field select {
-  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
-  font-family: inherit; font-size: 14px; color: var(--primary); background: #fff;
-}
-.field textarea { min-height: 56px; resize: vertical; }
-.field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible,
-button:focus-visible { outline: 3px solid var(--accent-dark); outline-offset: 2px; }
-
-.nav-buttons { display: flex; gap: 10px; margin-top: 14px; flex-wrap: wrap; }
-.btn {
-  padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
-  cursor: pointer; border: none; font-family: inherit; transition: background .2s;
-}
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-dark); }
-.btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--primary); }
-.btn-secondary:hover { background: var(--gray-light); }
-.btn-danger { background: #fff; border: 1px solid var(--bad-border); color: var(--bad-text); }
-.btn-danger:hover { background: var(--bad-bg); }
-.btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
-.btn-small {
-  padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 6px;
-  border: 1px solid var(--border); background: #fff; color: var(--primary);
-  cursor: pointer; font-family: inherit;
-}
-.btn-small:hover { background: var(--gray-light); }
-.inline-links { display: flex; gap: 10px; flex-wrap: wrap; margin: 4px 0 10px; }
-
-/* Матрица */
-.m-layout { display: grid; grid-template-columns: 26px 1fr; gap: 6px; margin: 12px 0; }
-.m-ytitle {
-  writing-mode: vertical-rl; transform: rotate(180deg);
-  font-weight: 700; font-size: 13px; color: var(--muted);
-  display: flex; align-items: center; justify-content: center;
-}
-.m-grid { display: grid; grid-template-columns: 30px repeat(3, minmax(88px, 1fr)); gap: 6px; }
-.m-rowlabel { display: flex; align-items: center; justify-content: center; font-weight: 700; color: var(--muted); font-size: 14px; }
-.m-cell { min-height: 72px; border-radius: 10px; border: 1px solid; position: relative; }
-.m-collabels { display: grid; grid-template-columns: 30px repeat(3, minmax(88px, 1fr)); gap: 6px; margin-top: 6px; }
-.m-collabels span { text-align: center; font-weight: 700; color: var(--muted); font-size: 14px; }
-.m-xtitle { text-align: center; font-weight: 700; font-size: 13px; color: var(--muted); margin-top: 4px; }
-.zb { background: var(--zb-bg); border-color: var(--zb-bd); }
-.zad { background: var(--zad-bg); border-color: var(--zad-bd); }
-.zc { background: var(--zc-bg); border-color: var(--zc-bd); }
-.pt {
-  position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-  max-width: 92%; padding: 3px 7px; border-radius: 7px;
-  background: var(--primary); color: #fff; font-weight: 700; font-size: 11px;
-  text-align: center; border: 2px solid #fff; box-shadow: 0 1px 3px rgba(15,23,42,.3);
-}
-.legend { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 8px; margin: 10px 0; }
-.legend-item { font-size: 12px; line-height: 1.4; border: 1px solid var(--border); border-radius: 8px; padding: 7px 9px; background: #fff; }
-.legend-swatch { display: inline-block; width: 13px; height: 13px; border-radius: 4px; border: 1px solid; margin-right: 6px; vertical-align: -2px; }
-.legend-item strong { display: block; font-size: 12px; }
-
-/* Вкладки сторон */
-.tabs-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; margin: 14px 0 0; }
-.tab-btn {
-  border: 1px solid var(--border); border-radius: 10px 10px 0 0;
-  padding: 9px 12px; background: var(--gray-light); color: var(--muted);
-  font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
-  display: inline-flex; align-items: center; gap: 6px; max-width: 200px;
-}
-.tab-btn .tab-name { font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 120px; }
-.tab-btn[aria-selected="true"] { background: #fff; color: var(--accent); border-color: var(--accent); }
-.tab-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot-b { background: #7fb98a; }
-.dot-ad { background: #d8c08a; }
-.dot-c { background: #aebccb; }
-.dot-n { background: var(--muted); }
-.tab-add {
-  border: 1px dashed var(--accent); color: var(--accent); background: #fff;
-  border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 700;
-  cursor: pointer; font-family: inherit;
-}
-.tab-add:hover { background: #eff6ff; }
-.tab-panel {
-  border: 1px solid var(--border); border-radius: 0 10px 10px 10px;
-  padding: 16px; background: #fff; margin-top: -1px;
-}
-.tab-panel[hidden] { display: none; }
-.panel-head {
-  display: flex; justify-content: space-between; align-items: center;
-  gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
-}
-.panel-head strong { font-size: 15px; }
-.grp-badge {
-  display: inline-block; font-size: 11px; font-weight: 700; border-radius: 20px;
-  padding: 1px 8px; border: 1px solid;
-}
-.grp-b { background: var(--zb-bg); color: #1b5e20; border-color: var(--zb-bd); }
-.grp-ad { background: var(--zad-bg); color: #92400e; border-color: var(--zad-bd); }
-.grp-c { background: var(--zc-bg); color: #334155; border-color: var(--zc-bd); }
-.grp-n { background: var(--gray-light); color: var(--muted); border-color: var(--border); }
-
-/* Окна справки */
-.scale-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin: 10px 0; }
-.scale-card { border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 14px; background: var(--gray-light); }
-.scale-card p { margin: 0 0 7px; font-size: 13px; }
-.scale-card p:last-child { margin-bottom: 0; }
-.rules-list { margin: 0; padding-left: 20px; font-size: 13px; }
-.rules-list li { margin-bottom: 6px; }
-
-/* Предпросмотр */
-.counts-box {
-  background: #eff6ff; border: 1px solid #bfdbfe; color: var(--accent-dark);
-  border-radius: 10px; padding: 12px 14px; font-size: 13px; margin: 12px 0;
-}
-.counts-box ul { margin: 6px 0 0; padding-left: 20px; }
-.prev-section { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
-.prev-section h3 { margin: 0 0 10px; font-size: 15px; }
-.prev-party { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; font-size: 13px; }
-.prev-party-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
-.prev-party-head strong { font-size: 14px; }
-.prev-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.prev-table th, .prev-table td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
-.prev-table th { background: var(--gray-light); width: 34%; font-weight: 600; }
-.prev-empty { color: var(--muted); font-style: italic; }
-.link-btn {
-  background: none; border: none; color: var(--accent); font-size: 12px;
-  cursor: pointer; padding: 0; font-family: inherit; text-decoration: underline;
-}
-.legend-line { font-size: 12px; color: var(--muted); margin: 6px 0; }
-
-@media (max-width: 560px) {
-  body { padding: 12px; }
-  h1 { font-size: 20px; }
-  .nav-buttons { flex-direction: column; }
-  .btn { width: 100%; }
-  .tab-btn { max-width: 150px; }
-  .tab-btn .tab-name { max-width: 80px; }
-  .scale-grid, .legend { grid-template-columns: 1fr; }
-  .m-grid, .m-collabels { grid-template-columns: 26px repeat(3, minmax(72px, 1fr)); }
-  .m-cell { min-height: 62px; }
-}
+:root{--bg:#fff;--primary:#1e293b;--muted:#64748b;--border:#e2e8f0;--gray:#f8fafc;--accent:#2563eb;--accent-d:#1d4ed8;
+--warn:#ea580c;--warn-bg:#fff7ed;--warn-bd:#fed7aa;--bad:#991b1b;--bad-bg:#fef2f2;--bad-bd:#fecaca;
+--b-bg:#e6f4ea;--b-tx:#1b5e20;--ad-bg:#fdf6e7;--ad-tx:#92400e;--c-bg:#f1f5f9;--c-tx:#334155;--r:12px}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--primary);font-size:15px;line-height:1.6}
+.container{max-width:760px;margin:0 auto}
+.screen{display:none}.screen.active{display:block;animation:fi .3s ease-out}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:22px;font-weight:800;margin:0 0 8px;outline:none}
+h2{font-size:16px;font-weight:700;margin:16px 0 8px}
+.lead{font-size:14px;margin:0 0 12px;color:var(--muted)}
+.note-box{background:var(--gray);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--muted);margin:10px 0}
+.note-box.accent{border-left-color:var(--accent);color:var(--primary)}
+.warn-box{background:var(--warn-bg);border-left:3px solid var(--warn-bd);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--warn);margin:10px 0}
+.notices-box{background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--warn);margin:12px 0}
+.notices-box ul{margin:6px 0 0;padding-left:20px}
+.notices-box li{margin-bottom:4px}
+.storage-warn{display:none}.storage-warn.show{display:block}
+.save-line{font-size:12px;color:var(--muted);margin:4px 0}
+.sem-rules{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;background:var(--gray);padding:12px 16px;margin:12px 0;font-size:13px}
+.sem-rules h2{font-size:15px;margin:0 0 8px}
+.sem-rules ol{margin:0;padding-left:20px}
+.sem-rules li{margin-bottom:6px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:4px}
+.field .hint{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;background:#fff;color:var(--primary)}
+.field textarea{min-height:46px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{outline:3px solid var(--accent-d);outline-offset:2px}
+.ex-btn{display:inline-block;margin-top:6px;padding:4px 10px;font-size:11px;font-weight:600;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--accent);cursor:pointer;font-family:inherit}
+.ex-btn:hover{background:var(--gray)}
+.ex-btn[aria-expanded="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ex-box{display:none;background:var(--b-bg);border-left:3px solid var(--b-tx);border-radius:0 8px 8px 0;padding:8px 12px;margin-top:6px;font-size:12.5px}
+.ex-box.show{display:block}
+details.blk{border:1px solid var(--border);border-radius:10px;margin:10px 0;background:#fff;overflow:hidden}
+details.blk>summary{cursor:pointer;padding:11px 14px;font-size:13.5px;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--gray)}
+details.blk>summary::-webkit-details-marker{display:none}
+details.blk>summary::after{content:"+";color:var(--muted);font-weight:800;font-size:16px}
+details.blk[open]>summary::after{content:"−"}
+details.blk[open]>summary{border-bottom:1px solid var(--border)}
+.blk-body{padding:12px 14px;font-size:13px}
+.blk-body p{margin:0 0 8px}.blk-body p:last-child{margin:0}
+.status-line{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.grp-badge{display:inline-block;font-size:11px;font-weight:800;border-radius:20px;padding:2px 10px;border:1px solid}
+.g-b{background:var(--b-bg);color:var(--b-tx);border-color:var(--b-tx)}
+.g-ad{background:var(--ad-bg);color:var(--ad-tx);border-color:var(--ad-tx)}
+.g-c{background:var(--c-bg);color:var(--c-tx);border-color:var(--c-tx)}
+.g-n{background:var(--gray);color:var(--muted);border-color:var(--border)}
+.tabs-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;margin:14px 0 0}
+.tab-btn{border:1px solid var(--border);border-radius:10px 10px 0 0;padding:9px 12px;background:var(--gray);color:var(--muted);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;max-width:220px}
+.tab-btn .tab-name{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px}
+.tab-btn[aria-selected="true"]{background:#fff;color:var(--accent);border-color:var(--accent)}
+.tab-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.dot-b{background:var(--b-tx)}
+.dot-ad{background:var(--ad-tx)}
+.dot-c{background:var(--c-tx)}
+.dot-n{background:var(--muted)}
+.tab-add{border:1px dashed var(--accent);color:var(--accent);background:#fff;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.tab-panel{border:1px solid var(--border);border-radius:0 10px 10px 10px;padding:16px;background:#fff;margin-top:-1px}
+.tab-panel[hidden]{display:none}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.panel-head strong{font-size:15px}
+.btn-small{padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--primary);cursor:pointer;font-family:inherit}
+.btn-small:hover{background:var(--gray)}
+.nav-buttons{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent-d)}
+.btn-secondary{background:#fff;border:1px solid var(--border);color:var(--primary)}.btn-secondary:hover{background:var(--gray)}
+.btn-danger{background:#fff;border:1px solid var(--bad-bd);color:var(--bad)}
+.btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
+.scale-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:10px 0}
+.scale-card{border:1px solid var(--border);border-radius:10px;padding:12px 14px;background:var(--gray);font-size:13px}
+.scale-card h3{margin:0 0 8px;font-size:14px}
+.scale-card p{margin:0 0 6px}.scale-card p:last-child{margin:0}
+.scroll-x{overflow-x:auto}
+table.reg{width:100%;border-collapse:collapse;font-size:12px;margin:10px 0}
+table.reg th,table.reg td{border:1px solid var(--border);padding:5px 7px;text-align:left;vertical-align:top}
+table.reg th{background:var(--gray);font-weight:700}
+table.reg tr.hints td{color:var(--muted);font-style:italic;font-size:11px}
+.m-wrap{margin:12px 0}
+.m-grid{display:grid;grid-template-columns:30px repeat(3,1fr);gap:6px}
+.m-rowlabel{display:flex;align-items:center;justify-content:center;font-weight:700;color:var(--muted);font-size:13px}
+.m-cell{min-height:72px;border-radius:10px;border:1px solid;padding:8px;font-size:12px}
+.m-collabels{display:grid;grid-template-columns:30px repeat(3,1fr);gap:6px;margin-top:6px}
+.m-collabels span{text-align:center;font-weight:700;color:var(--muted);font-size:13px}
+.m-xtitle{text-align:center;font-weight:700;font-size:13px;color:var(--muted);margin-top:4px}
+.m-ytitle{writing-mode:vertical-rl;transform:rotate(180deg);font-weight:700;font-size:13px;color:var(--muted);display:flex;align-items:center;justify-content:center}
+.m-layout{display:grid;grid-template-columns:26px 1fr;gap:6px}
+.cell-b{background:var(--b-bg);border-color:var(--b-tx)}
+.cell-ad{background:var(--ad-bg);border-color:var(--ad-tx)}
+.cell-c{background:var(--c-bg);border-color:var(--c-tx)}
+.pt{display:inline-block;background:var(--primary);color:#fff;padding:2px 7px;border-radius:6px;font-size:11px;font-weight:700;margin:2px;border:2px solid #fff;box-shadow:0 1px 3px rgba(0,0,0,.2)}
+.legend{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0}
+.legend-item{font-size:12px;border:1px solid var(--border);border-radius:8px;padding:7px 9px;background:#fff}
+.legend-swatch{display:inline-block;width:13px;height:13px;border-radius:4px;border:1px solid;margin-right:6px;vertical-align:-2px}
+.legend-item strong{display:block;font-size:12px;margin-bottom:2px}
+@media (max-width:640px){body{padding:12px}h1{font-size:20px}.scale-grid{grid-template-columns:1fr}.legend{grid-template-columns:1fr}.nav-buttons{flex-direction:column}.btn{width:100%}}
 </style>
 </head>
 <body>
-
 <div class="container">
+<div id="bootError" class="notices-box" style="display:none"></div>
 
-  <!-- ВВОДНЫЙ ЭКРАН -->
-  <div id="screen-intro" class="screen active">
-    <h1>Оцените заинтересованные стороны и соберите черновик реестра</h1>
-    <p class="lead">Опишите стороны, их требования и источники, поставьте значимость и влияние по шкале 1-3 и скачайте черновик реестра и матрицу в Word. Справка по матрице открывается в отдельных окнах и не мешает заполнению.</p>
-    <div class="note-box accent">Матрица значимости и влияния помогает установить цели, настроить процедуры под потребности значимых сторон и управлять рисками. С каждой стороной можно поддерживать свой уровень отношений: сохранять удовлетворенность, наблюдать, информировать или активно взаимодействовать.</div>
-    <div class="note-box">Черновик сохраняется в вашем браузере и не передается в сеть. Названия сторон и предприятия можно заменить условными.</div>
-    <div class="warn-box" id="storageWarn" style="display:none;">Похоже, браузер не разрешает сохранять черновик. В этом режиме записи не переживут обновление страницы, поэтому скачайте документ перед выходом.</div>
-    <div class="note-box" id="restoreNote" style="display:none;">Мы нашли ваш прошлый черновик и восстановили его. Можно продолжить с того места, где вы остановились.</div>
-    <div class="nav-buttons">
-      <button class="btn btn-primary" onclick="startWork()">Начать работу</button>
-    </div>
-  </div>
-
-  <!-- ОКНО: КАК УСТРОЕНА МАТРИЦА -->
-  <div id="screen-help" class="screen">
-    <div class="subtitle">Справочное окно</div>
-    <h1>Как устроена матрица</h1>
-    <p class="lead">Значимость это ценность требования стороны для работы предприятия. Влияние это способность стороны повлиять на производство и цели. Произведение баллов подсказывает сектор и уровень отношений.</p>
-
-    <div class="m-layout">
-      <div class="m-ytitle">Значимость</div>
-      <div>
-        <div class="m-grid" id="helpMatrix"></div>
-        <div class="m-collabels"><span></span><span>1</span><span>2</span><span>3</span></div>
-        <div class="m-xtitle">Влияние</div>
-      </div>
-    </div>
-    <div class="legend" id="helpLegend"></div>
-
-    <div class="nav-buttons">
-      <button class="btn btn-secondary" onclick="openWindow('screen-scale')">Шкала 1-3</button>
-      <button class="btn btn-secondary" onclick="openWindow('screen-rules')">Правила работы</button>
-      <button class="btn btn-primary" onclick="goStep(1)">К конструктору</button>
-    </div>
-    <div class="nav-buttons">
-      <button class="btn btn-secondary" onclick="goScreen('screen-intro')">Назад к введению</button>
-    </div>
-  </div>
-
-  <!-- ОКНО: ШКАЛА -->
-  <div id="screen-scale" class="screen">
-    <div class="subtitle">Справочное окно</div>
-    <h1>Шкала баллов</h1>
-    <div class="scale-grid">
-      <div class="scale-card">
-        <h3>Значимость требования</h3>
-        <p>Вопрос: насколько ценно для работы предприятия выполнение этого требования?</p>
-        <p><strong>1.</strong> Требование касается узкого вопроса и не влияет на производство или цели. Пример: пожелание поставщика о формате приложений к письму.</p>
-        <p><strong>2.</strong> Требование влияет на отдельный процесс, договор или площадку. Пример: требование заказчика о порядке возврата тары по одному договору.</p>
-        <p><strong>3.</strong> Невыполнение останавливает производство, закрывает рынок или ведет к приостановке деятельности. Пример: разрешения и нормативы надзорного органа, объем заказов ключевого клиента.</p>
-      </div>
-      <div class="scale-card">
-        <h3>Влияние стороны</h3>
-        <p>Вопрос: насколько сторона может повлиять на производство и достижение целей?</p>
-        <p><strong>1.</strong> Сторона может передать запрос или обратиться, но не задает условий. Пример: соседи направляют вопрос через администрацию.</p>
-        <p><strong>2.</strong> Сторона влияет на отдельное решение или условие: согласует, подтверждает, ведет операцию. Пример: работники линии сообщают, что мешает порядку возврата тары.</p>
-        <p><strong>3.</strong> Сторона определяет или блокирует ключевые решения: разрешения, предписания, объем заказов, остановка отгрузки. Пример: надзорный орган, ключевой клиент.</p>
-      </div>
-    </div>
-    <div class="note-box accent">Балл опирается на факты из договора, норматива, письма или инструкции. Если фактов пока не хватает, оставьте «еще не определено» и вернитесь после проверки: это точнее, чем поспешная единица.</div>
-    <div class="nav-buttons">
-      <button class="btn btn-secondary" onclick="backFromWindow()">Назад</button>
-    </div>
-  </div>
-
-  <!-- ОКНО: ПРАВИЛА -->
-  <div id="screen-rules" class="screen">
-    <div class="subtitle">Справочное окно</div>
-    <h1>Правила работы</h1>
-    <ol class="rules-list">
-      <li>Оценивайте сторону по фактам источника, а не по общему впечатлению о ней.</li>
-      <li>Если фактов не хватает, оставьте «еще не определено» и запишите, что проверить. Неизвестность не равна единице.</li>
-      <li>Держите два балла и обоснование: произведение подсказывает сектор, но не заменяет анализ требования.</li>
-      <li>Подход по сектору подсказывает уровень взаимодействия и не отменяет применимые требования: их выполняют независимо от баллов.</li>
-      <li>Черновик обсуждают с руководством: оно может добавить стороны, изменить баллы и подход.</li>
-    </ol>
-    <div class="nav-buttons">
-      <button class="btn btn-secondary" onclick="backFromWindow()">Назад</button>
-    </div>
-  </div>
-
-  <!-- ОКНО: ТОЧКА НА МАТРИЦЕ -->
-  <div id="screen-matrix" class="screen">
-    <div class="subtitle">Справочное окно</div>
-    <h1>Точка стороны на матрице</h1>
-    <p class="lead" id="winMatrixTitle"></p>
-    <div class="m-layout">
-      <div class="m-ytitle">Значимость</div>
-      <div>
-        <div class="m-grid" id="winMatrixGrid"></div>
-        <div class="m-collabels"><span></span><span>1</span><span>2</span><span>3</span></div>
-        <div class="m-xtitle">Влияние</div>
-      </div>
-    </div>
-    <div class="note-box accent" id="winMatrixPanel"></div>
-    <div class="nav-buttons">
-      <button class="btn btn-secondary" onclick="openWindow('screen-scale')">Шкала 1-3</button>
-      <button class="btn btn-primary" onclick="backFromWindow()">Назад к стороне</button>
-    </div>
-  </div>
-
-  <!-- ШАГ 1 -->
-  <div id="screen-step1" class="screen">
-    <div class="steps-nav">
-      <button class="step-btn active" onclick="goStep(1)">1. Сведения об анализе</button>
-      <button class="step-btn" onclick="goStep(2)">2. Стороны</button>
-      <button class="step-btn" onclick="goStep(3)">3. Предпросмотр</button>
-    </div>
-    <h1>Сведения об анализе</h1>
-    <p class="lead">Эти реквизиты попадут в начало документа. Необязательные поля можно оставить пустыми и вернуться к ним позже.</p>
-
-    <div class="field">
-      <label for="m-org">Предприятие или объект анализа</label>
-      <input type="text" id="m-org" oninput="onMeta('org', this.value)">
-      <div class="hint">Можно указать условное название.</div>
-    </div>
-    <div class="field">
-      <label for="m-scope">Что рассматриваете</label>
-      <textarea id="m-scope" oninput="onMeta('scope', this.value)"></textarea>
-      <div class="hint">Например, одну площадку или вид деятельности.</div>
-    </div>
-    <div class="field">
-      <label for="m-date">Дата анализа</label>
-      <input type="text" id="m-date" oninput="onMeta('date', this.value)">
-      <button class="btn-small" style="margin-top:6px;" onclick="setToday()">Подставить текущую дату</button>
-    </div>
-    <div class="field">
-      <label for="m-author">Подготовил</label>
-      <input type="text" id="m-author" oninput="onMeta('author', this.value)">
-      <div class="hint">Должность или имя. Можно оставить пустым.</div>
-    </div>
-    <div class="field">
-      <label for="m-basis">Основа работы</label>
-      <select id="m-basis" onchange="onMeta('basis', this.value)">
-        <option value="Данные моего предприятия">Данные моего предприятия</option>
-        <option value="Учебные данные">Учебные данные</option>
-      </select>
-    </div>
-
-    <div class="nav-buttons">
-      <button class="btn btn-secondary" onclick="openWindow('screen-help')">Матрица и шкала</button>
-      <button class="btn btn-primary" onclick="goStep(2)">Перейти к сторонам</button>
-    </div>
-  </div>
-
-  <!-- ШАГ 2 -->
-  <div id="screen-step2" class="screen">
-    <div class="steps-nav">
-      <button class="step-btn" onclick="goStep(1)">1. Сведения об анализе</button>
-      <button class="step-btn active" onclick="goStep(2)">2. Стороны</button>
-      <button class="step-btn" onclick="goStep(3)">3. Предпросмотр</button>
-    </div>
-    <h1>Заинтересованные стороны</h1>
-    <p class="lead">Каждая сторона живет на своей вкладке. Черновик сохраняется автоматически. Шкала, правила и точка на матрице открываются в отдельных окнах кнопками под баллами.</p>
-
-    <div class="tabs-bar" id="tabsBar" role="tablist" aria-label="Записи сторон"></div>
-    <div id="panelsBox"></div>
-
-    <div class="nav-buttons">
-      <button class="btn btn-secondary" onclick="goStep(1)">К сведениям</button>
-      <button class="btn btn-primary" onclick="goStep(3)">Перейти к предпросмотру</button>
-    </div>
-  </div>
-
-  <!-- ШАГ 3 -->
-  <div id="screen-step3" class="screen">
-    <div class="steps-nav">
-      <button class="step-btn" onclick="goStep(1)">1. Сведения об анализе</button>
-      <button class="step-btn" onclick="goStep(2)">2. Стороны</button>
-      <button class="step-btn active" onclick="goStep(3)">3. Предпросмотр</button>
-    </div>
-    <h1>Предпросмотр и скачивание</h1>
-
-    <div class="counts-box" id="countsBox" aria-live="polite"></div>
-    <div class="error-box" id="errorsBox" style="display:none;" aria-live="polite"></div>
-    <div class="notices-box" id="noticesBox" style="display:none;" aria-live="polite"></div>
-
-    <div id="previewBox"></div>
-
-    <div class="nav-buttons">
-      <button class="btn btn-secondary" onclick="goStep(2)">Вернуться к сторонам</button>
-      <button class="btn btn-primary" id="downloadBtn" onclick="downloadDocx()">Скачать Word</button>
-      <button class="btn btn-danger" onclick="restartAll()">Начать заново</button>
-    </div>
-    <p class="hint" id="downloadNote" style="font-size:12px; color:var(--muted); margin-top:8px;"></p>
-  </div>
-
+<div id="screen-intro" class="screen active">
+<h1 tabindex="-1">Заинтересованные стороны: требования, матрица, реестр</h1>
+<p class="lead">Опишите стороны, их требования и источники, поставьте значимость и влияние, посмотрите точку на матрице и скачайте черновик реестра. Все поля необязательные: пустые выходят прочерками, дописать можно в файле.</p>
+<div class="note-box accent">Зачем это в программе: требования сторон становятся источниками обязательств, изменения ожиданий — источником рисков и возможностей, а значимые стороны — участниками обсуждения области применения и политики. Этот конструктор передает данные обязательствам, рискам и области применения.</div>
+<details class="blk"><summary>Посмотреть пример записи</summary><div class="blk-body">
+<p><strong>Сторона 1.</strong> Надзорный орган (внешняя).</p>
+<p><strong>Требование:</strong> соблюдать нормативы выбросов по разрешению и предоставлять отчетность.</p>
+<p><strong>Источник:</strong> разрешение на выброс №123 от 01.01.2026.</p>
+<p><strong>Значимость 3, влияние 3</strong> — произведение 9, сектор B. Подход: активно взаимодействовать, держать обратную связь и стремиться выполнять требования.</p>
+<p><strong>Выполнение:</strong> да.</p>
+<p><strong>План:</strong> подтверждено протоколами производственного контроля.</p>
+<p><strong>Ответственный отдел:</strong> экологическая служба.</p>
+<p><strong>Канал:</strong> отчетность по графику, плановые проверки.</p>
+</div></details>
+<div class="warn-box storage-warn">Браузер не сохранил черновик. Скачайте Word, Excel или единый файл курса перед закрытием страницы.</div>
+<div class="note-box" id="restoreNote" style="display:none">Найден сохраненный черновик. Записи восстановлены.</div>
+<div class="nav-buttons">
+<button class="btn btn-primary" onclick="startWork()">Начать работу</button>
+<button class="btn btn-secondary" onclick="semToggleRules(this)">Правила и передача данных</button>
+</div>
+<div class="sem-rules" hidden></div>
 </div>
 
+<div id="screen-work" class="screen">
+<h1 tabindex="-1">Записи сторон</h1>
+<p class="lead">Каждая сторона на своей вкладке. Заполняйте в любом порядке: пустые поля выйдут прочерками, дописать можно в файле. Шкала открывается по кнопке в карточке стороны.</p>
+<div class="warn-box storage-warn">Браузер не сохранил черновик. Скачайте Word, Excel или единый файл курса перед закрытием страницы.</div>
+<div class="save-line" id="saveStatus"></div>
+<div class="nav-buttons" style="margin-top:0">
+<button class="btn btn-secondary" onclick="exportJson()">Скачать единый файл курса (JSON)</button>
+<button class="btn btn-secondary" onclick="document.getElementById('jsonFile').click()">Загрузить единый файл (JSON)</button>
+<input type="file" id="jsonFile" accept=".json,application/json" style="display:none" onchange="importJson(this)">
+<button class="btn btn-secondary" onclick="semToggleRules(this)">Правила и передача данных</button>
+</div>
+<div class="note-box" id="jsonMsg" style="display:none"></div>
+<div class="sem-rules" hidden></div>
+<div class="field" style="max-width:320px;display:inline-block;margin-right:8px"><label for="m-org">Предприятие или учебный кейс (необязательно)</label><input type="text" id="m-org"></div>
+<div class="field" style="max-width:150px;display:inline-block;margin-right:8px"><label for="m-date">Дата анализа</label><input type="text" id="m-date"></div>
+<div class="field" style="max-width:200px;display:inline-block"><label for="m-author">Подготовил (необязательно)</label><input type="text" id="m-author"></div>
+<div class="tabs-bar" id="tabsBar" role="tablist" aria-label="Записи сторон"></div>
+<div id="panelsBox"></div>
+<div class="nav-buttons"><button class="btn btn-primary" onclick="openPreview()">Посмотреть реестр и скачать</button></div>
+</div>
+
+<div id="screen-preview" class="screen">
+<h1 tabindex="-1">Реестр сторон перед скачиванием</h1>
+<div class="notices-box" id="noticesBox" style="display:none" aria-live="polite"></div>
+<div id="previewBox"></div>
+<div class="nav-buttons">
+<button class="btn btn-secondary" onclick="showScreen('screen-work')">Вернуться к записям</button>
+<button class="btn btn-primary" id="downloadBtn" onclick="downloadDocx()">Скачать Word</button>
+<button class="btn btn-primary" onclick="downloadXlsx()">Скачать Excel (.xlsx)</button>
+<button class="btn btn-danger" onclick="restartAll()">Полная очистка</button>
+<button class="btn btn-secondary" onclick="semToggleRules(this)">Правила и передача данных</button>
+</div>
+<div class="sem-rules" hidden></div>
+<p id="downloadNote" style="font-size:12px;color:var(--muted);margin-top:8px"></p>
+</div>
+
+</div>
 <script>
-/* ================= КОНСТАНТЫ ================= */
-const STORAGE_KEY = 'sem-stakeholder-registry-v1';
-const SECTORS = {
-  b:  { name: 'Сектор B, произведение 6-9', title: 'Активно взаимодействовать',
-        app: 'Держите обратную связь и стремитесь выполнять требования стороны.' },
-  ad: { name: 'Сектора A и D, произведение 3-4', title: 'Сохранять удовлетворенность и информированность',
-        app: 'Соблюдайте основные требования по возможности и обменивайтесь информацией по каналам.' },
-  c:  { name: 'Сектор C, произведение 1-2', title: 'Наблюдать',
-        app: 'Сторону сейчас все устраивает. Проверяйте, не выросли ли значимость и влияние.' }
+/* ========== ЗАЩИТНЫЙ СТАРТ ========== */
+function showBoot(msg){var b=document.getElementById('bootError');if(b){b.style.display='block';b.textContent='Конструктор не запустился: '+msg;}}
+window.addEventListener('error',function(ev){showBoot((ev&&ev.message)||'ошибка скрипта')+' (строка '+((ev&&ev.lineno)||'?')+')';});
+
+/* ========== МОДУЛЬ SEM-BUNDLE v1.1 ========== */
+var SEM_BUNDLE_KEY='sem_bundle';
+var SEM_STEPS=[
+ {name:'swot',title:'Условия и границы (SWOT)',keys:['sem_swot','sem-conditions-analysis-v1','sem-swot-v1']},
+ {name:'parties',title:'Карта заинтересованных сторон',keys:['sem_parties','sem-stakeholder-registry-v1']},
+ {name:'scope',title:'Область применения',keys:['sem_scope']},
+ {name:'aspects',title:'Реестр аспектов',keys:['sem_aspects','sem-aspect-records-v3','sem-aspect-records-v2','sem-aspect-records-v1','sem-chain-constructor-v1']},
+ {name:'significance',title:'Оценка значимости',keys:['sem_significance','sem-ranks-v3','sem-ranks-significance-v3','sem-ranks-v2','sem-ranks-v1']},
+ {name:'obligations',title:'Реестр обязательств',keys:['sem_obligations','sem-obligations-registry-v3','sem-obligations-registry-v2','sem-obligations-registry-v1']},
+ {name:'risks',title:'Риски и возможности',keys:['sem_risks','sem-risks-opps-v2','sem-risks-opps-v1']},
+ {name:'policy',title:'Политика',keys:['sem_policy']},
+ {name:'goals',title:'Цели и показатели',keys:['sem_goals']},
+ {name:'plan',title:'План действий',keys:['sem_plan']},
+ {name:'rollout',title:'План внедрения',keys:['sem_rollout']}
+];
+function semKnownKeys(){var m={};SEM_STEPS.forEach(function(s){s.keys.forEach(function(k){m[k]=s.name;});});return m;}
+function semHasLive(key){try{var raw=localStorage.getItem(key);if(!raw)return false;var d=JSON.parse(raw);return !!(d&&((Array.isArray(d.rows)&&d.rows.length)||(Array.isArray(d.cards)&&d.cards.length)||d.result));}catch(e){return false;}}
+function semReadLiveStep(step){for(var i=0;i<step.keys.length;i++){if(semHasLive(step.keys[i])){try{return JSON.parse(localStorage.getItem(step.keys[i]));}catch(e){}}}return null;}
+function semReadCache(){try{var raw=localStorage.getItem(SEM_BUNDLE_KEY);if(!raw)return{steps:{}};var d=JSON.parse(raw);return (d&&d.steps)?d:{steps:{}};}catch(e){return{steps:{}};}}
+function stepRows(name){
+ var step=null;SEM_STEPS.forEach(function(s){if(s.name===name)step=s;});
+ if(step){var live=semReadLiveStep(step);if(live&&Array.isArray(live.rows))return live.rows;}
+ var cache=semReadCache();
+ if(cache.steps[name]&&Array.isArray(cache.steps[name].rows))return cache.steps[name].rows;
+ return [];
+}
+function semExtraLive(){
+ var extra={},known=semKnownKeys();
+ try{
+  for(var i=0;i<localStorage.length;i++){
+   var k=localStorage.key(i);
+   if(!k||(k.indexOf('sem_')!==0&&k.indexOf('sem-')!==0)||k===SEM_BUNDLE_KEY||known[k])continue;
+   try{var d=JSON.parse(localStorage.getItem(k));if(d&&((Array.isArray(d.rows)&&d.rows.length)||d.result))extra[k]=d;}catch(e){}
+  }
+ }catch(e){}
+ return extra;
+}
+function semBuildBundle(){
+ var cache=semReadCache();var steps={};
+ SEM_STEPS.forEach(function(s){steps[s.name]=semReadLiveStep(s)||cache.steps[s.name]||null;});
+ Object.keys(cache.steps).forEach(function(k){if(steps[k]===undefined)steps[k]=cache.steps[k];});
+ var extra=semExtraLive();
+ Object.keys(extra).forEach(function(k){if(steps[k]===undefined)steps[k]=extra[k];});
+ return{schema:'sem.bundle.v1',program:'СЭМ',exportedAt:new Date().toISOString(),steps:steps};
+}
+function semExportBundle(){
+ var bundle=semBuildBundle();
+ var present=[];
+ SEM_STEPS.forEach(function(s){if(bundle.steps[s.name])present.push(s.title);});
+ Object.keys(bundle.steps).forEach(function(k){
+  var known=false;SEM_STEPS.forEach(function(s){if(s.name===k)known=true;});
+  if(!known&&bundle.steps[k])present.push('шаг '+k);
+ });
+ var blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
+ var url=URL.createObjectURL(blob);var a=document.createElement('a');
+ a.href=url;a.download='SEM_programma_polnyy_nabor_'+today()+'.json';
+ document.body.appendChild(a);a.click();document.body.removeChild(a);
+ setTimeout(function(){URL.revokeObjectURL(url);},4000);
+ return present;
+}
+function semCacheBundle(bundle){
+ var cache=semReadCache();
+ Object.keys(bundle.steps||{}).forEach(function(name){
+  var p=bundle.steps[name];
+  if(!p||!(Array.isArray(p.rows)&&p.rows.length)&&!p.result)return;
+  var old=cache.steps[name];
+  if(!old||(p.rows&&p.rows.length>(old.rows||[]).length)||Number(p.rev||0)>Number(old.rev||0))cache.steps[name]=p;
+ });
+ cache.savedAt=new Date().toISOString();
+ return semWriteCache(cache);
+}
+function semWriteCache(cache){try{localStorage.setItem(SEM_BUNDLE_KEY,JSON.stringify(cache));return true;}catch(e){return false;}}
+function semRestoreMissingSteps(bundle,exceptName){
+ var restored=[],skipped=[];
+ Object.keys(bundle.steps||{}).forEach(function(name){
+  if(name===exceptName)return;
+  var p=bundle.steps[name];
+  if(!p||!(Array.isArray(p.rows)&&p.rows.length)&&!p.result)return;
+  var key=null;
+  SEM_STEPS.forEach(function(s){if(s.name===name)key=s.keys[0];});
+  if(!key)key=name;
+  if(semHasLive(key)){skipped.push(name);return;}
+  try{localStorage.setItem(key,JSON.stringify(p));restored.push(name);}catch(e){}
+ });
+ return{restored:restored,skipped:skipped};
+}
+function semParseImport(text,selfName){
+ var d;try{d=JSON.parse(text);}catch(e){return null;}
+ if(d&&d.steps&&typeof d.steps==='object'){
+  var own=d.steps[selfName];
+  return{bundle:d,ownRows:(own&&own.rows)||[],format:'bundle'};
+ }
+ if(d&&(Array.isArray(d.rows)||Array.isArray(d.cards)||Array.isArray(d.parties)||Array.isArray(d))){
+  var rows=Array.isArray(d.rows)?d.rows:(Array.isArray(d.cards)?d.cards:(Array.isArray(d.parties)?d.parties:d));
+  var wrap={schema:'sem.bundle.v1',program:'СЭМ',exportedAt:new Date().toISOString(),steps:{}};
+  wrap.steps[selfName]={schema:d.schema||'',rev:d.rev||1,updatedAt:d.updatedAt||'',meta:d.meta||{},rows:rows};
+  return{bundle:wrap,ownRows:rows,format:'step'};
+ }
+ return null;
+}
+
+/* ========== ПРАВИЛА ДЛЯ УЧЕНИКА ========== */
+var SEM_RULES=[
+ 'Конструктор описывает стороны и их требования. Все поля необязательные: черновик выгружается на любом этапе, пропуски дописываются в файле.',
+ 'Значимость — ценность требования для работы предприятия. Влияние — способность стороны повлиять на производство и цели. Балл опирается на факты источника, а не на общее впечатление о стороне.',
+ 'Матрица 3×3 подсказывает подход по сектору: B (произведение 6-9) — активно взаимодействовать, A и D (произведение 3-4) — сохранять удовлетворенность и информированность, C (произведение 1-2) — наблюдать.',
+ 'Подход по сектору подсказывает уровень взаимодействия и не отменяет применимые требования: их выполняют независимо от баллов.',
+ 'Если фактов недостаточно, оставьте балл пустым и запишите вопрос. Пустота точнее, чем единица от нетерпения.',
+ 'Требования сторон становятся источниками обязательств в конструкторе обязательств. Изменения требований становятся источником рисков и возможностей. Значимые стороны учитываются при обсуждении области применения и политики.',
+ 'Номера записей сквозные внутри шага: в файлах запись получает постоянный идентификатор С-0001 для связей с обязательствами, рисками и областями применения. После удаления номер не пересдается.',
+ 'Черновик хранится только в этом браузере на этом устройстве. На сервер ничего не отправляется.',
+ 'Черновик пропадет, если открыть курс в другом браузере или на другом устройстве, работать в приватном режиме, очистить данные сайтов или если платформа откроет конструктор с другого адреса.',
+ 'Надежные копии — три файла. Word это черновик реестра с матрицей для обсуждения. Excel это рабочая таблица сторон с подсказками. Единый файл JSON это данные всей программы для переноса между устройствами и шагами.',
+ 'Единый файл курса содержит черновики всех шагов и скачивается из любого конструктора. При загрузке свои записи сливаются по правилу: заполненные поля не перезаписываются, дополняются только пустые.',
+ 'Конструктор не проверяет достоверность сведений и не подтверждает соответствие стандарту. Он помогает не потерять стороны, требования и подходы к взаимодействию.'
+];
+function semToggleRules(btn){
+ var screen=btn.closest('.screen');
+ var wrap=screen?screen.querySelector('.sem-rules'):null;
+ if(!wrap)return;
+ semKeepPlace(btn,function(){
+  var show=wrap.hidden;
+  wrap.hidden=!show;
+  if(show&&!wrap.innerHTML){
+   var h='<h2>Правила и передача данных</h2><ol>';
+   SEM_RULES.forEach(function(p){h+='<li>'+esc(p)+'</li>';});
+   h+='</ol>';
+   wrap.innerHTML=h;
+  }
+ });
+}
+
+/* ========== ПРИВЯЗКА К МЕСТУ ========== */
+function semKeepPlace(el,mutate){
+ var before=el.getBoundingClientRect().top+window.pageYOffset;
+ mutate();
+ resizeIframe();
+ var after=el.getBoundingClientRect().top+window.pageYOffset;
+ var delta=after-before;
+ if(Math.abs(delta)>2)window.scrollTo(0,Math.max(0,window.pageYOffset+delta));
+ semParentHold(el);
+}
+function semParentHold(el){
+ try{
+  if(!window.parentIFrame||typeof window.parentIFrame.getPageInfo!=='function')return;
+  var yInIframe=el.getBoundingClientRect().top+window.pageYOffset;
+  window.parentIFrame.getPageInfo(function(info){
+   try{
+    var yInView=info.iframeTop+yInIframe-info.scrollTop;
+    if(yInView<0||yInView>info.clientHeight-90){
+     if(typeof window.parentIFrame.scrollTo==='function')window.parentIFrame.scrollTo(0,Math.max(0,yInIframe-60));
+    }
+   }catch(e){}
+  });
+ }catch(e){}
+}
+document.addEventListener('click',function(e){
+ var s=e.target&&e.target.closest?e.target.closest('details>summary'):null;
+ if(!s)return;
+ var before=s.getBoundingClientRect().top+window.pageYOffset;
+ setTimeout(function(){
+  var after=s.getBoundingClientRect().top+window.pageYOffset;
+  var delta=after-before;
+  if(Math.abs(delta)>2)window.scrollTo(0,Math.max(0,window.pageYOffset+delta));
+  resizeIframe();
+  semParentHold(s);
+ },0);
+},true);
+function semExample(btn){
+ var box=btn.nextElementSibling;
+ if(!box)return;
+ semKeepPlace(btn,function(){
+  var show=box.style.display!=='block';
+  box.style.display=show?'block':'none';
+  box.classList.toggle('show',show);
+  btn.textContent=show?'Скрыть пример':'Показать пример';
+  btn.setAttribute('aria-expanded',show?'true':'false');
+ });
+}
+
+/* ========== СЛУЖЕБНОЕ ========== */
+var STORAGE_KEY='sem_parties';
+var SCHEMA='sem.parties.v1';
+var TYPES=[['','Тип не определен'],['in','Внутренняя'],['out','Внешняя']];
+var COMPS=[['','Не определено'],['yes','Да'],['no','Нет'],['unknown','Пока неизвестно']];
+var SECTORS={
+ b:{name:'Сектор B, произведение 6-9',title:'Активно взаимодействовать',app:'Держите обратную связь и стремитесь выполнять требования стороны.'},
+ ad:{name:'Сектора A и D, произведение 3-4',title:'Сохранять удовлетворенность и информированность',app:'Соблюдайте основные требования по возможности и обменивайтесь информацией по каналам.'},
+ c:{name:'Сектор C, произведение 1-2',title:'Наблюдать',app:'Сторону сейчас все устраивает. Проверяйте, не выросли ли значимость и влияние.'}
 };
-const TYPE_LABELS = { in: 'Внутренняя', out: 'Внешняя', '': 'Тип не определен' };
-const COMP_LABELS = { yes: 'Да', no: 'Нет', unknown: 'Пока неизвестно', '': 'Не определено' };
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function today(){var d=new Date();return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();}
+function pad4(n){return String(n).padStart(4,'0');}
+function idS(n){return 'С-'+pad4(n);}
+function typeLabel(v){for(var i=0;i<TYPES.length;i++)if(TYPES[i][0]===v)return TYPES[i][1];return 'Тип не определен';}
+function compLabel(v){for(var i=0;i<COMPS.length;i++)if(COMPS[i][0]===v)return COMPS[i][1];return '-';}
+function dash(v){v=String(v==null?'':v).trim();return v?v:'-';}
+function cut(s,n){s=String(s==null?'':s).trim();if(!s)return '';return s.length>n?s.slice(0,n-3)+'...':s;}
+function zoneOf(sig,inf){if(!sig||!inf)return null;var p=sig*inf;if(p<=2)return 'c';if(p<=4)return 'ad';return 'b';}
+function resizeIframe(){if(window.parentIFrame&&typeof window.parentIFrame.size==='function')window.parentIFrame.size();}
+function showScreen(id){['screen-intro','screen-work','screen-preview'].forEach(function(s){$(s).classList.remove('active');});$(id).classList.add('active');var h=$(id).querySelector('h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true});}window.scrollTo(0,0);resizeIframe();}
+function showStorageWarn(){var w=document.querySelectorAll('.storage-warn');for(var i=0;i<w.length;i++)w[i].classList.add('show');resizeIframe();}
 
-let state = {
-  meta: { org: '', scope: '', date: '', author: '', basis: 'Данные моего предприятия' },
-  parties: [],
-  nextNum: 1,
-  activeId: null
-};
-let bodiesById = {};
-let storageOk = true;
-let currentScreen = 'screen-intro';
-let returnScreen = 'screen-help';
+/* ========== СОСТОЯНИЕ ========== */
+var state={meta:{org:'',date:'',author:''},rows:[],nextNum:1,activeNum:null,rev:1};
+var bodiesById={},storageOk=true;
+function newRow(num){return{num:num,name:'',type:'',req:'',source:'',sig:null,inf:null,comp:'',plan:'',dept:'',channel:''};}
 
-/* ================= ЭКРАНЫ ================= */
-function resizeIframe() {
-  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
-    window.parentIFrame.size();
+/* ========== ПАМЯТЬ И МИГРАЦИЯ ========== */
+function saveOwn(){if(!storageOk)return;try{state.rev++;localStorage.setItem(STORAGE_KEY,JSON.stringify({schema:SCHEMA,rev:state.rev,updatedAt:new Date().toISOString(),meta:state.meta,rows:state.rows,nextNum:state.nextNum,activeNum:state.activeNum}));var d=new Date();$('saveStatus').textContent='Черновик сохранен в этом браузере в '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+'.';}catch(e){storageOk=false;showStorageWarn();}}
+function numOrNull(v){var n=Number(v);return (n===1||n===2||n===3)?n:null;}
+function sanitizeType(v){for(var i=0;i<TYPES.length;i++)if(TYPES[i][0]===v)return v;return '';}
+function sanitizeComp(v){for(var i=0;i<COMPS.length;i++)if(COMPS[i][0]===v)return v;return '';}
+function migrateP(r,num){
+ var row=newRow(num||r.num||0);
+ ['name','type','req','source','plan','dept','channel'].forEach(function(k){if(r[k]!==undefined&&r[k]!==null)row[k]=String(r[k]);});
+ row.sig=numOrNull(r.sig);
+ row.inf=numOrNull(r.inf);
+ row.type=sanitizeType(r.type);
+ row.comp=sanitizeComp(r.comp);
+ return row;
+}
+function loadOwn(){
+ try{
+  var raw=localStorage.getItem(STORAGE_KEY);
+  if(raw){var d=JSON.parse(raw);var arr=d.rows||[];if(Array.isArray(arr)){state.meta=Object.assign({org:'',date:'',author:''},d.meta||{});state.nextNum=Number(d.nextNum)||1;state.activeNum=d.activeNum||null;state.rev=Number(d.rev)||1;state.rows=arr.map(function(r,i){return migrateP(r,r.num||i+1);});if(state.nextNum<=state.rows.length)state.nextNum=state.rows.length+1;return true;}}
+  var aliases=['sem-stakeholder-registry-v1'];
+  for(var i=0;i<aliases.length;i++){
+   raw=localStorage.getItem(aliases[i]);if(!raw)continue;
+   var ld=JSON.parse(raw);var src=ld.rows||ld.parties||ld.cards||[];if(!Array.isArray(src)||!src.length)continue;
+   state.rows=[];var n=1;
+   src.forEach(function(r){var row=migrateP(r,n);var oldNum=parseInt(String(r.id||'').replace(/\D/g,''),10);if(oldNum)row.num=oldNum;state.rows.push(row);n++;});
+   state.rows.sort(function(a,b){return a.num-b.num;});
+   state.nextNum=(state.rows.length?state.rows[state.rows.length-1].num:0)+1;
+   state.activeNum=state.rows.length?state.rows[0].num:null;
+   if(ld.meta)state.meta=Object.assign({org:'',date:'',author:''},ld.meta);
+   return true;
   }
+ }catch(e){}
+ return false;
 }
+function testStorage(){try{localStorage.setItem(STORAGE_KEY+'-t','1');localStorage.removeItem(STORAGE_KEY+'-t');}catch(e){storageOk=false;showStorageWarn();}}
 
-function goScreen(id) {
-  document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
-  document.getElementById(id).classList.add('active');
-  currentScreen = id;
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  resizeIframe();
+/* ========== ЕДИНЫЙ ФАЙЛ ========== */
+function exportJson(){
+ var present=semExportBundle();
+ jsonMsg('Скачан единый файл программы. В нем шаги: '+(present.length?present.join(', '):'пока только этот черновик')+'. Данные сторон попадают в обязательства как источники требований и в риски как источник изменений ожиданий.');
 }
-
-function openWindow(id) {
-  returnScreen = currentScreen;
-  if (id === 'screen-matrix') renderMatrixWindow();
-  goScreen(id);
-}
-
-function backFromWindow() {
-  goScreen(returnScreen || 'screen-help');
-}
-
-function startWork() {
-  goScreen('screen-help');
-}
-
-function goStep(n) {
-  goScreen('screen-step' + n);
-  document.querySelectorAll('#screen-step' + n + ' .step-btn').forEach((b, i) => b.classList.toggle('active', i === n - 1));
-  if (n === 3) renderPreview();
-}
-
-function setToday() {
-  const d = new Date();
-  const s = String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
-  document.getElementById('m-date').value = s;
-  onMeta('date', s);
-}
-
-function onMeta(key, value) { state.meta[key] = value; saveState(); }
-
-/* ================= ПАМЯТЬ ================= */
-function saveState() {
-  if (!storageOk) return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      meta: state.meta, parties: state.parties, nextNum: state.nextNum, activeId: state.activeId
-    }));
-  } catch (e) {
-    storageOk = false;
-    document.getElementById('storageWarn').style.display = 'block';
-    resizeIframe();
-  }
-}
-
-function sanitizeParty(p) {
-  p = p || {};
-  const num = n => (n === 1 || n === 2 || n === 3) ? n : null;
-  return {
-    id: String(p.id || ''),
-    name: String(p.name || ''),
-    type: TYPE_LABELS[p.type] !== undefined ? p.type : '',
-    req: String(p.req || ''),
-    source: String(p.source || ''),
-    sig: num(p.sig),
-    inf: num(p.inf),
-    comp: COMP_LABELS[p.comp] !== undefined ? p.comp : '',
-    plan: String(p.plan || ''),
-    dept: String(p.dept || ''),
-    channel: String(p.channel || '')
-  };
-}
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return false;
-    const data = JSON.parse(raw);
-    if (!data || !Array.isArray(data.parties)) return false;
-    state.meta = Object.assign({ org: '', scope: '', date: '', author: '', basis: 'Данные моего предприятия' }, data.meta || {});
-    state.parties = data.parties.map(sanitizeParty).filter(p => p.id);
-    state.nextNum = Number(data.nextNum) || (state.parties.length + 1);
-    state.activeId = data.activeId || null;
-    return true;
-  } catch (e) { return false; }
-}
-
-function clearStorage() {
-  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-}
-
-/* ================= ОЦЕНКИ И МАТРИЦА ================= */
-function zoneOf(sig, inf) {
-  const p = sig * inf;
-  if (p <= 2) return 'c';
-  if (p <= 4) return 'ad';
-  return 'b';
-}
-function zoneOfParty(p) {
-  return (p.sig && p.inf) ? zoneOf(p.sig, p.inf) : null;
-}
-
-function buildZoneMatrix(el, point) {
-  el.innerHTML = '';
-  [3, 2, 1].forEach(y => {
-    const rl = document.createElement('div');
-    rl.className = 'm-rowlabel';
-    rl.textContent = y;
-    el.appendChild(rl);
-    for (let x = 1; x <= 3; x++) {
-      const c = document.createElement('div');
-      c.className = 'm-cell z' + zoneOf(x, y);
-      c.setAttribute('aria-label', 'Влияние ' + x + ', значимость ' + y + ': ' + SECTORS[zoneOf(x, y)].title);
-      if (point && point.x === x && point.y === y) {
-        const m = document.createElement('span');
-        m.className = 'pt';
-        m.textContent = point.label;
-        c.appendChild(m);
-      }
-      el.appendChild(c);
-    }
+function importJson(input){
+ var f=input.files&&input.files[0];if(!f)return;
+ var rd=new FileReader();
+ rd.onload=function(){
+  var parsed=semParseImport(rd.result,'parties');
+  if(!parsed){jsonMsg('Файл не похож на данные программы: не распознан ни единый файл, ни черновик шага.');input.value='';return;}
+  semCacheBundle(parsed.bundle);
+  var res=semRestoreMissingSteps(parsed.bundle,'parties');
+  var extra='';
+  if(res.restored.length)extra=' Вернул в этот браузер отсутствовавшие шаги программы: '+res.restored.length+'.';
+  else if(res.skipped.length)extra=' Шаги, которые уже есть в этом браузере, не перезаписаны.';
+  var added=0,filled=0;
+  (parsed.ownRows||[]).forEach(function(it){
+   var m=migrateP(it,it.num||0);
+   var ex=null;state.rows.forEach(function(r){if(r.num===m.num)ex=r;});
+   if(ex){['name','type','req','source','plan','dept','channel'].forEach(function(k){if(m[k]&&!ex[k]){ex[k]=m[k];filled++;}});
+    if(m.sig!==null&&ex.sig===null){ex.sig=m.sig;filled++;}
+    if(m.inf!==null&&ex.inf===null){ex.inf=m.inf;filled++;}
+    if(m.comp&&!ex.comp){ex.comp=m.comp;filled++;}
+   }
+   else{if(!m.num||state.rows.some(function(r){return r.num===m.num;})){m.num=state.nextNum++;}state.rows.push(m);added++;}
   });
+  state.rows.sort(function(a,b){return a.num-b.num;});
+  if(!state.activeNum&&state.rows.length)state.activeNum=state.rows[0].num;
+  refreshTabs();saveOwn();
+  jsonMsg('Данные загружены. Новых записей: '+added+'. Дополнено пустых полей: '+filled+'. Заполненные ранее поля не перезаписаны.'+extra);
+  input.value='';
+ };
+ rd.readAsText(f);
 }
+function jsonMsg(t){var m=$('jsonMsg');m.style.display='block';m.textContent=t;resizeIframe();}
 
-function buildLegend(el) {
-  const sw = { b: 'var(--zb-bg)', ad: 'var(--zad-bg)', c: 'var(--zc-bg)' };
-  const bd = { b: 'var(--zb-bd)', ad: 'var(--zad-bd)', c: 'var(--zc-bd)' };
-  el.innerHTML = ['b', 'ad', 'c'].map(z =>
-    '<div class="legend-item"><span class="legend-swatch" style="background:' + sw[z] + '; border-color:' + bd[z] + ';"></span>' +
-    '<strong>' + SECTORS[z].title + '</strong>' + SECTORS[z].name + '.</div>'
-  ).join('');
+/* ========== ВКЛАДКИ И ЗАПИСИ ========== */
+function startWork(){
+ if(!state.rows.length)addRow(true);
+ if(!state.meta.date)state.meta.date=today();
+ $('m-org').value=state.meta.org;$('m-date').value=state.meta.date;$('m-author').value=state.meta.author;
+ refreshTabs();showScreen('screen-work');
 }
-
-function renderMatrixWindow() {
-  const p = state.parties.find(x => x.id === state.activeId);
-  document.getElementById('winMatrixTitle').textContent = p
-    ? 'Сторона ' + p.id + '. ' + (p.name.trim() || 'Название пока не задано') + '.'
-    : 'Сторона не выбрана.';
-  buildZoneMatrix(document.getElementById('winMatrixGrid'),
-    (p && p.sig && p.inf) ? { x: p.inf, y: p.sig, label: p.id } : null);
-  const panel = document.getElementById('winMatrixPanel');
-  if (p && p.sig && p.inf) {
-    const z = zoneOf(p.sig, p.inf);
-    panel.innerHTML = '<strong>Значимость ' + p.sig + ', влияние ' + p.inf + ', произведение ' + (p.sig * p.inf) + '.</strong> ' +
-      SECTORS[z].name + ': ' + SECTORS[z].title.toLowerCase() + '. ' + SECTORS[z].app;
+function refreshTabs(){
+ var bar=$('tabsBar'),box=$('panelsBox');bar.innerHTML='';
+ state.rows.forEach(function(r){if(!bodiesById[r.num]){var b=buildRow(r);bodiesById[r.num]=b;box.appendChild(b);}});
+ Object.keys(bodiesById).forEach(function(n){var ex=state.rows.some(function(r){return r.num===Number(n);});if(!ex){bodiesById[n].remove();delete bodiesById[n];}});
+ if(!state.rows.some(function(r){return r.num===state.activeNum;}))state.activeNum=state.rows.length?state.rows[0].num:null;
+ state.rows.forEach(function(r){
+  var z=zoneOf(r.sig,r.inf);
+  var t=document.createElement('button');t.type='button';t.className='tab-btn';t.id='tab-'+r.num;
+  t.setAttribute('role','tab');t.setAttribute('aria-controls','panel-'+r.num);
+  t.setAttribute('aria-selected',r.num===state.activeNum?'true':'false');
+  t.onclick=function(){state.activeNum=r.num;applyActive();saveOwn();window.scrollTo(0,0);resizeIframe();};
+  var dot=document.createElement('span');dot.className='tab-dot dot-'+(z||'n');
+  var nm=document.createElement('span');nm.className='tab-name';nm.id='tabname-'+r.num;
+  nm.textContent=r.name.trim()?r.name.trim():'новая сторона';
+  t.appendChild(dot);t.appendChild(document.createTextNode(' '+r.num+'. '));t.appendChild(nm);bar.appendChild(t);
+ });
+ var add=document.createElement('button');add.type='button';add.className='tab-add';add.textContent='Добавить сторону';
+ add.onclick=function(){addRow(false);};bar.appendChild(add);
+ applyActive();
+}
+function applyActive(){state.rows.forEach(function(r){var p=bodiesById[r.num],t=$('tab-'+r.num);if(p)p.hidden=r.num!==state.activeNum;if(t)t.setAttribute('aria-selected',r.num===state.activeNum?'true':'false');});}
+function addRow(first){var r=newRow(state.nextNum);state.nextNum++;state.rows.push(r);state.activeNum=r.num;refreshTabs();saveOwn();if(!first){var el=$('f-'+r.num+'-name');if(el)el.focus();}resizeIframe();}
+function deleteRow(num){var r=null;state.rows.forEach(function(x){if(x.num===num)r=x;});if(!r)return;if((r.name||r.req)&&!confirm('Удалить запись '+num+'? Введенные данные будут потеряны.'))return;state.rows=state.rows.filter(function(x){return x.num!==num;});if(state.activeNum===num)state.activeNum=state.rows.length?state.rows[0].num:null;refreshTabs();saveOwn();resizeIframe();}
+function exBtn(id){return '<button type="button" class="ex-btn" aria-expanded="false" onclick="semExample(this)">Показать пример</button><div class="ex-box" id="ex-'+id+'"></div>';}
+function buildRow(r){
+ var z=zoneOf(r.sig,r.inf);
+ var panel=document.createElement('div');panel.className='tab-panel';panel.id='panel-'+r.num;
+ panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby','tab-'+r.num);
+ var head=document.createElement('div');head.className='panel-head';
+ var left=document.createElement('strong');left.textContent='Сторона '+r.num;
+ var badge=document.createElement('span');badge.className='grp-badge g-'+(z||'n');badge.id='badge-'+r.num;badge.textContent=z?SECTORS[z].title:'баллы не определены';
+ var del=document.createElement('button');del.type='button';del.className='btn-small';del.textContent='Удалить запись';
+ del.onclick=function(){deleteRow(r.num);};
+ head.appendChild(left);head.appendChild(badge);head.appendChild(del);panel.appendChild(head);
+ var b=document.createElement('div');var h='';
+ h+='<div class="field"><label for="f-'+r.num+'-name">Название стороны</label><input type="text" id="f-'+r.num+'-name" value="'+esc(r.name)+'">'+exBtn(r.num+'-name')+'<div class="hint">Роль или организация. Пример: надзорный орган, ключевой клиент, работники участка.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-type">Тип стороны</label><select id="f-'+r.num+'-type">'+TYPES.map(function(t){return '<option value="'+t[0]+'"'+(r.type===t[0]?' selected':'')+'>'+t[1]+'</option>';}).join('')+'</select><div class="hint">Внутренняя или внешняя по отношению к предприятию.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-req">Требование или ожидание</label><textarea id="f-'+r.num+'-req">'+esc(r.req)+'</textarea>'+exBtn(r.num+'-req')+'<div class="hint">Что сторона хочет от предприятия. Пример: соблюдение нормативов выбросов, возврат тары, сокращение отходов.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-source">Источник требования</label><input type="text" id="f-'+r.num+'-source" value="'+esc(r.source)+'">'+exBtn(r.num+'-source')+'<div class="hint">Договор, разрешение, норматив, письмо, инструкция. Это поле станет источником в конструкторе обязательств.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-sig">Значимость требования (1-3)</label><select id="f-'+r.num+'-sig"><option value="">Еще не определено</option><option value="1"'+(r.sig===1?' selected':'')+'>1 — узкий вопрос</option><option value="2"'+(r.sig===2?' selected':'')+'>2 — процесс, договор, площадка</option><option value="3"'+(r.sig===3?' selected':'')+'>3 — ключевые решения, остановка производства</option></select>'+exBtn(r.num+'-sig')+'<div class="hint">Насколько ценно выполнение требования для работы предприятия. Если фактов не хватает, оставьте пустым.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-inf">Влияние стороны (1-3)</label><select id="f-'+r.num+'-inf"><option value="">Еще не определено</option><option value="1"'+(r.inf===1?' selected':'')+'>1 — обращение без условий</option><option value="2"'+(r.inf===2?' selected':'')+'>2 — отдельное решение или условие</option><option value="3"'+(r.inf===3?' selected':'')+'>3 — определяет или блокирует ключевые решения</option></select>'+exBtn(r.num+'-inf')+'<div class="hint">Насколько сторона может повлиять на производство и цели.</div></div>';
+ h+='<div class="note-box" id="zone-'+r.num+'"></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-comp">Требование выполняется</label><select id="f-'+r.num+'-comp">'+COMPS.map(function(c){return '<option value="'+c[0]+'"'+(r.comp===c[0]?' selected':'')+'>'+c[1]+'</option>';}).join('')+'</select></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-plan">План или комментарий</label><textarea id="f-'+r.num+'-plan">'+esc(r.plan)+'</textarea>'+exBtn(r.num+'-plan')+'<div class="hint">Если не выполняется — суть плана, владелец и сроки. Если выполняется — чем подтверждено.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-dept">Ответственный отдел</label><input type="text" id="f-'+r.num+'-dept" value="'+esc(r.dept)+'"><div class="hint">Отдел или должность, которая держит связь со стороной.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-channel">Канал коммуникации</label><input type="text" id="f-'+r.num+'-channel" value="'+esc(r.channel)+'">'+exBtn(r.num+'-channel')+'<div class="hint">Аудиты, встречи, переписка, опросы.</div></div>';
+ h+='<p class="status-line" id="st-'+r.num+'"></p>';
+ b.innerHTML=h;panel.appendChild(b);
+ var EX={name:'Пример: надзорный орган (внешняя сторона).',
+  req:'Пример: соблюдать нормативы выбросов по разрешению и предоставлять отчетность.',
+  source:'Пример: разрешение на выброс №123 от 01.01.2026.',
+  sig:'Пример: 3 — невыполнение останавливает производство через предписание.',
+  inf:'Пример: 3 — орган выдает разрешение и проводит проверки.',
+  plan:'Пример: подтверждено протоколами производственного контроля за последний квартал.',
+  channel:'Пример: отчетность по графику, плановые и внеплановые проверки.'};
+ Object.keys(EX).forEach(function(k){var box=b.querySelector('[id="ex-'+r.num+'-'+k+'"]');if(box)box.textContent=EX[k];});
+ ['name','req','source','plan','dept','channel'].forEach(function(k){
+  var el=b.querySelector('[id="f-'+r.num+'-'+k+'"]');
+  if(el)el.addEventListener('input',function(e){r[k]=e.target.value;if(k==='name'){var nm=$('tabname-'+r.num);if(nm)nm.textContent=r.name.trim()?r.name.trim():'новая сторона';}saveOwn();syncRow(r);});
+ });
+ ['type','comp'].forEach(function(k){
+  var el=b.querySelector('[id="f-'+r.num+'-'+k+'"]');
+  if(el)el.addEventListener('change',function(e){r[k]=e.target.value;saveOwn();syncRow(r);});
+ });
+ ['sig','inf'].forEach(function(k){
+  var el=b.querySelector('[id="f-'+r.num+'-'+k+'"]');
+  if(el)el.addEventListener('change',function(e){
+   r[k]=e.target.value===''?null:Number(e.target.value);
+   var z2=zoneOf(r.sig,r.inf);
+   var bd=$('badge-'+r.num);
+   if(bd){bd.className='grp-badge g-'+(z2||'n');bd.textContent=z2?SECTORS[z2].title:'баллы не определены';}
+   refreshTabs();saveOwn();syncRow(r);
+  });
+ });
+ syncRow(r,b);
+ return panel;
+}
+function syncRow(r,root){
+ root=root||bodiesById[r.num];if(!root)return;
+ var z=zoneOf(r.sig,r.inf);
+ var zn=root.querySelector('[id="zone-'+r.num+'"]');
+ if(zn){
+  if(z){
+   zn.className='note-box accent';
+   zn.innerHTML='<strong>Значимость '+r.sig+', влияние '+r.inf+', произведение '+(r.sig*r.inf)+'.</strong> '+SECTORS[z].name+': '+SECTORS[z].title.toLowerCase()+'. '+SECTORS[z].app;
   } else {
-    panel.textContent = 'Баллы еще не поставлены. Выберите значимость и влияние на вкладке стороны, и точка появится на матрице.';
+   zn.className='note-box';
+   zn.textContent='Баллы еще не поставлены. Выберите значимость и влияние, и точка появится на матрице.';
   }
+ }
+ var st=root.querySelector('[id="st-'+r.num+'"]');
+ if(st){
+  var filled=0;
+  ['name','type','req','source','plan','dept','channel'].forEach(function(k){if(String(r[k]||'').trim())filled++;});
+  if(r.sig!==null)filled++;
+  if(r.inf!==null)filled++;
+  if(r.comp)filled++;
+  if(filled===0)st.textContent='Запись пустая: заполните любое поле или удалите запись. Скачивание доступно и с пропусками.';
+  else if(filled<10)st.textContent='Заполнено полей: '+filled+' из 10. Пустые выйдут прочерками, дописать можно в файле.';
+  else st.textContent='Запись заполнена целиком и готова к выгрузке.';
+ }
 }
 
-/* ================= ВКЛАДКИ И ПАНЕЛИ ================= */
-function refreshTabsUI() {
-  const bar = document.getElementById('tabsBar');
-  const box = document.getElementById('panelsBox');
-  bar.innerHTML = '';
-
-  state.parties.forEach(p => {
-    if (!bodiesById[p.id]) {
-      const body = buildBody(p);
-      bodiesById[p.id] = body;
-      box.appendChild(body);
-    }
-  });
-  Object.keys(bodiesById).forEach(id => {
-    if (!state.parties.find(p => p.id === id)) {
-      bodiesById[id].remove();
-      delete bodiesById[id];
-    }
-  });
-
-  const oldPh = document.getElementById('emptyPlaceholder');
-  if (oldPh) oldPh.remove();
-  if (!state.parties.find(p => p.id === state.activeId)) {
-    state.activeId = state.parties.length ? state.parties[0].id : null;
+/* ========== ПРЕДПРОСМОТР ========== */
+function openPreview(){renderPreview();showScreen('screen-preview');}
+var P_HEAD=['ID','Название стороны','Тип','Требование или ожидание','Источник требования','Значимость','Влияние','Сектор и подход','Выполнение','План или комментарий','Ответственный отдел','Канал коммуникации'];
+var P_HINTS=['Постоянный идентификатор стороны в программе: С- и номер; нужен для связей с обязательствами, рисками и областями применения.',
+ 'Роль или организация: клиент, надзорный орган, работники участка.',
+ 'Внутренняя или внешняя по отношению к предприятию.',
+ 'Что сторона хочет от предприятия: упаковка, сроки отчетности, качество воды.',
+ 'Договор, разрешение, норматив, письмо, инструкция — станет источником в обязательствах.',
+ '1 — узкий вопрос. 2 — процесс, договор, площадка. 3 — ключевые решения.',
+ '1 — обращение без условий. 2 — отдельное решение. 3 — определяет или блокирует ключевые решения.',
+ 'Сектор матрицы и подход к взаимодействию: активно взаимодействовать, сохранять удовлетворенность, наблюдать.',
+ 'Да, нет, пока неизвестно или не определено.',
+ 'Суть плана или подтверждение выполнения: владелец, сроки, документы.',
+ 'Отдел или должность, которая держит связь со стороной.',
+ 'Аудиты, встречи, переписка, опросы.'];
+var P_HINTS_SHORT=['ID стороны для связей в программе','Роль или организация','Внутренняя или внешняя','Требование к предприятию','Источник требования','Значимость 1-3','Влияние 1-3','Сектор матрицы и подход','Выполнение требования','План или подтверждение','Ответственный отдел','Канал коммуникации'];
+function pRowValues(r,forExport){
+ var z=zoneOf(r.sig,r.inf);
+ var sector=z?SECTORS[z].title:'Баллы не определены';
+ return [forExport?idS(r.num):String(r.num),dash(r.name),typeLabel(r.type),dash(r.req),dash(r.source),r.sig===null?'-':String(r.sig),r.inf===null?'-':String(r.inf),sector,compLabel(r.comp),dash(r.plan),dash(r.dept),dash(r.channel)];
+}
+function buildMatrix(points){
+ var html='<div class="m-layout"><div class="m-ytitle">Значимость</div><div><div class="m-grid">';
+ [3,2,1].forEach(function(y){
+  html+='<div class="m-rowlabel">'+y+'</div>';
+  for(var x=1;x<=3;x++){
+   var z=zoneOf(y,x);
+   var pts=(points||[]).filter(function(p){return p.x===x&&p.y===y;});
+   html+='<div class="m-cell cell-'+z+'">';
+   pts.forEach(function(p){html+='<span class="pt">'+esc(p.label)+'</span>';});
+   html+='</div>';
   }
-
-  state.parties.forEach(p => {
-    const z = zoneOfParty(p);
-    const tab = document.createElement('button');
-    tab.className = 'tab-btn';
-    tab.id = 'tab-' + p.id;
-    tab.setAttribute('role', 'tab');
-    tab.setAttribute('aria-controls', 'panel-' + p.id);
-    tab.setAttribute('aria-selected', p.id === state.activeId ? 'true' : 'false');
-    tab.onclick = () => activateTab(p.id);
-    const dot = document.createElement('span');
-    dot.className = 'tab-dot dot-' + (z || 'n');
-    dot.id = 'dot-' + p.id;
-    const idTxt = document.createElement('span');
-    idTxt.textContent = p.id;
-    const nm = document.createElement('span');
-    nm.className = 'tab-name';
-    nm.id = 'tabname-' + p.id;
-    nm.textContent = p.name.trim() || 'без названия';
-    tab.appendChild(dot); tab.appendChild(idTxt); tab.appendChild(nm);
-    bar.appendChild(tab);
-  });
-
-  const addBtn = document.createElement('button');
-  addBtn.className = 'tab-add';
-  addBtn.textContent = 'Добавить сторону';
-  addBtn.onclick = () => addParty();
-  bar.appendChild(addBtn);
-
-  if (!state.parties.length) {
-    const ph = document.createElement('div');
-    ph.className = 'note-box';
-    ph.id = 'emptyPlaceholder';
-    ph.style.marginTop = '10px';
-    ph.textContent = 'Записей пока нет. Нажмите "Добавить сторону", чтобы создать первую.';
-    box.appendChild(ph);
-  }
-  applyActivePanel();
+ });
+ html+='</div><div class="m-collabels"><span></span><span>1</span><span>2</span><span>3</span></div><div class="m-xtitle">Влияние</div></div></div>';
+ html+='<div class="legend">';
+ ['b','ad','c'].forEach(function(z){
+  html+='<div class="legend-item"><span class="legend-swatch" style="background:var(--'+z+'-bg);border-color:var(--'+z+'-tx);"></span><strong>'+SECTORS[z].title+'</strong>'+SECTORS[z].name+'.</div>';
+ });
+ html+='</div>';
+ return html;
+}
+function renderPreview(){
+ var ps=state.rows;
+ $('downloadBtn').disabled=!ps.length;
+ $('downloadNote').textContent=ps.length?'Черновик можно скачать с любыми пропусками: пустые поля выйдут прочерками, дописать можно в файле.':'Добавьте хотя бы одну запись стороны.';
+ var scored=ps.filter(function(p){return p.sig&&p.inf;});
+ var unscored=ps.filter(function(p){return !(p.sig&&p.inf);});
+ var compNo=ps.filter(function(p){return p.comp==='no';}).length;
+ var compUnk=ps.filter(function(p){return p.comp==='unknown';}).length;
+ var nt=[];
+ if(unscored.length)nt.push('Сторон без баллов: '+unscored.length+'. Точку на матрице можно поставить позже, запись уже в реестре.');
+ if(compNo)nt.push('Требований с отметкой «нет»: '+compNo+'. Добавьте план устранения или перенесите вопрос в конструктор обязательств.');
+ if(compUnk)nt.push('Требований с отметкой «пока неизвестно»: '+compUnk+'. Запишите, что проверить, и вопрос попадет в список уточнений.');
+ var ntBox=$('noticesBox');ntBox.style.display=nt.length?'block':'none';
+ if(nt.length)ntBox.innerHTML='<strong>На что посмотреть перед обсуждением.</strong><ul>'+nt.map(function(n){return '<li>'+esc(n)+'</li>';}).join('')+'</ul>';
+ var h='<div class="note-box accent">Предприятие или учебный кейс: '+esc(state.meta.org||'не указано')+'. Дата анализа: '+esc(state.meta.date||today())+'. Статус: черновик. Сторон: '+ps.length+', из них с баллами: '+scored.length+'.</div>';
+ h+='<div class="note-box">Сектор B (активно взаимодействовать): '+ps.filter(function(p){return zoneOf(p.sig,p.inf)==='b';}).length+' сторон. Сектора A и D (сохранять удовлетворенность): '+ps.filter(function(p){return zoneOf(p.sig,p.inf)==='ad';}).length+' сторон. Сектор C (наблюдать): '+ps.filter(function(p){return zoneOf(p.sig,p.inf)==='c';}).length+' сторон. Это сведения о заполненности черновика, а не оценка качества анализа.</div>';
+ h+='<details class="blk" open><summary>Матрица значимости и влияния</summary><div class="blk-body">'+buildMatrix(scored.map(function(p){return{x:p.inf,y:p.sig,label:p.num};}))+(unscored.length?'<p style="margin:8px 0 0">Баллы еще не определены: '+unscored.map(function(p){return esc(p.num+'. '+(p.name.trim()||'без названия'));}).join('; ')+'.</p>':'')+'</div></details>';
+ h+='<details class="blk"><summary>Реестр сторон · записей: '+ps.length+'</summary><div class="blk-body"><div class="scroll-x"><table class="reg"><thead><tr>'+P_HEAD.map(function(t){return '<th>'+t+'</th>';}).join('')+'</tr><tr class="hints">'+P_HINTS_SHORT.map(function(t){return '<td title="'+esc(t)+'">'+esc(t)+'</td>';}).join('')+'</tr></thead><tbody>';
+ ps.forEach(function(p){
+  h+='<tr>'+pRowValues(p,false).map(function(v){return '<td>'+esc(v)+'</td>';}).join('')+'</tr>';
+ });
+ h+='</tbody></table></div></div></details>';
+ h+='<div class="note-box">Требования сторон попадают в конструктор обязательств как источники требований. Изменения ожиданий сторон становятся источником рисков и возможностей. Значимые стороны учитываются при обсуждении области применения и политики. В книге Excel подсказки к колонкам свернуты под шапкой и открываются кнопкой плюс, полный текст с примером — при наведении.</div>';
+ $('previewBox').innerHTML=h;resizeIframe();
+}
+function restartAll(){
+ if(!confirm('Полная очистка: удалить записи сторон из браузера? Данные других шагов программы останутся.'))return;
+ try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+ state={meta:{org:'',date:today(),author:''},rows:[],nextNum:1,activeNum:null,rev:1};
+ bodiesById={};$('panelsBox').innerHTML='';
+ $('m-org').value='';$('m-date').value=state.meta.date;$('m-author').value='';$('saveStatus').textContent='';
+ addRow(true);showScreen('screen-work');
 }
 
-function applyActivePanel() {
-  state.parties.forEach(p => {
-    const panel = bodiesById[p.id];
-    const tab = document.getElementById('tab-' + p.id);
-    if (panel) panel.hidden = p.id !== state.activeId;
-    if (tab) tab.setAttribute('aria-selected', p.id === state.activeId ? 'true' : 'false');
-  });
+/* ========== WORD ========== */
+function xmlEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}
+function run(t,o){o=o||{};var r='';if(o.b)r+='<w:b/>';if(o.i)r+='<w:i/>';if(o.color)r+='<w:color w:val="'+o.color+'"/>';if(o.sz)r+='<w:sz w:val="'+o.sz+'"/><w:szCs w:val="'+o.sz+'"/>';return '<w:r>'+(r?'<w:rPr>'+r+'</w:rPr>':'')+'<w:t xml:space="preserve">'+xmlEsc(t)+'</w:t></w:r>';}
+function para(t,o){o=o||{};var p='';if(o.style)p+='<w:pStyle w:val="'+o.style+'"/>';if(o.before||o.after)p+='<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after||0)+'"/>';if(o.jc)p+='<w:jc w:val="'+o.jc+'"/>';return '<w:p>'+(p?'<w:pPr>'+p+'</w:pPr>':'')+run(t,o)+'</w:p>';}
+function paraMulti(t,o){return String(t==null?'':t).split(/\r?\n/).map(function(l){return para(l,o);}).join('');}
+function cell(w,x,f,span){return '<w:tc><w:tcPr>'+(span?'<w:gridSpan w:val="'+span+'"/>':'')+'<w:tcW w:w="'+w+'" w:type="dxa"/>'+(f?'<w:shd w:val="clear" w:color="auto" w:fill="'+f+'"/>':'')+'<w:vAlign w:val="top"/></w:tcPr>'+(x||'<w:p/>')+'</w:tc>';}
+var TBL='<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
+var CMAR='<w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar>';
+var ZFILL={b:'E6F4EA',ad:'FDF6E7',c:'F1F5F9'};
+var RW=[800,1400,900,2100,1800,600,600,1700,800,1800,1100,970];
+function buildDoc(){
+ var b=[];
+ b.push(para('Реестр заинтересованных сторон и матрица значимости и влияния. Черновик',{style:'Title'}));
+ b.push(para('Предприятие или учебный кейс: '+(state.meta.org||'не указано')+'. Дата анализа: '+(state.meta.date||today())+'. Подготовил: '+(state.meta.author||'не указан')+'. Статус: черновик для обсуждения.',{i:true,color:'6B7280',sz:20,after:120}));
+ b.push(para('Реестр собирает стороны, их требования и источники, ставит значимость и влияние по шкале 1-3 и подсказывает сектор подхода к взаимодействию. Подход по сектору подсказывает уровень взаимодействия и не отменяет применимые требования: их выполняют независимо от баллов. Требования сторон становятся источниками в конструкторе обязательств, изменения ожиданий — источником рисков и возможностей, значимые стороны учитываются при обсуждении области применения и политики.',{after:200}));
+ b.push(para('1. Матрица значимости и влияния',{style:'Heading1'}));
+ b.push(para('Сектор B, произведение 6-9: активно взаимодействовать. Сектора A и D, произведение 3-4: сохранять удовлетворенность и информированность. Сектор C, произведение 1-2: наблюдать.',{sz:20,after:120}));
+ var mwidths=[1800,2613,2613,2612];
+ var mrows='<w:tr>'+cell(mwidths[0],para('Значимость и влияние',{b:true,sz:20}),'F8FAFC')+cell(mwidths[1],para('Влияние 1',{b:true,sz:20}),'F8FAFC')+cell(mwidths[2],para('Влияние 2',{b:true,sz:20}),'F8FAFC')+cell(mwidths[3],para('Влияние 3',{b:true,sz:20}),'F8FAFC')+'</w:tr>';
+ [3,2,1].forEach(function(y){
+  var row='<w:tr>'+cell(mwidths[0],para('Значимость '+y,{b:true,sz:20}),'F8FAFC');
+  for(var x=1;x<=3;x++){
+   var pts=state.rows.filter(function(p){return p.sig===y&&p.inf===x;});
+   var inner='';
+   if(pts.length)pts.forEach(function(p){inner+=para(p.num+'. '+(p.name.trim()||'без названия'),{sz:20,after:40});});
+   else inner=para('Сторон пока нет',{i:true,color:'6B7280',sz:20});
+   row+=cell(mwidths[x],inner,ZFILL[zoneOf(y,x)]);
+  }
+  row+='</w:tr>';
+  mrows+=row;
+ });
+ b.push('<w:tbl><w:tblPr><w:tblW w:w="9638" w:type="dxa"/>'+TBL+CMAR+'<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+mwidths.map(function(w){return '<w:gridCol w:w="'+w+'"/>';}).join('')+'</w:tblGrid>'+mrows+'</w:tbl>');
+ var unscored=state.rows.filter(function(p){return !(p.sig&&p.inf);});
+ if(unscored.length){
+  b.push(para('Баллы еще не определены',{style:'Heading2'}));
+  unscored.forEach(function(p){b.push(para(p.num+'. '+(p.name.trim()||'без названия'),{after:40}));});
+ }
+ b.push(para('2. Черновик реестра сторон',{style:'Heading1'}));
+ var head='<w:tr>'+P_HEAD.map(function(t,i){return cell(RW[i],para(t,{b:true,sz:10}),'F8FAFC');}).join('')+'</w:tr>';
+ var trs='';
+ state.rows.forEach(function(p){
+  var vals=pRowValues(p,true);
+  trs+='<w:tr>'+vals.map(function(v,i){return cell(RW[i],paraMulti(v,{sz:10}));}).join('')+'</w:tr>';
+ });
+ if(!state.rows.length)trs='<w:tr>'+RW.map(function(w){return cell(w,para('стороны еще не добавлены',{i:true,color:'6B7280',sz:10}));}).join('')+'</w:tr>';
+ b.push('<w:tbl><w:tblPr><w:tblW w:w="14570" w:type="dxa"/>'+TBL+CMAR+'<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+RW.map(function(w){return '<w:gridCol w:w="'+w+'"/>';}).join('')+'</w:tblGrid>'+head+trs+'</w:tbl>');
+ b.push(para('3. Как использовать этот анализ дальше',{style:'Heading1'}));
+ b.push(para('Требования сторон с указанием источника попадают в конструктор обязательств как законодательные и добровольные источники. Стороны сектора B становятся ключевыми участниками при обсуждении области применения и политики: их ожидания и требования учитываются в формулировках.',{after:60}));
+ b.push(para('Изменения ожиданий сторон попадают в конструктор рисков и возможностей как источник «Заинтересованные стороны: стороны меняют требования или ожидания».',{after:60}));
+ b.push(para('Документ содержит черновик реестра сторон. Конструктор не проверяет достоверность сведений и не подтверждает соответствие стандарту. Прочерки означают пропуски, которые заполняются в редакторе, а не выводы.',{i:true,color:'6B7280',sz:20,before:240}));
+ b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>'+b.join('')+'</w:body></w:document>';
 }
 
-function activateTab(id) {
-  state.activeId = id;
-  applyActivePanel();
-  saveState();
+/* ========== XLSX ========== */
+function colLetter(i){var s='';i++;while(i>0){var m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26);}return s;}
+var XLSX_STYLES='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><i/><sz val="9"/><color rgb="FF64748B"/><name val="Calibri"/></font></fonts><fills count="6"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFDDE3EA"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF8FAFC"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE6F4EA"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFDF6E7"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FF9CA3AF"/></left><right style="thin"><color rgb="FF9CA3AF"/></right><top style="thin"><color rgb="FF9CA3AF"/></top><bottom style="thin"><color rgb="FF9CA3AF"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="7"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyBorder="1" applyFont="1" applyFill="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyBorder="1" applyFont="1" applyFill="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="2" fillId="0" borderId="1" xfId="0" applyBorder="1" applyFont="1"><alignment vertical="top" wrapText="0"/></xf><xf numFmtId="0" fontId="0" fillId="4" borderId="1" xfId="0" applyBorder="1" applyFill="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="0" fillId="5" borderId="1" xfId="0" applyBorder="1" applyFill="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+var P_WIDTHS=[9,20,13,34,30,9,9,24,13,30,18,22];
+function buildSheetXml(){
+ var rowsXml=[],merges=[],r=1;
+ function push(cells,opts){
+  opts=opts||{};
+  var cx='';
+  cells.forEach(function(c,i){
+   cx+='<c r="'+colLetter(i)+r+'" s="'+(c.s==null?1:c.s)+'" t="inlineStr"><is><t xml:space="preserve">'+xmlEsc(c.v==null?'':String(c.v))+'</t></is></c>';
+  });
+  var attrs=' r="'+r+'"';
+  if(opts.hidden)attrs+=' hidden="1"';
+  if(opts.collapsed)attrs+=' collapsed="1"';
+  if(opts.ht)attrs+=' ht="'+opts.ht+'" customHeight="1"';
+  rowsXml.push('<row'+attrs+'>'+cx+'</row>');
+  (opts.merges||[]).forEach(function(m){merges.push(m.split('@').join(String(r)));});
+  r++;
+ }
+ push([{v:'РЕЕСТР ЗАИНТЕРЕСОВАННЫХ СТОРОН И МАТРИЦА ЗНАЧИМОСТИ И ВЛИЯНИЯ. Предприятие или кейс: '+(state.meta.org||'не указано')+'. Дата анализа: '+(state.meta.date||today())+'. Статус: черновик.',s:3}],{merges:['A@:L@']});
+ push(P_HEAD.map(function(t){return{v:t,s:2};}),{collapsed:true});
+ push(P_HINTS_SHORT.map(function(t){return{v:t,s:4};}),{hidden:true,ht:15});
+ state.rows.forEach(function(p){
+  push(pRowValues(p,true).map(function(v){return{v:v,s:1};}));
+ });
+ if(!state.rows.length)push([{v:'стороны еще не добавлены: нажмите добавить сторону и опишите первую своими словами',s:1}],{merges:['A@:L@']});
+ var last=r-1;
+ var cols='<cols>'+P_WIDTHS.map(function(w,i){return '<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>';}).join('')+'</cols>';
+ var mg=merges.length?'<mergeCells count="'+merges.length+'">'+merges.map(function(m){return '<mergeCell ref="'+m+'"/>';}).join('')+'</mergeCells>':'';
+ var af='<autoFilter ref="A2:L'+last+'"/>';
+ var views='<sheetViews><sheetView workbookViewId="0" showGridLines="1"><pane xSplit="1" ySplit="3" topLeftCell="B4" activePane="bottomRight" state="frozen"/><selection pane="bottomRight" activeCell="B4" sqref="B4"/></sheetView></sheetViews>';
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><outlinePr summaryBelow="0"/></sheetPr><dimension ref="A1:L'+last+'"/>'+views+cols+'<sheetData>'+rowsXml.join('')+'</sheetData>'+af+mg+'</worksheet>';
+}
+function buildCommentsXml(){
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><comments xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><authors><author>Конструктор СЭМ</author></authors><commentList>'+P_HINTS.map(function(t,i){return '<comment ref="'+colLetter(i)+'2" authorId="0"><text><t xml:space="preserve">'+xmlEsc(t)+'</t></text></comment>';}).join('')+'</commentList></comments>';
+}
+function buildVmlXml(count,rowZero){
+ var shapes='';
+ for(var i=0;i<count;i++){
+  shapes+='<v:shape id="_x0000_s'+(1025+i)+'" type="#_x0000_t202" style="position:absolute;margin-left:60pt;margin-top:24pt;width:240pt;height:96pt;z-index:'+(1+i)+';visibility:hidden" fillcolor="#ffffe1" o:insetmode="auto"><v:fill color2="#ffffe1"/><v:shadow on="t" color="black" obscured="t"/><v:path o:connecttype="rect"/><v:textbox style="mso-direction-alt:auto"><div style="text-align:left"/></v:textbox><x:ClientData ObjectType="Note"><x:MoveWithCells/><x:SizeWithCells/><x:Anchor>1,12,1,12,4,12,8,12</x:Anchor><x:AutoFill>False</x:AutoFill><x:Row>'+rowZero+'</x:Row><x:Column>'+i+'</x:Column></x:ClientData></v:shape>';
+ }
+ return '<xml xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><o:shapelayout v:ext="edit"><o:idmap v:ext="edit" data="1"/></o:shapelayout><v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe"><v:stroke joinstyle="miter"/><v:path gradientshapeok="t" o:connecttype="rect"/></v:shapetype>'+shapes+'</xml>';
+}
+var XLSX_CT='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="vml" ContentType="application/vnd.openxmlformats-officedocument.vmlDrawing"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/comments1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml"/></Types>';
+var XLSX_RELS='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+var XLSX_WB_RELS='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+var XLSX_S1_RELS='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" Target="../comments1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing" Target="../drawings/vmlDrawing1.vml"/></Relationships>';
+function downloadXlsx(){
+ if(!state.rows.length){renderPreview();return;}
+ var enc=new TextEncoder();
+ var wb='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Заинтересованные стороны" sheetId="1" r:id="rId1"/></sheets><definedNames><definedName name="_xlnm.Print_Titles" localSheetId="0">\'Заинтересованные стороны\'!$1:$3</definedName></definedNames></workbook>';
+ var files=[
+  {name:'[Content_Types].xml',data:enc.encode(XLSX_CT)},
+  {name:'_rels/.rels',data:enc.encode(XLSX_RELS)},
+  {name:'xl/workbook.xml',data:enc.encode(wb)},
+  {name:'xl/_rels/workbook.xml.rels',data:enc.encode(XLSX_WB_RELS)},
+  {name:'xl/worksheets/sheet1.xml',data:enc.encode(buildSheetXml())},
+  {name:'xl/worksheets/_rels/sheet1.xml.rels',data:enc.encode(XLSX_S1_RELS)},
+  {name:'xl/comments1.xml',data:enc.encode(buildCommentsXml())},
+  {name:'xl/drawings/vmlDrawing1.vml',data:enc.encode(buildVmlXml(12,1))},
+  {name:'xl/styles.xml',data:enc.encode(XLSX_STYLES)}
+ ];
+ var bytes=zipStore(files);
+ var blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+ var url=URL.createObjectURL(blob);var a=document.createElement('a');
+ a.href=url;a.download='Zainteresovannye_storony_'+today()+'.xlsx';
+ document.body.appendChild(a);a.click();document.body.removeChild(a);
+ setTimeout(function(){URL.revokeObjectURL(url);},4000);
+ $('downloadNote').textContent='Скачана книга xlsx: таблица сторон с объединенным заголовком, свернутыми подсказками и примечаниями с примерами.';
+ resizeIframe();
+}
+/* ========== СКАЧИВАНИЕ WORD ========== */
+var CT_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
+var RELS_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+var DRELS_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+var FOOTER_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:fldSimple w:instr=" PAGE "><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
+var STYLES_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="334155"/></w:rPr></w:style></w:styles>';
+var CRC_TABLE=(function(){var t=new Uint32Array(256);for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(u){var c=0xFFFFFFFF;for(var i=0;i<u.length;i++)c=CRC_TABLE[(c^u[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipStore(files){var enc=new TextEncoder(),now=new Date();var dt=((now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1))&0xFFFF;var dd=(((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate())&0xFFFF;var loc=[],cen=[],off=0;files.forEach(function(f){var nb=enc.encode(f.name),data=f.data,crc=crc32(data);var lh=new Uint8Array(30+nb.length),dv=new DataView(lh.buffer);dv.setUint32(0,0x04034b50,true);dv.setUint16(4,20,true);dv.setUint16(6,0,true);dv.setUint16(8,0,true);dv.setUint16(10,dt,true);dv.setUint16(12,dd,true);dv.setUint32(14,crc,true);dv.setUint32(18,data.length,true);dv.setUint32(22,data.length,true);dv.setUint16(26,nb.length,true);dv.setUint16(28,0,true);lh.set(nb,30);loc.push(lh,data);var ch=new Uint8Array(46+nb.length),cv=new DataView(ch.buffer);cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint16(8,0,true);cv.setUint16(10,0,true);cv.setUint16(12,dt,true);cv.setUint16(14,dd,true);cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,nb.length,true);cv.setUint16(30,0,true);cv.setUint16(32,0,true);cv.setUint16(34,0,true);cv.setUint16(36,0,true);cv.setUint32(38,0,true);cv.setUint32(42,off,true);ch.set(nb,46);cen.push(ch);off+=lh.length+data.length;});var cs=0;cen.forEach(function(p){cs+=p.length;});var eo=new Uint8Array(22),ev=new DataView(eo.buffer);ev.setUint32(0,0x06054b50,true);ev.setUint16(4,0,true);ev.setUint16(6,0,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);ev.setUint32(12,cs,true);ev.setUint32(16,off,true);ev.setUint16(20,0,true);var tot=0;loc.forEach(function(p){tot+=p.length;});cen.forEach(function(p){tot+=p.length;});tot+=22;var out=new Uint8Array(tot),o=0;loc.forEach(function(p){out.set(p,o);o+=p.length;});cen.forEach(function(p){out.set(p,o);o+=p.length;});out.set(eo,o);return out;}
+function saveBlob(bytes,name){
+ var blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+ var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=name;
+ document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},4000);
+}
+function docFiles(xml){var enc=new TextEncoder();return[{name:'[Content_Types].xml',data:enc.encode(CT_XML)},{name:'_rels/.rels',data:enc.encode(RELS_XML)},{name:'word/document.xml',data:enc.encode(xml)},{name:'word/styles.xml',data:enc.encode(STYLES_XML)},{name:'word/footer1.xml',data:enc.encode(FOOTER_XML)},{name:'word/_rels/document.xml.rels',data:enc.encode(DRELS_XML)}];}
+function downloadDocx(){
+ if(!state.rows.length){renderPreview();return;}
+ saveBlob(zipStore(docFiles(buildDoc())),'Zainteresovannye_storony_'+today()+'.docx');
+ $('downloadNote').textContent='Запрос на скачивание отправлен. Проверьте сохранение файла.';
+ resizeIframe();
+}
+
+/* ========== СТАРТ ========== */
+document.addEventListener('DOMContentLoaded',function(){
+ try{
+  testStorage();
+  if(loadOwn())$('restoreNote').style.display='block';
+  ['m-org','m-date','m-author'].forEach(function(id){$(id).addEventListener('input',function(e){var k=id==='m-org'?'org':id==='m-date'?'date':'author';state.meta[k]=e.target.value;saveOwn();});});
   resizeIframe();
-}
-
-function updateTabLabel(p) {
-  const nm = document.getElementById('tabname-' + p.id);
-  if (nm) nm.textContent = p.name.trim() || 'без названия';
-  const dot = document.getElementById('dot-' + p.id);
-  if (dot) dot.className = 'tab-dot dot-' + (zoneOfParty(p) || 'n');
-  const badge = document.getElementById('badge-' + p.id);
-  if (badge) {
-    const z = zoneOfParty(p);
-    badge.className = 'grp-badge grp-' + (z || 'n');
-    badge.textContent = z ? SECTORS[z].title : 'баллы не определены';
-  }
-}
-
-function addParty() {
-  const id = 'P' + String(state.nextNum).padStart(2, '0');
-  state.nextNum++;
-  const p = { id, name: '', type: '', req: '', source: '', sig: null, inf: null, comp: '', plan: '', dept: '', channel: '' };
-  state.parties.push(p);
-  state.activeId = id;
-  refreshTabsUI();
-  saveState();
-  const inp = document.getElementById('name-' + id);
-  if (inp) inp.focus();
-  resizeIframe();
-}
-
-function deleteParty(id) {
-  const p = state.parties.find(x => x.id === id);
-  if (!p) return;
-  const filled = p.name || p.req || p.source || p.plan || p.dept;
-  if (filled && !confirm('Удалить запись ' + id + '? Введенные данные этой записи будут потеряны.')) return;
-  state.parties = state.parties.filter(x => x.id !== id);
-  if (state.activeId === id) state.activeId = state.parties.length ? state.parties[0].id : null;
-  refreshTabsUI();
-  saveState();
-  resizeIframe();
-}
-
-function goToParty(id) {
-  goStep(2);
-  activateTab(id);
-  const inp = document.getElementById('name-' + id);
-  if (inp) inp.focus();
-}
-
-/* ================= КАРТОЧКА СТОРОНЫ ================= */
-function buildBody(p) {
-  const panel = document.createElement('div');
-  panel.className = 'tab-panel';
-  panel.id = 'panel-' + p.id;
-  panel.setAttribute('role', 'tabpanel');
-  panel.setAttribute('aria-labelledby', 'tab-' + p.id);
-
-  const head = document.createElement('div');
-  head.className = 'panel-head';
-  const left = document.createElement('span');
-  left.style.display = 'inline-flex'; left.style.gap = '8px'; left.style.alignItems = 'center';
-  const strong = document.createElement('strong');
-  strong.textContent = 'Сторона ' + p.id;
-  const badge = document.createElement('span');
-  badge.className = 'grp-badge grp-' + (zoneOfParty(p) || 'n');
-  badge.id = 'badge-' + p.id;
-  badge.textContent = zoneOfParty(p) ? SECTORS[zoneOfParty(p)].title : 'баллы не определены';
-  left.appendChild(strong); left.appendChild(badge);
-  const del = document.createElement('button');
-  del.className = 'btn-small';
-  del.textContent = 'Удалить запись';
-  del.onclick = () => deleteParty(p.id);
-  head.appendChild(left); head.appendChild(del);
-  panel.appendChild(head);
-
-  const body = document.createElement('div');
-  body.innerHTML =
-    '<div class="field"><label for="name-' + p.id + '">Название стороны <span class="req">(обязательное поле)</span></label>' +
-    '<input type="text" id="name-' + p.id + '"><div class="hint">Роль или организация: клиент, надзорный орган, работники участка.</div></div>' +
-    '<div class="field"><label for="type-' + p.id + '">Тип стороны</label>' +
-    '<select id="type-' + p.id + '"><option value="">Не определен</option><option value="in">Внутренняя</option><option value="out">Внешняя</option></select></div>' +
-    '<div class="field"><label for="req-' + p.id + '">Требование или ожидание <span class="req">(обязательное поле)</span></label>' +
-    '<textarea id="req-' + p.id + '"></textarea><div class="hint">Что сторона хочет от предприятия: упаковка, сроки отчетности, качество воды.</div></div>' +
-    '<div class="field"><label for="source-' + p.id + '">Источник требования</label>' +
-    '<input type="text" id="source-' + p.id + '"><div class="hint">Договор, норматив, разрешение, письмо, опрос, инструкция.</div></div>' +
-    '<div class="field"><label for="sig-' + p.id + '">Значимость требования</label>' +
-    '<select id="sig-' + p.id + '"><option value="">Еще не определено</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>' +
-    '<div class="hint">1 - узкий вопрос. 2 - процесс, договор или площадка. 3 - ключевые решения и остановка производства.</div></div>' +
-    '<div class="field"><label for="inf-' + p.id + '">Влияние стороны</label>' +
-    '<select id="inf-' + p.id + '"><option value="">Еще не определено</option><option value="1">1</option><option value="2">2</option><option value="3">3</option></select>' +
-    '<div class="hint">1 - обращение без условий. 2 - отдельное решение. 3 - определяет или блокирует ключевые решения.</div></div>' +
-    '<div class="inline-links">' +
-    '<button class="btn-small" onclick="openWindow(\'screen-matrix\')">Точка на матрице</button>' +
-    '<button class="btn-small" onclick="openWindow(\'screen-scale\')">Напомнить шкалу</button>' +
-    '<button class="btn-small" onclick="openWindow(\'screen-rules\')">Правила работы</button></div>' +
-    '<div class="field"><label for="comp-' + p.id + '">Требование выполняется</label>' +
-    '<select id="comp-' + p.id + '"><option value="">Не определено</option><option value="yes">Да</option><option value="no">Нет</option><option value="unknown">Пока неизвестно</option></select></div>' +
-    '<div class="field"><label for="plan-' + p.id + '">План или комментарий по выполнению</label>' +
-    '<textarea id="plan-' + p.id + '"></textarea><div class="hint">Если не выполняется: суть плана, владелец и сроки. Если выполняется: чем подтверждено.</div></div>' +
-    '<div class="field"><label for="dept-' + p.id + '">Ответственный отдел за связь</label>' +
-    '<input type="text" id="dept-' + p.id + '"></div>' +
-    '<div class="field"><label for="channel-' + p.id + '">Канал коммуникации</label>' +
-    '<input type="text" id="channel-' + p.id + '"><div class="hint">Аудиты, встречи, деловая переписка, опросы.</div></div>';
-  panel.appendChild(body);
-
-  const q = sel => body.querySelector('[id="' + sel + '"]');
-  q('name-' + p.id).value = p.name;
-  q('type-' + p.id).value = p.type;
-  q('req-' + p.id).value = p.req;
-  q('source-' + p.id).value = p.source;
-  q('sig-' + p.id).value = p.sig === null ? '' : String(p.sig);
-  q('inf-' + p.id).value = p.inf === null ? '' : String(p.inf);
-  q('comp-' + p.id).value = p.comp;
-  q('plan-' + p.id).value = p.plan;
-  q('dept-' + p.id).value = p.dept;
-  q('channel-' + p.id).value = p.channel;
-
-  const set = (key, v) => {
-    p[key] = v;
-    saveState();
-    updateTabLabel(p);
-  };
-  q('name-' + p.id).addEventListener('input', e => set('name', e.target.value));
-  q('type-' + p.id).addEventListener('change', e => set('type', e.target.value));
-  q('req-' + p.id).addEventListener('input', e => set('req', e.target.value));
-  q('source-' + p.id).addEventListener('input', e => set('source', e.target.value));
-  q('sig-' + p.id).addEventListener('change', e => set('sig', e.target.value === '' ? null : Number(e.target.value)));
-  q('inf-' + p.id).addEventListener('change', e => set('inf', e.target.value === '' ? null : Number(e.target.value)));
-  q('comp-' + p.id).addEventListener('change', e => set('comp', e.target.value));
-  q('plan-' + p.id).addEventListener('input', e => set('plan', e.target.value));
-  q('dept-' + p.id).addEventListener('input', e => set('dept', e.target.value));
-  q('channel-' + p.id).addEventListener('input', e => set('channel', e.target.value));
-  return panel;
-}
-
-/* ================= ПРОВЕРКИ ================= */
-function validate() {
-  const errors = [];
-  state.parties.forEach(p => {
-    const missing = [];
-    if (!p.name.trim()) missing.push('название стороны');
-    if (!p.req.trim()) missing.push('требование или ожидание');
-    if (missing.length) errors.push({ id: p.id, missing });
-  });
-  return errors;
-}
-
-function notices() {
-  const list = [];
-  state.parties.forEach(p => {
-    if (!p.sig || !p.inf) list.push('Сторона ' + p.id + ': баллы еще не поставлены. Запись попадет в реестр, а точку на матрице можно добавить позже.');
-    if (!p.source.trim()) list.push('Сторона ' + p.id + ': источник требования пока не указан. Его можно добавить в любой момент.');
-    if (!p.comp) list.push('Сторона ' + p.id + ': осталось оценить, выполняется ли требование.');
-    if (p.comp === 'unknown') list.push('Сторона ' + p.id + ': выполнение помечено как неизвестное. Запишите, что проверить, и вопрос попадет в список уточнений.');
-    if (p.comp === 'no' && !p.plan.trim()) list.push('Сторона ' + p.id + ': требование не выполняется, и план еще не описан. Когда будете готовы, добавьте суть, владельца и сроки.');
-  });
-  return list;
-}
-
-function questions() {
-  const list = [];
-  state.parties.forEach(p => {
-    if (!p.sig || !p.inf) list.push(p.id + ': определить значимость и влияние по фактам источника.');
-    if (!p.source.trim()) list.push(p.id + ': уточнить источник требования.');
-    if (p.comp === 'unknown') list.push(p.id + ': проверить факты выполнения требования.');
-    if (p.comp === 'no' && !p.plan.trim()) list.push(p.id + ': подготовить план устранения несоответствия.');
-  });
-  return list;
-}
-
-/* ================= ПРЕДПРОСМОТР ================= */
-function esc(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-}
-
-function renderPreview() {
-  const ps = state.parties;
-  const scored = ps.filter(p => p.sig && p.inf);
-  const unscored = ps.filter(p => !(p.sig && p.inf));
-  const compNo = ps.filter(p => p.comp === 'no').length;
-
-  document.getElementById('countsBox').innerHTML = '<strong>Что уже заполнено.</strong><ul>' +
-    '<li>Сторон добавлено: ' + ps.length + '.</li>' +
-    '<li>Сторон с двумя баллами и точкой на матрице: ' + scored.length + '.</li>' +
-    '<li>Сторон, где баллы еще впереди: ' + unscored.length + '.</li>' +
-    '<li>Требований с отметкой "нет": ' + compNo + '.</li></ul>';
-
-  const errors = validate();
-  const errBox = document.getElementById('errorsBox');
-  const dlBtn = document.getElementById('downloadBtn');
-  if (errors.length) {
-    errBox.style.display = 'block';
-    errBox.innerHTML = '<strong>Для сборки документа не хватает названия и требования у перечисленных сторон.</strong> Заполните эти поля или удалите лишние записи, и скачивание откроется.<ul>' +
-      errors.map(e => '<li>Сторона ' + e.id + ': не хватает ' + esc(e.missing.join(' и ')) +
-        '. <button class="link-btn" onclick="goToParty(\'' + e.id + '\')">Перейти к записи</button></li>').join('') + '</ul>';
-    dlBtn.disabled = true;
-    document.getElementById('downloadNote').textContent = 'Скачивание откроется, когда у каждой записи будут название и требование.';
-  } else {
-    errBox.style.display = 'none';
-    dlBtn.disabled = ps.length === 0;
-    document.getElementById('downloadNote').textContent = ps.length === 0
-      ? 'Добавьте хотя бы одну запись с названием и требованием.'
-      : 'Документ сохранится на ваше устройство по нажатию кнопки.';
-  }
-
-  const nt = notices();
-  const ntBox = document.getElementById('noticesBox');
-  if (nt.length) {
-    ntBox.style.display = 'block';
-    ntBox.innerHTML = '<strong>Что можно дописать позже.</strong><ul>' + nt.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>';
-  } else ntBox.style.display = 'none';
-
-  let html = '';
-  html += '<div class="prev-section"><h3>1. Сведения об анализе</h3>' +
-    '<p style="margin:0 0 6px;"><strong>Реестр заинтересованных сторон и матрица значимости и влияния</strong></p>' +
-    '<p style="margin:0 0 10px; font-size:12px; color:var(--muted);">Предварительный рабочий материал. Требует проверки и обсуждения на предприятии.</p>';
-  if (state.meta.org.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Предприятие или объект:</strong> ' + esc(state.meta.org) + '</p>';
-  if (state.meta.scope.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Что рассматривается:</strong> ' + esc(state.meta.scope).replace(/\n/g, '<br>') + '</p>';
-  if (state.meta.date.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Дата анализа:</strong> ' + esc(state.meta.date) + '</p>';
-  if (state.meta.author.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Подготовил:</strong> ' + esc(state.meta.author) + '</p>';
-  html += '<p style="margin:0; font-size:13px;"><strong>Основа работы:</strong> ' + esc(state.meta.basis) + '</p></div>';
-
-  html += '<div class="prev-section"><h3>2. Матрица значимости и влияния</h3>';
-  html += '<div class="m-layout" style="margin:6px 0;"><div class="m-ytitle">Значимость</div><div><div class="m-grid" id="prevMatrix"></div>' +
-    '<div class="m-collabels"><span></span><span>1</span><span>2</span><span>3</span></div><div class="m-xtitle">Влияние</div></div></div>';
-  html += '<p class="legend-line">Сектор B, произведение 6-9: активно взаимодействовать. Сектора A и D, произведение 3-4: сохранять удовлетворенность и информированность. Сектор C, произведение 1-2: наблюдать.</p>';
-  if (unscored.length) {
-    html += '<h4 style="margin:10px 0 6px; font-size:14px;">Баллы еще не определены</h4><ul style="margin:0; padding-left:20px; font-size:13px;">' +
-      unscored.map(p => '<li>' + esc(p.id + '. ' + (p.name.trim() || 'Без названия')) + ' <button class="link-btn" onclick="goToParty(\'' + p.id + '\')">Открыть запись</button></li>').join('') + '</ul>';
-  }
-  html += '</div>';
-
-  html += '<div class="prev-section"><h3>3. Черновик реестра</h3>';
-  if (!ps.length) html += '<p class="prev-empty" style="margin:0;">Записи пока не добавлены.</p>';
-  ps.forEach(p => {
-    const z = zoneOfParty(p);
-    html += '<div class="prev-party"><div class="prev-party-head"><strong>' + esc(p.id + '. ' + (p.name.trim() || 'Без названия')) + '</strong>' +
-      '<span class="grp-badge grp-' + (z || 'n') + '">' + esc(z ? SECTORS[z].title : 'баллы не определены') + '</span>' +
-      '<button class="link-btn" onclick="goToParty(\'' + p.id + '\')">Открыть запись</button></div>' +
-      '<table class="prev-table"><tbody>' +
-      '<tr><th>Тип стороны</th><td>' + esc(TYPE_LABELS[p.type]) + '</td></tr>' +
-      '<tr><th>Требование или ожидание</th><td>' + esc(p.req).replace(/\n/g, '<br>') + '</td></tr>' +
-      '<tr><th>Источник требования</th><td>' + esc(p.source.trim() || 'Не указан') + '</td></tr>' +
-      '<tr><th>Значимость и влияние</th><td>' + (p.sig && p.inf ? p.sig + ' и ' + p.inf + ', произведение ' + (p.sig * p.inf) : 'Еще не определены') + '</td></tr>' +
-      '<tr><th>Сектор и подход</th><td>' + esc(z ? SECTORS[z].name + ': ' + SECTORS[z].app : 'Подход появится после постановки баллов') + '</td></tr>' +
-      '<tr><th>Требование выполняется</th><td>' + esc(COMP_LABELS[p.comp]) + '</td></tr>' +
-      '<tr><th>План или комментарий</th><td>' + esc(p.plan.trim() || '-') + '</td></tr>' +
-      '<tr><th>Ответственный отдел</th><td>' + esc(p.dept.trim() || '-') + '</td></tr>' +
-      '<tr><th>Канал коммуникации</th><td>' + esc(p.channel.trim() || '-') + '</td></tr>' +
-      '</tbody></table></div>';
-  });
-  html += '</div>';
-
-  const qs = questions();
-  html += '<div class="prev-section"><h3>4. Вопросы для уточнения</h3>';
-  if (!qs.length) html += '<p class="prev-empty" style="margin:0;">Дополнительные уточнения в этой версии не нужны.</p>';
-  else html += '<ul style="margin:0; padding-left:20px; font-size:13px;">' + qs.map(q => '<li>' + esc(q) + '</li>').join('') + '</ul>';
-  html += '</div>';
-
-  html += '<p style="font-size:12px; color:var(--muted);">Подход по сектору подсказывает уровень взаимодействия и не отменяет применимые требования. Документ собран учебным конструктором и помогает организовать обсуждение, а не подтверждает соответствие СЭМ стандарту.</p>';
-  document.getElementById('previewBox').innerHTML = html;
-
-  const prevPoints = scored.map(p => ({ x: p.inf, y: p.sig, label: p.id }));
-  buildZoneMatrixMulti(document.getElementById('prevMatrix'), prevPoints);
-  resizeIframe();
-}
-
-function buildZoneMatrixMulti(el, points) {
-  el.innerHTML = '';
-  [3, 2, 1].forEach(y => {
-    const rl = document.createElement('div');
-    rl.className = 'm-rowlabel';
-    rl.textContent = y;
-    el.appendChild(rl);
-    for (let x = 1; x <= 3; x++) {
-      const c = document.createElement('div');
-      c.className = 'm-cell z' + zoneOf(x, y);
-      c.style.minHeight = '64px';
-      const here = points.filter(p => p.x === x && p.y === y);
-      here.forEach(p => {
-        const m = document.createElement('span');
-        m.className = 'pt';
-        m.style.position = 'static';
-        m.style.transform = 'none';
-        m.style.display = 'inline-block';
-        m.style.margin = '2px';
-        m.textContent = p.label;
-        c.appendChild(m);
-      });
-      el.appendChild(c);
-    }
-  });
-}
-
-/* ================= ГЕНЕРАЦИЯ DOCX ================= */
-function xmlEsc(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-}
-function run(text, o) {
-  o = o || {};
-  let rpr = '';
-  if (o.b) rpr += '<w:b/>';
-  if (o.i) rpr += '<w:i/>';
-  if (o.color) rpr += '<w:color w:val="' + o.color + '"/>';
-  if (o.sz) rpr += '<w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/>';
-  return '<w:r>' + (rpr ? '<w:rPr>' + rpr + '</w:rPr>' : '') + '<w:t xml:space="preserve">' + xmlEsc(text) + '</w:t></w:r>';
-}
-function para(text, o) {
-  o = o || {};
-  let ppr = '';
-  if (o.style) ppr += '<w:pStyle w:val="' + o.style + '"/>';
-  if (o.before || o.after) ppr += '<w:spacing w:before="' + (o.before || 0) + '" w:after="' + (o.after || 0) + '"/>';
-  return '<w:p>' + (ppr ? '<w:pPr>' + ppr + '</w:pPr>' : '') + run(text, o) + '</w:p>';
-}
-function paraMulti(text, o) {
-  return String(text).split(/\r?\n/).map(l => para(l, o)).join('');
-}
-function labelPara(label, value) {
-  return '<w:p><w:pPr><w:spacing w:after="60"/></w:pPr>' + run(label + ': ', { b: true }) + run(value) + '</w:p>';
-}
-function cell(width, parasXml, fill) {
-  const tcpr = '<w:tcPr><w:tcW w:w="' + width + '" w:type="dxa"/>' + (fill ? '<w:shd w:val="clear" w:color="auto" w:fill="' + fill + '"/>' : '') + '<w:vAlign w:val="top"/></w:tcPr>';
-  return '<w:tc>' + tcpr + (parasXml || '<w:p/>') + '</w:tc>';
-}
-const TBL_BORDERS = '<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
-const CELL_MAR = '<w:tblCellMar><w:top w:w="80" w:type="dxa"/><w:left w:w="100" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:right w:w="100" w:type="dxa"/></w:tblCellMar>';
-function table(widths, rowsXml) {
-  const total = widths.reduce((a, b) => a + b, 0);
-  return '<w:tbl><w:tblPr><w:tblW w:w="' + total + '" w:type="dxa"/>' + TBL_BORDERS + CELL_MAR + '<w:tblLayout w:type="fixed"/></w:tblPr>' +
-    '<w:tblGrid>' + widths.map(w => '<w:gridCol w:w="' + w + '"/>').join('') + '</w:tblGrid>' + rowsXml + '</w:tbl>';
-}
-const ZFILL = { b: 'E6F4EA', ad: 'FDF6E7', c: 'F1F5F9' };
-
-function buildDocumentXml() {
-  const b = [];
-  b.push(para('Реестр заинтересованных сторон и матрица значимости и влияния', { style: 'Title' }));
-  b.push(para('Предварительный рабочий материал. Требует проверки и обсуждения на предприятии.', { i: true, color: '6B7280', sz: 20, after: 200 }));
-
-  b.push(para('1. Сведения об анализе', { style: 'Heading1' }));
-  if (state.meta.org.trim()) b.push(labelPara('Предприятие или объект', state.meta.org.trim()));
-  if (state.meta.scope.trim()) {
-    const lines = state.meta.scope.trim().split(/\r?\n/);
-    let xml = '<w:p><w:pPr><w:spacing w:after="60"/></w:pPr>' + run('Что рассматривается: ', { b: true }) + run(lines[0]) + '</w:p>';
-    for (let i = 1; i < lines.length; i++) xml += para(lines[i]);
-    b.push(xml);
-  }
-  if (state.meta.date.trim()) b.push(labelPara('Дата анализа', state.meta.date.trim()));
-  if (state.meta.author.trim()) b.push(labelPara('Подготовил', state.meta.author.trim()));
-  b.push(labelPara('Основа работы', state.meta.basis));
-
-  b.push(para('2. Матрица значимости и влияния', { style: 'Heading1' }));
-  b.push(para('Сектор B, произведение 6-9: активно взаимодействовать. Сектора A и D, произведение 3-4: сохранять удовлетворенность и информированность. Сектор C, произведение 1-2: наблюдать.', { sz: 20, after: 120 }));
-  const widths = [1800, 2613, 2613, 2612];
-  let rows = '<w:tr>' + cell(widths[0], para('Значимость и влияние', { b: true, sz: 20 }), 'F8FAFC') +
-    cell(widths[1], para('Влияние 1', { b: true, sz: 20 }), 'F8FAFC') +
-    cell(widths[2], para('Влияние 2', { b: true, sz: 20 }), 'F8FAFC') +
-    cell(widths[3], para('Влияние 3', { b: true, sz: 20 }), 'F8FAFC') + '</w:tr>';
-  [3, 2, 1].forEach(y => {
-    let row = '<w:tr>' + cell(widths[0], para('Значимость ' + y, { b: true, sz: 20 }), 'F8FAFC');
-    for (let x = 1; x <= 3; x++) {
-      const pts = state.parties.filter(p => p.sig === y && p.inf === x);
-      let inner = '';
-      if (pts.length) pts.forEach(p => { inner += para(p.id + '. ' + (p.name.trim() || 'Без названия'), { sz: 20, after: 40 }); });
-      else inner = para('Сторон пока нет', { i: true, color: '6B7280', sz: 20 });
-      row += cell(widths[x], inner, ZFILL[zoneOf(x, y)]);
-    }
-    row += '</w:tr>';
-    rows += row;
-  });
-  b.push(table(widths, rows));
-  const unscored = state.parties.filter(p => !(p.sig && p.inf));
-  if (unscored.length) {
-    b.push(para('Баллы еще не определены', { style: 'Heading2' }));
-    unscored.forEach(p => b.push(para(p.id + '. ' + (p.name.trim() || 'Без названия'), { after: 40 })));
-  }
-
-  b.push(para('3. Черновик реестра', { style: 'Heading1' }));
-  state.parties.forEach(p => {
-    const z = zoneOfParty(p);
-    b.push(para(p.id + '. ' + (p.name.trim() || 'Без названия'), { style: 'Heading2' }));
-    b.push(para('Тип: ' + TYPE_LABELS[p.type] + (z ? '. Сектор: ' + SECTORS[z].name : ''), { b: true, color: z ? (z === 'b' ? '1B5E20' : z === 'ad' ? '9A3412' : '334155') : '334155', after: 100 }));
-    const rowsData = [
-      ['Требование или ожидание', p.req],
-      ['Источник требования', p.source.trim() || 'Не указан'],
-      ['Значимость', p.sig ? String(p.sig) : 'Не определено'],
-      ['Влияние', p.inf ? String(p.inf) : 'Не определено'],
-      ['Произведение и сектор', (p.sig && p.inf) ? String(p.sig * p.inf) + ', ' + SECTORS[z].name : 'Не определено'],
-      ['Подход к взаимодействию', z ? SECTORS[z].app : 'Появится после постановки баллов'],
-      ['Требование выполняется', COMP_LABELS[p.comp]],
-      ['План или комментарий', p.plan.trim() || '-'],
-      ['Ответственный отдел', p.dept.trim() || '-'],
-      ['Канал коммуникации', p.channel.trim() || '-']
-    ];
-    let rowsXml = '';
-    rowsData.forEach(r => {
-      rowsXml += '<w:tr>' + cell(2800, para(r[0], { b: true, sz: 20 }), 'F8FAFC') + cell(6838, paraMulti(r[1], { sz: 20 })) + '</w:tr>';
-    });
-    b.push(table([2800, 6838], rowsXml));
-    b.push(para('', { after: 120 }));
-  });
-
-  b.push(para('4. Вопросы для уточнения', { style: 'Heading1' }));
-  const qs = questions();
-  if (!qs.length) b.push(para('Дополнительные уточнения в этой версии не нужны.', { i: true, color: '6B7280' }));
-  qs.forEach(q => b.push(para(q, { after: 40 })));
-
-  b.push(para('Подход по сектору подсказывает уровень взаимодействия и не отменяет применимые требования: их выполняют независимо от баллов.', { i: true, color: '6B7280', sz: 20, before: 240 }));
-  b.push(para('Документ подготовлен с помощью учебного конструктора. Он помогает организовать обсуждение заинтересованных сторон и не является подтверждением соответствия СЭМ стандарту.', { i: true, color: '6B7280', sz: 20 }));
-  b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
-  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>' +
-    b.join('') + '</w:body></w:document>';
-}
-
-const CT_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
-const RELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
-const DRELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
-const FOOTER_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:fldSimple w:instr=" PAGE "><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
-const STYLES_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="334155"/></w:rPr></w:style></w:styles>';
-
-/* ZIP (store) */
-const CRC_TABLE = (() => {
-  const t = new Uint32Array(256);
-  for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; }
-  return t;
-})();
-function crc32(u8) {
-  let c = 0xFFFFFFFF;
-  for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
-  return (c ^ 0xFFFFFFFF) >>> 0;
-}
-function zipStore(files) {
-  const enc = new TextEncoder();
-  const now = new Date();
-  const dosTime = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xFFFF;
-  const dosDate = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xFFFF;
-  const locals = [], centrals = [];
-  let offset = 0;
-  files.forEach(f => {
-    const nameB = enc.encode(f.name);
-    const data = f.data;
-    const crc = crc32(data);
-    const lh = new Uint8Array(30 + nameB.length);
-    const dv = new DataView(lh.buffer);
-    dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true); dv.setUint16(6, 0, true); dv.setUint16(8, 0, true);
-    dv.setUint16(10, dosTime, true); dv.setUint16(12, dosDate, true);
-    dv.setUint32(14, crc, true); dv.setUint32(18, data.length, true); dv.setUint32(22, data.length, true);
-    dv.setUint16(26, nameB.length, true); dv.setUint16(28, 0, true);
-    lh.set(nameB, 30);
-    locals.push(lh, data);
-    const ch = new Uint8Array(46 + nameB.length);
-    const cv = new DataView(ch.buffer);
-    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true); cv.setUint16(8, 0, true); cv.setUint16(10, 0, true);
-    cv.setUint16(12, dosTime, true); cv.setUint16(14, dosDate, true);
-    cv.setUint32(16, crc, true); cv.setUint32(20, data.length, true); cv.setUint32(24, data.length, true);
-    cv.setUint16(28, nameB.length, true); cv.setUint16(30, 0, true); cv.setUint16(32, 0, true);
-    cv.setUint16(34, 0, true); cv.setUint16(36, 0, true); cv.setUint32(38, 0, true); cv.setUint32(42, offset, true);
-    ch.set(nameB, 46);
-    centrals.push(ch);
-    offset += lh.length + data.length;
-  });
-  const centralSize = centrals.reduce((a, c) => a + c.length, 0);
-  const eocd = new Uint8Array(22);
-  const ev = new DataView(eocd.buffer);
-  ev.setUint32(0, 0x06054b50, true); ev.setUint16(4, 0, true); ev.setUint16(6, 0, true);
-  ev.setUint16(8, files.length, true); ev.setUint16(10, files.length, true);
-  ev.setUint32(12, centralSize, true); ev.setUint32(16, offset, true); ev.setUint16(20, 0, true);
-  let total = 0;
-  locals.forEach(p => total += p.length);
-  centrals.forEach(p => total += p.length);
-  total += 22;
-  const out = new Uint8Array(total);
-  let o = 0;
-  locals.forEach(p => { out.set(p, o); o += p.length; });
-  centrals.forEach(p => { out.set(p, o); o += p.length; });
-  out.set(eocd, o);
-  return out;
-}
-
-function downloadDocx() {
-  const errors = validate();
-  if (errors.length || state.parties.length === 0) { renderPreview(); return; }
-  const enc = new TextEncoder();
-  const files = [
-    { name: '[Content_Types].xml', data: enc.encode(CT_XML) },
-    { name: '_rels/.rels', data: enc.encode(RELS_XML) },
-    { name: 'word/document.xml', data: enc.encode(buildDocumentXml()) },
-    { name: 'word/styles.xml', data: enc.encode(STYLES_XML) },
-    { name: 'word/footer1.xml', data: enc.encode(FOOTER_XML) },
-    { name: 'word/_rels/document.xml.rels', data: enc.encode(DRELS_XML) }
-  ];
-  const bytes = zipStore(files);
-  const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'reestr-zainteresovannykh-storon.docx';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 4000);
-  document.getElementById('downloadNote').textContent = 'Документ скачан. Можно продолжать работу и скачать новую версию после изменений.';
-  resizeIframe();
-}
-
-/* ================= СБРОС ================= */
-function restartAll() {
-  if (!confirm('Очистить все введенные данные и удалить черновик из локальной памяти браузера?')) return;
-  clearStorage();
-  state.meta = { org: '', scope: '', date: '', author: '', basis: 'Данные моего предприятия' };
-  state.parties = [];
-  state.nextNum = 1;
-  state.activeId = null;
-  bodiesById = {};
-  document.getElementById('panelsBox').innerHTML = '';
-  document.getElementById('m-org').value = '';
-  document.getElementById('m-scope').value = '';
-  document.getElementById('m-date').value = '';
-  document.getElementById('m-author').value = '';
-  document.getElementById('m-basis').value = 'Данные моего предприятия';
-  setToday();
-  addParty();
-  goStep(1);
-}
-
-/* ================= СТАРТ ================= */
-document.addEventListener('DOMContentLoaded', () => {
-  const restored = loadState();
-  if (restored && state.parties.length) {
-    document.getElementById('restoreNote').style.display = 'block';
-  }
-  document.getElementById('m-org').value = state.meta.org;
-  document.getElementById('m-scope').value = state.meta.scope;
-  document.getElementById('m-date').value = state.meta.date;
-  document.getElementById('m-author').value = state.meta.author;
-  document.getElementById('m-basis').value = state.meta.basis;
-  if (!state.meta.date) setToday();
-  if (!state.parties.length) {
-    const id = 'P' + String(state.nextNum).padStart(2, '0');
-    state.nextNum++;
-    state.parties.push({ id, name: '', type: '', req: '', source: '', sig: null, inf: null, comp: '', plan: '', dept: '', channel: '' });
-    state.activeId = id;
-  }
-  refreshTabsUI();
-  buildZoneMatrix(document.getElementById('helpMatrix'), null);
-  buildLegend(document.getElementById('helpLegend'));
-  saveState();
-  resizeIframe();
-  if ('ResizeObserver' in window) {
-    const ro = new ResizeObserver(() => resizeIframe());
-    ro.observe(document.body);
-  }
+  if('ResizeObserver' in window){var ro=new ResizeObserver(function(){resizeIframe();});ro.observe(document.body);}
+ }catch(e){showBoot(e.message);}
 });
-window.addEventListener('load', () => resizeIframe());
+window.addEventListener('load',function(){resizeIframe();});
 </script>
-
 </body>
 </html>
