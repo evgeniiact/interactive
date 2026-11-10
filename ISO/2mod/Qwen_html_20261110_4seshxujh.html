@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Тренажер: Экологическая политика</title>
+<style>
+  :root {
+    --bg: #ffffff;
+    --primary: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --gray: #f8fafc;
+    --accent: #2563eb;
+    --accent-d: #1d4ed8;
+    --ok-bg: #f0fdf4;
+    --ok-text: #166534;
+    --bad-bg: #fef2f2;
+    --bad-text: #991b1b;
+    --r: 10px;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--primary);
+    background: var(--bg);
+    margin: 0;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  .scenario {
+    background: var(--gray);
+    border-left: 3px solid var(--accent);
+    padding: 14px 16px;
+    border-radius: 0 var(--r) var(--r) 0;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+
+  .scenario strong {
+    display: block;
+    margin-bottom: 6px;
+    color: var(--primary);
+  }
+
+  .btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border: 1px solid var(--border);
+    background: white;
+    color: var(--primary);
+    font-family: inherit;
+  }
+
+  .btn:hover {
+    background: var(--gray);
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--accent-d);
+    outline-offset: 2px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+    border-color: var(--accent);
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-d);
+    border-color: var(--accent-d);
+  }
+
+  .actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 12px;
+  }
+
+  .options {
+    display: none;
+    flex-direction: column;
+    gap: 8px;
+    margin-top: 16px;
+    animation: fadeIn 0.25s ease;
+  }
+
+  .options.show {
+    display: flex;
+  }
+
+  .option {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    cursor: pointer;
+    transition: background 0.2s ease;
+    background: white;
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: left;
+    font-family: inherit;
+    color: var(--primary);
+  }
+
+  .option:hover:not(:disabled) {
+    background: var(--gray);
+  }
+
+  .option:focus-visible {
+    outline: 2px solid var(--accent-d);
+    outline-offset: 2px;
+  }
+
+  .option:disabled {
+    cursor: default;
+  }
+
+  .option.correct {
+    background: var(--ok-bg);
+    color: var(--ok-text);
+    border-color: transparent;
+  }
+
+  .option.wrong {
+    background: var(--bad-bg);
+    color: var(--bad-text);
+    border-color: transparent;
+  }
+
+  .feedback {
+    display: none;
+    margin-top: 14px;
+    padding: 12px 14px;
+    border-radius: var(--r);
+    font-size: 14px;
+    line-height: 1.5;
+    animation: fadeIn 0.25s ease;
+  }
+
+  .feedback.show {
+    display: block;
+  }
+
+  .feedback.correct {
+    background: var(--ok-bg);
+    color: var(--ok-text);
+  }
+
+  .feedback.wrong {
+    background: var(--bad-bg);
+    color: var(--bad-text);
+  }
+
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(30, 41, 59, 0.6);
+    z-index: 1000;
+    padding: 20px;
+    overflow-y: auto;
+  }
+
+  .modal-overlay.show {
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+  }
+
+  .modal {
+    background: white;
+    border-radius: var(--r);
+    max-width: 700px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+    padding: 22px;
+    position: relative;
+    animation: slideDown 0.25s ease;
+  }
+
+  .modal-close {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+    width: 28px;
+    height: 28px;
+    border: none;
+    background: var(--gray);
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 16px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s ease;
+    font-family: inherit;
+  }
+
+  .modal-close:hover {
+    background: var(--border);
+    color: var(--primary);
+  }
+
+  .modal h2 {
+    font-size: 18px;
+    font-weight: 700;
+    margin: 0 0 14px 0;
+    padding-right: 36px;
+  }
+
+  .example-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 14px 0;
+    font-size: 13px;
+  }
+
+  .example-table th {
+    background: var(--gray);
+    padding: 10px;
+    text-align: left;
+    font-weight: 700;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .example-table td {
+    padding: 10px;
+    border-bottom: 1px solid var(--border);
+    vertical-align: top;
+  }
+
+  .example-table tr:last-child td {
+    border-bottom: none;
+  }
+
+  .note-box {
+    background: var(--gray);
+    border-left: 3px solid var(--muted);
+    padding: 10px 14px;
+    border-radius: 0 var(--r) var(--r) 0;
+    margin: 14px 0;
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .note-box.accent {
+    border-left-color: var(--accent);
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes slideDown {
+    from { opacity: 0; transform: translateY(-12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+    .modal { padding: 16px; }
+    .example-table { font-size: 12px; }
+    .example-table th, .example-table td { padding: 8px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="scenario">
+    <strong>Ситуация:</strong>
+    Вы подготовили содержательный проект Экологической политики завода «Стекло» с указанием обязательств по снижению выбросов печей и объемов брака. Директор завода отказывается подписывать документ в вашей редакции: «Зачем мы сами себя загоняем в рамки и пишем про печи и выбросы азота? Завтра придет инспектор или клиент, ткнет нас носом в эту бумагу и спросит, почему выбросы еще не упали. Уберите эти технические подробности. Напишите общими фразами: "Завод обязуется беречь природу и соблюдать законы". Так безопаснее, и подписывать такую декларацию проще».
+  </div>
+
+  <button class="btn btn-primary" id="showOptionsBtn" onclick="showOptions()" tabindex="0">
+    Выбрать ответ
+  </button>
+
+  <div class="options" id="options">
+    <button class="option" onclick="selectOption(1, this)" tabindex="0">
+      Согласиться с директором, переписать текст общими фразами и убрать упоминание конкретных аспектов завода, чтобы оперативно подписать документ.
+    </button>
+    <button class="option" onclick="selectOption(2, this)" tabindex="0">
+      Заявить директору, что он нарушает требования международного стандарта, и отказаться переписывать текст, приостановив проект внедрения СЭМ.
+    </button>
+    <button class="option" onclick="selectOption(3, this)" tabindex="0">
+      Назначить короткую рабочую встречу с директором. Объяснить, что общие фразы в политике – это гарантированное замечание от внешнего аудитора при сертификации, так как документ должен отражать характер и масштаб воздействий конкретной площадки. Показать, что фиксация обязательств в политике не означает моментального устранения выбросов, а дает директору законное основание требовать от главного инженера контроля за настройкой горелок и расходом газа.
+    </button>
+  </div>
+
+  <div id="feedback" class="feedback"></div>
+
+  <div class="actions" id="actions" style="display:none">
+    <button class="btn" id="retryBtn" onclick="retry()" style="display:none" tabindex="0">
+      Попробовать еще раз
+    </button>
+    <button class="btn btn-primary" id="explainBtn" onclick="openModal()" style="display:none" tabindex="0">
+      Показать разбор
+    </button>
+    <button class="btn" id="restartBtn" onclick="restart()" style="display:none" tabindex="0">
+      Пройти заново
+    </button>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal" onclick="closeModalOnOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <button class="modal-close" onclick="closeModal()" tabindex="0" aria-label="Закрыть">×</button>
+    <h2>Разбор: как политика превращается в практические задачи</h2>
+    
+    <div class="note-box accent">
+      <strong>Почему вариант 3 правильный:</strong> вы сохранили позицию доброжелательного ментора и защитили достоверность СЭМ. Вы перевели требования ГОСТа на язык пользы для директора, показав политику как инструмент контроля за эффективностью работы технических служб завода.
+    </div>
+
+    <p style="font-size: 14px; margin-bottom: 12px;">Согласно пункту 5.2 ГОСТ Р ИСО 14001-2016, экологическая политика должна включать обязательства по охране окружающей среды и предотвращению загрязнения. Но главное – она должна соответствовать цели и контексту организации, а также учитывать значимые экологические аспекты.</p>
+
+    <p style="font-size: 14px; margin-bottom: 12px;"><strong>Как абстрактные обязательства из политики превращаются в конкретные задачи для стекольного завода:</strong></p>
+
+    <table class="example-table">
+      <thead>
+        <tr>
+          <th style="width: 30%">Обязательство из Политики (ГОСТ 5.2)</th>
+          <th style="width: 35%">Как это выглядит на практике</th>
+          <th style="width: 35%">Какое решение зависит от этого</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Предотвращение загрязнения окружающей среды</strong> [5.2]</td>
+          <td>Снижение выбросов диоксида азота и оксидов серы от стекловаренных печей.</td>
+          <td>Проектирование и установка современных газоочистных фильтров на трубы цеха варки.</td>
+        </tr>
+        <tr>
+          <td><strong>Рациональное использование природных ресурсов</strong> [5.2]</td>
+          <td>Сокращение потребления чистого природного газа и свежей технической воды.</td>
+          <td>Внедрение систем рекуперации тепла отходящих газов печи и запуск замкнутого оборотного водоснабжения.</td>
+        </tr>
+        <tr>
+          <td><strong>Выполнение принятых обязательств перед клиентами</strong> [5.2]</td>
+          <td>Соблюдение требования крупной торговой сети использовать не менее 20% стеклобоя в шихте.</td>
+          <td>Автоматизация процесса возврата бракованного стекла со стадии раскроя обратно в смесители цеха шихты [8.1].</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <div class="note-box">
+      <strong>Важно:</strong> политика – это не декларация о намерениях, а рабочий инструмент. Когда директор подписывает документ с конкретными обязательствами по печам и выбросам, он получает юридическое основание требовать от главного инженера отчетов о расходе газа, настройке горелок и эффективности фильтров. Без конкретики политика остается красивой бумагой, которая не влияет на реальные процессы завода.
+    </div>
+
+    <p style="font-size: 14px; margin-top: 12px;"><strong>Что будет при внешнем аудите с общими фразами:</strong> аудитор сравнит текст политики с реальными аспектами вашего предприятия. Если завод использует газовые печи, потребляет воду и образует отходы, а в политике написано только «беречь природу» – это значительное несоответствие пункту 5.2. Аудитор укажет, что документ не отражает характер и масштаб воздействий конкретной площадки.</p>
+  </div>
+</div>
+
+<script>
+  function showOptions() {
+    document.getElementById('options').classList.add('show');
+    document.getElementById('showOptionsBtn').style.display = 'none';
+    resizeIframe();
+  }
+
+  function selectOption(num, btn) {
+    const options = document.querySelectorAll('.option');
+    const feedback = document.getElementById('feedback');
+    const actions = document.getElementById('actions');
+    const retryBtn = document.getElementById('retryBtn');
+    const explainBtn = document.getElementById('explainBtn');
+    const restartBtn = document.getElementById('restartBtn');
+
+    options.forEach(opt => {
+      opt.disabled = true;
+    });
+
+    if (num === 1) {
+      btn.classList.add('wrong');
+      feedback.className = 'feedback wrong show';
+      feedback.innerHTML = '<strong>Неверно.</strong> Вы уступили давлению и сделали политику нерабочей. При первом же внешнем аудите предприятие получит значительное несоответствие за формальный подход и несоответствие текста масштабу воздействий завода. Вам придется переделывать документ заново.';
+      retryBtn.style.display = 'inline-block';
+      explainBtn.style.display = 'none';
+      restartBtn.style.display = 'none';
+    } else if (num === 2) {
+      btn.classList.add('wrong');
+      feedback.className = 'feedback wrong show';
+      feedback.innerHTML = '<strong>Неверно.</strong> Вы заблокировали проект внедрения СЭМ и разрушили контакт с руководителем. Эколог в роли директивного лектора не сможет внедрить систему на предприятии, где все решения зависят от высшего руководства.';
+      retryBtn.style.display = 'inline-block';
+      explainBtn.style.display = 'none';
+      restartBtn.style.display = 'none';
+    } else if (num === 3) {
+      btn.classList.add('correct');
+      feedback.className = 'feedback correct show';
+      feedback.innerHTML = '<strong>Верно!</strong> Вы сохранили позицию доброжелательного ментора и защитили достоверность СЭМ. Вы перевели требования ГОСТа на язык пользы для директора, показав политику как инструмент контроля за эффективностью работы технических служб завода.';
+      retryBtn.style.display = 'none';
+      explainBtn.style.display = 'inline-block';
+      restartBtn.style.display = 'inline-block';
+    }
+
+    actions.style.display = 'flex';
+    resizeIframe();
+  }
+
+  function retry() {
+    const options = document.querySelectorAll('.option');
+    options.forEach(opt => {
+      opt.classList.remove('correct', 'wrong');
+      opt.disabled = false;
+    });
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('feedback').innerHTML = '';
+    document.getElementById('retryBtn').style.display = 'none';
+    resizeIframe();
+  }
+
+  function restart() {
+    const options = document.querySelectorAll('.option');
+    options.forEach(opt => {
+      opt.classList.remove('correct', 'wrong');
+      opt.disabled = false;
+    });
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('feedback').innerHTML = '';
+    document.getElementById('options').classList.remove('show');
+    document.getElementById('showOptionsBtn').style.display = 'inline-block';
+    document.getElementById('actions').style.display = 'none';
+    document.getElementById('retryBtn').style.display = 'none';
+    document.getElementById('explainBtn').style.display = 'none';
+    document.getElementById('restartBtn').style.display = 'none';
+    resizeIframe();
+  }
+
+  function openModal() {
+    document.getElementById('modal').classList.add('show');
+    document.body.style.overflow = 'hidden';
+  }
+
+  function closeModal() {
+    document.getElementById('modal').classList.remove('show');
+    document.body.style.overflow = '';
+  }
+
+  function closeModalOnOverlay(event) {
+    if (event.target === event.currentTarget) {
+      closeModal();
+    }
+  }
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape') {
+      closeModal();
+    }
+  });
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
+  }
+
+  window.addEventListener('load', resizeIframe);
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(resizeIframe).observe(document.body);
+  }
+</script>
+
+</body>
+</html>
