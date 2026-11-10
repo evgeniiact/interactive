@@ -146,7 +146,7 @@ button:focus-visible,summary:focus-visible{outline:3px solid var(--accent-d);out
 </div>
 <div class="note-box" id="jsonMsg" style="display:none"></div>
 <div class="sem-rules" hidden></div>
-<div class="field" style="max-width:320px;display:inline-block;margin-right:8px"><label for="m-org">Предприятие или учебный кейс (необязательно)</label><input type="text" id="m-org"></div>
+<div class="field" style="max-width:320px;display:inline-block;margin-right:8px"><label for="m-org">Предприятие (необязательно)</label><input type="text" id="m-org"></div>
 <div class="field" style="max-width:150px;display:inline-block;margin-right:8px"><label for="m-date">Дата актуализации</label><input type="text" id="m-date"></div>
 <div class="field" style="max-width:200px;display:inline-block"><label for="m-author">Подготовил (необязательно)</label><input type="text" id="m-author"></div>
 <div class="tabs-bar" id="tabsBar" role="tablist" aria-label="Обязательства"></div>
@@ -292,18 +292,16 @@ function semParseImport(text,selfName){
 
 /* ========== ПРАВИЛА ДЛЯ УЧЕНИКА ========== */
 var SEM_RULES=[
- 'Конструктор спрашивает только поля логики обязательства: сторона и ее требование, вид источника, источник, содержание обязательства, разработанные мероприятия, ответственный за мониторинг, документ-доказательство с порядком проверки. Периодичность, статус соответствия, даты и сроки заполняются позже в файле реестра.',
+ 'Конструктор спрашивает только содержание обязательства и вид источника. Источник (НПА / документ), ответственный за мониторинг и документ-доказательство - рекомендуемые поля: их можно заполнить позже в файле реестра. Периодичность, статус соответствия, даты и сроки тоже заполняются в редакторе.',
  'Номера записей сквозные: в интерфейсе вы видите номер и название записи, а в файлах для предприятия запись получает постоянный идентификатор с префиксом шага. После удаления записи номер не пересдается.',
  'Имена полей импорта совпадают с именами в конструкторах-источниках: операция или процесс, участок или область, условия работы, экологический аспект, воздействие на среду, ранг, значимость. В файлах предприятия эти сведения встают в колонки шаблона: бизнес-процесс и подразделение, экологический аспект и вид воздействия.',
  'Имена колонок листа обязательств совпадают с шаблоном реестра предприятия и не переименовываются: вид источника, источник (НПА / документ), содержание обязательства, связанные риски и возможности, разработанные мероприятия, периодичность контроля, ответственный за мониторинг, документ-доказательство, текущий статус соответствия, дата последней оценки.',
  'Связь аспекта и обязательства видимая и рабочая: в предпросмотре ячейка связанных обязательств ведет кликом к строке обязательства и обратно, в книге Excel это внутренние гиперссылки между листами, в Word - внутренние ссылки с закладками. Текст ссылки - название обязательства.',
  'Обязательства ищутся по всему перечню аспектов, а не только по значимым: правовые требования действуют независимо от значимости.',
  'Предложения и обращения сторон не смешиваются с принятыми обязательствами: сначала записываются сторона и ее требование, затем вид источника - законодательное или добровольное, и только потом содержание обязательства.',
- 'Мониторинг собирается по двум обязательным полям: ответственный за мониторинг и документ-доказательство с порядком проверки. Без них обязательство остается намерением.',
  'Итоговая таблица курса одна и растет по шагам: основные колонки с рангом и значимостью и дополнительные колонки как продолжение строки аспекта. Колонка обязательств заполняется этим конструктором, колонка рисков ждет свой шаг.',
  'Лист связей заполняется автоматически предложениями с названиями записей: какое обязательство к какому аспекту принято и почему. Статус связи напоминает проверить ее вручную.',
  'Блоки записи сворачиваются по заполненности один раз: при запуске, импорте или создании строки. Дальше сворачивание только вручную: ввод ответов ничего не сворачивает.',
- 'Пояснения к колонкам видны под шапкой одной строкой, полный текст с примером открывается при наведении как примечание книги или подсказка предпросмотра.',
  'Импортированные поля открыты для правок: уточнить их можно здесь. Источник хранит свою версию, поэтому после правки импортированного обновите запись в исходном шаге, чтобы версии не разошлись.',
  'При повторном импорте конструктор сравнивает версии: если источник изменился, он покажет различия и предложит оставить вашу версию, обновить из источника или создать копию.',
  'Единый файл курса содержит черновики всех шагов программы и скачивается из любого конструктора. При загрузке свой шаг сливается по правилу: заполненные поля не перезаписываются, дополняются только пустые.',
@@ -379,7 +377,7 @@ function semExample(btn){
 
 /* ========== СЛУЖЕБНОЕ ========== */
 var STORAGE_KEY='sem_obligations';
-var SCHEMA='sem.obligations.v5';
+var SCHEMA='sem.obligations.v6';
 var SIG_KEYS=['sem_significance','sem-ranks-v3','sem-ranks-significance-v3','sem-ranks-v2','sem-ranks-v1'];
 var ASP_KEYS=['sem_aspects','sem-aspect-records-v3','sem-aspect-records-v2','sem-aspect-records-v1','sem-chain-constructor-v1'];
 var CONDITIONS=[['normal','Нормальный режим работы'],['startup','Пуск и остановка'],['accident','Аварии и инциденты, нарушения']];
@@ -409,13 +407,11 @@ function sigWords(s){return s==='significant'?'Значимый':s==='notsignifi
 
 /* ========== ПЕРЕСЧЕТ РАНГА И ЗНАЧИМОСТИ ИЗ ИСТОЧНИКА ========== */
 function rankSigFromSource(r){
- // Сначала проверяем готовые поля
  if(r.rank!==undefined&&r.rank!==null&&r.rank!==''){
   var rank=String(r.rank);
   var sig=r.significance?sigWords(r.significance)||r.significance:'Значимый';
   return{rank:rank,sig:sig};
  }
- // Затем пересчитываем из ответов
  if(r.manual&&r.manual.on){return{rank:r.manual.rank?String(r.manual.rank):'',sig:sigWords(r.manual.significance)||r.manual.significance||''};}
  var q=r.q||{};
  var q1=r.q1||q.q1||'';var q2=r.q2||q.q2||'';var q3=r.q3||q.q3||'';
@@ -439,9 +435,13 @@ function rankSigFromSource(r){
 function ctxIncompleteObl(r){return !r.operation.trim()||!r.aspect.trim()||!r.impact.trim();}
 function missingListObl(r){
  var m=[];
- if(!r.obligType)m.push('вид источника');
  if(!r.requirement.trim())m.push('содержание обязательства');
- if(!r.reqSource.trim())m.push('источник');
+ return m;
+}
+function recommendedListObl(r){
+ var m=[];
+ if(!r.obligType)m.push('вид источника');
+ if(!r.reqSource.trim())m.push('источник (НПА / документ)');
  if(!r.responsible.trim())m.push('ответственный за мониторинг');
  if(!r.check.trim())m.push('документ-доказательство');
  return m;
@@ -753,11 +753,11 @@ var OBL_HEAD_STU=['№ обязательства','Экологический �
 var OBL_HINTS=['Идентификатор обязательства в файлах предприятия: О- и номер записи аспекта; в конструкторе ученик видит номер и название.',
  'Аспект и воздействие из реестра аспектов. Пример: выброс пыли при пересыпании сырья - загрязнение атмосферного воздуха.',
  'Процесс и подразделение из реестра аспектов. Пример: пересыпание сырья, участок подготовки шихты.',
- 'Законодательное - закон, разрешение, предписание; добровольное - договор, политика, решение. Пример: добровольное условие договора.',
- 'Реквизиты, редакция и пункт. Пример: договор поставки N 123 от 15.03.2026, приложение с перечнем проверки тары.',
+ 'Законодательное - закон, разрешение, предписание; добровольное - договор, политика, решение предприятия.',
+ 'Реквизиты, редакция и пункт источника. Пример: договор поставки N 123 от 15.03.2026, приложение с перечнем проверки тары.',
  'Что сделать. Пример: держать укрытие узла пересыпки исправным и убирать просыпи до каждой отгрузки.',
  'Ссылка на записи рисков и возможностей по номеру записи или placeholder до шага рисков.',
- 'Меры и процедуры. Пример: проверка укрытия перед сменой, отметка в листе комплектации, порядок обновления перечня.',
+ 'Меры и процедуры выполнения. Пример: проверка укрытия перед сменой, отметка в листе комплектации, порядок обновления перечня.',
  'Заполняется в редакторе. Пример: постоянно, перед каждой отгрузкой, ежеквартально.',
  'Должность и имя. Пример: руководитель склада.',
  'Чем доказываем выполнение. Пример: лист комплектации с отметкой, журнал проверки укрытия.',
@@ -808,7 +808,7 @@ function buildRow(r){
  del.onclick=function(){deleteRow(r.num);};
  head.appendChild(left);head.appendChild(del);panel.appendChild(head);
  var b=document.createElement('div');var h='';
- if(r.imported)h+='<div class="imp-note">Контекст импортирован из шага «'+esc(r.srcName||'Оценка значимости')+'» вместе с рангом, значимостью и обоснованием. Поля открыты для правок: правьте здесь и при необходимости обновите запись в источнике, чтобы версии не разошлись.</div>';
+ if(r.imported)h+='<div class="imp-note">Контекст импортирован из шага «'+esc(r.srcName||'Оценка значимости')+'» под теми же названиями полей: операция или процесс, участок, условия, аспект, воздействие, ранг, значимость. В файле реестра эти сведения встают в колонки шаблона предприятия. Поля открыты для правок: правьте здесь и при необходимости обновите запись в источнике.</div>';
  var ctxOpen=ctxIncompleteObl(r);
  var stepOpen=stepIncompleteObl(r);
  h+='<details class="blk" id="blk-ctx-'+r.num+'"'+(ctxOpen?' open':'')+'><summary>Запись из оценки значимости<span class="blk-tag">'+(r.imported?'данные источника':'данные записи')+'</span></summary><div class="blk-body">';
@@ -823,12 +823,12 @@ function buildRow(r){
  h+='</div></details>';
  h+='<details class="blk" id="blk-step-'+r.num+'"'+(stepOpen?' open':'')+'><summary>Обязательство этого шага<span class="blk-tag">сторона, источник, содержание, мониторинг</span></summary><div class="blk-body">';
  h+='<div class="field"><label for="f-'+r.num+'-sideReq">Сторона и ее требование</label><textarea id="f-'+r.num+'-sideReq">'+esc(r.sideReq)+'</textarea>'+exBtn(r.num+'-sideReq')+'<div class="hint">Кто требует и чего, с пометкой внешняя или внутренняя сторона. Пример: заказчик продукции (внешняя): подтверждать отсутствие просыпей при отгрузке.</div></div>';
- h+='<div class="field"><label for="f-'+r.num+'-obligType">Вид источника <span class="req">(обязательное поле)</span></label><select id="f-'+r.num+'-obligType">'+OTYPES.map(function(o){return '<option value="'+o[0]+'"'+(r.obligType===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-obligType')+'<div class="hint">Законодательное - то, что предприятие обязано выполнять по закону, разрешению или предписанию. Добровольное - то, что предприятие приняло само: договор, политика, решение руководителя.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-obligType">Вид источника</label><select id="f-'+r.num+'-obligType">'+OTYPES.map(function(o){return '<option value="'+o[0]+'"'+(r.obligType===o[0]?' selected':'')+'>'+o[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-obligType')+'<div class="hint">Законодательное - то, что предприятие обязано выполнять по закону, разрешению или предписанию. Добровольное - то, что предприятие приняло само: договор, политика, решение руководителя.</div></div>';
  h+='<div class="field"><label for="f-'+r.num+'-requirement">Содержание обязательства <span class="req">(обязательное поле)</span></label><textarea id="f-'+r.num+'-requirement">'+esc(r.requirement)+'</textarea>'+exBtn(r.num+'-requirement')+'<div class="hint">Что сделать, конкретно и проверяемо. Пример: держать укрытие узла пересыпки исправным и убирать просыпи по установленному порядку до каждой отгрузки.</div></div>';
- h+='<div class="field"><label for="f-'+r.num+'-reqSource">Источник (НПА / Документ) <span class="req">(обязательное поле)</span></label><input type="text" id="f-'+r.num+'-reqSource" value="'+esc(r.reqSource)+'">'+exBtn(r.num+'-reqSource')+'<div class="hint">Реквизиты, редакция и пункт, чтобы требование можно было найти. Пример: договор поставки N 123 от 15.03.2026, приложение с перечнем проверки тары.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-reqSource">Источник (НПА / Документ)</label><input type="text" id="f-'+r.num+'-reqSource" value="'+esc(r.reqSource)+'">'+exBtn(r.num+'-reqSource')+'<div class="hint">Рекомендуется заполнить: реквизиты, редакция и пункт, чтобы требование можно было найти. Пример: договор поставки N 123 от 15.03.2026, приложение с перечнем проверки тары.</div></div>';
  h+='<div class="field"><label for="f-'+r.num+'-actions">Разработанные мероприятия</label><textarea id="f-'+r.num+'-actions">'+esc(r.actions)+'</textarea>'+exBtn(r.num+'-actions')+'<div class="hint">Меры и процедуры, которые выполняют обязательство. Пример: проверка укрытия перед сменой, отметка в листе комплектации.</div></div>';
- h+='<div class="field"><label for="f-'+r.num+'-responsible">Ответственный за мониторинг <span class="req">(обязательное поле)</span></label><input type="text" id="f-'+r.num+'-responsible" value="'+esc(r.responsible)+'">'+exBtn(r.num+'-responsible')+'<div class="hint">Должность и имя. Пример: руководитель склада; начальник службы охраны окружающей среды.</div></div>';
- h+='<div class="field"><label for="f-'+r.num+'-check">Документ-доказательство <span class="req">(обязательное поле)</span></label><textarea id="f-'+r.num+'-check">'+esc(r.check)+'</textarea>'+exBtn(r.num+'-check')+'<div class="hint">Опишите порядок проверки и назовите документ. Пример: отметка в листе комплектации перед каждой отгрузкой, журнал сверки перечня раз в месяц.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-responsible">Ответственный за мониторинг</label><input type="text" id="f-'+r.num+'-responsible" value="'+esc(r.responsible)+'">'+exBtn(r.num+'-responsible')+'<div class="hint">Рекомендуется заполнить: должность и имя. Пример: руководитель склада; начальник службы охраны окружающей среды.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-check">Документ-доказательство</label><textarea id="f-'+r.num+'-check">'+esc(r.check)+'</textarea>'+exBtn(r.num+'-check')+'<div class="hint">Рекомендуется заполнить: опишите порядок проверки и назовите документ. Пример: отметка в листе комплектации перед каждой отгрузкой, журнал сверки перечня раз в месяц.</div></div>';
  h+='</div></details>';
  h+='<div class="rank-panel" id="res-'+r.num+'"></div>';
  h+='<div class="check-row"><input type="checkbox" id="f-'+r.num+'-clarify"'+(r.clarify?' checked':'')+'><label for="f-'+r.num+'-clarify" style="margin:0;font-weight:600">Часть сведений в этой записи еще уточняется</label></div>';
@@ -874,8 +874,9 @@ function syncRow(r,root){
   var h='<p><span class="rank-chip r">Обязательство по записи '+r.num+'</span>'+(r.aspectNum&&Number(r.aspectNum)!==r.num?'<span class="rank-chip ins">по записи аспекта '+esc(r.aspectNum)+'</span>':'')+(r.rank?'<span class="rank-chip ins">ранг '+esc(r.rank)+'</span>':'')+'</p>';
   if(r.obligType)h+='<p>Вид источника: '+esc(otypeLabel(r.obligType))+'.</p>';
   if(r.requirement.trim())h+='<p>Содержание обязательства: '+esc(cut(r.requirement,120))+'</p>';
-  if(r.responsible.trim()&&r.check.trim())h+='<p>Мониторинг собран: ответственный и документ-доказательство с порядком указаны.'+(r.monitorFreq.trim()?' Периодичность: '+esc(r.monitorFreq)+'.':' Периодичность дополните в файле реестра.')+'</p>';
-  else h+='<p>Мониторинг не собран: нужны ответственный за мониторинг и документ-доказательство с порядком проверки.</p>';
+  var rec=recommendedListObl(r);
+  if(rec.length)h+='<p>Рекомендуется дополнить в файле реестра: '+rec.join(', ')+'. В конструкторе эти поля не обязательны.</p>';
+  else h+='<p>Все рекомендуемые поля заполнены.</p>';
   if(r.needsReview)h+='<p><button type="button" class="btn-small" onclick="clearReview('+r.num+')">Отметить актуальной</button> Исходная запись изменилась: проверьте обязательство и мониторинг.</p>';
   rp.innerHTML=h;
  }
@@ -889,7 +890,7 @@ function syncRow(r,root){
  }
 }
 
-/* ========== ПРЕДПРОСМОТР: СВЕРНУТЫЕ БЛОКИ ========== */
+/* ========== ПРЕДПРОСМОТР ========== */
 function openPreview(){renderPreview();showScreen('screen-preview');}
 function groupedTableHtml(){
  var g=summaryGrouped();
@@ -926,9 +927,6 @@ function oblTableHtml(){
  h+='</tbody></table></div>';
  return h;
 }
-function hintsList(title,arr){
- return '<details class="blk"><summary>'+esc(title)+'</summary><div class="blk-body"><ul>'+arr.map(function(t,i){return '<li><b>'+esc(i+1)+'. </b>'+esc(t)+'</li>';}).join('')+'</ul></div></details>';
-}
 function renderPreview(){
  var errs=[];state.rows.forEach(function(r){var m=missingListObl(r);if(m.length)errs.push('Обязательство по записи '+r.num+': не заполнено - '+m.join(', ')+'.');});
  var errBox=$('errorsBox');errBox.style.display=errs.length?'block':'none';
@@ -937,17 +935,15 @@ function renderPreview(){
  $('downloadBtn').disabled=!state.rows.length&&!g.flat.length;
  $('downloadNote').textContent=(state.rows.length||g.flat.length)?'Черновик можно скачать даже с пропусками: незаполненные связи помечены словами, а пустые поля записей - прочерком.':'Добавьте хотя бы одну запись или импортируйте оцененные аспекты.';
  var cnt={total:g.flat.length,obl:state.rows.length,rev:0,noMon:0,linked:0};
- state.rows.forEach(function(r){if(r.needsReview)cnt.rev++;if(!r.responsible.trim()||!r.check.trim())cnt.noMon++;});
+ state.rows.forEach(function(r){if(r.needsReview)cnt.rev++;if(!r.responsible.trim()||!r.check.trim()||!r.reqSource.trim())cnt.noMon++;});
  g.flat.forEach(function(r){if(r.oblFirst)cnt.linked++;});
  var nt=[];
- if(cnt.noMon)nt.push('Обязательств без полного мониторинга: '+cnt.noMon+'. Добавьте ответственного и документ-доказательство с порядком проверки.');
+ if(cnt.noMon)nt.push('Обязательств без полного мониторинга: '+cnt.noMon+'. В файле реестра рекомендуется заполнить источник (НПА / документ), ответственного за мониторинг и документ-доказательство.');
  if(cnt.rev)nt.push('Записей с пометкой о пересмотре: '+cnt.rev+'. Откройте их и снимите пометку после проверки.');
  var ntBox=$('noticesBox');ntBox.style.display=nt.length?'block':'none';
- if(nt.length)ntBox.innerHTML='<strong>Что дополнить.</strong><ul>'+nt.map(function(n){return '<li>'+esc(n)+'</li>';}).join('')+'</ul>';
- var h='<div class="note-box accent">Предприятие или учебный кейс: '+esc(state.meta.org||'не указано')+'. Дата актуализации: '+esc(state.meta.date||today())+'. Статус: черновик.</div>';
+ if(nt.length)ntBox.innerHTML='<strong>Что дополнить в файле реестра.</strong><ul>'+nt.map(function(n){return '<li>'+esc(n)+'</li>';}).join('')+'</ul>';
+ var h='<div class="note-box accent">Предприятие: '+esc(state.meta.org||'не указано')+'. Дата актуализации: '+esc(state.meta.date||today())+'. Статус: черновик.</div>';
  h+='<div class="note-box">Строк в сводном реестре: '+cnt.total+'. Обязательств в этом шаге: '+cnt.obl+', из них связаны со строками аспектов: '+cnt.linked+'. Таблицы ниже открыты свернутыми: раскройте нужный блок. Связь работает кликом в обе стороны, в книгах Excel и Word - гиперссылками.</div>';
- h+=hintsList('Подсказки к колонкам сводной таблицы',SUM_HINTS);
- h+=hintsList('Подсказки к колонкам обязательств',OBL_HINTS);
  h+='<details class="blk"><summary>Сводный реестр аспектов · строк: '+cnt.total+'</summary><div class="blk-body">'+groupedTableHtml()+'</div></details>';
  h+='<details class="blk"><summary>Обязательства этого шага · записей: '+cnt.obl+'</summary><div class="blk-body">'+oblTableHtml()+'</div></details>';
  h+='<div class="note-box">Дополнительные колонки сводной таблицы и колонки периода, статусов и дат на листе обязательств заполняются в редакторе вне конструктора. В книгах Excel подсказки к колонкам свернуты группой под шапкой и продублированы примечаниями ячеек шапки.</div>';
@@ -977,7 +973,7 @@ var YELLOW='FFF2CC';
 function buildDoc(g){
  var b=[];
  b.push(para('Сводный реестр экологических аспектов с обязательствами. Черновик',{style:'Title'}));
- b.push(para('Предприятие или учебный кейс: '+(state.meta.org||'не указано')+'. Дата актуализации: '+(state.meta.date||today())+'. Статус: черновик. Подготовил: '+(state.meta.author||'не указан')+'.',{i:true,color:'6B7280',sz:20,after:120}));
+ b.push(para('Предприятие: '+(state.meta.org||'не указано')+'. Дата актуализации: '+(state.meta.date||today())+'. Статус: черновик. Подготовил: '+(state.meta.author||'не указан')+'.',{i:true,color:'6B7280',sz:20,after:120}));
  b.push(para('Реестр собирает сведения курса: аспекты, оценку значимости с рангом и обязательства предприятия с мониторингом. Строки сгруппированы по процессам с подстроками трех режимов работы. Связь аспекта и обязательства показана названием обязательства в сводной таблице и внутренней ссылкой на строку обязательства во втором разделе; обратно - ссылкой на строку аспекта. Пустые поля записей обозначены прочерком.',{after:200}));
  b.push(para('1. Сводный реестр аспектов',{style:'Heading1'}));
  var head='<w:tr>'+cell(11050,para('Основные поля сводного реестра, включая ранг',{b:true,sz:12,jc:'center'}),'DDE3EA',11)+cell(3520,para('Дополнительные поля: заполняются в редакторе',{b:true,sz:12,jc:'center'}),'DDE3EA',7)+'</w:tr>';
@@ -1013,8 +1009,19 @@ function buildDoc(g){
  });
  if(!state.rows.length)otrs='<w:tr>'+OW.map(function(w){return cell(w,para('обязательства еще не записаны: импортируйте оцененные записи или добавьте строку вручную',{i:true,color:'6B7280',sz:11}));}).join('')+'</w:tr>';
  b.push('<w:tbl><w:tblPr><w:tblW w:w="14570" w:type="dxa"/>'+TBL+CMAR+'<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+OW.map(function(w){return '<w:gridCol w:w="'+w+'"/>';}).join('')+'</w:tblGrid>'+ohead+otrs+'</w:tbl>');
- b.push(para('3. Поля, которые заполняются в редакторе',{style:'Heading1'}));
- b.push(para('Периодичность контроля, текущий статус соответствия, дата последней оценки, срок или условия из источника, статус применимости и причина неприменимости: заполняются в редакторе в соответствующих колонках листа и таблицы, когда у предприятия появятся данные. Конструктор сознательно не запрашивает их сейчас.',{after:60}));
+ b.push(para('3. Поля, которые рекомендуется заполнить в редакторе',{style:'Heading1'}));
+ var incomplete=[];
+ state.rows.forEach(function(r){
+  var rec=recommendedListObl(r);
+  if(rec.length)incomplete.push('Запись '+r.num+': не заполнено - '+rec.join(', ')+'.');
+ });
+ if(incomplete.length){
+  b.push(para('В следующих записях рекомендуется дополнить источник, ответственного или документ-доказательство:',{after:60}));
+  incomplete.forEach(function(t){b.push(para(t,{after:40}));});
+ } else {
+  b.push(para('Все рекомендуемые поля заполнены.',{i:true,color:'6B7280',after:60}));
+ }
+ b.push(para('Периодичность контроля, текущий статус соответствия, дата последней оценки, срок или условия из источника, статус применимости и причина неприменимости: заполняются в редакторе в соответствующих колонках листа и таблицы, когда у предприятия появятся данные.',{after:60}));
  b.push(para('Количественные характеристики факт и норматив, нормативный документ, приоритетность, методика и порог значимости, дата переоценки и примечания сводной таблицы: заполняются в редакторе по данным мониторинга, инвентаризации и экспертным оценкам.',{after:60}));
  b.push(para('Документ содержит результат применения учебных правил к введенным и импортированным сведениям. Конструктор не проверяет достоверность источников и не подтверждает соответствие СЭМ стандарту. Пометка «требует уточнения» означает незавершенный поиск сведений, а не отсутствие обязательства.',{i:true,color:'6B7280',sz:20,before:240}));
  b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
@@ -1044,7 +1051,7 @@ function buildSheetXml(g,oblRowMap){
   (opts.merges||[]).forEach(function(m){merges.push(m.split('@').join(String(r)));});
   r++;
  }
- push([{v:'СВОДНЫЙ РЕЕСТР ЭКОЛОГИЧЕСКИХ АСПЕКТОВ С ОБЯЗАТЕЛЬСТВАМИ. Предприятие или кейс: '+(state.meta.org||'не указано')+'. Дата актуализации: '+(state.meta.date||today())+'. Статус: черновик.',s:4}],{merges:['A@:R@']});
+ push([{v:'СВОДНЫЙ РЕЕСТР ЭКОЛОГИЧЕСКИХ АСПЕКТОВ С ОБЯЗАТЕЛЬСТВАМИ. Предприятие: '+(state.meta.org||'не указано')+'. Дата актуализации: '+(state.meta.date||today())+'. Статус: черновик.',s:4}],{merges:['A@:R@']});
  push([{v:'Основные поля сводного реестра, включая ранг',s:4},{v:'',s:4},{v:'',s:4},{v:'',s:4},{v:'',s:4},{v:'',s:4},{v:'',s:4},{v:'',s:4},{v:'',s:4},{v:'',s:4},{v:'',s:4},{v:'Дополнительные поля: заполняются в редакторе как продолжение строки аспекта',s:4},{v:'',s:4},{v:'',s:4},{v:'',s:4},{v:'',s:4},{v:'',s:4},{v:'',s:4}],{merges:['A@:K@','L@:R@']});
  push(SUM_HEAD_EXP.map(function(t){return{v:t,s:2};}),{collapsed:true});
  push(SUM_HINTS_SHORT.map(function(t){return{v:t,s:5};}),{outline:true,hidden:true,ht:15});
@@ -1208,7 +1215,7 @@ function downloadXlsx(){
  a.href=url;a.download='Svodnyy_reestr_s_obyazatelstvami_'+today()+'.xlsx';
  document.body.appendChild(a);a.click();document.body.removeChild(a);
  setTimeout(function(){URL.revokeObjectURL(url);},4000);
- $('downloadNote').textContent='Скачана книга xlsx: строки подсказок свернуты группой под шапкой и раскрываются кнопкой плюс, полные тексты с примерами открываются при наведении на ячейки шапки обоих листов.';
+ $('downloadNote').textContent='Скачана книга xlsx: сводный реестр и лист обязательств связаны гиперссылками в обе стороны, лист связей объясняет каждую связь названиями записей.';
  resizeIframe();
 }
 /* ========== СКАЧИВАНИЕ WORD ========== */
