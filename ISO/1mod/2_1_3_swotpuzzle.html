@@ -4,1056 +4,716 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
-<title>Анализ условий предприятия для СЭМ</title>
+<title>Условия предприятия: SWOT-анализ для СЭМ</title>
 <style>
-:root {
-  --bg: #ffffff;
-  --primary: #1e293b;
-  --muted: #64748b;
-  --border: #e2e8f0;
-  --gray-light: #f8fafc;
-  --accent: #2563eb;
-  --accent-dark: #1d4ed8;
-  --warn-bg: #fffbeb;
-  --warn-border: #fde68a;
-  --warn-text: #92400e;
-  --bad-bg: #fef2f2;
-  --bad-border: #fecaca;
-  --bad-text: #991b1b;
-  --s-bg: #e6f4ea; --s-border: #a8d5b5; --s-text: #1b5e20;
-  --w-bg: #fff3e0; --w-border: #f2c089; --w-text: #9a3412;
-  --o-bg: #e3f0fd; --o-border: #9cc3ee; --o-text: #0d47a1;
-  --t-bg: #fde8ef; --t-border: #efa8c0; --t-text: #9d174d;
-  --n-bg: #f1f5f9; --n-border: #cbd5e1; --n-text: #334155;
-  --radius: 12px;
-}
-* { box-sizing: border-box; }
-body {
-  margin: 0; padding: 20px; background: var(--bg);
-  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  color: var(--primary); font-size: 15px; line-height: 1.6;
-}
-.container { max-width: 700px; margin: 0 auto; }
-.screen { display: none; animation: fadeIn .3s ease-out; }
-.screen.active { display: block; }
-@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } to { opacity: 1; transform: none; } }
-h1 { font-size: 22px; font-weight: 800; margin: 0 0 10px; }
-h2 { font-size: 17px; font-weight: 700; margin: 18px 0 8px; }
-.lead { font-size: 14px; margin: 0 0 12px; line-height: 1.6; }
-.note-box {
-  background: var(--gray-light); border: 1px solid var(--border);
-  border-left: 4px solid var(--muted); border-radius: 0 8px 8px 0;
-  padding: 10px 14px; font-size: 13px; color: var(--muted); margin: 10px 0;
-}
-.warn-box {
-  background: var(--warn-bg); border-left: 3px solid var(--warn-border);
-  border-radius: 0 8px 8px 0; padding: 10px 14px; font-size: 13px;
-  color: var(--warn-text); margin: 10px 0; line-height: 1.5;
-}
-.error-box {
-  background: var(--bad-bg); border: 1px solid var(--bad-border);
-  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--bad-text); margin: 12px 0;
-}
-.error-box ul { margin: 6px 0 0; padding-left: 20px; }
-.error-box li { margin-bottom: 4px; }
-.notices-box {
-  background: var(--warn-bg); border: 1px solid var(--warn-border);
-  border-radius: 10px; padding: 12px 14px; font-size: 13px; color: var(--warn-text); margin: 12px 0;
-}
-.notices-box ul { margin: 6px 0 0; padding-left: 20px; }
-.notices-box li { margin-bottom: 4px; }
-
-.steps-nav { display: flex; gap: 8px; margin: 14px 0 18px; flex-wrap: wrap; }
-.step-btn {
-  flex: 1 1 140px; padding: 10px 12px; border: 2px solid var(--border); border-radius: 10px;
-  background: #fff; font-family: inherit; font-size: 13px; font-weight: 600; color: var(--muted);
-  cursor: pointer; transition: all .15s; text-align: center;
-}
-.step-btn.active { border-color: var(--accent); color: var(--accent); background: #eff6ff; }
-
-.field { margin-bottom: 14px; }
-.field label { display: block; font-size: 13px; font-weight: 700; margin-bottom: 4px; }
-.field .req { color: var(--bad-text); font-weight: 600; }
-.field .hint { font-size: 12px; color: var(--muted); margin-top: 4px; line-height: 1.4; }
-.field input[type="text"], .field textarea, .field select {
-  width: 100%; padding: 10px 12px; border: 1px solid var(--border); border-radius: 8px;
-  font-family: inherit; font-size: 14px; color: var(--primary); background: #fff;
-}
-.field textarea { min-height: 64px; resize: vertical; }
-.field input:focus-visible, .field textarea:focus-visible, .field select:focus-visible,
-button:focus-visible { outline: 3px solid var(--accent-dark); outline-offset: 2px; }
-.check-row { display: flex; gap: 8px; align-items: flex-start; font-size: 13px; margin-top: 6px; }
-.check-row input { width: 18px; height: 18px; margin: 2px 0 0; flex-shrink: 0; }
-
-.nav-buttons { display: flex; gap: 10px; margin-top: 18px; flex-wrap: wrap; }
-.btn {
-  padding: 11px 20px; border-radius: 8px; font-size: 14px; font-weight: 600;
-  cursor: pointer; border: none; font-family: inherit; transition: background .2s;
-}
-.btn-primary { background: var(--accent); color: #fff; }
-.btn-primary:hover { background: var(--accent-dark); }
-.btn-secondary { background: #fff; border: 1px solid var(--border); color: var(--primary); }
-.btn-secondary:hover { background: var(--gray-light); }
-.btn-danger { background: #fff; border: 1px solid var(--bad-border); color: var(--bad-text); }
-.btn-danger:hover { background: var(--bad-bg); }
-.btn:disabled { background: var(--border); color: var(--muted); cursor: not-allowed; }
-.btn-small {
-  padding: 6px 12px; font-size: 12px; font-weight: 600; border-radius: 6px;
-  border: 1px solid var(--border); background: #fff; color: var(--primary);
-  cursor: pointer; font-family: inherit;
-}
-.btn-small:hover { background: var(--gray-light); }
-
-.tabs-bar { display: flex; flex-wrap: wrap; gap: 6px; align-items: flex-end; margin: 14px 0 0; }
-.tab-btn {
-  border: 1px solid var(--border); border-radius: 10px 10px 0 0;
-  padding: 9px 12px; background: var(--gray-light); color: var(--muted);
-  font-family: inherit; font-size: 13px; font-weight: 700; cursor: pointer;
-  display: inline-flex; align-items: center; gap: 6px; max-width: 190px;
-}
-.tab-btn .tab-name {
-  font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 110px;
-}
-.tab-btn[aria-selected="true"] { background: #fff; color: var(--accent); border-color: var(--accent); }
-.tab-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.dot-S { background: var(--s-text); }
-.dot-W { background: var(--w-text); }
-.dot-O { background: var(--o-text); }
-.dot-T { background: var(--t-text); }
-.dot-N { background: var(--muted); }
-.tab-add {
-  border: 1px dashed var(--accent); color: var(--accent); background: #fff;
-  border-radius: 10px; padding: 9px 12px; font-size: 13px; font-weight: 700;
-  cursor: pointer; font-family: inherit;
-}
-.tab-add:hover { background: #eff6ff; }
-.tab-panel {
-  border: 1px solid var(--border); border-radius: 0 10px 10px 10px;
-  padding: 16px; background: #fff; margin-top: -1px;
-}
-.tab-panel[hidden] { display: none; }
-.panel-head {
-  display: flex; justify-content: space-between; align-items: center;
-  gap: 10px; margin-bottom: 12px; flex-wrap: wrap;
-}
-.panel-head strong { font-size: 15px; }
-
-.grp-badge {
-  display: inline-block; font-size: 11px; font-weight: 700; border-radius: 20px;
-  padding: 1px 8px; border: 1px solid;
-}
-.grp-S { background: var(--s-bg); color: var(--s-text); border-color: var(--s-border); }
-.grp-W { background: var(--w-bg); color: var(--w-text); border-color: var(--w-border); }
-.grp-O { background: var(--o-bg); color: var(--o-text); border-color: var(--o-border); }
-.grp-T { background: var(--t-bg); color: var(--t-text); border-color: var(--t-border); }
-.grp-N { background: var(--n-bg); color: var(--n-text); border-color: var(--n-border); }
-
-.help-panel {
-  border: 1px solid var(--border); border-left: 5px solid var(--accent);
-  border-radius: 10px; padding: 14px 16px; margin: 12px 0; font-size: 13px;
-  background: #fff; display: none;
-}
-.help-panel.show { display: block; }
-.help-panel p { margin: 0 0 8px; }
-.help-panel p:last-child { margin-bottom: 0; }
-
-.counts-box {
-  background: #eff6ff; border: 1px solid #bfdbfe; color: var(--accent-dark);
-  border-radius: 10px; padding: 12px 14px; font-size: 13px; margin: 12px 0;
-}
-.counts-box ul { margin: 6px 0 0; padding-left: 20px; }
-.prev-section { border: 1px solid var(--border); border-radius: 10px; padding: 14px 16px; margin-bottom: 14px; }
-.prev-section h3 { margin: 0 0 10px; font-size: 15px; }
-.prev-swot { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-.prev-cell { border: 1px solid; border-radius: 10px; padding: 10px 12px; font-size: 13px; min-height: 80px; }
-.prev-cell h4 { margin: 0 0 6px; font-size: 13px; }
-.prev-cell ul { margin: 0; padding-left: 18px; }
-.prev-cell li { margin-bottom: 3px; }
-.prev-empty { color: var(--muted); font-style: italic; }
-.prev-cond { border: 1px solid var(--border); border-radius: 10px; padding: 12px 14px; margin-bottom: 10px; font-size: 13px; }
-.prev-cond-head { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
-.prev-cond-head strong { font-size: 14px; }
-.prev-table { width: 100%; border-collapse: collapse; font-size: 13px; }
-.prev-table th, .prev-table td { border: 1px solid var(--border); padding: 6px 8px; text-align: left; vertical-align: top; }
-.prev-table th { background: var(--gray-light); width: 34%; font-weight: 600; }
-.prev-q li { margin-bottom: 6px; }
-.link-btn {
-  background: none; border: none; color: var(--accent); font-size: 12px;
-  cursor: pointer; padding: 0; font-family: inherit; text-decoration: underline;
-}
-
-@media (max-width: 560px) {
-  body { padding: 12px; }
-  h1 { font-size: 20px; }
-  .prev-swot { grid-template-columns: 1fr; }
-  .nav-buttons { flex-direction: column; }
-  .btn { width: 100%; }
-  .tab-btn { max-width: 140px; }
-  .tab-btn .tab-name { max-width: 70px; }
-}
+:root{--bg:#fff;--primary:#1e293b;--muted:#64748b;--border:#e2e8f0;--gray:#f8fafc;--accent:#2563eb;--accent-d:#1d4ed8;
+--warn:#ea580c;--warn-bg:#fff7ed;--warn-bd:#fed7aa;--bad:#991b1b;--bad-bg:#fef2f2;--bad-bd:#fecaca;
+--s-bg:#e6f4ea;--s-tx:#1b5e20;--w-bg:#fff3e0;--w-tx:#9a3412;--o-bg:#e3f0fd;--o-tx:#0d47a1;--t-bg:#fde8ef;--t-tx:#9d174d;--r:12px}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--primary);font-size:15px;line-height:1.6}
+.container{max-width:760px;margin:0 auto}
+.screen{display:none}.screen.active{display:block;animation:fi .3s ease-out}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:22px;font-weight:800;margin:0 0 8px;outline:none}
+h2{font-size:16px;font-weight:700;margin:16px 0 8px}
+.lead{font-size:14px;margin:0 0 12px;color:var(--muted)}
+.note-box{background:var(--gray);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--muted);margin:10px 0}
+.note-box.accent{border-left-color:var(--accent);color:var(--primary)}
+.warn-box{background:var(--warn-bg);border-left:3px solid var(--warn-bd);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--warn);margin:10px 0}
+.notices-box{background:var(--warn-bg);border:1px solid var(--warn-bd);border-radius:10px;padding:12px 14px;font-size:13px;color:var(--warn);margin:12px 0}
+.notices-box ul{margin:6px 0 0;padding-left:20px}
+.notices-box li{margin-bottom:4px}
+.storage-warn{display:none}.storage-warn.show{display:block}
+.save-line{font-size:12px;color:var(--muted);margin:4px 0}
+.sem-rules{border:1px solid var(--border);border-left:4px solid var(--accent);border-radius:0 10px 10px 0;background:var(--gray);padding:12px 16px;margin:12px 0;font-size:13px}
+.sem-rules h2{font-size:15px;margin:0 0 8px}
+.sem-rules ol{margin:0;padding-left:20px}
+.sem-rules li{margin-bottom:6px}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:4px}
+.field .hint{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;background:#fff;color:var(--primary)}
+.field textarea{min-height:46px;resize:vertical}
+.field input:focus,.field select:focus,.field textarea:focus{outline:3px solid var(--accent-d);outline-offset:2px}
+.ex-btn{display:inline-block;margin-top:6px;padding:4px 10px;font-size:11px;font-weight:600;border:1px solid var(--border);border-radius:6px;background:#fff;color:var(--accent);cursor:pointer;font-family:inherit}
+.ex-btn:hover{background:var(--gray)}
+.ex-btn[aria-expanded="true"]{background:var(--accent);color:#fff;border-color:var(--accent)}
+.ex-box{display:none;background:var(--s-bg);border-left:3px solid var(--s-tx);border-radius:0 8px 8px 0;padding:8px 12px;margin-top:6px;font-size:12.5px}
+.ex-box.show{display:block}
+details.blk{border:1px solid var(--border);border-radius:10px;margin:10px 0;background:#fff;overflow:hidden}
+details.blk>summary{cursor:pointer;padding:11px 14px;font-size:13.5px;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--gray)}
+details.blk>summary::-webkit-details-marker{display:none}
+details.blk>summary::after{content:"+";color:var(--muted);font-weight:800;font-size:16px}
+details.blk[open]>summary::after{content:"−"}
+details.blk[open]>summary{border-bottom:1px solid var(--border)}
+.blk-body{padding:12px 14px;font-size:13px}
+.blk-body p{margin:0 0 8px}.blk-body p:last-child{margin:0}
+.status-line{font-size:12.5px;color:var(--muted);margin:6px 0 0}
+.grp-badge{display:inline-block;font-size:11px;font-weight:800;border-radius:20px;padding:2px 10px;border:1px solid}
+.g-S{background:var(--s-bg);color:var(--s-tx);border-color:var(--s-tx)}
+.g-W{background:var(--w-bg);color:var(--w-tx);border-color:var(--w-tx)}
+.g-O{background:var(--o-bg);color:var(--o-tx);border-color:var(--o-tx)}
+.g-T{background:var(--t-bg);color:var(--t-tx);border-color:var(--t-x,#9d174d)}
+.g-N{background:var(--gray);color:var(--muted);border-color:var(--border)}
+.tabs-bar{display:flex;flex-wrap:wrap;gap:6px;align-items:flex-end;margin:14px 0 0}
+.tab-btn{border:1px solid var(--border);border-radius:10px 10px 0 0;padding:9px 12px;background:var(--gray);color:var(--muted);font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;max-width:220px}
+.tab-btn .tab-name{font-weight:500;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:140px}
+.tab-btn[aria-selected="true"]{background:#fff;color:var(--accent);border-color:var(--accent)}
+.tab-add{border:1px dashed var(--accent);color:var(--accent);background:#fff;border-radius:10px;padding:9px 12px;font-size:13px;font-weight:700;cursor:pointer;font-family:inherit}
+.tab-panel{border:1px solid var(--border);border-radius:0 10px 10px 10px;padding:16px;background:#fff;margin-top:-1px}
+.tab-panel[hidden]{display:none}
+.panel-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:10px;flex-wrap:wrap}
+.panel-head strong{font-size:15px}
+.btn-small{padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--primary);cursor:pointer;font-family:inherit}
+.btn-small:hover{background:var(--gray)}
+.nav-buttons{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent-d)}
+.btn-secondary{background:#fff;border:1px solid var(--border);color:var(--primary)}.btn-secondary:hover{background:var(--gray)}
+.btn-danger{background:#fff;border:1px solid var(--bad-bd);color:var(--bad)}
+.btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
+.scroll-x{overflow-x:auto}
+table.reg{width:100%;border-collapse:collapse;font-size:12px;margin:10px 0}
+table.reg th,table.reg td{border:1px solid var(--border);padding:5px 7px;text-align:left;vertical-align:top}
+table.reg th{background:var(--gray);font-weight:700}
+table.reg tr.hints td{color:var(--muted);font-style:italic;font-size:11px}
+.swot-grid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin:10px 0}
+.swot-cell{border:1px solid var(--border);border-radius:10px;padding:10px 12px;font-size:12.5px;min-height:70px}
+.swot-cell h4{margin:0 0 6px;font-size:13px}
+.swot-cell ul{margin:0;padding-left:18px}
+.swot-cell li{margin-bottom:3px}
+.swot-cell .empty{color:var(--muted);font-style:italic}
+@media (max-width:640px){body{padding:12px}h1{font-size:20px}.swot-grid{grid-template-columns:1fr}.nav-buttons{flex-direction:column}.btn{width:100%}}
 </style>
 </head>
 <body>
-
 <div class="container">
+<div id="bootError" class="notices-box" style="display:none"></div>
 
-  <!-- ВВОДНЫЙ ЭКРАН -->
-  <div id="screen-intro" class="screen active">
-    <h1>Разберите условия своего предприятия</h1>
-    <p class="lead">В конструкторе опишите условия, которые нужно учитывать при внедрении СЭМ. Для каждого объясните, на какое решение оно влияет и что нужно проверить. Затем скачайте предварительный анализ в Word.</p>
-    <div class="note-box">SWOT является инструментом анализа. Воспринимайте этот тренажер как личный черновик и удобную рабочую мастерскую.</div>
-    <div class="warn-box">Все данные, которые вы будете вносить в конструктор, сохраняются исключительно в локальной памяти вашего браузера — они не передаются в сеть, и к ним нет доступа у посторонних лиц.</div>
-    <div class="note-box" id="storageNote">Скачайте готовый документ перед завершением работы: локальная память удаляется при очистке данных сайта и не доступна с других устройств.</div>
-    <div class="warn-box" id="storageWarn" style="display:none;">Локальная память недоступна в этом браузере или режиме. Введенные данные будут потеряны при обновлении страницы. Скачивайте документ перед выходом.</div>
-    <div class="note-box" id="restoreNote" style="display:none;">Найдена сохраненная ранее версия анализа. Данные восстановлены из локальной памяти браузера.</div>
-    <div class="nav-buttons">
-      <button class="btn btn-primary" onclick="startWork()">Начать работу</button>
-    </div>
-  </div>
-
-  <!-- ШАГ 1 -->
-  <div id="screen-step1" class="screen">
-    <div class="steps-nav">
-      <button class="step-btn active" onclick="goStep(1)">1. Сведения об анализе</button>
-      <button class="step-btn" onclick="goStep(2)">2. Условия</button>
-      <button class="step-btn" onclick="goStep(3)">3. Предпросмотр</button>
-    </div>
-    <h1>Сведения об анализе</h1>
-    <p class="lead">Эти реквизиты попадут в начало документа. Необязательные поля можно оставить пустыми.</p>
-
-    <div class="field">
-      <label for="m-org">Предприятие или объект анализа</label>
-      <input type="text" id="m-org" oninput="onMeta('org', this.value)">
-      <div class="hint">Можно указать условное название.</div>
-    </div>
-    <div class="field">
-      <label for="m-scope">Что рассматриваете</label>
-      <textarea id="m-scope" oninput="onMeta('scope', this.value)"></textarea>
-      <div class="hint">Например, одну производственную площадку или определенную деятельность. Это описание текущего анализа, а не утвержденная область применения СЭМ.</div>
-    </div>
-    <div class="field">
-      <label for="m-date">Дата анализа</label>
-      <input type="text" id="m-date" oninput="onMeta('date', this.value)">
-      <div class="hint">Формат произвольный. Кнопка рядом подставит текущую дату.</div>
-      <button class="btn-small" style="margin-top:6px;" onclick="setToday()">Подставить текущую дату</button>
-    </div>
-    <div class="field">
-      <label for="m-author">Подготовил</label>
-      <input type="text" id="m-author" oninput="onMeta('author', this.value)">
-      <div class="hint">Должность или имя. Можно оставить пустым.</div>
-    </div>
-    <div class="field">
-      <label for="m-basis">Основа работы</label>
-      <select id="m-basis" onchange="onMeta('basis', this.value)">
-        <option value="Данные моего предприятия">Данные моего предприятия</option>
-        <option value="Учебные данные">Учебные данные</option>
-      </select>
-    </div>
-
-    <div class="nav-buttons">
-      <button class="btn btn-primary" onclick="goStep(2)">Перейти к условиям</button>
-    </div>
-  </div>
-
-  <!-- ШАГ 2 -->
-  <div id="screen-step2" class="screen">
-    <div class="steps-nav">
-      <button class="step-btn" onclick="goStep(1)">1. Сведения об анализе</button>
-      <button class="step-btn active" onclick="goStep(2)">2. Условия</button>
-      <button class="step-btn" onclick="goStep(3)">3. Предпросмотр</button>
-    </div>
-    <h1>Добавьте условия</h1>
-    <p class="lead">Каждая запись живет на своей вкладке. Опишите условие: что известно, для какой задачи СЭМ оно важно и что нужно проверить. Обязательные поля помечены как обязательные. Записи сохраняются автоматически.</p>
-
-    <div class="nav-buttons" style="margin-top:8px;">
-      <button class="btn btn-secondary" onclick="togglePanel('examplePanel', this)" aria-expanded="false">Посмотреть пример</button>
-      <button class="btn btn-secondary" onclick="togglePanel('groupHelpPanel', this)" aria-expanded="false">Как выбрать группу</button>
-    </div>
-
-    <div class="help-panel" id="examplePanel">
-      <p><strong>Пример записи. Название:</strong> Раздельный учет воды и выпуска.</p>
-      <p><strong>Что известно:</strong> Расход воды учитывают за месяц. Выпуск продукции фиксируют отдельно. Сопоставимость периодов не проверена.</p>
-      <p><strong>Группа:</strong> W. <strong>Для какой задачи важно:</strong> Выбрать данные и показатель для оценки использования воды с учетом объема выпуска.</p>
-      <p><strong>Источник:</strong> Учебная ситуация. <strong>Статус:</strong> Есть предварительные сведения.</p>
-      <p><strong>Что проверить:</strong> Можно ли получить расход воды и выпуск продукции за одинаковые периоды?</p>
-      <p>Пример не является фактом вашего предприятия и не подставляется в документ автоматически.</p>
-    </div>
-
-    <div class="help-panel" id="groupHelpPanel">
-      <p><strong>S.</strong> Внутреннее условие, которое помогает решать задачи СЭМ.</p>
-      <p><strong>W.</strong> Внутреннее ограничение, которое затрудняет решение задач СЭМ.</p>
-      <p><strong>O.</strong> Благоприятное внешнее условие, которое предприятие может использовать.</p>
-      <p><strong>T.</strong> Внешнее условие, которое может затруднить работу.</p>
-      <p class="warn-box" style="margin:8px 0 0;">"Обучить работников" является действием. Для анализа сначала опишите условие, например подтвержденный недостаток знаний.</p>
-    </div>
-
-    <div class="tabs-bar" id="tabsBar" role="tablist" aria-label="Записи условий"></div>
-    <div id="panelsBox"></div>
-
-    <div class="nav-buttons">
-      <button class="btn btn-secondary" onclick="goStep(1)">К сведениям</button>
-      <button class="btn btn-primary" onclick="goStep(3)">Перейти к предпросмотру</button>
-    </div>
-  </div>
-
-  <!-- ШАГ 3 -->
-  <div id="screen-step3" class="screen">
-    <div class="steps-nav">
-      <button class="step-btn" onclick="goStep(1)">1. Сведения об анализе</button>
-      <button class="step-btn" onclick="goStep(2)">2. Условия</button>
-      <button class="step-btn active" onclick="goStep(3)">3. Предпросмотр</button>
-    </div>
-    <h1>Предпросмотр и скачивание</h1>
-
-    <div class="counts-box" id="countsBox" aria-live="polite"></div>
-    <div class="error-box" id="errorsBox" style="display:none;" aria-live="polite"></div>
-    <div class="notices-box" id="noticesBox" style="display:none;" aria-live="polite"></div>
-
-    <div id="previewBox"></div>
-
-    <div class="nav-buttons">
-      <button class="btn btn-secondary" onclick="goStep(2)">Вернуться к условиям</button>
-      <button class="btn btn-primary" id="downloadBtn" onclick="downloadDocx()">Скачать Word</button>
-      <button class="btn btn-danger" onclick="restartAll()">Начать заново</button>
-    </div>
-    <p class="hint" id="downloadNote" style="font-size:12px; color:var(--muted); margin-top:8px;"></p>
-  </div>
-
+<div id="screen-intro" class="screen active">
+<h1 tabindex="-1">Условия предприятия: что помогает и что мешает СЭМ</h1>
+<p class="lead">Опишите условия, которые важно учесть при внедрении системы: по одному на запись. Для каждого - группа, что известно, на какое решение влияет и что проверить. Обязательных полей нет: что не заполнено, допишете в скачанном файле.</p>
+<div class="note-box accent">Зачем это в программе: условия из этого анализа станут основой для области применения во Курсе 2 и для политики с целями в Курсе 4. Конструкторы Курса 3 работают без этих данных и ничего здесь не спрашивают, поэтому анализ можно вести в своем темпе и возвращаться к нему.</div>
+<div class="note-box">Как пользоваться: добавьте запись на каждое условие, выберите группу S, W, O или T и опишите условие своими словами. Черновик хранится в этом браузере и ездит с единым файлом курса между устройствами и шагами.</div>
+<details class="blk"><summary>Посмотреть пример записи</summary><div class="blk-body">
+<p><strong>Название:</strong> Раздельный учет воды и выпуска продукции.</p>
+<p><strong>Группа:</strong> W - внутреннее ограничение: данные есть, но сопоставимость периодов не проверена.</p>
+<p><strong>Условие:</strong> расход воды учитывают за месяц, выпуск фиксируют отдельно, единой методики сопоставления нет.</p>
+<p><strong>Влияние на решения СЭМ:</strong> выбор показателя водопотребления на единицу продукции для цели по воде.</p>
+<p><strong>Статус сведений:</strong> предварительные сведения.</p>
+<p><strong>Что проверить:</strong> можно ли получить расход воды и выпуск за одинаковые периоды у одного владельца данных.</p>
+<p>Пример учебный: он не подставляется в ваши записи и не является фактом предприятия.</p>
+</div></details>
+<div class="warn-box storage-warn">Браузер не сохранил черновик. Скачайте Word, Excel или единый файл курса перед закрытием страницы.</div>
+<div class="note-box" id="restoreNote" style="display:none">Найден сохраненный черновик. Записи восстановлены.</div>
+<div class="nav-buttons">
+<button class="btn btn-primary" onclick="startWork()">Начать работу</button>
+<button class="btn btn-secondary" onclick="semToggleRules(this)">Правила и передача данных</button>
+</div>
+<div class="sem-rules" hidden></div>
 </div>
 
+<div id="screen-work" class="screen">
+<h1 tabindex="-1">Записи условий</h1>
+<p class="lead">Каждая запись на своей вкладке. Заполняйте в любом порядке и любом объеме: пустые поля выйдут прочерками, дописать можно в файле.</p>
+<div class="warn-box storage-warn">Браузер не сохранил черновик. Скачайте Word, Excel или единый файл курса перед закрытием страницы.</div>
+<div class="save-line" id="saveStatus"></div>
+<div class="nav-buttons" style="margin-top:0">
+<button class="btn btn-secondary" onclick="exportJson()">Скачать единый файл курса (JSON)</button>
+<button class="btn btn-secondary" onclick="document.getElementById('jsonFile').click()">Загрузить единый файл (JSON)</button>
+<input type="file" id="jsonFile" accept=".json,application/json" style="display:none" onchange="importJson(this)">
+<button class="btn btn-secondary" onclick="semToggleRules(this)">Правила и передача данных</button>
+</div>
+<div class="note-box" id="jsonMsg" style="display:none"></div>
+<div class="sem-rules" hidden></div>
+<div class="field" style="max-width:320px;display:inline-block;margin-right:8px"><label for="m-org">Предприятие или учебный кейс (необязательно)</label><input type="text" id="m-org"></div>
+<div class="field" style="max-width:150px;display:inline-block;margin-right:8px"><label for="m-date">Дата анализа</label><input type="text" id="m-date"></div>
+<div class="field" style="max-width:200px;display:inline-block"><label for="m-author">Подготовил (необязательно)</label><input type="text" id="m-author"></div>
+<div class="tabs-bar" id="tabsBar" role="tablist" aria-label="Записи условий"></div>
+<div id="panelsBox"></div>
+<div class="nav-buttons"><button class="btn btn-primary" onclick="openPreview()">Посмотреть анализ и скачать</button></div>
+</div>
+
+<div id="screen-preview" class="screen">
+<h1 tabindex="-1">Предварительный анализ условий</h1>
+<div class="notices-box" id="noticesBox" style="display:none" aria-live="polite"></div>
+<div id="previewBox"></div>
+<div class="nav-buttons">
+<button class="btn btn-secondary" onclick="showScreen('screen-work')">Вернуться к записям</button>
+<button class="btn btn-primary" id="downloadBtn" onclick="downloadDocx()">Скачать Word</button>
+<button class="btn btn-primary" onclick="downloadXlsx()">Скачать Excel (.xlsx)</button>
+<button class="btn btn-danger" onclick="restartAll()">Полная очистка</button>
+<button class="btn btn-secondary" onclick="semToggleRules(this)">Правила и передача данных</button>
+</div>
+<div class="sem-rules" hidden></div>
+<p id="downloadNote" style="font-size:12px;color:var(--muted);margin-top:8px"></p>
+</div>
+
+</div>
 <script>
-/* ================= КОНСТАНТЫ ================= */
-const STORAGE_KEY = 'sem-conditions-analysis-v1';
-const GROUP_LABELS = { S: 'S - Сильная сторона', W: 'W - Слабая сторона', O: 'O - Возможность', T: 'T - Угроза', '': 'Группа не определена' };
-const GROUP_DOC_COLORS = { S: '1B5E20', W: '9A3412', O: '0D47A1', T: '9D174D', '': '334155' };
-const SWOT_FILLS = { S: 'E6F4EA', W: 'FFF3E0', O: 'E3F0FD', T: 'FDE8EF' };
-const STATUS_LABELS = { source: 'Есть подтверждающий источник', prelim: 'Есть предварительные сведения', assumption: 'Пока предположение', undefined: 'Не определено' };
+/* ========== ЗАЩИТНЫЙ СТАРТ ========== */
+function showBoot(msg){var b=document.getElementById('bootError');if(b){b.style.display='block';b.textContent='Конструктор не запустился: '+msg;}}
+window.addEventListener('error',function(ev){showBoot((ev&&ev.message)||'ошибка скрипта')+' (строка '+((ev&&ev.lineno)||'?')+')';});
 
-let state = {
-  meta: { org: '', scope: '', date: '', author: '', basis: 'Данные моего предприятия' },
-  conditions: [],
-  nextNum: 1,
-  activeId: null
-};
-let bodiesById = {};
-let storageOk = true;
-
-/* ================= РЕСАЙЗЕР ФРЕЙМА ================= */
-function resizeIframe() {
-  if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
-    window.parentIFrame.size();
+/* ========== МОДУЛЬ SEM-BUNDLE v1.1 ========== */
+var SEM_BUNDLE_KEY='sem_bundle';
+var SEM_STEPS=[
+ {name:'swot',title:'Условия и границы (SWOT)',keys:['sem_swot','sem-conditions-analysis-v1','sem-swot-v1']},
+ {name:'parties',title:'Карта заинтересованных сторон',keys:['sem_parties']},
+ {name:'scope',title:'Область применения',keys:['sem_scope']},
+ {name:'aspects',title:'Реестр аспектов',keys:['sem_aspects','sem-aspect-records-v3','sem-aspect-records-v2','sem-aspect-records-v1','sem-chain-constructor-v1']},
+ {name:'significance',title:'Оценка значимости',keys:['sem_significance','sem-ranks-v3','sem-ranks-significance-v3','sem-ranks-v2','sem-ranks-v1']},
+ {name:'obligations',title:'Реестр обязательств',keys:['sem_obligations','sem-obligations-registry-v3','sem-obligations-registry-v2','sem-obligations-registry-v1']},
+ {name:'risks',title:'Риски и возможности',keys:['sem_risks','sem-risks-opps-v2','sem-risks-opps-v1']},
+ {name:'policy',title:'Политика',keys:['sem_policy']},
+ {name:'goals',title:'Цели и показатели',keys:['sem_goals']},
+ {name:'plan',title:'План действий',keys:['sem_plan']},
+ {name:'rollout',title:'План внедрения',keys:['sem_rollout']}
+];
+function semKnownKeys(){var m={};SEM_STEPS.forEach(function(s){s.keys.forEach(function(k){m[k]=s.name;});});return m;}
+function semHasLive(key){try{var raw=localStorage.getItem(key);if(!raw)return false;var d=JSON.parse(raw);return !!(d&&((Array.isArray(d.rows)&&d.rows.length)||(Array.isArray(d.cards)&&d.cards.length)||d.result));}catch(e){return false;}}
+function semReadLiveStep(step){for(var i=0;i<step.keys.length;i++){if(semHasLive(step.keys[i])){try{return JSON.parse(localStorage.getItem(step.keys[i]));}catch(e){}}}return null;}
+function semReadCache(){try{var raw=localStorage.getItem(SEM_BUNDLE_KEY);if(!raw)return{steps:{}};var d=JSON.parse(raw);return (d&&d.steps)?d:{steps:{}};}catch(e){return{steps:{}};}}
+function stepRows(name){
+ var step=null;SEM_STEPS.forEach(function(s){if(s.name===name)step=s;});
+ if(step){var live=semReadLiveStep(step);if(live&&Array.isArray(live.rows))return live.rows;}
+ var cache=semReadCache();
+ if(cache.steps[name]&&Array.isArray(cache.steps[name].rows))return cache.steps[name].rows;
+ return [];
+}
+function semExtraLive(){
+ var extra={},known=semKnownKeys();
+ try{
+  for(var i=0;i<localStorage.length;i++){
+   var k=localStorage.key(i);
+   if(!k||k.indexOf('sem_')!==0&&k.indexOf('sem-')!==0||k===SEM_BUNDLE_KEY||known[k])continue;
+   try{var d=JSON.parse(localStorage.getItem(k));if(d&&((Array.isArray(d.rows)&&d.rows.length)||d.result))extra[k]=d;}catch(e){}
   }
+ }catch(e){}
+ return extra;
+}
+function semBuildBundle(){
+ var cache=semReadCache();var steps={};
+ SEM_STEPS.forEach(function(s){steps[s.name]=semReadLiveStep(s)||cache.steps[s.name]||null;});
+ Object.keys(cache.steps).forEach(function(k){if(steps[k]===undefined)steps[k]=cache.steps[k];});
+ var extra=semExtraLive();
+ Object.keys(extra).forEach(function(k){if(steps[k]===undefined)steps[k]=extra[k];});
+ return{schema:'sem.bundle.v1',program:'СЭМ',exportedAt:new Date().toISOString(),steps:steps};
+}
+function semExportBundle(){
+ var bundle=semBuildBundle();
+ var present=[];
+ SEM_STEPS.forEach(function(s){if(bundle.steps[s.name])present.push(s.title);});
+ Object.keys(bundle.steps).forEach(function(k){
+  var known=false;SEM_STEPS.forEach(function(s){if(s.name===k)known=true;});
+  if(!known&&bundle.steps[k])present.push('шаг '+k);
+ });
+ var blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
+ var url=URL.createObjectURL(blob);var a=document.createElement('a');
+ a.href=url;a.download='SEM_programma_polnyy_nabor_'+today()+'.json';
+ document.body.appendChild(a);a.click();document.body.removeChild(a);
+ setTimeout(function(){URL.revokeObjectURL(url);},4000);
+ return present;
+}
+function semCacheBundle(bundle){
+ var cache=semReadCache();
+ Object.keys(bundle.steps||{}).forEach(function(name){
+  var p=bundle.steps[name];
+  if(!p||!(Array.isArray(p.rows)&&p.rows.length)&&!p.result)return;
+  var old=cache.steps[name];
+  if(!old||(p.rows&&p.rows.length>(old.rows||[]).length)||Number(p.rev||0)>Number(old.rev||0))cache.steps[name]=p;
+ });
+ cache.savedAt=new Date().toISOString();
+ return semWriteCache(cache);
+}
+function semWriteCache(cache){try{localStorage.setItem(SEM_BUNDLE_KEY,JSON.stringify(cache));return true;}catch(e){return false;}}
+function semRestoreMissingSteps(bundle,exceptName){
+ var restored=[],skipped=[];
+ Object.keys(bundle.steps||{}).forEach(function(name){
+  if(name===exceptName)return;
+  var p=bundle.steps[name];
+  if(!p||!(Array.isArray(p.rows)&&p.rows.length)&&!p.result)return;
+  var key=null;
+  SEM_STEPS.forEach(function(s){if(s.name===name)key=s.keys[0];});
+  if(!key)key=name;
+  if(semHasLive(key)){skipped.push(name);return;}
+  try{localStorage.setItem(key,JSON.stringify(p));restored.push(name);}catch(e){}
+ });
+ return{restored:restored,skipped:skipped};
+}
+function semParseImport(text,selfName){
+ var d;try{d=JSON.parse(text);}catch(e){return null;}
+ if(d&&d.steps&&typeof d.steps==='object'){
+  var own=d.steps[selfName];
+  return{bundle:d,ownRows:(own&&own.rows)||[],format:'bundle'};
+ }
+ if(d&&(Array.isArray(d.rows)||Array.isArray(d.cards)||Array.isArray(d.conditions)||Array.isArray(d))){
+  var rows=Array.isArray(d.rows)?d.rows:(Array.isArray(d.cards)?d.cards:(Array.isArray(d.conditions)?d.conditions:d));
+  var wrap={schema:'sem.bundle.v1',program:'СЭМ',exportedAt:new Date().toISOString(),steps:{}};
+  wrap.steps[selfName]={schema:d.schema||'',rev:d.rev||1,updatedAt:d.updatedAt||'',meta:d.meta||{},rows:rows};
+  return{bundle:wrap,ownRows:rows,format:'step'};
+ }
+ return null;
 }
 
-/* ================= ЛОКАЛЬНАЯ ПАМЯТЬ ================= */
-function saveState() {
-  if (!storageOk) return;
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({
-      meta: state.meta,
-      conditions: state.conditions,
-      nextNum: state.nextNum,
-      activeId: state.activeId
-    }));
-  } catch (e) {
-    storageOk = false;
-    const w = document.getElementById('storageWarn');
-    if (w) w.style.display = 'block';
-    const n = document.getElementById('storageNote');
-    if (n) n.style.display = 'none';
-    resizeIframe();
+/* ========== ПРАВИЛА ДЛЯ УЧЕНИКА ========== */
+var SEM_RULES=[
+ 'Конструктор помогает описать условия предприятия для внедрения СЭМ: что помогает, что мешает, что можно использовать и чего опасаться. Обязательных полей нет: черновик выгружается на любом этапе, пропуски дописываются в файле.',
+ 'Одна запись - одно условие. Действия и планы условиями не считаются: сначала опишите обстоятельство, действие появится в следующих шагах курса.',
+ 'Группы означают: S - внутренняя сильная сторона, W - внутреннее слабое место, O - внешняя возможность, T - внешняя угроза. Группа не определена - не беда: запись попадет в список «требует распределения».',
+ 'Статус сведений показывает надежность: факт с источником, предварительные сведения, предположение. Предположение не означает вывод: оно означает, что проверку еще предстоит сделать.',
+ 'Условия из этого анализа используют конструктор области применения во Курсе 2 и конструкторы политики и целей в Курсе 4. Конструкторы Курса 3 - аспекты, значимость, обязательства, риски - работают без этих данных и ничего отсюда не забирают.',
+ 'Номера записей сквозные внутри шага: в интерфейсе вы видите номер и название, в файлах запись получает постоянный идентификатор Ф-0001 для связей с областью применения и политикой. После удаления номер не пересдается.',
+ 'Черновик хранится только в этом браузере на этом устройстве. На сервер ничего не отправляется.',
+ 'Черновик пропадет, если открыть курс в другом браузере или на другом устройстве, работать в приватном режиме, очистить данные сайтов или если платформа откроет конструктор с другого адреса.',
+ 'Надежные копии - три файла. Word это предварительный анализ для обсуждения. Excel это рабочая таблица условий с подсказками. Единый файл JSON это данные всей программы для переноса между устройствами и шагами.',
+ 'Единый файл курса содержит черновики всех шагов и скачивается из любого конструктора. При загрузке свои записи сливаются по правилу: заполненные поля не перезаписываются, дополняются только пустые.',
+ 'Пояснения к колонкам в книге Excel свернуты группой под шапкой и открываются кнопкой плюс, полный текст с примером доступен при наведении на ячейку шапки.',
+ 'Конструктор не проверяет достоверность сведений и не подтверждает соответствие СЭМ стандарту. Он помогает не потерять условия и вопросы до их проверки.'
+];
+function semToggleRules(btn){
+ var screen=btn.closest('.screen');
+ var wrap=screen?screen.querySelector('.sem-rules'):null;
+ if(!wrap)return;
+ semKeepPlace(btn,function(){
+  var show=wrap.hidden;
+  wrap.hidden=!show;
+  if(show&&!wrap.innerHTML){
+   var h='<h2>Правила и передача данных</h2><ol>';
+   SEM_RULES.forEach(function(p){h+='<li>'+esc(p)+'</li>';});
+   h+='</ol>';
+   wrap.innerHTML=h;
   }
+ });
 }
 
-function sanitizeCond(c) {
-  c = c || {};
-  return {
-    id: String(c.id || ''),
-    name: String(c.name || ''),
-    known: String(c.known || ''),
-    group: ['S', 'W', 'O', 'T'].indexOf(c.group) >= 0 ? c.group : '',
-    task: String(c.task || ''),
-    source: String(c.source || ''),
-    status: STATUS_LABELS[c.status] ? c.status : 'undefined',
-    question: String(c.question || ''),
-    noQuestion: !!c.noQuestion
-  };
+/* ========== ПРИВЯЗКА К МЕСТУ ========== */
+function semKeepPlace(el,mutate){
+ var before=el.getBoundingClientRect().top+window.pageYOffset;
+ mutate();
+ resizeIframe();
+ var after=el.getBoundingClientRect().top+window.pageYOffset;
+ var delta=after-before;
+ if(Math.abs(delta)>2)window.scrollTo(0,Math.max(0,window.pageYOffset+delta));
+ semParentHold(el);
 }
-
-function loadState() {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    if (!raw) return false;
-    const data = JSON.parse(raw);
-    if (!data || !Array.isArray(data.conditions)) return false;
-    state.meta = Object.assign(
-      { org: '', scope: '', date: '', author: '', basis: 'Данные моего предприятия' },
-      data.meta || {}
-    );
-    state.conditions = data.conditions.map(sanitizeCond).filter(c => c.id);
-    state.nextNum = Number(data.nextNum) || (state.conditions.length + 1);
-    state.activeId = data.activeId || null;
-    return true;
-  } catch (e) { return false; }
-}
-
-function clearStorage() {
-  try { localStorage.removeItem(STORAGE_KEY); } catch (e) {}
-}
-
-/* ================= НАВИГАЦИЯ ================= */
-function startWork() { goStep(1); }
-
-function goStep(n) {
-  ['screen-intro', 'screen-step1', 'screen-step2', 'screen-step3'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.classList.remove('active');
-  });
-  document.getElementById('screen-step' + n).classList.add('active');
-  document.querySelectorAll('#screen-step' + n + ' .step-btn').forEach((b, i) => b.classList.toggle('active', i === n - 1));
-  if (n === 3) renderPreview();
-  window.scrollTo({ top: 0, behavior: 'smooth' });
-  resizeIframe();
-}
-
-function setToday() {
-  const d = new Date();
-  const s = String(d.getDate()).padStart(2, '0') + '.' + String(d.getMonth() + 1).padStart(2, '0') + '.' + d.getFullYear();
-  document.getElementById('m-date').value = s;
-  onMeta('date', s);
-}
-
-function onMeta(key, value) { state.meta[key] = value; saveState(); }
-
-function togglePanel(id, btn) {
-  const p = document.getElementById(id);
-  const show = !p.classList.contains('show');
-  p.classList.toggle('show', show);
-  if (btn) btn.setAttribute('aria-expanded', show ? 'true' : 'false');
-  resizeIframe();
-}
-
-/* ================= ВКЛАДКИ И ПАНЕЛИ ================= */
-function refreshTabsUI() {
-  const bar = document.getElementById('tabsBar');
-  const box = document.getElementById('panelsBox');
-  bar.innerHTML = '';
-
-  state.conditions.forEach(c => {
-    if (!bodiesById[c.id]) {
-      const body = buildBody(c);
-      bodiesById[c.id] = body;
-      box.appendChild(body);
+function semParentHold(el){
+ try{
+  if(!window.parentIFrame||typeof window.parentIFrame.getPageInfo!=='function')return;
+  var yInIframe=el.getBoundingClientRect().top+window.pageYOffset;
+  window.parentIFrame.getPageInfo(function(info){
+   try{
+    var yInView=info.iframeTop+yInIframe-info.scrollTop;
+    if(yInView<0||yInView>info.clientHeight-90){
+     if(typeof window.parentIFrame.scrollTo==='function')window.parentIFrame.scrollTo(0,Math.max(0,yInIframe-60));
     }
+   }catch(e){}
   });
-
-  Object.keys(bodiesById).forEach(id => {
-    if (!state.conditions.find(c => c.id === id)) {
-      bodiesById[id].remove();
-      delete bodiesById[id];
-    }
-  });
-
-  const oldPh = document.getElementById('emptyPlaceholder');
-  if (oldPh) oldPh.remove();
-
-  if (!state.conditions.find(c => c.id === state.activeId)) {
-    state.activeId = state.conditions.length ? state.conditions[0].id : null;
-  }
-
-  state.conditions.forEach(c => {
-    const tab = document.createElement('button');
-    tab.className = 'tab-btn';
-    tab.id = 'tab-' + c.id;
-    tab.setAttribute('role', 'tab');
-    tab.setAttribute('aria-controls', 'panel-' + c.id);
-    tab.setAttribute('aria-selected', c.id === state.activeId ? 'true' : 'false');
-    tab.onclick = () => activateTab(c.id);
-    tab.onkeydown = e => tabKeydown(e, c.id);
-
-    const dot = document.createElement('span');
-    dot.className = 'tab-dot dot-' + (c.group || 'N');
-    dot.id = 'dot-' + c.id;
-    const idTxt = document.createElement('span');
-    idTxt.textContent = c.id;
-    const nm = document.createElement('span');
-    nm.className = 'tab-name';
-    nm.id = 'tabname-' + c.id;
-    nm.textContent = c.name.trim() || 'без названия';
-    tab.appendChild(dot); tab.appendChild(idTxt); tab.appendChild(nm);
-    bar.appendChild(tab);
-  });
-
-  const addBtn = document.createElement('button');
-  addBtn.className = 'tab-add';
-  addBtn.textContent = 'Добавить условие';
-  addBtn.onclick = () => addCondition();
-  bar.appendChild(addBtn);
-
-  if (!state.conditions.length) {
-    const ph = document.createElement('div');
-    ph.className = 'note-box';
-    ph.id = 'emptyPlaceholder';
-    ph.style.marginTop = '10px';
-    ph.textContent = 'Записей пока нет. Нажмите "Добавить условие", чтобы создать первую.';
-    box.appendChild(ph);
-  }
-
-  applyActivePanel();
+ }catch(e){}
+}
+document.addEventListener('click',function(e){
+ var s=e.target&&e.target.closest?e.target.closest('details>summary'):null;
+ if(!s)return;
+ var before=s.getBoundingClientRect().top+window.pageYOffset;
+ setTimeout(function(){
+  var after=s.getBoundingClientRect().top+window.pageYOffset;
+  var delta=after-before;
+  if(Math.abs(delta)>2)window.scrollTo(0,Math.max(0,window.pageYOffset+delta));
   resizeIframe();
+  semParentHold(s);
+ },0);
+},true);
+function semExample(btn){
+ var box=btn.nextElementSibling;
+ if(!box)return;
+ semKeepPlace(btn,function(){
+  var show=box.style.display!=='block';
+  box.style.display=show?'block':'none';
+  box.classList.toggle('show',show);
+  btn.textContent=show?'Скрыть пример':'Показать пример';
+  btn.setAttribute('aria-expanded',show?'true':'false');
+ });
 }
 
-function applyActivePanel() {
-  state.conditions.forEach(c => {
-    const panel = bodiesById[c.id];
-    const tab = document.getElementById('tab-' + c.id);
-    if (panel) panel.hidden = c.id !== state.activeId;
-    if (tab) tab.setAttribute('aria-selected', c.id === state.activeId ? 'true' : 'false');
+/* ========== СЛУЖЕБНОЕ ========== */
+var STORAGE_KEY='sem_swot';
+var SCHEMA='sem.swot.v1';
+var GROUPS=[['','Группа не определена'],['S','S - сильная сторона'],['W','W - слабая сторона'],['O','O - возможность'],['T','T - угроза']];
+var STATUSES=[['','Статус не указан'],['fact','Факт с источником'],['prelim','Предварительные сведения'],['assumption','Предположение, требует проверки']];
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function today(){var d=new Date();return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();}
+function pad4(n){return String(n).padStart(4,'0');}
+function idF(n){return 'Ф-'+pad4(n);}
+function groupLabel(v){for(var i=0;i<GROUPS.length;i++)if(GROUPS[i][0]===v)return GROUPS[i][1];return 'Группа не определена';}
+function statusLabel(v){for(var i=0;i<STATUSES.length;i++)if(STATUSES[i][0]===v)return STATUSES[i][1];return '-';}
+function dash(v){v=String(v==null?'':v).trim();return v?v:'-';}
+function cut(s,n){s=String(s==null?'':s).trim();if(!s)return '';return s.length>n?s.slice(0,n-3)+'...':s;}
+function resizeIframe(){if(window.parentIFrame&&typeof window.parentIFrame.size==='function')window.parentIFrame.size();}
+function showScreen(id){['screen-intro','screen-work','screen-preview'].forEach(function(s){$(s).classList.remove('active');});$(id).classList.add('active');var h=$(id).querySelector('h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true});}window.scrollTo(0,0);resizeIframe();}
+function showStorageWarn(){var w=document.querySelectorAll('.storage-warn');for(var i=0;i<w.length;i++)w[i].classList.add('show');resizeIframe();}
+
+/* ========== СОСТОЯНИЕ ========== */
+var state={meta:{org:'',date:'',author:''},rows:[],nextNum:1,activeNum:null,rev:1};
+var bodiesById={},storageOk=true;
+function newRow(num){return{num:num,name:'',group:'',condition:'',influence:'',status:'',check:''};}
+
+/* ========== ПАМЯТЬ И МИГРАЦИЯ ========== */
+function saveOwn(){if(!storageOk)return;try{state.rev++;localStorage.setItem(STORAGE_KEY,JSON.stringify({schema:SCHEMA,rev:state.rev,updatedAt:new Date().toISOString(),meta:state.meta,rows:state.rows,nextNum:state.nextNum,activeNum:state.activeNum}));var d=new Date();$('saveStatus').textContent='Черновик сохранен в этом браузере в '+String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')+'.';}catch(e){storageOk=false;showStorageWarn();}}
+function migrateSw(r,num){
+ var row=newRow(num||r.num||0);
+ ['name','group','condition','influence','status','check'].forEach(function(k){if(r[k]!==undefined&&r[k]!==null)row[k]=r[k];});
+ if(!row.condition&&r.known)row.condition=r.known;
+ if(!row.influence&&r.task)row.influence=r.task;
+ if(!row.check)row.check=r.question||'';
+ if(!row.status&&r.status)row.status=r.status==='source'?'fact':(r.status==='prelim'?'prelim':(r.status==='assumption'?'assumption':''));
+ if(['S','W','O','T'].indexOf(row.group)<0)row.group='';
+ return row;
+}
+function loadOwn(){
+ try{
+  var raw=localStorage.getItem(STORAGE_KEY);
+  if(raw){var d=JSON.parse(raw);var arr=d.rows||[];if(Array.isArray(arr)){state.meta=Object.assign({org:'',date:'',author:''},d.meta||{});state.nextNum=Number(d.nextNum)||1;state.activeNum=d.activeNum||null;state.rev=Number(d.rev)||1;state.rows=arr.map(function(r,i){return migrateSw(r,r.num||i+1);});if(state.nextNum<=state.rows.length)state.nextNum=state.rows.length+1;return true;}}
+  var aliases=['sem-conditions-analysis-v1','sem-swot-v1'];
+  for(var i=0;i<aliases.length;i++){
+   raw=localStorage.getItem(aliases[i]);if(!raw)continue;
+   var ld=JSON.parse(raw);var src=ld.rows||ld.conditions||ld.cards||[];if(!Array.isArray(src)||!src.length)continue;
+   state.rows=[];var n=1;
+   src.forEach(function(r){var row=migrateSw(r,n);var oldNum=parseInt(String(r.id||'').replace(/\D/g,''),10);if(oldNum)row.num=oldNum;state.rows.push(row);n++;});
+   state.rows.sort(function(a,b){return a.num-b.num;});
+   state.nextNum=(state.rows.length?state.rows[state.rows.length-1].num:0)+1;
+   state.activeNum=state.rows.length?state.rows[0].num:null;
+   if(ld.meta)state.meta=Object.assign({org:'',date:'',author:''},ld.meta);
+   return true;
+  }
+ }catch(e){}
+ return false;
+}
+function testStorage(){try{localStorage.setItem(STORAGE_KEY+'-t','1');localStorage.removeItem(STORAGE_KEY+'-t');}catch(e){storageOk=false;showStorageWarn();}}
+
+/* ========== ЕДИНЫЙ ФАЙЛ ========== */
+function exportJson(){
+ var present=semExportBundle();
+ jsonMsg('Скачан единый файл программы. В нем шаги: '+(present.length?present.join(', '):'пока только этот черновик')+'. Курс 3 не забирает эти данные: они понадобятся области применения и Курсу 4.');
+}
+function importJson(input){
+ var f=input.files&&input.files[0];if(!f)return;
+ var rd=new FileReader();
+ rd.onload=function(){
+  var parsed=semParseImport(rd.result,'swot');
+  if(!parsed){jsonMsg('Файл не похож на данные программы: не распознан ни единый файл, ни черновик шага.');input.value='';return;}
+  semCacheBundle(parsed.bundle);
+  var res=semRestoreMissingSteps(parsed.bundle,'swot');
+  var extra='';
+  if(res.restored.length)extra=' Вернул в этот браузер отсутствовавшие шаги программы: '+res.restored.length+'.';
+  else if(res.skipped.length)extra=' Шаги, которые уже есть в этом браузере, не перезаписаны.';
+  var added=0,filled=0;
+  (parsed.ownRows||[]).forEach(function(it){
+   var m=migrateSw(it,it.num||0);
+   var ex=null;state.rows.forEach(function(r){if(r.num===m.num)ex=r;});
+   if(ex){['name','group','condition','influence','status','check'].forEach(function(k){if(m[k]&&!ex[k]){ex[k]=m[k];filled++;}});}
+   else{if(!m.num||state.rows.some(function(r){return r.num===m.num;})){m.num=state.nextNum++;}state.rows.push(m);added++;}
   });
+  state.rows.sort(function(a,b){return a.num-b.num;});
+  if(!state.activeNum&&state.rows.length)state.activeNum=state.rows[0].num;
+  refreshTabs();saveOwn();
+  jsonMsg('Данные загружены. Новых записей: '+added+'. Дополнено пустых полей: '+filled+'. Заполненные ранее поля не перезаписаны.'+extra);
+  input.value='';
+ };
+ rd.readAsText(f);
+}
+function jsonMsg(t){var m=$('jsonMsg');m.style.display='block';m.textContent=t;resizeIframe();}
+
+/* ========== ВКЛАДКИ И ЗАПИСИ ========== */
+function startWork(){
+ if(!state.rows.length)addRow(true);
+ if(!state.meta.date)state.meta.date=today();
+ $('m-org').value=state.meta.org;$('m-date').value=state.meta.date;$('m-author').value=state.meta.author;
+ refreshTabs();showScreen('screen-work');
+}
+function refreshTabs(){
+ var bar=$('tabsBar'),box=$('panelsBox');bar.innerHTML='';
+ state.rows.forEach(function(r){if(!bodiesById[r.num]){var b=buildRow(r);bodiesById[r.num]=b;box.appendChild(b);}});
+ Object.keys(bodiesById).forEach(function(n){var ex=state.rows.some(function(r){return r.num===Number(n);});if(!ex){bodiesById[n].remove();delete bodiesById[n];}});
+ if(!state.rows.some(function(r){return r.num===state.activeNum;}))state.activeNum=state.rows.length?state.rows[0].num:null;
+ state.rows.forEach(function(r){
+  var t=document.createElement('button');t.type='button';t.className='tab-btn';t.id='tab-'+r.num;
+  t.setAttribute('role','tab');t.setAttribute('aria-controls','panel-'+r.num);
+  t.setAttribute('aria-selected',r.num===state.activeNum?'true':'false');
+  t.onclick=function(){state.activeNum=r.num;applyActive();saveOwn();window.scrollTo(0,0);resizeIframe();};
+  var dot=document.createElement('span');dot.className='grp-badge g-'+(r.group||'N');dot.style.padding='1px 7px';dot.textContent=r.group||'?';
+  var nm=document.createElement('span');nm.className='tab-name';nm.id='tabname-'+r.num;
+  nm.textContent=r.name.trim()?r.name.trim():'новое условие';
+  t.appendChild(dot);t.appendChild(document.createTextNode(' '+r.num+'. '));t.appendChild(nm);bar.appendChild(t);
+ });
+ var add=document.createElement('button');add.type='button';add.className='tab-add';add.textContent='Добавить условие';
+ add.onclick=function(){addRow(false);};bar.appendChild(add);
+ applyActive();
+}
+function applyActive(){state.rows.forEach(function(r){var p=bodiesById[r.num],t=$('tab-'+r.num);if(p)p.hidden=r.num!==state.activeNum;if(t)t.setAttribute('aria-selected',r.num===state.activeNum?'true':'false');});}
+function addRow(first){var r=newRow(state.nextNum);state.nextNum++;state.rows.push(r);state.activeNum=r.num;refreshTabs();saveOwn();if(!first){var el=$('f-'+r.num+'-name');if(el)el.focus();}resizeIframe();}
+function deleteRow(num){var r=null;state.rows.forEach(function(x){if(x.num===num)r=x;});if(!r)return;if((r.name||r.condition)&&!confirm('Удалить запись '+num+'? Введенные сведения будут потеряны.'))return;state.rows=state.rows.filter(function(x){return x.num!==num;});if(state.activeNum===num)state.activeNum=state.rows.length?state.rows[0].num:null;refreshTabs();saveOwn();resizeIframe();}
+function exBtn(id){return '<button type="button" class="ex-btn" aria-expanded="false" onclick="semExample(this)">Показать пример</button><div class="ex-box" id="ex-'+id+'"></div>';}
+function buildRow(r){
+ var panel=document.createElement('div');panel.className='tab-panel';panel.id='panel-'+r.num;
+ panel.setAttribute('role','tabpanel');panel.setAttribute('aria-labelledby','tab-'+r.num);
+ var head=document.createElement('div');head.className='panel-head';
+ var left=document.createElement('strong');left.textContent='Условие '+r.num;
+ var badge=document.createElement('span');badge.className='grp-badge g-'+(r.group||'N');badge.id='badge-'+r.num;badge.textContent=r.group?groupLabel(r.group):'группа не выбрана';
+ var del=document.createElement('button');del.type='button';del.className='btn-small';del.textContent='Удалить запись';
+ del.onclick=function(){deleteRow(r.num);};
+ head.appendChild(left);head.appendChild(badge);head.appendChild(del);panel.appendChild(head);
+ var b=document.createElement('div');var h='';
+ h+='<div class="field"><label for="f-'+r.num+'-name">Короткое название</label><input type="text" id="f-'+r.num+'-name" value="'+esc(r.name)+'">'+exBtn(r.num+'-name')+'<div class="hint">Два-восемь слов, чтобы узнавать запись во вкладках и таблицах.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-group">Группа</label><select id="f-'+r.num+'-group">'+GROUPS.map(function(g){return '<option value="'+g[0]+'"'+(r.group===g[0]?' selected':'')+'>'+g[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-group')+'<div class="hint">S и W - внутренние условия предприятия, O и T - внешние. Действие условием не считается: сначала обстоятельство.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-condition">Условие: что известно</label><textarea id="f-'+r.num+'-condition">'+esc(r.condition)+'</textarea>'+exBtn(r.num+'-condition')+'<div class="hint">Конкретное обстоятельство, а не слово-метка.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-influence">На какое решение СЭМ влияет</label><textarea id="f-'+r.num+'-influence">'+esc(r.influence)+'</textarea>'+exBtn(r.num+'-influence')+'<div class="hint">Какую задачу или выбор это условие затрагивает: показатель, границу, требование, приоритет.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-status">Статус сведений</label><select id="f-'+r.num+'-status">'+STATUSES.map(function(s){return '<option value="'+s[0]+'"'+(r.status===s[0]?' selected':'')+'>'+s[1]+'</option>';}).join('')+'</select>'+exBtn(r.num+'-status')+'<div class="hint">Статус выбираете вы: конструктор не подтверждает достоверность сведений.</div></div>';
+ h+='<div class="field"><label for="f-'+r.num+'-check">Что проверить и где</label><textarea id="f-'+r.num+'-check">'+esc(r.check)+'</textarea>'+exBtn(r.num+'-check')+'<div class="hint">Вопрос к владельцу данных или документам. Если вопросов нет, оставьте пустым: в таблицу попадет прочерк.</div></div>';
+ h+='<p class="status-line" id="st-'+r.num+'"></p>';
+ b.innerHTML=h;panel.appendChild(b);
+ var EX={name:'Пример: раздельный учет воды и выпуска продукции.',
+  group:'Пример: W - данные есть внутри предприятия, но сопоставимость периодов не проверена, это ограничение.',
+  condition:'Пример: расход воды учитывают за месяц, выпуск фиксируют отдельно, единой методики сопоставления нет.',
+  influence:'Пример: выбор показателя водопотребления на единицу продукции для цели по воде.',
+  status:'Пример: предварительные сведения - цифры видели, но владельца данных и период еще не уточнили.',
+  check:'Пример: можно ли получить расход воды и выпуск за одинаковые периоды у одного владельца данных.'};
+ Object.keys(EX).forEach(function(k){var box=b.querySelector('[id="ex-'+r.num+'-'+k+'"]');if(box)box.textContent=EX[k];});
+ ['name','condition','influence','check'].forEach(function(k){
+  var el=b.querySelector('[id="f-'+r.num+'-'+k+'"]');
+  if(el)el.addEventListener('input',function(e){r[k]=e.target.value;if(k==='name'){var nm=$('tabname-'+r.num);if(nm)nm.textContent=r.name.trim()?r.name.trim():'новое условие';}saveOwn();syncRow(r);});
+ });
+ ['group','status'].forEach(function(k){
+  var el=b.querySelector('[id="f-'+r.num+'-'+k+'"]');
+  if(el)el.addEventListener('change',function(e){
+   r[k]=e.target.value;
+   var bd=$('badge-'+r.num);
+   if(bd&&k==='group'){bd.className='grp-badge g-'+(r.group||'N');bd.textContent=r.group?groupLabel(r.group):'группа не выбрана';refreshTabs();}
+   saveOwn();syncRow(r);
+  });
+ });
+ syncRow(r,b);
+ return panel;
+}
+function syncRow(r,root){
+ root=root||bodiesById[r.num];if(!root)return;
+ var st=root.querySelector('[id="st-'+r.num+'"]');
+ if(!st)return;
+ var filled=0;
+ ['name','group','condition','influence','status','check'].forEach(function(k){if(String(r[k]||'').trim())filled++;});
+ if(filled===0)st.textContent='Запись пустая: заполните любое поле или удалите запись. Скачивание доступно и с пропусками.';
+ else if(filled<6)st.textContent='Заполнено полей: '+filled+' из 6. Пустые выйдут прочерками, дописать можно в файле.';
+ else st.textContent='Запись заполнена целиком и готова к выгрузке.';
 }
 
-function activateTab(id) {
-  state.activeId = id;
-  applyActivePanel();
-  saveState();
+/* ========== ПРЕДПРОСМОТР ========== */
+function openPreview(){renderPreview();showScreen('screen-preview');}
+var SW_HEAD=['ID','Группа','Название условия','Условие: что известно','На какое решение СЭМ влияет','Статус сведений','Что проверить и где'];
+var SW_HINTS=['Постоянный идентификатор условия: Ф- и номер записи; нужен для связей с областью применения и политикой.',
+ 'S и W - внутренние условия предприятия, O и T - внешние. Не определена - запись попадет в список на распределение.',
+ 'Короткое название для таблиц и обсуждений. Пример: раздельный учет воды и выпуска.',
+ 'Конкретное обстоятельство. Пример: расход воды учитывают за месяц, выпуск фиксируют отдельно.',
+ 'Какую задачу или выбор затрагивает. Пример: выбор показателя водопотребления на единицу продукции.',
+ 'Факт с источником, предварительные сведения или предположение: показывает надежность, а не вывод.',
+ 'Вопрос к владельцу данных или документам; если вопросов нет - прочерк.'];
+var SW_HINTS_SHORT=['ID условия для связей в программе','S, W, O или T; внутренние и внешние','Короткое название для таблиц','Обстоятельство, а не слово-метка','Задача или выбор, который затрагивает','Надежность сведений, а не вывод','Вопрос или прочерк'];
+function swRowValues(r,forExport){
+ return [forExport?idF(r.num):String(r.num),r.group||'-',dash(r.name),dash(r.condition),dash(r.influence),statusLabel(r.status),dash(r.check)];
+}
+function renderPreview(){
+ var conds=state.rows;
+ $('downloadBtn').disabled=!conds.length;
+ $('downloadNote').textContent=conds.length?'Черновик можно скачать с любыми пропусками: пустые поля выйдут прочерками, дописать можно в файле.':'Добавьте хотя бы одну запись условия.';
+ var byG={S:0,W:0,O:0,T:0};var noG=0,shaky=0,noQ=0;
+ conds.forEach(function(c){
+  if(c.group&&byG[c.group]!==undefined)byG[c.group]++;else noG++;
+  if(c.status==='assumption'||!c.status)shaky++;
+  if(!c.check.trim())noQ++;
+ });
+ var nt=[];
+ if(noG)nt.push('Записей без группы: '+noG+'. В документе они попадут в список «требует распределения», это рабочий статус, а не ошибка.');
+ if(shaky)nt.push('Записей со статусом предположения или без статуса: '+shaky+'. Перед обсуждением проверьте их или оставьте как вопросы.');
+ var ntBox=$('noticesBox');ntBox.style.display=nt.length?'block':'none';
+ if(nt.length)ntBox.innerHTML='<strong>На что посмотреть перед обсуждением.</strong><ul>'+nt.map(function(n){return '<li>'+esc(n)+'</li>';}).join('')+'</ul>';
+ var h='<div class="note-box accent">Предприятие или учебный кейс: '+esc(state.meta.org||'не указано')+'. Дата анализа: '+esc(state.meta.date||today())+'. Статус: черновик. Записей условий: '+conds.length+'.</div>';
+ h+='<div class="note-box">Сильных сторон: '+byG.S+'. Слабых сторон: '+byG.W+'. Возможностей: '+byG.O+'. Угроз: '+byG.T+'. Без вопросов для проверки: '+noQ+'. Эти сведения о заполненности черновика, а не оценка качества анализа.</div>';
+ h+='<details class="blk" open><summary>Матрица SWOT</summary><div class="blk-body"><div class="swot-grid">';
+ [['S','S. Сильные стороны','var(--s-bg)'],['W','W. Слабые стороны','var(--w-bg)'],['O','O. Возможности','var(--o-bg)'],['T','T. Угрозы','var(--t-bg)']].forEach(function(g){
+  var items=conds.filter(function(c){return c.group===g[0];});
+  h+='<div class="swot-cell" style="background:'+g[2]+'"><h4>'+g[1]+'</h4>'+(items.length?'<ul>'+items.map(function(c){return '<li>'+esc(c.num+'. '+(c.name.trim()||'без названия'))+'</li>';}).join('')+'</ul>':'<p class="empty">Условия пока не указаны</p>')+'</div>';
+ });
+ h+='</div>';
+ var un=conds.filter(function(c){return !c.group;});
+ if(un.length)h+='<p style="margin:8px 0 0">Требуют распределения: '+un.map(function(c){return esc(c.num+'. '+(c.name.trim()||'без названия'));}).join('; ')+'.</p>';
+ h+='</div></details>';
+ h+='<details class="blk"><summary>Таблица условий · записей: '+conds.length+'</summary><div class="blk-body"><div class="scroll-x"><table class="reg"><thead><tr>'+SW_HEAD.map(function(t){return '<th>'+t+'</th>';}).join('')+'</tr><tr class="hints">'+SW_HINTS_SHORT.map(function(t){return '<td title="'+esc(t)+'">'+esc(t)+'</td>';}).join('')+'</tr></thead><tbody>';
+ conds.forEach(function(c){
+  h+='<tr>'+swRowValues(c,false).map(function(v){return '<td>'+esc(v)+'</td>';}).join('')+'</tr>';
+ });
+ h+='</tbody></table></div></div></details>';
+ h+='<div class="note-box">Эти условия используют конструктор области применения и Курс 4: политика и цели. Конструкторы Курса 3 работают без них. В книге Excel подсказки к колонкам свернуты под шапкой и открываются кнопкой плюс, полный текст с примером - при наведении.</div>';
+ $('previewBox').innerHTML=h;resizeIframe();
+}
+function restartAll(){
+ if(!confirm('Полная очистка: удалить записи условий из браузера? Данные других шагов программы останутся.'))return;
+ try{localStorage.removeItem(STORAGE_KEY);}catch(e){}
+ state={meta:{org:'',date:today(),author:''},rows:[],nextNum:1,activeNum:null,rev:1};
+ bodiesById={};$('panelsBox').innerHTML='';
+ $('m-org').value='';$('m-date').value=state.meta.date;$('m-author').value='';$('saveStatus').textContent='';
+ addRow(true);showScreen('screen-work');
+}
+
+/* ========== WORD ========== */
+function xmlEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}
+function run(t,o){o=o||{};var r='';if(o.b)r+='<w:b/>';if(o.i)r+='<w:i/>';if(o.color)r+='<w:color w:val="'+o.color+'"/>';if(o.sz)r+='<w:sz w:val="'+o.sz+'"/><w:szCs w:val="'+o.sz+'"/>';return '<w:r>'+(r?'<w:rPr>'+r+'</w:rPr>':'')+'<w:t xml:space="preserve">'+xmlEsc(t)+'</w:t></w:r>';}
+function para(t,o){o=o||{};var p='';if(o.style)p+='<w:pStyle w:val="'+o.style+'"/>';if(o.before||o.after)p+='<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after||0)+'"/>';if(o.jc)p+='<w:jc w:val="'+o.jc+'"/>';return '<w:p>'+(p?'<w:pPr>'+p+'</w:pPr>':'')+run(t,o)+'</w:p>';}
+function paraMulti(t,o){return String(t==null?'':t).split(/\r?\n/).map(function(l){return para(l,o);}).join('');}
+function cell(w,x,f,span){return '<w:tc><w:tcPr>'+(span?'<w:gridSpan w:val="'+span+'"/>':'')+'<w:tcW w:w="'+w+'" w:type="dxa"/>'+(f?'<w:shd w:val="clear" w:color="auto" w:fill="'+f+'"/>':'')+'<w:vAlign w:val="top"/></w:tcPr>'+(x||'<w:p/>')+'</w:tc>';}
+var TBL='<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
+var CMAR='<w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="80" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="80" w:type="dxa"/></w:tblCellMar>';
+var SW_FILLS={S:'E6F4EA',W:'FFF3E0',O:'E3F0FD',T:'FDE8EF'};
+var RW=[800,1500,1700,3000,3000,1700,2870];
+function buildDoc(){
+ var b=[];
+ b.push(para('Предварительный анализ условий предприятия для СЭМ. Черновик',{style:'Title'}));
+ b.push(para('Предприятие или учебный кейс: '+(state.meta.org||'не указано')+'. Дата анализа: '+(state.meta.date||today())+'. Подготовил: '+(state.meta.author||'не указан')+'. Статус: черновик для обсуждения.',{i:true,color:'6B7280',sz:20,after:120}));
+ b.push(para('Анализ собирает условия внедрения СЭМ: внутренние сильные и слабые стороны, внешние возможности и угрозы. По каждому условию указано, что известно, на какое решение системы оно влияет и что предстоит проверить. Обязательных полей нет: пропуски означают вопросы, а не выводы.',{after:200}));
+ b.push(para('1. Матрица SWOT',{style:'Heading1'}));
+ function swCell(g,title){
+  var items=state.rows.filter(function(c){return c.group===g;});
+  var x=para(title,{b:true,sz:12,after:60});
+  if(items.length)items.forEach(function(c){x+=para(c.num+'. '+(c.name.trim()||'без названия'),{sz:12,after:40});});
+  else x+=para('Условия пока не указаны',{i:true,color:'6B7280',sz:12});
+  return cell(7285,x,SW_FILLS[g]);
+ }
+ b.push('<w:tbl><w:tblPr><w:tblW w:w="14570" w:type="dxa"/>'+TBL+CMAR+'<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid><w:gridCol w:w="7285"/><w:gridCol w:w="7285"/></w:tblGrid><w:tr>'+swCell('S','S. Сильные стороны')+swCell('W','W. Слабые стороны')+'</w:tr><w:tr>'+swCell('O','O. Возможности')+swCell('T','T. Угрозы')+'</w:tr></w:tbl>');
+ var un=state.rows.filter(function(c){return !c.group;});
+ if(un.length){
+  b.push(para('Требуют распределения по группам',{style:'Heading2'}));
+  un.forEach(function(c){b.push(para(c.num+'. '+(c.name.trim()||'без названия'),{after:40}));});
+ }
+ b.push(para('2. Разбор условий',{style:'Heading1'}));
+ var head='<w:tr>'+SW_HEAD.map(function(t,i){return cell(RW[i],para(t,{b:true,sz:12}),'F8FAFC');}).join('')+'</w:tr>';
+ var trs='';
+ state.rows.forEach(function(c){
+  var vals=swRowValues(c,true);
+  trs+='<w:tr>'+vals.map(function(v,i){return cell(RW[i],paraMulti(v,{sz:12}));}).join('')+'</w:tr>';
+ });
+ if(!state.rows.length)trs='<w:tr>'+RW.map(function(w){return cell(w,para('условия еще не добавлены',{i:true,color:'6B7280',sz:12}));}).join('')+'</w:tr>';
+ b.push('<w:tbl><w:tblPr><w:tblW w:w="14570" w:type="dxa"/>'+TBL+CMAR+'<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+RW.map(function(w){return '<w:gridCol w:w="'+w+'"/>';}).join('')+'</w:tblGrid>'+head+trs+'</w:tbl>');
+ b.push(para('3. Как использовать этот анализ дальше',{style:'Heading1'}));
+ b.push(para('Условия с группами и статусами передаются конструктору области применения: внешние и внутренние условия организации входят в контекст СЭМ. Возможности и угрозы с вопросами для проверки становятся входом для политики и целей Курса 4: каждая цель опирается на условие, а не на общее намерение.',{after:60}));
+ b.push(para('Записи со статусом предположения не используются как основания решений, пока не пройдут проверку из колонки «Что проверить и где».',{after:60}));
+ b.push(para('Документ содержит черновик предварительного анализа. Конструктор не проверяет достоверность сведений и не подтверждает соответствие СЭМ стандарту. Прочерки означают пропуски, которые заполняются в редакторе, а не выводы.',{i:true,color:'6B7280',sz:20,before:240}));
+ b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>'+b.join('')+'</w:body></w:document>';
+}
+
+/* ========== XLSX ========== */
+function colLetter(i){var s='';i++;while(i>0){var m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26);}return s;}
+var XLSX_STYLES='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="3"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><i/><sz val="9"/><color rgb="FF64748B"/><name val="Calibri"/></font></fonts><fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFDDE3EA"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF8FAFC"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE6F4EA"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FF9CA3AF"/></left><right style="thin"><color rgb="FF9CA3AF"/></right><top style="thin"><color rgb="FF9CA3AF"/></top><bottom style="thin"><color rgb="FF9CA3AF"/></bottom><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="6"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyBorder="1" applyFont="1" applyFill="1"><alignment vertical="top" wrapText="1"/></xf><xf numFmtId="0" fontId="1" fillId="2" borderId="1" xfId="0" applyBorder="1" applyFont="1" applyFill="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf><xf numFmtId="0" fontId="2" fillId="0" borderId="1" xfId="0" applyBorder="1" applyFont="1"><alignment vertical="top" wrapText="0"/></xf><xf numFmtId="0" fontId="1" fillId="4" borderId="1" xfId="0" applyBorder="1" applyFont="1" applyFill="1"><alignment vertical="top" wrapText="1"/></xf></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+var SW_WIDTHS=[10,14,26,40,40,22,34];
+function buildSheetXml(){
+ var rowsXml=[],merges=[],r=1;
+ function push(cells,opts){
+  opts=opts||{};
+  var cx='';
+  cells.forEach(function(c,i){
+   cx+='<c r="'+colLetter(i)+r+'" s="'+(c.s==null?1:c.s)+'" t="inlineStr"><is><t xml:space="preserve">'+xmlEsc(c.v==null?'':String(c.v))+'</t></is></c>';
+  });
+  var attrs=' r="'+r+'"';
+  if(opts.hidden)attrs+=' hidden="1"';
+  if(opts.collapsed)attrs+=' collapsed="1"';
+  if(opts.ht)attrs+=' ht="'+opts.ht+'" customHeight="1"';
+  rowsXml.push('<row'+attrs+'>'+cx+'</row>');
+  (opts.merges||[]).forEach(function(m){merges.push(m.split('@').join(String(r)));});
+  r++;
+ }
+ push([{v:'ПРЕДВАРИТЕЛЬНЫЙ АНАЛИЗ УСЛОВИЙ ПРЕДПРИЯТИЯ ДЛЯ СЭМ (SWOT). Предприятие или кейс: '+(state.meta.org||'не указано')+'. Дата анализа: '+(state.meta.date||today())+'. Статус: черновик.',s:3}],{merges:['A@:G@']});
+ push(SW_HEAD.map(function(t){return{v:t,s:2};}),{collapsed:true});
+ push(SW_HINTS_SHORT.map(function(t){return{v:t,s:4};}),{hidden:true,ht:15});
+ state.rows.forEach(function(c){
+  push(swRowValues(c,true).map(function(v){return{v:v,s:1};}));
+ });
+ if(!state.rows.length)push([{v:'условия еще не добавлены: нажмите добавить условие и опишите первое обстоятельство своими словами',s:1}],{merges:['A@:G@']});
+ var last=r-1;
+ var cols='<cols>'+SW_WIDTHS.map(function(w,i){return '<col min="'+(i+1)+'" max="'+(i+1)+'" width="'+w+'" customWidth="1"/>';}).join('')+'</cols>';
+ var mg=merges.length?'<mergeCells count="'+merges.length+'">'+merges.map(function(m){return '<mergeCell ref="'+m+'"/>';}).join('')+'</mergeCells>':'';
+ var af='<autoFilter ref="A2:G'+last+'"/>';
+ var views='<sheetViews><sheetView workbookViewId="0" showGridLines="1"><pane xSplit="1" ySplit="3" topLeftCell="B4" activePane="bottomRight" state="frozen"/><selection pane="bottomRight" activeCell="B4" sqref="B4"/></sheetView></sheetViews>';
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><sheetPr><outlinePr summaryBelow="0"/></sheetPr><dimension ref="A1:G'+last+'"/>'+views+cols+'<sheetData>'+rowsXml.join('')+'</sheetData>'+af+mg+'</worksheet>';
+}
+function buildCommentsXml(){
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><comments xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><authors><author>Конструктор СЭМ</author></authors><commentList>'+SW_HINTS.map(function(t,i){return '<comment ref="'+colLetter(i)+'2" authorId="0"><text><t xml:space="preserve">'+xmlEsc(t)+'</t></text></comment>';}).join('')+'</commentList></comments>';
+}
+function buildVmlXml(count,rowZero){
+ var shapes='';
+ for(var i=0;i<count;i++){
+  shapes+='<v:shape id="_x0000_s'+(1025+i)+'" type="#_x0000_t202" style="position:absolute;margin-left:60pt;margin-top:24pt;width:240pt;height:96pt;z-index:'+(1+i)+';visibility:hidden" fillcolor="#ffffe1" o:insetmode="auto"><v:fill color2="#ffffe1"/><v:shadow on="t" color="black" obscured="t"/><v:path o:connecttype="rect"/><v:textbox style="mso-direction-alt:auto"><div style="text-align:left"/></v:textbox><x:ClientData ObjectType="Note"><x:MoveWithCells/><x:SizeWithCells/><x:Anchor>1,12,1,12,4,12,8,12</x:Anchor><x:AutoFill>False</x:AutoFill><x:Row>'+rowZero+'</x:Row><x:Column>'+i+'</x:Column></x:ClientData></v:shape>';
+ }
+ return '<xml xmlns:v="urn:schemas-microsoft-com:vml" xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:x="urn:schemas-microsoft-com:office:excel"><o:shapelayout v:ext="edit"><o:idmap v:ext="edit" data="1"/></o:shapelayout><v:shapetype id="_x0000_t202" coordsize="21600,21600" o:spt="202" path="m,l,21600r21600,l21600,xe"><v:stroke joinstyle="miter"/><v:path gradientshapeok="t" o:connecttype="rect"/></v:shapetype>'+shapes+'</xml>';
+}
+var XLSX_CT='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Default Extension="vml" ContentType="application/vnd.openxmlformats-officedocument.vmlDrawing"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/><Override PartName="/xl/comments1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.comments+xml"/></Types>';
+var XLSX_RELS='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>';
+var XLSX_WB_RELS='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+var XLSX_S1_RELS='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/comments" Target="../comments1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/vmlDrawing" Target="../drawings/vmlDrawing1.vml"/></Relationships>';
+function downloadXlsx(){
+ if(!state.rows.length){renderPreview();return;}
+ var enc=new TextEncoder();
+ var wb='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets><sheet name="Условия SWOT" sheetId="1" r:id="rId1"/></sheets><definedNames><definedName name="_xlnm.Print_Titles" localSheetId="0">\'Условия SWOT\'!$1:$3</definedName></definedNames></workbook>';
+ var files=[
+  {name:'[Content_Types].xml',data:enc.encode(XLSX_CT)},
+  {name:'_rels/.rels',data:enc.encode(XLSX_RELS)},
+  {name:'xl/workbook.xml',data:enc.encode(wb)},
+  {name:'xl/_rels/workbook.xml.rels',data:enc.encode(XLSX_WB_RELS)},
+  {name:'xl/worksheets/sheet1.xml',data:enc.encode(buildSheetXml())},
+  {name:'xl/worksheets/_rels/sheet1.xml.rels',data:enc.encode(XLSX_S1_RELS)},
+  {name:'xl/comments1.xml',data:enc.encode(buildCommentsXml())},
+  {name:'xl/drawings/vmlDrawing1.vml',data:enc.encode(buildVmlXml(7,1))},
+  {name:'xl/styles.xml',data:enc.encode(XLSX_STYLES)}
+ ];
+ var bytes=zipStore(files);
+ var blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'});
+ var url=URL.createObjectURL(blob);var a=document.createElement('a');
+ a.href=url;a.download='Analiz_uslovii_SWOT_'+today()+'.xlsx';
+ document.body.appendChild(a);a.click();document.body.removeChild(a);
+ setTimeout(function(){URL.revokeObjectURL(url);},4000);
+ $('downloadNote').textContent='Скачана книга xlsx: таблица условий с объединенным заголовком, свернутыми подсказками и примечаниями с примерами.';
+ resizeIframe();
+}
+/* ========== СКАЧИВАНИЕ WORD ========== */
+var CT_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
+var RELS_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+var DRELS_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+var FOOTER_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:fldSimple w:instr=" PAGE "><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
+var STYLES_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="334155"/></w:rPr></w:style></w:styles>';
+var CRC_TABLE=(function(){var t=new Uint32Array(256);for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(u){var c=0xFFFFFFFF;for(var i=0;i<u.length;i++)c=CRC_TABLE[(c^u[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipStore(files){var enc=new TextEncoder(),now=new Date();var dt=((now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1))&0xFFFF;var dd=(((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate())&0xFFFF;var loc=[],cen=[],off=0;files.forEach(function(f){var nb=enc.encode(f.name),data=f.data,crc=crc32(data);var lh=new Uint8Array(30+nb.length),dv=new DataView(lh.buffer);dv.setUint32(0,0x04034b50,true);dv.setUint16(4,20,true);dv.setUint16(6,0,true);dv.setUint16(8,0,true);dv.setUint16(10,dt,true);dv.setUint16(12,dd,true);dv.setUint32(14,crc,true);dv.setUint32(18,data.length,true);dv.setUint32(22,data.length,true);dv.setUint16(26,nb.length,true);dv.setUint16(28,0,true);lh.set(nb,30);loc.push(lh,data);var ch=new Uint8Array(46+nb.length),cv=new DataView(ch.buffer);cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint16(8,0,true);cv.setUint16(10,0,true);cv.setUint16(12,dt,true);cv.setUint16(14,dd,true);cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,nb.length,true);cv.setUint16(30,0,true);cv.setUint16(32,0,true);cv.setUint16(34,0,true);cv.setUint16(36,0,true);cv.setUint32(38,0,true);cv.setUint32(42,off,true);ch.set(nb,46);cen.push(ch);off+=lh.length+data.length;});var cs=0;cen.forEach(function(p){cs+=p.length;});var eo=new Uint8Array(22),ev=new DataView(eo.buffer);ev.setUint32(0,0x06054b50,true);ev.setUint16(4,0,true);ev.setUint16(6,0,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);ev.setUint32(12,cs,true);ev.setUint32(16,off,true);ev.setUint16(20,0,true);var tot=0;loc.forEach(function(p){tot+=p.length;});cen.forEach(function(p){tot+=p.length;});tot+=22;var out=new Uint8Array(tot),o=0;loc.forEach(function(p){out.set(p,o);o+=p.length;});cen.forEach(function(p){out.set(p,o);o+=p.length;});out.set(eo,o);return out;}
+function saveBlob(bytes,name){
+ var blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+ var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=name;
+ document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},4000);
+}
+function docFiles(xml){var enc=new TextEncoder();return[{name:'[Content_Types].xml',data:enc.encode(CT_XML)},{name:'_rels/.rels',data:enc.encode(RELS_XML)},{name:'word/document.xml',data:enc.encode(xml)},{name:'word/styles.xml',data:enc.encode(STYLES_XML)},{name:'word/footer1.xml',data:enc.encode(FOOTER_XML)},{name:'word/_rels/document.xml.rels',data:enc.encode(DRELS_XML)}];}
+function downloadDocx(){
+ if(!state.rows.length){renderPreview();return;}
+ saveBlob(zipStore(docFiles(buildDoc())),'Analiz_uslovii_SWOT_'+today()+'.docx');
+ $('downloadNote').textContent='Запрос на скачивание отправлен. Проверьте сохранение файла.';
+ resizeIframe();
+}
+
+/* ========== СТАРТ ========== */
+document.addEventListener('DOMContentLoaded',function(){
+ try{
+  testStorage();
+  if(loadOwn())$('restoreNote').style.display='block';
+  ['m-org','m-date','m-author'].forEach(function(id){$(id).addEventListener('input',function(e){var k=id==='m-org'?'org':id==='m-date'?'date':'author';state.meta[k]=e.target.value;saveOwn();});});
   resizeIframe();
-}
-
-function tabKeydown(e, id) {
-  const ids = state.conditions.map(c => c.id);
-  if (!ids.length) return;
-  const idx = ids.indexOf(id);
-  let target = null;
-  if (e.key === 'ArrowRight') target = ids[(idx + 1) % ids.length];
-  if (e.key === 'ArrowLeft') target = ids[(idx - 1 + ids.length) % ids.length];
-  if (e.key === 'Home') target = ids[0];
-  if (e.key === 'End') target = ids[ids.length - 1];
-  if (target) {
-    e.preventDefault();
-    activateTab(target);
-    const t = document.getElementById('tab-' + target);
-    if (t) t.focus();
-  }
-}
-
-function updateTabLabel(c) {
-  const nm = document.getElementById('tabname-' + c.id);
-  if (nm) nm.textContent = c.name.trim() || 'без названия';
-  const dot = document.getElementById('dot-' + c.id);
-  if (dot) dot.className = 'tab-dot dot-' + (c.group || 'N');
-}
-
-function addCondition() {
-  const id = 'F' + String(state.nextNum).padStart(2, '0');
-  state.nextNum++;
-  const cond = { id, name: '', known: '', group: '', task: '', source: '', status: 'undefined', question: '', noQuestion: false };
-  state.conditions.push(cond);
-  state.activeId = id;
-  refreshTabsUI();
-  saveState();
-  const inp = document.getElementById('name-' + id);
-  if (inp) inp.focus();
-  resizeIframe();
-}
-
-function deleteCard(id) {
-  const c = state.conditions.find(x => x.id === id);
-  if (!c) return;
-  const filled = c.name || c.known || c.task || c.source || c.question;
-  if (filled && !confirm('Удалить запись ' + id + '? Введенные данные записи будут потеряны.')) return;
-  state.conditions = state.conditions.filter(x => x.id !== id);
-  if (state.activeId === id) state.activeId = state.conditions.length ? state.conditions[0].id : null;
-  refreshTabsUI();
-  saveState();
-  resizeIframe();
-}
-
-function goToCard(id) {
-  goStep(2);
-  activateTab(id);
-  const inp = document.getElementById('name-' + id);
-  if (inp) inp.focus();
-}
-
-function buildBody(c) {
-  const panel = document.createElement('div');
-  panel.className = 'tab-panel';
-  panel.id = 'panel-' + c.id;
-  panel.setAttribute('role', 'tabpanel');
-  panel.setAttribute('aria-labelledby', 'tab-' + c.id);
-
-  const head = document.createElement('div');
-  head.className = 'panel-head';
-  const strong = document.createElement('strong');
-  strong.textContent = 'Запись ' + c.id;
-  const badge = document.createElement('span');
-  badge.className = 'grp-badge grp-' + (c.group || 'N');
-  badge.id = 'badge-' + c.id;
-  badge.textContent = c.group ? c.group : 'группа не выбрана';
-  const del = document.createElement('button');
-  del.className = 'btn-small';
-  del.textContent = 'Удалить запись';
-  del.onclick = () => deleteCard(c.id);
-  const headLeft = document.createElement('span');
-  headLeft.style.display = 'inline-flex';
-  headLeft.style.gap = '8px';
-  headLeft.style.alignItems = 'center';
-  headLeft.appendChild(strong); headLeft.appendChild(badge);
-  head.appendChild(headLeft); head.appendChild(del);
-  panel.appendChild(head);
-
-  const body = document.createElement('div');
-  body.innerHTML =
-    '<div class="field"><label for="name-' + c.id + '">Короткое название <span class="req">(обязательное поле)</span></label>' +
-    '<input type="text" id="name-' + c.id + '"><div class="hint">Два до восьми слов. Например, "Раздельный учет воды и выпуска".</div></div>' +
-    '<div class="field"><label for="known-' + c.id + '">Что известно <span class="req">(обязательное поле)</span></label>' +
-    '<textarea id="known-' + c.id + '"></textarea><div class="hint">Опишите конкретное обстоятельство. Не пишите только "персонал" или "оборудование".</div></div>' +
-    '<div class="field"><label for="group-' + c.id + '">Группа SWOT</label>' +
-    '<select id="group-' + c.id + '"><option value="">Пока не определено</option><option value="S">S. Сильная сторона</option><option value="W">W. Слабая сторона</option><option value="O">O. Возможность</option><option value="T">T. Угроза</option></select></div>' +
-    '<div class="field"><label for="task-' + c.id + '">Для какой задачи СЭМ важно <span class="req">(обязательное поле)</span></label>' +
-    '<textarea id="task-' + c.id + '"></textarea><div class="hint">Назовите конкретную задачу. Например, выбрать показатель расхода воды, проверить правила хранения или определить требования заказчика.</div></div>' +
-    '<div class="field"><label for="source-' + c.id + '">Источник сведений</label>' +
-    '<input type="text" id="source-' + c.id + '"><div class="hint">Документ, данные учета, письмо, наблюдение или пояснение работника.</div></div>' +
-    '<div class="field"><label for="status-' + c.id + '">Статус сведений</label>' +
-    '<select id="status-' + c.id + '"><option value="source">Есть подтверждающий источник</option><option value="prelim">Есть предварительные сведения</option><option value="assumption">Пока предположение</option><option value="undefined">Не определено</option></select>' +
-    '<div class="hint">Статус выбираете вы. Конструктор не подтверждает достоверность сведений.</div></div>' +
-    '<div class="field"><label for="question-' + c.id + '">Что проверить или уточнить</label>' +
-    '<textarea id="question-' + c.id + '"></textarea><div class="hint">Сформулируйте конкретный вопрос. Например, "Можно ли получить расход воды и выпуск за одинаковые периоды?"</div>' +
-    '<div class="check-row"><input type="checkbox" id="noq-' + c.id + '"><label for="noq-' + c.id + '" style="font-weight:500;">На этом этапе уточнений нет</label></div>' +
-    '<div class="warn-box" id="qwarn-' + c.id + '" style="display:none;">Вы указали вопрос и одновременно отметили, что уточнений нет. Оставьте только одно из двух.</div></div>';
-  panel.appendChild(body);
-
-  body.querySelector('[id="name-' + c.id + '"]').value = c.name;
-  body.querySelector('[id="known-' + c.id + '"]').value = c.known;
-  body.querySelector('[id="group-' + c.id + '"]').value = c.group;
-  body.querySelector('[id="task-' + c.id + '"]').value = c.task;
-  body.querySelector('[id="source-' + c.id + '"]').value = c.source;
-  body.querySelector('[id="status-' + c.id + '"]').value = c.status;
-  body.querySelector('[id="question-' + c.id + '"]').value = c.question;
-  body.querySelector('[id="noq-' + c.id + '"]').checked = c.noQuestion;
-
-  const set = (key, v) => {
-    c[key] = v;
-    saveState();
-    updateTabLabel(c);
-    if (key === 'group') {
-      const b = document.getElementById('badge-' + c.id);
-      if (b) {
-        b.className = 'grp-badge grp-' + (c.group || 'N');
-        b.textContent = c.group ? c.group : 'группа не выбрана';
-      }
-    }
-  };
-  body.querySelector('[id="name-' + c.id + '"]').addEventListener('input', e => set('name', e.target.value));
-  body.querySelector('[id="known-' + c.id + '"]').addEventListener('input', e => set('known', e.target.value));
-  body.querySelector('[id="group-' + c.id + '"]').addEventListener('change', e => set('group', e.target.value));
-  body.querySelector('[id="task-' + c.id + '"]').addEventListener('input', e => set('task', e.target.value));
-  body.querySelector('[id="source-' + c.id + '"]').addEventListener('input', e => set('source', e.target.value));
-  body.querySelector('[id="status-' + c.id + '"]').addEventListener('change', e => set('status', e.target.value));
-  body.querySelector('[id="question-' + c.id + '"]').addEventListener('input', e => { set('question', e.target.value); syncQWarn(c); });
-  body.querySelector('[id="noq-' + c.id + '"]').addEventListener('change', e => { set('noQuestion', e.target.checked); syncQWarn(c); });
-
-  syncQWarn(c);
-  return panel;
-}
-
-function syncQWarn(c) {
-  const w = document.getElementById('qwarn-' + c.id);
-  if (w) {
-    const show = (c.noQuestion && c.question.trim());
-    const was = w.style.display === 'block';
-    w.style.display = show ? 'block' : 'none';
-    if (show !== was) resizeIframe();
-  }
-}
-
-/* ================= ПРОВЕРКИ ================= */
-function validate() {
-  const errors = [];
-  state.conditions.forEach(c => {
-    const missing = [];
-    if (!c.name.trim()) missing.push('Короткое название');
-    if (!c.known.trim()) missing.push('Что известно');
-    if (!c.task.trim()) missing.push('Для какой задачи СЭМ важно');
-    if (missing.length) errors.push({ id: c.id, missing });
-  });
-  return errors;
-}
-
-function notices() {
-  const list = [];
-  state.conditions.forEach(c => {
-    if (!c.group) list.push('Запись ' + c.id + ': группа не определена, в документе будет пометка "Группа не определена".');
-    if (c.status === 'undefined') list.push('Запись ' + c.id + ': статус сведений не определен, в документе будет пометка "Не определено".');
-    if (!c.source.trim()) list.push('Запись ' + c.id + ': источник не указан. Можно добавить его позже.');
-    if (!c.question.trim() && !c.noQuestion) list.push('Запись ' + c.id + ': вопрос для проверки не сформулирован.');
-  });
-  return list;
-}
-
-/* ================= ПРЕДПРОСМОТР ================= */
-function esc(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-}
-
-function checkTextOf(c) {
-  if (c.question.trim()) return c.question.trim();
-  if (c.noQuestion) return 'На этом этапе уточнений нет.';
-  return 'Вопрос для проверки не сформулирован.';
-}
-
-function renderPreview() {
-  const conds = state.conditions;
-  const unassigned = conds.filter(c => !c.group).length;
-  const shaky = conds.filter(c => c.status === 'assumption' || c.status === 'undefined').length;
-
-  const counts = document.getElementById('countsBox');
-  counts.innerHTML = '<strong>Сведения о заполнении.</strong><ul>' +
-    '<li>Условий добавлено: ' + conds.length + '.</li>' +
-    '<li>Записей без группы SWOT: ' + unassigned + '.</li>' +
-    '<li>Записей со статусом "Пока предположение" или "Не определено": ' + shaky + '.</li></ul>' +
-    '<div style="margin-top:6px;">Это сведения о заполнении, а не оценка качества анализа.</div>';
-
-  const errors = validate();
-  const errBox = document.getElementById('errorsBox');
-  const dlBtn = document.getElementById('downloadBtn');
-  if (errors.length) {
-    errBox.style.display = 'block';
-    errBox.innerHTML = '<strong>Заполните обязательные поля, чтобы скачать документ.</strong><ul>' +
-      errors.map(e => '<li>Запись ' + e.id + ': не заполнено - ' + esc(e.missing.join(', ')) +
-        '. <button class="link-btn" onclick="goToCard(\'' + e.id + '\')">Перейти к записи</button></li>').join('') + '</ul>';
-    dlBtn.disabled = true;
-    document.getElementById('downloadNote').textContent = 'Скачивание станет доступным после заполнения обязательных полей.';
-  } else {
-    errBox.style.display = 'none';
-    dlBtn.disabled = conds.length === 0;
-    document.getElementById('downloadNote').textContent = conds.length === 0
-      ? 'Добавьте хотя бы одну запись с обязательными полями.'
-      : 'Документ будет сохранен на ваше устройство по нажатию кнопки.';
-  }
-
-  const nt = notices();
-  const ntBox = document.getElementById('noticesBox');
-  if (nt.length) {
-    ntBox.style.display = 'block';
-    ntBox.innerHTML = '<strong>Что можно дополнить.</strong><ul>' + nt.map(n => '<li>' + esc(n) + '</li>').join('') + '</ul>';
-  } else ntBox.style.display = 'none';
-
-  let html = '';
-  html += '<div class="prev-section"><h3>1. Сведения об анализе</h3>';
-  html += '<p style="margin:0 0 6px;"><strong>Предварительный анализ условий предприятия для СЭМ</strong></p>';
-  html += '<p style="margin:0 0 10px; font-size:12px; color:var(--muted);">Предварительный рабочий материал. Требует проверки и обсуждения на предприятии.</p>';
-  if (state.meta.org.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Предприятие или объект:</strong> ' + esc(state.meta.org) + '</p>';
-  if (state.meta.scope.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Что рассматривается:</strong> ' + esc(state.meta.scope).replace(/\n/g, '<br>') + '</p>';
-  if (state.meta.date.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Дата анализа:</strong> ' + esc(state.meta.date) + '</p>';
-  if (state.meta.author.trim()) html += '<p style="margin:0 0 4px; font-size:13px;"><strong>Подготовил:</strong> ' + esc(state.meta.author) + '</p>';
-  html += '<p style="margin:0; font-size:13px;"><strong>Основа работы:</strong> ' + esc(state.meta.basis) + '</p></div>';
-
-  html += '<div class="prev-section"><h3>2. SWOT-матрица</h3><div class="prev-swot">';
-  ['S', 'W', 'O', 'T'].forEach(g => {
-    const items = conds.filter(c => c.group === g);
-    const titles = { S: 'S. Сильные стороны', W: 'W. Слабые стороны', O: 'O. Возможности', T: 'T. Угрозы' };
-    const bg = { S: 'var(--s-bg)', W: 'var(--w-bg)', O: 'var(--o-bg)', T: 'var(--t-bg)' }[g];
-    const bd = { S: 'var(--s-border)', W: 'var(--w-border)', O: 'var(--o-border)', T: 'var(--t-border)' }[g];
-    html += '<div class="prev-cell" style="background:' + bg + '; border-color:' + bd + ';">' +
-      '<h4>' + titles[g] + '</h4>' +
-      (items.length ? '<ul>' + items.map(c => '<li>' + esc(c.id + '. ' + (c.name.trim() || 'Без названия')) + '</li>').join('') + '</ul>'
-        : '<p class="prev-empty" style="margin:0;">Условия пока не указаны</p>') + '</div>';
-  });
-  html += '</div>';
-  const un = conds.filter(c => !c.group);
-  if (un.length) {
-    html += '<h4 style="margin:12px 0 6px; font-size:14px;">Требуют распределения</h4><ul style="margin:0; padding-left:20px; font-size:13px;">' +
-      un.map(c => '<li>' + esc(c.id + '. ' + (c.name.trim() || 'Без названия')) + ' <button class="link-btn" onclick="goToCard(\'' + c.id + '\')">Открыть запись</button></li>').join('') + '</ul>';
-  }
-  html += '</div>';
-
-  html += '<div class="prev-section"><h3>3. Разбор условий</h3>';
-  if (!conds.length) html += '<p class="prev-empty" style="margin:0;">Записи пока не добавлены.</p>';
-  conds.forEach(c => {
-    html += '<div class="prev-cond"><div class="prev-cond-head"><strong>' + esc(c.id + '. ' + (c.name.trim() || 'Без названия')) + '</strong>' +
-      '<span class="grp-badge grp-' + (c.group || 'N') + '">' + esc(GROUP_LABELS[c.group]) + '</span>' +
-      '<button class="link-btn" onclick="goToCard(\'' + c.id + '\')">Открыть запись</button></div>' +
-      '<table class="prev-table"><tbody>' +
-      '<tr><th>Что известно</th><td>' + esc(c.known).replace(/\n/g, '<br>') + '</td></tr>' +
-      '<tr><th>Для какой задачи СЭМ важно</th><td>' + esc(c.task).replace(/\n/g, '<br>') + '</td></tr>' +
-      '<tr><th>Источник</th><td>' + esc(c.source.trim() || 'Не указан') + '</td></tr>' +
-      '<tr><th>Статус сведений</th><td>' + esc(STATUS_LABELS[c.status]) + '</td></tr>' +
-      '<tr><th>Что проверить</th><td>' + esc(checkTextOf(c)) + '</td></tr>' +
-      '</tbody></table></div>';
-  });
-  html += '</div>';
-
-  html += '<div class="prev-section"><h3>4. Вопросы для уточнения</h3>';
-  const qs = conds.filter(c => c.question.trim());
-  if (!qs.length) html += '<p class="prev-empty" style="margin:0;">Вопросы для уточнения в этой версии не указаны.</p>';
-  else html += '<ul class="prev-q" style="margin:0; padding-left:20px; font-size:13px;">' +
-    qs.map(c => '<li><strong>' + esc(c.id) + ':</strong> ' + esc(c.question.trim()).replace(/\n/g, ' ') + '</li>').join('') + '</ul>';
-  html += '</div>';
-
-  html += '<p style="font-size:12px; color:var(--muted);">Документ подготовлен с помощью учебного конструктора. Он помогает организовать предварительный анализ условий и не является подтверждением соответствия СЭМ стандарту.</p>';
-
-  document.getElementById('previewBox').innerHTML = html;
-  resizeIframe();
-}
-
-/* ================= ГЕНЕРАЦИЯ DOCX ================= */
-function xmlEsc(s) {
-  return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;').replace(/'/g, '&apos;');
-}
-
-function run(text, o) {
-  o = o || {};
-  let rpr = '';
-  if (o.b) rpr += '<w:b/>';
-  if (o.i) rpr += '<w:i/>';
-  if (o.color) rpr += '<w:color w:val="' + o.color + '"/>';
-  if (o.sz) rpr += '<w:sz w:val="' + o.sz + '"/><w:szCs w:val="' + o.sz + '"/>';
-  return '<w:r>' + (rpr ? '<w:rPr>' + rpr + '</w:rPr>' : '') + '<w:t xml:space="preserve">' + xmlEsc(text) + '</w:t></w:r>';
-}
-
-function para(text, o) {
-  o = o || {};
-  let ppr = '';
-  if (o.style) ppr += '<w:pStyle w:val="' + o.style + '"/>';
-  if (o.jc) ppr += '<w:jc w:val="' + o.jc + '"/>';
-  if (o.before || o.after) ppr += '<w:spacing w:before="' + (o.before || 0) + '" w:after="' + (o.after || 0) + '"/>';
-  return '<w:p>' + (ppr ? '<w:pPr>' + ppr + '</w:pPr>' : '') + run(text, o) + '</w:p>';
-}
-
-function paraMulti(text, o) {
-  return String(text).split(/\r?\n/).map(l => para(l, o)).join('');
-}
-
-function labelPara(label, value) {
-  return '<w:p><w:pPr><w:spacing w:after="60"/></w:pPr>' + run(label + ': ', { b: true }) + run(value) + '</w:p>';
-}
-
-function cell(width, parasXml, fill) {
-  const tcpr = '<w:tcPr><w:tcW w:w="' + width + '" w:type="dxa"/>' + (fill ? '<w:shd w:val="clear" w:color="auto" w:fill="' + fill + '"/>' : '') + '<w:vAlign w:val="top"/></w:tcPr>';
-  return '<w:tc>' + tcpr + (parasXml || '<w:p/>') + '</w:tc>';
-}
-
-const TBL_BORDERS = '<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
-const CELL_MAR = '<w:tblCellMar><w:top w:w="80" w:type="dxa"/><w:left w:w="100" w:type="dxa"/><w:bottom w:w="80" w:type="dxa"/><w:right w:w="100" w:type="dxa"/></w:tblCellMar>';
-
-function table(widths, rowsXml) {
-  const total = widths.reduce((a, b) => a + b, 0);
-  return '<w:tbl><w:tblPr><w:tblW w:w="' + total + '" w:type="dxa"/>' + TBL_BORDERS + CELL_MAR + '<w:tblLayout w:type="fixed"/></w:tblPr>' +
-    '<w:tblGrid>' + widths.map(w => '<w:gridCol w:w="' + w + '"/>').join('') + '</w:tblGrid>' + rowsXml + '</w:tbl>';
-}
-
-function buildDocumentXml() {
-  const b = [];
-  b.push(para('Предварительный анализ условий предприятия для СЭМ', { style: 'Title' }));
-  b.push(para('Предварительный рабочий материал. Требует проверки и обсуждения на предприятии.', { i: true, color: '6B7280', sz: 20, after: 200 }));
-
-  b.push(para('1. Сведения об анализе', { style: 'Heading1' }));
-  if (state.meta.org.trim()) b.push(labelPara('Предприятие или объект', state.meta.org.trim()));
-  if (state.meta.scope.trim()) {
-    const lines = state.meta.scope.trim().split(/\r?\n/);
-    let xml = '<w:p><w:pPr><w:spacing w:after="60"/></w:pPr>' + run('Что рассматривается: ', { b: true }) + run(lines[0]) + '</w:p>';
-    for (let i = 1; i < lines.length; i++) xml += para(lines[i]);
-    b.push(xml);
-  }
-  if (state.meta.date.trim()) b.push(labelPara('Дата анализа', state.meta.date.trim()));
-  if (state.meta.author.trim()) b.push(labelPara('Подготовил', state.meta.author.trim()));
-  b.push(labelPara('Основа работы', state.meta.basis));
-
-  b.push(para('2. SWOT-матрица', { style: 'Heading1' }));
-  const titles = { S: 'S. Сильные стороны', W: 'W. Слабые стороны', O: 'O. Возможности', T: 'T. Угрозы' };
-  function swotCell(g) {
-    const items = state.conditions.filter(c => c.group === g);
-    let xml = para(titles[g], { b: true, after: 60 });
-    if (items.length) items.forEach(c => { xml += para(c.id + '. ' + (c.name.trim() || 'Без названия'), { sz: 20, after: 40 }); });
-    else xml += para('Условия пока не указаны', { i: true, color: '6B7280', sz: 20 });
-    return cell(4819, xml, SWOT_FILLS[g]);
-  }
-  b.push(table([4819, 4819], '<w:tr>' + swotCell('S') + swotCell('W') + '</w:tr><w:tr>' + swotCell('O') + swotCell('T') + '</w:tr>'));
-  const un = state.conditions.filter(c => !c.group);
-  if (un.length) {
-    b.push(para('Требуют распределения', { style: 'Heading2' }));
-    un.forEach(c => b.push(para(c.id + '. ' + (c.name.trim() || 'Без названия'), { after: 40 })));
-  }
-
-  b.push(para('3. Разбор условий', { style: 'Heading1' }));
-  state.conditions.forEach(c => {
-    b.push(para(c.id + '. ' + (c.name.trim() || 'Без названия'), { style: 'Heading2' }));
-    b.push(para('Группа: ' + GROUP_LABELS[c.group], { b: true, color: GROUP_DOC_COLORS[c.group], after: 100 }));
-    const rows = [
-      ['Что известно', c.known],
-      ['Для какой задачи СЭМ важно', c.task],
-      ['Источник', c.source.trim() || 'Не указан'],
-      ['Статус сведений', STATUS_LABELS[c.status]],
-      ['Что проверить', checkTextOf(c)]
-    ];
-    let rowsXml = '';
-    rows.forEach(r => {
-      rowsXml += '<w:tr>' + cell(2800, para(r[0], { b: true, sz: 20 }), 'F8FAFC') + cell(6838, paraMulti(r[1], { sz: 20 })) + '</w:tr>';
-    });
-    b.push(table([2800, 6838], rowsXml));
-    b.push(para('', { after: 120 }));
-  });
-
-  b.push(para('4. Вопросы для уточнения', { style: 'Heading1' }));
-  const qs = state.conditions.filter(c => c.question.trim());
-  if (!qs.length) b.push(para('Вопросы для уточнения в этой версии не указаны.', { i: true, color: '6B7280' }));
-  qs.forEach(c => {
-    const lines = c.question.trim().split(/\r?\n/);
-    b.push('<w:p><w:pPr><w:spacing w:after="40"/></w:pPr>' + run(c.id + ': ', { b: true }) + run(lines[0]) + '</w:p>');
-    for (let i = 1; i < lines.length; i++) b.push(para(lines[i]));
-  });
-
-  b.push(para('Документ подготовлен с помощью учебного конструктора. Он помогает организовать предварительный анализ условий и не является подтверждением соответствия СЭМ стандарту.', { i: true, color: '6B7280', sz: 20, before: 240 }));
-  b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
-  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>' +
-    '<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>' +
-    b.join('') + '</w:body></w:document>';
-}
-
-const CT_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
-const RELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
-const DRELS_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
-const FOOTER_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:fldSimple w:instr=" PAGE "><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
-const STYLES_XML = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="28"/><w:szCs w:val="28"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="24"/><w:szCs w:val="24"/><w:color w:val="334155"/></w:rPr></w:style></w:styles>';
-
-/* ZIP (store) */
-const CRC_TABLE = (() => {
-  const t = new Uint32Array(256);
-  for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1); t[n] = c >>> 0; }
-  return t;
-})();
-function crc32(u8) {
-  let c = 0xFFFFFFFF;
-  for (let i = 0; i < u8.length; i++) c = CRC_TABLE[(c ^ u8[i]) & 0xFF] ^ (c >>> 8);
-  return (c ^ 0xFFFFFFFF) >>> 0;
-}
-function zipStore(files) {
-  const enc = new TextEncoder();
-  const now = new Date();
-  const dosTime = ((now.getHours() << 11) | (now.getMinutes() << 5) | (now.getSeconds() >> 1)) & 0xFFFF;
-  const dosDate = (((now.getFullYear() - 1980) << 9) | ((now.getMonth() + 1) << 5) | now.getDate()) & 0xFFFF;
-  const locals = [], centrals = [];
-  let offset = 0;
-  files.forEach(f => {
-    const nameB = enc.encode(f.name);
-    const data = f.data;
-    const crc = crc32(data);
-    const lh = new Uint8Array(30 + nameB.length);
-    const dv = new DataView(lh.buffer);
-    dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true); dv.setUint16(6, 0, true); dv.setUint16(8, 0, true);
-    dv.setUint16(10, dosTime, true); dv.setUint16(12, dosDate, true);
-    dv.setUint32(14, crc, true); dv.setUint32(18, data.length, true); dv.setUint32(22, data.length, true);
-    dv.setUint16(26, nameB.length, true); dv.setUint16(28, 0, true);
-    lh.set(nameB, 30);
-    locals.push(lh, data);
-    const ch = new Uint8Array(46 + nameB.length);
-    const cv = new DataView(ch.buffer);
-    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true); cv.setUint16(8, 0, true); cv.setUint16(10, 0, true);
-    cv.setUint16(12, dosTime, true); cv.setUint16(14, dosDate, true);
-    cv.setUint32(16, crc, true); cv.setUint32(20, data.length, true); cv.setUint32(24, data.length, true);
-    cv.setUint16(28, nameB.length, true); cv.setUint16(30, 0, true); cv.setUint16(32, 0, true);
-    cv.setUint16(34, 0, true); cv.setUint16(36, 0, true); cv.setUint32(38, 0, true); cv.setUint32(42, offset, true);
-    ch.set(nameB, 46);
-    centrals.push(ch);
-    offset += lh.length + data.length;
-  });
-  const centralSize = centrals.reduce((a, c) => a + c.length, 0);
-  const eocd = new Uint8Array(22);
-  const ev = new DataView(eocd.buffer);
-  ev.setUint32(0, 0x06054b50, true); ev.setUint16(4, 0, true); ev.setUint16(6, 0, true);
-  ev.setUint16(8, files.length, true); ev.setUint16(10, files.length, true);
-  ev.setUint32(12, centralSize, true); ev.setUint32(16, offset, true); ev.setUint16(20, 0, true);
-  let total = 0;
-  locals.forEach(p => total += p.length);
-  centrals.forEach(p => total += p.length);
-  total += 22;
-  const out = new Uint8Array(total);
-  let o = 0;
-  locals.forEach(p => { out.set(p, o); o += p.length; });
-  centrals.forEach(p => { out.set(p, o); o += p.length; });
-  out.set(eocd, o);
-  return out;
-}
-
-function downloadDocx() {
-  const errors = validate();
-  if (errors.length || state.conditions.length === 0) { renderPreview(); return; }
-  const enc = new TextEncoder();
-  const files = [
-    { name: '[Content_Types].xml', data: enc.encode(CT_XML) },
-    { name: '_rels/.rels', data: enc.encode(RELS_XML) },
-    { name: 'word/document.xml', data: enc.encode(buildDocumentXml()) },
-    { name: 'word/styles.xml', data: enc.encode(STYLES_XML) },
-    { name: 'word/footer1.xml', data: enc.encode(FOOTER_XML) },
-    { name: 'word/_rels/document.xml.rels', data: enc.encode(DRELS_XML) }
-  ];
-  const bytes = zipStore(files);
-  const blob = new Blob([bytes], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url;
-  a.download = 'predvaritelnyi-analiz-uslovii-sem.docx';
-  document.body.appendChild(a);
-  a.click();
-  document.body.removeChild(a);
-  setTimeout(() => URL.revokeObjectURL(url), 4000);
-  document.getElementById('downloadNote').textContent = 'Документ скачан. Можно продолжать редактирование и скачать новую версию после изменений.';
-  resizeIframe();
-}
-
-/* ================= СБРОС ================= */
-function restartAll() {
-  if (!confirm('Очистить все введенные данные и удалить их из локальной памяти браузера?')) return;
-  clearStorage();
-  state.meta = { org: '', scope: '', date: '', author: '', basis: 'Данные моего предприятия' };
-  state.conditions = [];
-  state.nextNum = 1;
-  state.activeId = null;
-  bodiesById = {};
-  document.getElementById('panelsBox').innerHTML = '';
-  document.getElementById('m-org').value = '';
-  document.getElementById('m-scope').value = '';
-  document.getElementById('m-date').value = '';
-  document.getElementById('m-author').value = '';
-  document.getElementById('m-basis').value = 'Данные моего предприятия';
-  setToday();
-  addCondition();
-  goStep(1);
-}
-
-/* ================= СТАРТ ================= */
-document.addEventListener('DOMContentLoaded', () => {
-  const restored = loadState();
-  if (restored && state.conditions.length) {
-    const rn = document.getElementById('restoreNote');
-    if (rn) rn.style.display = 'block';
-  }
-  document.getElementById('m-org').value = state.meta.org;
-  document.getElementById('m-scope').value = state.meta.scope;
-  document.getElementById('m-date').value = state.meta.date;
-  document.getElementById('m-author').value = state.meta.author;
-  document.getElementById('m-basis').value = state.meta.basis;
-  if (!state.meta.date) setToday();
-  if (!state.conditions.length) {
-    const id = 'F' + String(state.nextNum).padStart(2, '0');
-    state.nextNum++;
-    state.conditions.push({ id, name: '', known: '', group: '', task: '', source: '', status: 'undefined', question: '', noQuestion: false });
-    state.activeId = id;
-  }
-  refreshTabsUI();
-  saveState();
-
-  // Следим за изменением размера контента в обе стороны
-  if ('ResizeObserver' in window) {
-    const ro = new ResizeObserver(() => resizeIframe());
-    ro.observe(document.body);
-  }
-  resizeIframe();
+  if('ResizeObserver' in window){var ro=new ResizeObserver(function(){resizeIframe();});ro.observe(document.body);}
+ }catch(e){showBoot(e.message);}
 });
-
-window.addEventListener('load', () => resizeIframe());
+window.addEventListener('load',function(){resizeIframe();});
 </script>
-
 </body>
 </html>
