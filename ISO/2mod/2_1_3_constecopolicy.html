@@ -7,15 +7,13 @@
 <title>Соберите проект экологической политики</title>
 <style>
 :root{--bg:#fff;--primary:#1e293b;--muted:#64748b;--border:#e2e8f0;--gray:#f8fafc;--accent:#2563eb;--accent-d:#1d4ed8;
---warn:#ea580c;--warn-bg:#fff7ed;--warn-bd:#fed7aa;--bad:#991b1b;--bad-bg:#fef2f2;--bad-bd:#fecaca;
---ok:#16a34a;--ok-bg:#f0fdf4;--ok-bd:#bbf7d0;--r:12px}
+--warn:#ea580c;--warn-bg:#fff7ed;--warn-bd:#fed7aa;--ok:#16a34a;--ok-bg:#f0fdf4;--ok-bd:#bbf7d0;--r:12px}
 *{box-sizing:border-box}
 body{margin:0;padding:20px;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--primary);font-size:15px;line-height:1.6}
 .container{max-width:760px;margin:0 auto}
 .screen{display:none}.screen.active{display:block;animation:fi .3s ease-out}
 @keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 h1{font-size:22px;font-weight:800;margin:0 0 8px;outline:none}
-h2{font-size:16px;font-weight:700;margin:16px 0 8px}
 .lead{font-size:14px;margin:0 0 12px;color:var(--muted)}
 .note-box{background:var(--gray);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--muted);margin:10px 0}
 .note-box.accent{border-left-color:var(--accent);color:var(--primary)}
@@ -33,10 +31,21 @@ h2{font-size:16px;font-weight:700;margin:16px 0 8px}
 .context-box ul{margin:6px 0;padding-left:20px}
 .context-box li{margin-bottom:4px}
 .context-box .empty{color:var(--muted);font-style:italic}
-.block{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:14px 0;background:#fff}
-.block h3{margin:0 0 10px;font-size:15px;font-weight:700}
-.block .base{background:var(--gray);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin:8px 0;font-size:13px;line-height:1.5}
-.block .example{background:var(--ok-bg);border-left:3px solid var(--ok);border-radius:0 8px 8px 0;padding:8px 12px;margin:8px 0;font-size:12.5px;color:var(--primary)}
+details.blk{border:1px solid var(--border);border-radius:10px;margin:10px 0;background:#fff;overflow:hidden}
+details.blk>summary{cursor:pointer;padding:11px 14px;font-size:13.5px;font-weight:700;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:8px;background:var(--gray)}
+details.blk>summary::-webkit-details-marker{display:none}
+details.blk>summary::after{content:"+";color:var(--muted);font-weight:800;font-size:16px}
+details.blk[open]>summary::after{content:"−"}
+details.blk[open]>summary{border-bottom:1px solid var(--border)}
+.blk-body{padding:12px 14px}
+.blk-body ul{margin:4px 0;padding-left:18px}
+.blk-body li{margin-bottom:5px;font-size:13px}
+.blk-tag{font-size:11px;font-weight:800;letter-spacing:.4px;text-transform:uppercase;color:var(--muted);margin-left:6px}
+.blk-body .base{background:var(--gray);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin:8px 0;font-size:13px;line-height:1.5}
+.blk-body .example{background:var(--ok-bg);border-left:3px solid var(--ok);border-radius:0 8px 8px 0;padding:8px 12px;margin:8px 0;font-size:12.5px}
+.chips{display:flex;flex-wrap:wrap;gap:6px;margin:6px 0}
+.chip{border:1px solid var(--border);border-radius:20px;padding:3px 10px;font-size:12px;background:var(--gray);color:var(--primary)}
+.chip.acc{border-color:var(--accent);background:#eff6ff;color:var(--accent-d)}
 .check-row{display:flex;gap:8px;align-items:flex-start;background:var(--gray);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:6px 0;font-size:13px}
 .check-row input{width:auto;margin-top:3px}
 .check-row label{margin:0;font-weight:500}
@@ -44,7 +53,6 @@ h2{font-size:16px;font-weight:700;margin:16px 0 8px}
 .btn{padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit}
 .btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent-d)}
 .btn-secondary{background:#fff;border:1px solid var(--border);color:var(--primary)}.btn-secondary:hover{background:var(--gray)}
-.btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
 .btn-small{padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--primary);cursor:pointer;font-family:inherit}
 .btn-small:hover{background:var(--gray)}
 .preview-text{background:var(--gray);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin:12px 0;font-size:14px;line-height:1.7}
@@ -91,15 +99,24 @@ h2{font-size:16px;font-weight:700;margin:16px 0 8px}
 
 <div id="screen-step2" class="screen">
 <h1 tabindex="-1">Сборка политики</h1>
-<p class="lead">Заполните пять блоков. Готовые формулировки можно редактировать, выбирать дополнения и добавлять свои.</p>
+<p class="lead">Заполните пять блоков. Готовые формулировки можно редактировать, выбирать дополнения и добавлять свои. Заполненный блок сворачивается сам при следующем открытии, раскрытие и сворачивание - вручную.</p>
+
+<details class="blk" id="blkCtx" open>
+<summary>Напоминание из прошлых шагов<span class="blk-tag" id="ctxTag"></span></summary>
+<div class="blk-body">
+<div class="chips" id="ctxChips"></div>
+<p class="hint">Плашки - это напоминания, а не готовый текст: включайте в политику только то, что предприятие готово выполнять.</p>
+</div>
+</details>
+
 <div class="nav-buttons" style="margin-top:0">
 <button class="btn btn-secondary" onclick="applyHints()">Подставить подсказки из прошлых шагов</button>
 </div>
 <div class="note-box" id="hintMsg" style="display:none"></div>
-<div class="note-box">Подсказки заполняют только пустые поля и ничего не решают за вас: текст политики вы собираете сами.</div>
 
-<div class="block">
-<h3>1. Опишите предприятие и область применения</h3>
+<details class="blk" id="blk1">
+<summary>1. Опишите предприятие и область применения<span class="blk-tag" id="tag1"></span></summary>
+<div class="blk-body">
 <div class="field">
 <label for="f-scope">Текст</label>
 <textarea id="f-scope" rows="3" placeholder="Предприятие производит листовое стекло на одной производственной площадке. Политика применяется к производственным, складским, инженерным процессам и обращению с отходами в границах СЭМ."></textarea>
@@ -108,9 +125,11 @@ h2{font-size:16px;font-weight:700;margin:16px 0 8px}
 <button type="button" class="btn-small" onclick="toggleExample('ex-scope')">Показать пример</button>
 <div class="example" id="ex-scope" style="display:none">Предприятие производит листовое стекло на одной производственной площадке. Политика применяется к производственным, складским, инженерным процессам и обращению с отходами в границах СЭМ.</div>
 </div>
+</details>
 
-<div class="block">
-<h3>2. Защита окружающей среды и предотвращение загрязнения</h3>
+<details class="blk" id="blk2">
+<summary>2. Защита окружающей среды и предотвращение загрязнения<span class="blk-tag" id="tag2"></span></summary>
+<div class="blk-body">
 <div class="base">Предприятие принимает обязательство по защите окружающей среды и предотвращению загрязнения, в том числе:</div>
 <div class="check-row"><input type="checkbox" id="p1" onchange="savePolicy()"><label for="p1">снижать потери шихты и образование отходов</label></div>
 <div class="check-row"><input type="checkbox" id="p2" onchange="savePolicy()"><label for="p2">контролировать выбросы от газовых печей</label></div>
@@ -122,18 +141,22 @@ h2{font-size:16px;font-weight:700;margin:16px 0 8px}
 <div class="hint">Лучше ограничить выбор двумя-тремя направлениями, чтобы политика не превратилась в реестр аспектов.</div>
 </div>
 </div>
+</details>
 
-<div class="block">
-<h3>3. Выполнение обязательств соответствия</h3>
+<details class="blk" id="blk3">
+<summary>3. Выполнение обязательств соответствия<span class="blk-tag" id="tag3"></span></summary>
+<div class="blk-body">
 <div class="field">
 <label for="f-compliance">Текст обязательства</label>
 <textarea id="f-compliance" rows="3"></textarea>
 <div class="hint">Не пишите «все законы РФ». В политике достаточно зафиксировать обязательство выполнять требования, которые относятся к предприятию.</div>
 </div>
 </div>
+</details>
 
-<div class="block">
-<h3>4. Постоянное улучшение СЭМ</h3>
+<details class="blk" id="blk4">
+<summary>4. Постоянное улучшение СЭМ<span class="blk-tag" id="tag4"></span></summary>
+<div class="blk-body">
 <div class="base">Предприятие принимает обязательство постоянно улучшать СЭМ и повышать экологическую результативность.</div>
 <div class="field">
 <label for="f-improvement">Дополнение</label>
@@ -141,9 +164,26 @@ h2{font-size:16px;font-weight:700;margin:16px 0 8px}
 <div class="hint">Не обещайте «нулевое воздействие» или «полную безопасность», если предприятие не может это подтвердить.</div>
 </div>
 </div>
+</details>
 
-<div class="block">
-<h3>5. Как политика будет работать</h3>
+<details class="blk" id="blkEx">
+<summary>Пример: фрагмент реальной политики предприятия (обезличено)</summary>
+<div class="blk-body">
+<ul>
+<li>Распространяет требования природоохранного законодательства на подрядчиков и арендаторов, работающих на предприятии.</li>
+<li>Применяет методы рециклинга отходов: раздельный сбор и передача специализированным предприятиям для повторного использования.</li>
+<li>Обеспечивает соответствие стадий жизненного цикла продукции экологическим требованиям, подтверждая это регулярной добровольной экологической сертификацией.</li>
+<li>Информирует работников, заинтересованные организации и местное население о воздействии производственных процессов; незамедлительно сообщает заинтересованным сторонам о произошедших авариях, их экологических последствиях и мерах по ликвидации.</li>
+<li>Создает условия для открытой демонстрации экологической ответственности и доступности экологической информации.</li>
+<li>Обеспечивает подготовку работников и руководителей всех уровней и постоянное улучшение как природоохранной деятельности, так и системы управления ею.</li>
+</ul>
+<p class="hint">Пример из реальной практики, обезличен. Используйте как ориентир масштаба формулировок: в свою политику включайте только то, что предприятие готово выполнять и подтверждать.</p>
+</div>
+</details>
+
+<details class="blk" id="blk5">
+<summary>5. Как политика будет работать<span class="blk-tag" id="tag5"></span></summary>
+<div class="blk-body">
 <div class="base">Политика служит основой для постановки экологических целей. Документ доводится до работников предприятия и доступен заинтересованным сторонам.</div>
 <div class="field"><label for="f-version">Версия документа</label><input type="text" id="f-version" placeholder="1.0"></div>
 <div class="field"><label for="f-date">Дата утверждения</label><input type="text" id="f-date" placeholder="01.01.2027"></div>
@@ -151,6 +191,7 @@ h2{font-size:16px;font-weight:700;margin:16px 0 8px}
 <div class="field"><label for="f-placement">Где будет размещен</label><textarea id="f-placement" rows="2" placeholder="Информационные стенды, внутренняя система документов"></textarea></div>
 <div class="field"><label for="f-communication">Как работников ознакомят с политикой</label><textarea id="f-communication" rows="2" placeholder="Вводный инструктаж, ознакомление под подпись"></textarea></div>
 </div>
+</details>
 
 <div class="nav-buttons">
 <button class="btn btn-secondary" onclick="goStep(1)">К данным</button>
@@ -204,8 +245,8 @@ var SEM_STEPS=[
  {name:'rollout',title:'План внедрения',keys:['sem_rollout']}
 ];
 function semKnownKeys(){var m={};SEM_STEPS.forEach(function(s){s.keys.forEach(function(k){m[k]=s.name;});});return m;}
-function semHasLive(key){try{var raw=localStorage.getItem(key);if(!raw)return false;var d=JSON.parse(raw);return stepHasData(d);}catch(e){return false;}}
 function stepHasData(p){return !!(p&&((Array.isArray(p.rows)&&p.rows.length)||(Array.isArray(p.conditions)&&p.conditions.length)||(Array.isArray(p.parties)&&p.parties.length)||p.data||p.result));}
+function semHasLive(key){try{var raw=localStorage.getItem(key);if(!raw)return false;var d=JSON.parse(raw);return stepHasData(d);}catch(e){return false;}}
 function semReadLiveStep(step){for(var i=0;i<step.keys.length;i++){if(semHasLive(step.keys[i])){try{return JSON.parse(localStorage.getItem(step.keys[i]));}catch(e){}}}return null;}
 function semReadCache(){try{var raw=localStorage.getItem(SEM_BUNDLE_KEY);if(!raw)return{steps:{}};var d=JSON.parse(raw);return (d&&d.steps)?d:{steps:{}};}catch(e){return{steps:{}};}}
 function stepPayload(name){
@@ -216,33 +257,16 @@ function stepPayload(name){
 }
 function stepRows(name){var p=stepPayload(name);return (p&&Array.isArray(p.rows))?p.rows:[];}
 function stepData(name){var p=stepPayload(name);return (p&&p.data)||null;}
-function semExtraLive(){
- var extra={},known=semKnownKeys();
- try{
-  for(var i=0;i<localStorage.length;i++){
-   var k=localStorage.key(i);
-   if(!k||(k.indexOf('sem_')!==0&&k.indexOf('sem-')!==0)||k===SEM_BUNDLE_KEY||known[k])continue;
-   try{var d=JSON.parse(localStorage.getItem(k));if(stepHasData(d))extra[k]=d;}catch(e){}
-  }
- }catch(e){}
- return extra;
-}
 function semBuildBundle(){
  var cache=semReadCache();var steps={};
  SEM_STEPS.forEach(function(s){steps[s.name]=semReadLiveStep(s)||cache.steps[s.name]||null;});
  Object.keys(cache.steps).forEach(function(k){if(steps[k]===undefined)steps[k]=cache.steps[k];});
- var extra=semExtraLive();
- Object.keys(extra).forEach(function(k){if(steps[k]===undefined)steps[k]=extra[k];});
  return{schema:'sem.bundle.v1',program:'СЭМ',exportedAt:new Date().toISOString(),steps:steps};
 }
 function semExportBundle(){
  var bundle=semBuildBundle();
  var present=[];
  SEM_STEPS.forEach(function(s){if(bundle.steps[s.name]&&stepHasData(bundle.steps[s.name]))present.push(s.title);});
- Object.keys(bundle.steps).forEach(function(k){
-  var known=false;SEM_STEPS.forEach(function(s){if(s.name===k)known=true;});
-  if(!known&&bundle.steps[k]&&stepHasData(bundle.steps[k]))present.push('шаг '+k);
- });
  var blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
  var url=URL.createObjectURL(blob);var a=document.createElement('a');
  a.href=url;a.download='SEM_programma_polnyy_nabor_'+today()+'.json';
@@ -313,10 +337,18 @@ function rankSigFromSource(r){
  if(r.significance)sig=sigWords(r.significance)||r.significance;
  return{rank:rank===null?'':String(rank),sig:sig};
 }
+function significantAspects(){
+ var out=[];
+ stepRows('significance').forEach(function(s){
+  var rs=rankSigFromSource(s);
+  if(rs.sig==='Значимый')out.push({num:s.num,aspect:s.aspect||'',impact:s.impact||'',rank:rs.rank});
+ });
+ return out;
+}
 
 /* ========== СЛУЖЕБНОЕ ========== */
 var STORAGE_KEY='sem_policy';
-var SCHEMA='sem.policy.v2';
+var SCHEMA='sem.policy.v3';
 var PROTECT_LABELS={1:'снижать потери шихты и образование отходов',2:'контролировать выбросы от газовых печей',3:'снижать образование боя стекла и отходов упаковки',4:'предупреждать разливы технических жидкостей'};
 var PROTECT_KEYS={1:['шихт','отход'],2:['выброс','печ','газ'],3:['бой','упаковк','стекл'],4:['разлив','жидк','топлив','масл']};
 function $(id){return document.getElementById(id);}
@@ -324,16 +356,29 @@ function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'
 function today(){var d=new Date();return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();}
 function cut(s,n){s=String(s==null?'':s).trim();if(!s)return '';return s.length>n?s.slice(0,n-3)+'...':s;}
 function resizeIframe(){if(window.parentIFrame&&typeof window.parentIFrame.size==='function')window.parentIFrame.size();}
+var step2Init=false;
 function goStep(n){
  ['screen-intro','screen-step1','screen-step2','screen-step3'].forEach(function(s){$(s).classList.remove('active');});
  $('screen-step'+n).classList.add('active');
  var h=$('screen-step'+n).querySelector('h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true});}
  if(n===1)renderContext();
+ if(n===2){renderChips();applyBlockStates();}
  if(n===3)renderPreview();
  window.scrollTo(0,0);resizeIframe();
 }
 function showStorageWarn(){var w=document.querySelectorAll('.storage-warn');for(var i=0;i<w.length;i++)w[i].classList.add('show');resizeIframe();}
 function toggleExample(id){var el=$(id);if(el)el.style.display=el.style.display==='none'?'block':'none';resizeIframe();}
+document.addEventListener('click',function(e){
+ var s=e.target&&e.target.closest?e.target.closest('details>summary'):null;
+ if(!s)return;
+ var before=s.getBoundingClientRect().top+window.pageYOffset;
+ setTimeout(function(){
+  var after=s.getBoundingClientRect().top+window.pageYOffset;
+  var delta=after-before;
+  if(Math.abs(delta)>2)window.scrollTo(0,Math.max(0,window.pageYOffset+delta));
+  resizeIframe();
+ },0);
+},true);
 
 /* ========== СОСТОЯНИЕ ========== */
 var state={
@@ -359,6 +404,7 @@ function savePolicy(){
  p.approved=$('f-approved').value.trim();
  p.placement=$('f-placement').value.trim();
  p.communication=$('f-communication').value.trim();
+ updateTags();
  if(!storageOk)return;
  try{state.rev++;localStorage.setItem(STORAGE_KEY,JSON.stringify({schema:SCHEMA,rev:state.rev,updatedAt:new Date().toISOString(),meta:state.meta,data:state.policy}));}catch(e){storageOk=false;showStorageWarn();}
 }
@@ -366,7 +412,7 @@ function loadPolicy(){
  try{
   var raw=localStorage.getItem(STORAGE_KEY);
   if(raw){var d=JSON.parse(raw);state.meta=Object.assign({org:'',date:'',author:''},d.meta||{});state.rev=Number(d.rev)||1;if(d.data)state.policy=Object.assign(state.policy,d.data);return true;}
-  var aliases=['sem-policy-v1'];
+  var aliases=['sem-policy-v1','sem-policy-v2'];
   for(var i=0;i<aliases.length;i++){
    raw=localStorage.getItem(aliases[i]);if(!raw)continue;
    var ld=JSON.parse(raw);
@@ -395,6 +441,64 @@ function bindFields(){
  });
 }
 
+/* ========== БЛОКИ: ЗАПОЛНЕННОСТЬ И МЕТКИ ========== */
+function blockFilled(i){
+ var p=state.policy;
+ if(i===1)return !!p.scope.trim();
+ if(i===2)return (p.protection&&p.protection.length>0)||!!p.protectionCustom.trim();
+ if(i===3)return !!p.compliance.trim();
+ if(i===4)return !!p.improvement.trim();
+ if(i===5){
+  var n=0;
+  ['version','date','approved','placement','communication'].forEach(function(k){if(String(p[k]||'').trim())n++;});
+  return n>=3;
+ }
+ return false;
+}
+function applyBlockStates(){
+ if(!step2Init){
+  step2Init=true;
+  for(var i=1;i<=5;i++){
+   var d=$('blk'+i);
+   if(d)d.open=!blockFilled(i);
+  }
+ }
+ updateTags();
+}
+function updateTags(){
+ for(var i=1;i<=5;i++){
+  var t=$('tag'+i);
+  if(t)t.textContent=blockFilled(i)?'заполнено, можно свернуть':'есть пустые поля';
+ }
+ var sig=significantAspects();
+ var obl=stepRows('obligations').filter(function(o){return String(o.requirement||'').trim();});
+ var rv=stepRows('risks');
+ var ct=$('ctxTag');
+ if(ct)ct.textContent='аспектов: '+sig.length+', обязательств: '+obl.length+', рисков и возможностей: '+rv.length;
+}
+
+/* ========== ПЛАШКИ-НАПОМИНАНИЯ ========== */
+function renderChips(){
+ var box=$('ctxChips');
+ if(!box)return;
+ var chips=[];
+ var scopeData=stepData('scope');
+ if(scopeData&&(scopeData.activities||scopeData.boundaries))chips.push('<span class="chip">Область: '+esc(cut(scopeData.activities||scopeData.boundaries,46))+'</span>');
+ var sig=significantAspects();
+ sig.slice(0,4).forEach(function(s){chips.push('<span class="chip acc">Значимый аспект: '+esc(cut(s.aspect||'аспект не указан',40))+'</span>');});
+ if(sig.length>4)chips.push('<span class="chip acc">и еще значимых аспектов: '+(sig.length-4)+'</span>');
+ var obl=stepRows('obligations').filter(function(o){return String(o.requirement||'').trim();});
+ if(obl.length)chips.push('<span class="chip">Обязательств: '+obl.length+', первое: '+esc(cut(obl[0].requirement,40))+'</span>');
+ var rv=stepRows('risks');
+ var rk=rv.filter(function(r){return r.rvType==='risk';}).length;
+ var op=rv.filter(function(r){return r.rvType==='opportunity';}).length;
+ if(rv.length)chips.push('<span class="chip">Рисков: '+rk+', возможностей: '+op+'</span>');
+ if(!chips.length)chips.push('<span class="chip">Данных из прошлых шагов пока нет: заполните вручную или загрузите единый файл курса</span>');
+ box.innerHTML=chips.join('');
+ updateTags();
+ resizeIframe();
+}
+
 /* ========== ЕДИНЫЙ ФАЙЛ: ЗАГРУЗКА ========== */
 function importJson(input){
  var f=input.files&&input.files[0];if(!f)return;
@@ -412,9 +516,9 @@ function importJson(input){
    if(Array.isArray(parsed.own.protection)&&parsed.own.protection.length&&!state.policy.protection.length){state.policy.protection=parsed.own.protection.slice();filled++;}
    bindFields();savePolicy();
   }
-  renderContext();
+  renderContext();renderChips();
   var extra='';
-  if(res.restored.length)extra=' Вернул в этот браузер шаги: '+res.restored.length+'. Их напоминания теперь видны на экране данных.';
+  if(res.restored.length)extra=' Вернул в этот браузер шаги: '+res.restored.length+'. Их напоминания теперь видны плашками на экране сборки.';
   else if(res.skipped.length)extra=' Шаги, которые уже есть в этом браузере, не перезаписаны.';
   msgBoth('Единый файл загружен. Дополнено пустых полей политики: '+filled+'. Заполненные ранее поля не перезаписаны.'+extra);
   input.value='';
@@ -431,15 +535,7 @@ function exportJson(){
  resizeIframe();
 }
 
-/* ========== КОНТЕКСТ ИЗ ПРОШЛЫХ ШАГОВ ========== */
-function significantAspects(){
- var out=[];
- stepRows('significance').forEach(function(s){
-  var rs=rankSigFromSource(s);
-  if(rs.sig==='Значимый')out.push({num:s.num,aspect:s.aspect||'',impact:s.impact||'',rank:rs.rank});
- });
- return out;
-}
+/* ========== КОНТЕКСТ НА ПЕРВОМ ЭКРАНЕ ========== */
 function renderContext(){
  var scopeData=stepData('scope');
  var sig=significantAspects();
@@ -473,10 +569,7 @@ function renderContext(){
  }
  if(risks.length||opps.length){
   any=true;
-  h+='<p><strong>Риски и возможности:</strong> рисков '+risks.length+', возможностей '+opps.length+'.</p><ul>';
-  risks.slice(0,3).forEach(function(r){h+='<li>риск: '+esc(cut(r.description||'цепочка не начата',80))+'</li>';});
-  opps.slice(0,2).forEach(function(r){h+='<li>возможность: '+esc(cut(r.description||'цепочка не начата',80))+'</li>';});
-  h+='</ul>';
+  h+='<p><strong>Риски и возможности:</strong> рисков '+risks.length+', возможностей '+opps.length+'.</p>';
  }
  if(!any){
   h+='<p class="empty">Данные прошлых шагов не найдены в этом браузере. Загрузите единый файл курса кнопкой выше или заполните поля вручную: это не мешает пройти урок.</p>';
@@ -540,7 +633,7 @@ function renderPreview(){
  if(p.approved)meta.push('Утвердил: '+esc(p.approved));
  if(p.placement)meta.push('Размещение: '+esc(p.placement));
  if(p.communication)meta.push('Ознакомление: '+esc(p.communication));
- if(meta.length)h+='<p><em>'+meta.join('. ')+'.</em></p>';
+ if(meta.length)meta.push('');
  h+='</div>';
  $('previewBox').innerHTML=h;
  resizeIframe();
@@ -603,6 +696,7 @@ document.addEventListener('DOMContentLoaded',function(){
   testStorage();
   if(loadPolicy())$('restoreNote').style.display='block';
   bindFields();
+  updateTags();
   resizeIframe();
   if('ResizeObserver' in window){var ro=new ResizeObserver(function(){resizeIframe();});ro.observe(document.body);}
  }catch(e){showBoot(e.message);}
