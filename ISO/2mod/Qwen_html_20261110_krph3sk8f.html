@@ -1,0 +1,613 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Соберите проект экологической политики</title>
+<style>
+:root{--bg:#fff;--primary:#1e293b;--muted:#64748b;--border:#e2e8f0;--gray:#f8fafc;--accent:#2563eb;--accent-d:#1d4ed8;
+--warn:#ea580c;--warn-bg:#fff7ed;--warn-bd:#fed7aa;--bad:#991b1b;--bad-bg:#fef2f2;--bad-bd:#fecaca;
+--ok:#16a34a;--ok-bg:#f0fdf4;--ok-bd:#bbf7d0;--r:12px}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:var(--bg);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;color:var(--primary);font-size:15px;line-height:1.6}
+.container{max-width:760px;margin:0 auto}
+.screen{display:none}.screen.active{display:block;animation:fi .3s ease-out}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:22px;font-weight:800;margin:0 0 8px;outline:none}
+h2{font-size:16px;font-weight:700;margin:16px 0 8px}
+.lead{font-size:14px;margin:0 0 12px;color:var(--muted)}
+.note-box{background:var(--gray);border:1px solid var(--border);border-left:4px solid var(--muted);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--muted);margin:10px 0}
+.note-box.accent{border-left-color:var(--accent);color:var(--primary)}
+.warn-box{background:var(--warn-bg);border-left:3px solid var(--warn-bd);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--warn);margin:10px 0}
+.storage-warn{display:none}.storage-warn.show{display:block}
+.save-line{font-size:12px;color:var(--muted);margin:4px 0}
+.field{margin-bottom:12px}
+.field label{display:block;font-size:13px;font-weight:700;margin-bottom:4px}
+.field .hint{font-size:12px;color:var(--muted);margin-top:4px;line-height:1.4}
+.field input,.field textarea{width:100%;padding:9px 12px;border:1px solid var(--border);border-radius:8px;font-family:inherit;font-size:14px;background:#fff;color:var(--primary)}
+.field textarea{min-height:46px;resize:vertical}
+.field input:focus,.field textarea:focus{outline:3px solid var(--accent-d);outline-offset:2px}
+.context-box{border:2px solid var(--accent);border-radius:10px;background:#eff6ff;padding:14px 16px;margin:12px 0;font-size:13px}
+.context-box h3{margin:0 0 10px;font-size:15px;font-weight:700}
+.context-box ul{margin:6px 0;padding-left:20px}
+.context-box li{margin-bottom:4px}
+.context-box .empty{color:var(--muted);font-style:italic}
+.block{border:1px solid var(--border);border-radius:10px;padding:14px 16px;margin:14px 0;background:#fff}
+.block h3{margin:0 0 10px;font-size:15px;font-weight:700}
+.block .base{background:var(--gray);border:1px solid var(--border);border-radius:8px;padding:10px 12px;margin:8px 0;font-size:13px;line-height:1.5}
+.block .example{background:var(--ok-bg);border-left:3px solid var(--ok);border-radius:0 8px 8px 0;padding:8px 12px;margin:8px 0;font-size:12.5px;color:var(--primary)}
+.check-row{display:flex;gap:8px;align-items:flex-start;background:var(--gray);border:1px solid var(--border);border-radius:8px;padding:8px 12px;margin:6px 0;font-size:13px}
+.check-row input{width:auto;margin-top:3px}
+.check-row label{margin:0;font-weight:500}
+.nav-buttons{display:flex;gap:10px;margin-top:14px;flex-wrap:wrap}
+.btn{padding:11px 20px;border-radius:8px;font-size:14px;font-weight:600;cursor:pointer;border:none;font-family:inherit}
+.btn-primary{background:var(--accent);color:#fff}.btn-primary:hover{background:var(--accent-d)}
+.btn-secondary{background:#fff;border:1px solid var(--border);color:var(--primary)}.btn-secondary:hover{background:var(--gray)}
+.btn:disabled{background:var(--border);color:var(--muted);cursor:not-allowed}
+.btn-small{padding:6px 12px;font-size:12px;font-weight:600;border-radius:6px;border:1px solid var(--border);background:#fff;color:var(--primary);cursor:pointer;font-family:inherit}
+.btn-small:hover{background:var(--gray)}
+.preview-text{background:var(--gray);border:1px solid var(--border);border-radius:10px;padding:16px 18px;margin:12px 0;font-size:14px;line-height:1.7}
+.preview-text p{margin:0 0 10px}
+.preview-text p:last-child{margin:0}
+.checklist{border:1px solid var(--ok-bd);border-radius:10px;padding:14px 16px;margin:12px 0;background:var(--ok-bg);font-size:13px}
+.checklist h3{margin:0 0 10px;font-size:15px;font-weight:700;color:var(--ok)}
+.checklist ul{margin:6px 0;padding-left:20px}
+.checklist li{margin-bottom:5px}
+@media (max-width:640px){body{padding:12px}h1{font-size:20px}.nav-buttons{flex-direction:column}.btn{width:100%}}
+</style>
+</head>
+<body>
+<div class="container">
+<input type="file" id="jsonFileGlobal" accept=".json,application/json" style="display:none" onchange="importJson(this)">
+
+<div id="screen-intro" class="screen active">
+<h1 tabindex="-1">Соберите проект экологической политики</h1>
+<p class="lead">Конструктор собирает проект экологической политики из готовых формулировок и ваших дополнений. Это черновик для обсуждения с руководством, а не утвержденный документ.</p>
+<div class="note-box accent">Если вы работали на другом устройстве или в другом браузере, загрузите единый файл курса: данные прошлых шагов появятся автоматически, и напоминания о значимых аспектах, обязательствах и рисках будут видны сразу. Загружать файл не обязательно: можно собрать проект вручную.</div>
+<div class="nav-buttons">
+<button class="btn btn-secondary" onclick="document.getElementById('jsonFileGlobal').click()">Загрузить единый файл курса (JSON)</button>
+</div>
+<div class="note-box" id="jsonMsgIntro" style="display:none"></div>
+<div class="note-box">Конструктор покажет напоминания из прошлых шагов: область применения, значимые аспекты, обязательства и риски. Вы решаете, что включить в текст политики, а что оставить за рамками.</div>
+<div class="warn-box storage-warn">Браузер не сохранил черновик. Скачайте Word или единый файл курса перед закрытием страницы.</div>
+<div class="note-box" id="restoreNote" style="display:none">Найден сохраненный черновик. Записи восстановлены.</div>
+<div class="nav-buttons">
+<button class="btn btn-primary" onclick="goStep(1)">Начать работу</button>
+</div>
+</div>
+
+<div id="screen-step1" class="screen">
+<h1 tabindex="-1">Данные для проекта политики</h1>
+<p class="lead">Ниже - что можно использовать из прошлых шагов. Это напоминания, а не автоматическое заполнение: вы решаете, что включить в текст.</p>
+<div class="nav-buttons" style="margin-top:0">
+<button class="btn btn-secondary" onclick="document.getElementById('jsonFileGlobal').click()">Загрузить единый файл курса (JSON)</button>
+</div>
+<div id="contextBox"></div>
+<div class="nav-buttons">
+<button class="btn btn-primary" onclick="goStep(2)">Перейти к сборке политики</button>
+</div>
+</div>
+
+<div id="screen-step2" class="screen">
+<h1 tabindex="-1">Сборка политики</h1>
+<p class="lead">Заполните пять блоков. Готовые формулировки можно редактировать, выбирать дополнения и добавлять свои.</p>
+<div class="nav-buttons" style="margin-top:0">
+<button class="btn btn-secondary" onclick="applyHints()">Подставить подсказки из прошлых шагов</button>
+</div>
+<div class="note-box" id="hintMsg" style="display:none"></div>
+<div class="note-box">Подсказки заполняют только пустые поля и ничего не решают за вас: текст политики вы собираете сами.</div>
+
+<div class="block">
+<h3>1. Опишите предприятие и область применения</h3>
+<div class="field">
+<label for="f-scope">Текст</label>
+<textarea id="f-scope" rows="3" placeholder="Предприятие производит листовое стекло на одной производственной площадке. Политика применяется к производственным, складским, инженерным процессам и обращению с отходами в границах СЭМ."></textarea>
+<div class="hint">Укажите продукцию, площадку и границы СЭМ. Не перечисляйте все процессы подробно.</div>
+</div>
+<button type="button" class="btn-small" onclick="toggleExample('ex-scope')">Показать пример</button>
+<div class="example" id="ex-scope" style="display:none">Предприятие производит листовое стекло на одной производственной площадке. Политика применяется к производственным, складским, инженерным процессам и обращению с отходами в границах СЭМ.</div>
+</div>
+
+<div class="block">
+<h3>2. Защита окружающей среды и предотвращение загрязнения</h3>
+<div class="base">Предприятие принимает обязательство по защите окружающей среды и предотвращению загрязнения, в том числе:</div>
+<div class="check-row"><input type="checkbox" id="p1" onchange="savePolicy()"><label for="p1">снижать потери шихты и образование отходов</label></div>
+<div class="check-row"><input type="checkbox" id="p2" onchange="savePolicy()"><label for="p2">контролировать выбросы от газовых печей</label></div>
+<div class="check-row"><input type="checkbox" id="p3" onchange="savePolicy()"><label for="p3">снижать образование боя стекла и отходов упаковки</label></div>
+<div class="check-row"><input type="checkbox" id="p4" onchange="savePolicy()"><label for="p4">предупреждать разливы технических жидкостей</label></div>
+<div class="field" style="margin-top:10px">
+<label for="f-protection-custom">Дополнение (необязательно)</label>
+<textarea id="f-protection-custom" rows="2" placeholder="Свои направления защиты"></textarea>
+<div class="hint">Лучше ограничить выбор двумя-тремя направлениями, чтобы политика не превратилась в реестр аспектов.</div>
+</div>
+</div>
+
+<div class="block">
+<h3>3. Выполнение обязательств соответствия</h3>
+<div class="field">
+<label for="f-compliance">Текст обязательства</label>
+<textarea id="f-compliance" rows="3"></textarea>
+<div class="hint">Не пишите «все законы РФ». В политике достаточно зафиксировать обязательство выполнять требования, которые относятся к предприятию.</div>
+</div>
+</div>
+
+<div class="block">
+<h3>4. Постоянное улучшение СЭМ</h3>
+<div class="base">Предприятие принимает обязательство постоянно улучшать СЭМ и повышать экологическую результативность.</div>
+<div class="field">
+<label for="f-improvement">Дополнение</label>
+<textarea id="f-improvement" rows="2"></textarea>
+<div class="hint">Не обещайте «нулевое воздействие» или «полную безопасность», если предприятие не может это подтвердить.</div>
+</div>
+</div>
+
+<div class="block">
+<h3>5. Как политика будет работать</h3>
+<div class="base">Политика служит основой для постановки экологических целей. Документ доводится до работников предприятия и доступен заинтересованным сторонам.</div>
+<div class="field"><label for="f-version">Версия документа</label><input type="text" id="f-version" placeholder="1.0"></div>
+<div class="field"><label for="f-date">Дата утверждения</label><input type="text" id="f-date" placeholder="01.01.2027"></div>
+<div class="field"><label for="f-approved">Кем утвержден</label><input type="text" id="f-approved" placeholder="Генеральный директор"></div>
+<div class="field"><label for="f-placement">Где будет размещен</label><textarea id="f-placement" rows="2" placeholder="Информационные стенды, внутренняя система документов"></textarea></div>
+<div class="field"><label for="f-communication">Как работников ознакомят с политикой</label><textarea id="f-communication" rows="2" placeholder="Вводный инструктаж, ознакомление под подпись"></textarea></div>
+</div>
+
+<div class="nav-buttons">
+<button class="btn btn-secondary" onclick="goStep(1)">К данным</button>
+<button class="btn btn-primary" onclick="goStep(3)">Предпросмотр и проверка</button>
+</div>
+</div>
+
+<div id="screen-step3" class="screen">
+<h1 tabindex="-1">Предпросмотр и проверка</h1>
+<p class="lead">Полный текст проекта политики. Проверьте перед обсуждением с руководством.</p>
+<div class="checklist">
+<h3>Проверьте перед скачиванием</h3>
+<ul>
+<li>указано, чем занимается предприятие</li>
+<li>есть обязательство по защите окружающей среды и предотвращению загрязнения</li>
+<li>есть обязательство выполнять применимые требования</li>
+<li>есть обязательство постоянно улучшать СЭМ</li>
+<li>политика связана с будущими экологическими целями</li>
+<li>указано, что документ доводится до работников и доступен заинтересованным сторонам</li>
+</ul>
+</div>
+<div id="previewBox"></div>
+<div class="note-box">Проект собран. Проверьте текст вместе с руководством: предприятие должно быть готово выполнять обязательства, которые включает в политику. В проекте есть основные элементы политики; подтверждение соответствия стандарту дает не конструктор, а само предприятие при утверждении.</div>
+<div class="nav-buttons">
+<button class="btn btn-secondary" onclick="goStep(2)">Вернуться к сборке</button>
+<button class="btn btn-primary" onclick="downloadDocx()">Скачать Word</button>
+<button class="btn btn-secondary" onclick="exportJson()">Скачать единый файл курса</button>
+</div>
+<p class="save-line" id="downloadNote"></p>
+</div>
+
+</div>
+<script>
+/* ========== ЗАЩИТНЫЙ СТАРТ ========== */
+function showBoot(msg){var b=document.getElementById('bootError');if(!b){b=document.createElement('div');b.id='bootError';b.className='warn-box';document.querySelector('.container').insertBefore(b,document.querySelector('.container').firstChild);}b.style.display='block';b.textContent='Конструктор не запустился: '+msg;}
+window.addEventListener('error',function(ev){showBoot((ev&&ev.message)||'ошибка скрипта')+' (строка '+((ev&&ev.lineno)||'?')+')';});
+
+/* ========== МОДУЛЬ SEM-BUNDLE v1.1 ========== */
+var SEM_BUNDLE_KEY='sem_bundle';
+var SEM_STEPS=[
+ {name:'swot',title:'Условия и границы (SWOT)',keys:['sem_swot','sem-conditions-analysis-v1']},
+ {name:'parties',title:'Карта заинтересованных сторон',keys:['sem_parties','sem-stakeholder-registry-v1']},
+ {name:'scope',title:'Область применения',keys:['sem_scope','sem-scope-v1']},
+ {name:'aspects',title:'Реестр аспектов',keys:['sem_aspects','sem-aspect-records-v3','sem-aspect-records-v2','sem-aspect-records-v1','sem-chain-constructor-v1']},
+ {name:'significance',title:'Оценка значимости',keys:['sem_significance','sem-ranks-v3','sem-ranks-significance-v3','sem-ranks-v2','sem-ranks-v1']},
+ {name:'obligations',title:'Реестр обязательств',keys:['sem_obligations','sem-obligations-registry-v3','sem-obligations-registry-v2','sem-obligations-registry-v1']},
+ {name:'risks',title:'Риски и возможности',keys:['sem_risks','sem-risks-opps-v2','sem-risks-opps-v1']},
+ {name:'policy',title:'Политика',keys:['sem_policy','sem-policy-v1']},
+ {name:'goals',title:'Цели и показатели',keys:['sem_goals']},
+ {name:'plan',title:'План действий',keys:['sem_plan']},
+ {name:'rollout',title:'План внедрения',keys:['sem_rollout']}
+];
+function semKnownKeys(){var m={};SEM_STEPS.forEach(function(s){s.keys.forEach(function(k){m[k]=s.name;});});return m;}
+function semHasLive(key){try{var raw=localStorage.getItem(key);if(!raw)return false;var d=JSON.parse(raw);return stepHasData(d);}catch(e){return false;}}
+function stepHasData(p){return !!(p&&((Array.isArray(p.rows)&&p.rows.length)||(Array.isArray(p.conditions)&&p.conditions.length)||(Array.isArray(p.parties)&&p.parties.length)||p.data||p.result));}
+function semReadLiveStep(step){for(var i=0;i<step.keys.length;i++){if(semHasLive(step.keys[i])){try{return JSON.parse(localStorage.getItem(step.keys[i]));}catch(e){}}}return null;}
+function semReadCache(){try{var raw=localStorage.getItem(SEM_BUNDLE_KEY);if(!raw)return{steps:{}};var d=JSON.parse(raw);return (d&&d.steps)?d:{steps:{}};}catch(e){return{steps:{}};}}
+function stepPayload(name){
+ var step=null;SEM_STEPS.forEach(function(s){if(s.name===name)step=s;});
+ if(step){var live=semReadLiveStep(step);if(live)return live;}
+ var cache=semReadCache();
+ return cache.steps[name]||null;
+}
+function stepRows(name){var p=stepPayload(name);return (p&&Array.isArray(p.rows))?p.rows:[];}
+function stepData(name){var p=stepPayload(name);return (p&&p.data)||null;}
+function semExtraLive(){
+ var extra={},known=semKnownKeys();
+ try{
+  for(var i=0;i<localStorage.length;i++){
+   var k=localStorage.key(i);
+   if(!k||(k.indexOf('sem_')!==0&&k.indexOf('sem-')!==0)||k===SEM_BUNDLE_KEY||known[k])continue;
+   try{var d=JSON.parse(localStorage.getItem(k));if(stepHasData(d))extra[k]=d;}catch(e){}
+  }
+ }catch(e){}
+ return extra;
+}
+function semBuildBundle(){
+ var cache=semReadCache();var steps={};
+ SEM_STEPS.forEach(function(s){steps[s.name]=semReadLiveStep(s)||cache.steps[s.name]||null;});
+ Object.keys(cache.steps).forEach(function(k){if(steps[k]===undefined)steps[k]=cache.steps[k];});
+ var extra=semExtraLive();
+ Object.keys(extra).forEach(function(k){if(steps[k]===undefined)steps[k]=extra[k];});
+ return{schema:'sem.bundle.v1',program:'СЭМ',exportedAt:new Date().toISOString(),steps:steps};
+}
+function semExportBundle(){
+ var bundle=semBuildBundle();
+ var present=[];
+ SEM_STEPS.forEach(function(s){if(bundle.steps[s.name]&&stepHasData(bundle.steps[s.name]))present.push(s.title);});
+ Object.keys(bundle.steps).forEach(function(k){
+  var known=false;SEM_STEPS.forEach(function(s){if(s.name===k)known=true;});
+  if(!known&&bundle.steps[k]&&stepHasData(bundle.steps[k]))present.push('шаг '+k);
+ });
+ var blob=new Blob([JSON.stringify(bundle,null,2)],{type:'application/json'});
+ var url=URL.createObjectURL(blob);var a=document.createElement('a');
+ a.href=url;a.download='SEM_programma_polnyy_nabor_'+today()+'.json';
+ document.body.appendChild(a);a.click();document.body.removeChild(a);
+ setTimeout(function(){URL.revokeObjectURL(url);},4000);
+ return present;
+}
+function semCacheBundle(bundle){
+ var cache=semReadCache();
+ Object.keys(bundle.steps||{}).forEach(function(name){
+  var p=bundle.steps[name];
+  if(!stepHasData(p))return;
+  var old=cache.steps[name];
+  var plen=(p.rows&&p.rows.length)||(p.conditions&&p.conditions.length)||(p.parties&&p.parties.length)||0;
+  var olen=old?(((old.rows&&old.rows.length)||(old.conditions&&old.conditions.length)||(old.parties&&old.parties.length))||0):0;
+  if(!old||plen>olen||Number(p.rev||0)>Number(old.rev||0))cache.steps[name]=p;
+ });
+ cache.savedAt=new Date().toISOString();
+ try{localStorage.setItem(SEM_BUNDLE_KEY,JSON.stringify(cache));}catch(e){}
+}
+function semRestoreMissingSteps(bundle,exceptName){
+ var restored=[],skipped=[];
+ Object.keys(bundle.steps||{}).forEach(function(name){
+  if(name===exceptName)return;
+  var p=bundle.steps[name];
+  if(!stepHasData(p))return;
+  var key=null;
+  SEM_STEPS.forEach(function(s){if(s.name===name)key=s.keys[0];});
+  if(!key)key=name;
+  if(semHasLive(key)){skipped.push(name);return;}
+  try{localStorage.setItem(key,JSON.stringify(p));restored.push(name);}catch(e){}
+ });
+ return{restored:restored,skipped:skipped};
+}
+function semParseImport(text,selfName){
+ var d;try{d=JSON.parse(text);}catch(e){return null;}
+ if(d&&d.steps&&typeof d.steps==='object'){
+  var own=d.steps[selfName];
+  return{bundle:d,own:(own&&own.data)||null,format:'bundle'};
+ }
+ if(d&&d.data){
+  var wrap={schema:'sem.bundle.v1',program:'СЭМ',exportedAt:new Date().toISOString(),steps:{}};
+  wrap.steps[selfName]={schema:d.schema||'',rev:d.rev||1,updatedAt:d.updatedAt||'',meta:d.meta||{},data:d.data};
+  return{bundle:wrap,own:d.data,format:'step'};
+ }
+ return null;
+}
+
+/* ========== ПЕРЕСЧЕТ ЗНАЧИМОСТИ ИЗ ОТВЕТОВ ИСТОЧНИКА ========== */
+function sigWords(s){return s==='significant'?'Значимый':s==='notsignificant'?'Незначимый':s==='incomplete'?'Оценка не завершена':(s||'');}
+function rankSigFromSource(r){
+ if(r.manual&&r.manual.on){return{rank:r.manual.rank?String(r.manual.rank):'',sig:sigWords(r.manual.significance)||r.manual.significance||''};}
+ var q=r.q||{};
+ var q1=r.q1||q.q1||'';var q2=r.q2||q.q2||'';var q3=r.q3||q.q3||'';
+ if(q2==='yes')q2='full';if(q2==='unknown')q2='';if(q3==='unknown')q3='';
+ var eco=r.ecoGround||'';
+ if(!eco){var e=r.e||{};if(e.e1==='yes'||e.e2==='yes'||e.e3==='yes')eco='yes';else if(r.sQ==='yes')eco='yes';else if(r.sQ==='signal'||e.e1==='unknown'||e.e2==='unknown'||e.e3==='unknown'||r.sQ==='unknown')eco='signal';}
+ var rank=null;
+ if(q1==='yes'){if(q2==='no'||q2==='partial')rank=1;else if(q2==='full'){if(q3==='yes')rank=2;else if(q3==='no')rank=3;}}
+ else if(q1==='none')rank=4;
+ var sig;
+ if(eco==='yes')sig='Значимый';
+ else if(rank===1||rank===2)sig='Значимый';
+ else if(eco==='signal')sig='Оценка не завершена';
+ else if(rank===null)sig='Оценка не завершена';
+ else sig='Незначимый';
+ if(r.rank!==undefined&&r.rank!==null&&r.rank!=='')rank=String(r.rank);
+ if(r.significance)sig=sigWords(r.significance)||r.significance;
+ return{rank:rank===null?'':String(rank),sig:sig};
+}
+
+/* ========== СЛУЖЕБНОЕ ========== */
+var STORAGE_KEY='sem_policy';
+var SCHEMA='sem.policy.v2';
+var PROTECT_LABELS={1:'снижать потери шихты и образование отходов',2:'контролировать выбросы от газовых печей',3:'снижать образование боя стекла и отходов упаковки',4:'предупреждать разливы технических жидкостей'};
+var PROTECT_KEYS={1:['шихт','отход'],2:['выброс','печ','газ'],3:['бой','упаковк','стекл'],4:['разлив','жидк','топлив','масл']};
+function $(id){return document.getElementById(id);}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function today(){var d=new Date();return String(d.getDate()).padStart(2,'0')+'.'+String(d.getMonth()+1).padStart(2,'0')+'.'+d.getFullYear();}
+function cut(s,n){s=String(s==null?'':s).trim();if(!s)return '';return s.length>n?s.slice(0,n-3)+'...':s;}
+function resizeIframe(){if(window.parentIFrame&&typeof window.parentIFrame.size==='function')window.parentIFrame.size();}
+function goStep(n){
+ ['screen-intro','screen-step1','screen-step2','screen-step3'].forEach(function(s){$(s).classList.remove('active');});
+ $('screen-step'+n).classList.add('active');
+ var h=$('screen-step'+n).querySelector('h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true});}
+ if(n===1)renderContext();
+ if(n===3)renderPreview();
+ window.scrollTo(0,0);resizeIframe();
+}
+function showStorageWarn(){var w=document.querySelectorAll('.storage-warn');for(var i=0;i<w.length;i++)w[i].classList.add('show');resizeIframe();}
+function toggleExample(id){var el=$(id);if(el)el.style.display=el.style.display==='none'?'block':'none';resizeIframe();}
+
+/* ========== СОСТОЯНИЕ ========== */
+var state={
+ meta:{org:'',date:'',author:''},
+ policy:{scope:'',protection:[],protectionCustom:'',compliance:'',improvement:'',version:'',date:'',approved:'',placement:'',communication:''},
+ rev:1
+};
+var storageOk=true;
+var DEFAULT_COMPLIANCE='Предприятие принимает обязательство выполнять применимые законодательные требования, условия разрешений, договорные обязательства и другие требования, которые предприятие приняло как обязательные.';
+var DEFAULT_IMPROVEMENT='Для этого предприятие пересматривает экологические цели, анализирует результаты контроля и улучшает процессы, связанные со значимыми экологическими аспектами.';
+
+/* ========== ПАМЯТЬ ========== */
+function savePolicy(){
+ var p=state.policy;
+ p.scope=$('f-scope').value.trim();
+ p.protection=[];
+ for(var i=1;i<=4;i++){if($('p'+i).checked)p.protection.push(i);}
+ p.protectionCustom=$('f-protection-custom').value.trim();
+ p.compliance=$('f-compliance').value.trim();
+ p.improvement=$('f-improvement').value.trim();
+ p.version=$('f-version').value.trim();
+ p.date=$('f-date').value.trim();
+ p.approved=$('f-approved').value.trim();
+ p.placement=$('f-placement').value.trim();
+ p.communication=$('f-communication').value.trim();
+ if(!storageOk)return;
+ try{state.rev++;localStorage.setItem(STORAGE_KEY,JSON.stringify({schema:SCHEMA,rev:state.rev,updatedAt:new Date().toISOString(),meta:state.meta,data:state.policy}));}catch(e){storageOk=false;showStorageWarn();}
+}
+function loadPolicy(){
+ try{
+  var raw=localStorage.getItem(STORAGE_KEY);
+  if(raw){var d=JSON.parse(raw);state.meta=Object.assign({org:'',date:'',author:''},d.meta||{});state.rev=Number(d.rev)||1;if(d.data)state.policy=Object.assign(state.policy,d.data);return true;}
+  var aliases=['sem-policy-v1'];
+  for(var i=0;i<aliases.length;i++){
+   raw=localStorage.getItem(aliases[i]);if(!raw)continue;
+   var ld=JSON.parse(raw);
+   if(ld.meta)state.meta=Object.assign({org:'',date:'',author:''},ld.meta);
+   if(ld.data)state.policy=Object.assign(state.policy,ld.data);
+   return true;
+  }
+ }catch(e){}
+ return false;
+}
+function testStorage(){try{localStorage.setItem(STORAGE_KEY+'-t','1');localStorage.removeItem(STORAGE_KEY+'-t');}catch(e){storageOk=false;showStorageWarn();}}
+function bindFields(){
+ var p=state.policy;
+ $('f-scope').value=p.scope||'';
+ for(var i=1;i<=4;i++){$('p'+i).checked=(p.protection||[]).indexOf(i)>=0;}
+ $('f-protection-custom').value=p.protectionCustom||'';
+ $('f-compliance').value=p.compliance||DEFAULT_COMPLIANCE;
+ $('f-improvement').value=p.improvement||DEFAULT_IMPROVEMENT;
+ $('f-version').value=p.version||'';
+ $('f-date').value=p.date||'';
+ $('f-approved').value=p.approved||'';
+ $('f-placement').value=p.placement||'';
+ $('f-communication').value=p.communication||'';
+ ['f-scope','f-protection-custom','f-compliance','f-improvement','f-version','f-date','f-approved','f-placement','f-communication'].forEach(function(id){
+  $(id).addEventListener('input',savePolicy);
+ });
+}
+
+/* ========== ЕДИНЫЙ ФАЙЛ: ЗАГРУЗКА ========== */
+function importJson(input){
+ var f=input.files&&input.files[0];if(!f)return;
+ var rd=new FileReader();
+ rd.onload=function(){
+  var parsed=semParseImport(rd.result,'policy');
+  if(!parsed){msgBoth('Файл не похож на единый файл курса или черновик политики. Проверьте, что загружаете файл JSON, скачанный из конструктора программы.');input.value='';return;}
+  semCacheBundle(parsed.bundle);
+  var res=semRestoreMissingSteps(parsed.bundle,'policy');
+  var filled=0;
+  if(parsed.own){
+   ['scope','protectionCustom','compliance','improvement','version','date','approved','placement','communication'].forEach(function(k){
+    if(parsed.own[k]&&!state.policy[k]){state.policy[k]=parsed.own[k];filled++;}
+   });
+   if(Array.isArray(parsed.own.protection)&&parsed.own.protection.length&&!state.policy.protection.length){state.policy.protection=parsed.own.protection.slice();filled++;}
+   bindFields();savePolicy();
+  }
+  renderContext();
+  var extra='';
+  if(res.restored.length)extra=' Вернул в этот браузер шаги: '+res.restored.length+'. Их напоминания теперь видны на экране данных.';
+  else if(res.skipped.length)extra=' Шаги, которые уже есть в этом браузере, не перезаписаны.';
+  msgBoth('Единый файл загружен. Дополнено пустых полей политики: '+filled+'. Заполненные ранее поля не перезаписаны.'+extra);
+  input.value='';
+ };
+ rd.readAsText(f);
+}
+function msgBoth(t){
+ ['jsonMsgIntro','hintMsg'].forEach(function(id){var m=$(id);if(m){m.style.display='block';m.textContent=t;}});
+ resizeIframe();
+}
+function exportJson(){
+ var present=semExportBundle();
+ $('downloadNote').textContent='Скачан единый файл программы. В нем шаги: '+(present.length?present.join(', '):'пока только этот черновик')+'. Направления политики заберет конструктор целей и показателей.';
+ resizeIframe();
+}
+
+/* ========== КОНТЕКСТ ИЗ ПРОШЛЫХ ШАГОВ ========== */
+function significantAspects(){
+ var out=[];
+ stepRows('significance').forEach(function(s){
+  var rs=rankSigFromSource(s);
+  if(rs.sig==='Значимый')out.push({num:s.num,aspect:s.aspect||'',impact:s.impact||'',rank:rs.rank});
+ });
+ return out;
+}
+function renderContext(){
+ var scopeData=stepData('scope');
+ var sig=significantAspects();
+ var oblRows=stepRows('obligations').filter(function(o){return String(o.requirement||'').trim();});
+ var riskRows=stepRows('risks');
+ var risks=riskRows.filter(function(r){return r.rvType==='risk';});
+ var opps=riskRows.filter(function(r){return r.rvType==='opportunity';});
+ var h='<div class="context-box"><h3>Что можно использовать из прошлых шагов</h3>';
+ var any=false;
+ if(scopeData&&(scopeData.activities||scopeData.boundaries)){
+  any=true;
+  h+='<p><strong>Область применения:</strong> '+esc(cut(scopeData.activities||scopeData.boundaries||'',140))+'</p>';
+ }
+ if(sig.length){
+  any=true;
+  h+='<p><strong>Значимые аспекты ('+sig.length+'):</strong></p><ul>';
+  sig.slice(0,6).forEach(function(s){h+='<li>'+esc(cut(s.aspect||'аспект не указан',80))+(s.rank?' (ранг '+s.rank+')':'')+'</li>';});
+  if(sig.length>6)h+='<li>...и еще '+(sig.length-6)+'</li>';
+  h+='</ul>';
+ } else if(stepRows('significance').length){
+  h+='<p><strong>Значимые аспекты:</strong> <span class="empty">в оценке значимости нет записей со статусом «значимый». Проверьте ответы или добавьте экологические основания в конструкторе оценки.</span></p>';
+ } else if(stepRows('aspects').length){
+  h+='<p><strong>Значимые аспекты:</strong> <span class="empty">реестр аспектов есть, оценка значимости еще не пройдена. Значимые аспекты появятся после оценки.</span></p>';
+ }
+ if(oblRows.length){
+  any=true;
+  h+='<p><strong>Обязательства ('+oblRows.length+'):</strong></p><ul>';
+  oblRows.slice(0,4).forEach(function(o){h+='<li>'+esc(cut(o.requirement,80))+'</li>';});
+  if(oblRows.length>4)h+='<li>...и еще '+(oblRows.length-4)+'</li>';
+  h+='</ul>';
+ }
+ if(risks.length||opps.length){
+  any=true;
+  h+='<p><strong>Риски и возможности:</strong> рисков '+risks.length+', возможностей '+opps.length+'.</p><ul>';
+  risks.slice(0,3).forEach(function(r){h+='<li>риск: '+esc(cut(r.description||'цепочка не начата',80))+'</li>';});
+  opps.slice(0,2).forEach(function(r){h+='<li>возможность: '+esc(cut(r.description||'цепочка не начата',80))+'</li>';});
+  h+='</ul>';
+ }
+ if(!any){
+  h+='<p class="empty">Данные прошлых шагов не найдены в этом браузере. Загрузите единый файл курса кнопкой выше или заполните поля вручную: это не мешает пройти урок.</p>';
+ }
+ h+='<p style="margin:8px 0 0">Напоминания не подставляются в текст сами: кнопку подсказок вы найдете на экране сборки, и она заполняет только пустые поля.</p></div>';
+ $('contextBox').innerHTML=h;
+ resizeIframe();
+}
+
+/* ========== ПОДСКАЗКИ ИЗ ПРОШЛЫХ ШАГОВ ========== */
+function applyHints(){
+ var done=[];
+ var scopeData=stepData('scope');
+ if(!$('f-scope').value.trim()&&scopeData&&(scopeData.activities||scopeData.boundaries)){
+  var t='';
+  if(scopeData.activities)t+=scopeData.activities+'. ';
+  if(scopeData.boundaries)t+='Политика применяется к: '+scopeData.boundaries+'.';
+  $('f-scope').value=t.trim();
+  done.push('описание предприятия и границ из области применения');
+ }
+ var sig=significantAspects();
+ if(sig.length){
+  for(var i=1;i<=4;i++){
+   if($('p'+i).checked)continue;
+   var hit=false;
+   sig.forEach(function(s){
+    var text=((s.aspect||'')+' '+(s.impact||'')).toLowerCase();
+    PROTECT_KEYS[i].forEach(function(k){if(text.indexOf(k)>=0)hit=true;});
+   });
+   if(hit){$('p'+i).checked=true;done.push('направление защиты по значимым аспектам: '+PROTECT_LABELS[i]);}
+  }
+ }
+ savePolicy();
+ if(done.length){
+  msgBoth('Подсказки подставлены в пустые поля: '+done.join('; ')+'. Проверьте и отредактируйте текст: конструктор не решает за вас, что включать в политику.');
+ } else {
+  msgBoth('Подставлять нечего: поля уже заполнены или в прошлых шагах нет данных для подсказок. Соберите текст вручную.');
+ }
+}
+
+/* ========== ПРЕДПРОСМОТР ========== */
+function renderPreview(){
+ var p=state.policy;
+ var prot=[];
+ p.protection.forEach(function(i){prot.push(PROTECT_LABELS[i]);});
+ if(p.protectionCustom)prot.push(p.protectionCustom);
+ var h='<div class="preview-text">';
+ h+='<p><strong>Экологическая политика</strong></p>';
+ if(p.scope)h+='<p>'+esc(p.scope)+'</p>';
+ var protText='Предприятие принимает обязательство по защите окружающей среды и предотвращению загрязнения';
+ if(prot.length)protText+=', в том числе: '+esc(prot.join('; '));
+ h+='<p>'+protText+'.</p>';
+ if(p.compliance)h+='<p>'+esc(p.compliance)+'</p>';
+ var impText='Предприятие принимает обязательство постоянно улучшать СЭМ и повышать экологическую результативность.';
+ if(p.improvement)impText+=' '+esc(p.improvement);
+ h+='<p>'+impText+'</p>';
+ h+='<p>Политика служит основой для постановки экологических целей. Документ доводится до работников предприятия и доступен заинтересованным сторонам.</p>';
+ var meta=[];
+ if(p.version)meta.push('Версия: '+esc(p.version));
+ if(p.date)meta.push('Дата: '+esc(p.date));
+ if(p.approved)meta.push('Утвердил: '+esc(p.approved));
+ if(p.placement)meta.push('Размещение: '+esc(p.placement));
+ if(p.communication)meta.push('Ознакомление: '+esc(p.communication));
+ if(meta.length)h+='<p><em>'+meta.join('. ')+'.</em></p>';
+ h+='</div>';
+ $('previewBox').innerHTML=h;
+ resizeIframe();
+}
+
+/* ========== WORD ========== */
+function xmlEsc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}
+function run(t,o){o=o||{};var r='';if(o.b)r+='<w:b/>';if(o.i)r+='<w:i/>';if(o.color)r+='<w:color w:val="'+o.color+'"/>';if(o.sz)r+='<w:sz w:val="'+o.sz+'"/><w:szCs w:val="'+o.sz+'"/>';return '<w:r>'+(r?'<w:rPr>'+r+'</w:rPr>':'')+'<w:t xml:space="preserve">'+xmlEsc(t)+'</w:t></w:r>';}
+function para(t,o){o=o||{};var p='';if(o.style)p+='<w:pStyle w:val="'+o.style+'"/>';if(o.before||o.after)p+='<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after||0)+'"/>';if(o.jc)p+='<w:jc w:val="'+o.jc+'"/>';return '<w:p>'+(p?'<w:pPr>'+p+'</w:pPr>':'')+run(t,o)+'</w:p>';}
+function buildDoc(){
+ var p=state.policy;
+ var prot=[];
+ p.protection.forEach(function(i){prot.push(PROTECT_LABELS[i]);});
+ if(p.protectionCustom)prot.push(p.protectionCustom);
+ var b=[];
+ b.push(para('Экологическая политика. Проект',{style:'Title'}));
+ b.push(para('Предприятие или учебный кейс: '+(state.meta.org||'не указано')+'. Дата: '+(state.meta.date||today())+'. Подготовил: '+(state.meta.author||'не указан')+'. Статус: проект для обсуждения с руководством.',{i:true,color:'6B7280',sz:20,after:120}));
+ if(p.scope)b.push(para(p.scope,{after:100}));
+ var protText='Предприятие принимает обязательство по защите окружающей среды и предотвращению загрязнения';
+ if(prot.length)protText+=', в том числе: '+prot.join('; ');
+ b.push(para(protText+'.',{after:100}));
+ if(p.compliance)b.push(para(p.compliance,{after:100}));
+ var impText='Предприятие принимает обязательство постоянно улучшать СЭМ и повышать экологическую результативность.';
+ if(p.improvement)impText+=' '+p.improvement;
+ b.push(para(impText,{after:100}));
+ b.push(para('Политика служит основой для постановки экологических целей. Документ доводится до работников предприятия и доступен заинтересованным сторонам.',{after:100}));
+ var meta=[];
+ if(p.version)meta.push('Версия: '+p.version);
+ if(p.date)meta.push('Дата: '+p.date);
+ if(p.approved)meta.push('Утвердил: '+p.approved);
+ if(p.placement)meta.push('Размещение: '+p.placement);
+ if(p.communication)meta.push('Ознакомление: '+p.communication);
+ if(meta.length)b.push(para(meta.join('. ')+'.',{i:true,color:'6B7280',sz:20,before:200}));
+ b.push(para('Документ содержит проект экологической политики, собранный учебным конструктором. Направления защиты подобраны с опорой на значимые аспекты предприятия, если они были оценены в прошлых шагах. Конструктор не подтверждает соответствие стандарту и не утверждает документ: проект требует обсуждения с руководством и формального утверждения.',{i:true,color:'6B7280',sz:20,before:240}));
+ b.push('<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>'+b.join('')+'</w:body></w:document>';
+}
+var CT_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/></Types>';
+var RELS_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+var DRELS_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+var STYLES_XML='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="120"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/><w:color w:val="1E293B"/></w:rPr></w:style></w:styles>';
+var CRC_TABLE=(function(){var t=new Uint32Array(256);for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(u){var c=0xFFFFFFFF;for(var i=0;i<u.length;i++)c=CRC_TABLE[(c^u[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zipStore(files){var enc=new TextEncoder(),now=new Date();var dt=((now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1))&0xFFFF;var dd=(((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate())&0xFFFF;var loc=[],cen=[],off=0;files.forEach(function(f){var nb=enc.encode(f.name),data=f.data,crc=crc32(data);var lh=new Uint8Array(30+nb.length),dv=new DataView(lh.buffer);dv.setUint32(0,0x04034b50,true);dv.setUint16(4,20,true);dv.setUint16(6,0,true);dv.setUint16(8,0,true);dv.setUint16(10,dt,true);dv.setUint16(12,dd,true);dv.setUint32(14,crc,true);dv.setUint32(18,data.length,true);dv.setUint32(22,data.length,true);dv.setUint16(26,nb.length,true);dv.setUint16(28,0,true);lh.set(nb,30);loc.push(lh,data);var ch=new Uint8Array(46+nb.length),cv=new DataView(ch.buffer);cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint16(8,0,true);cv.setUint16(10,0,true);cv.setUint16(12,dt,true);cv.setUint16(14,dd,true);cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);cv.setUint16(28,nb.length,true);cv.setUint16(30,0,true);cv.setUint16(32,0,true);cv.setUint16(34,0,true);cv.setUint16(36,0,true);cv.setUint32(38,0,true);cv.setUint32(42,off,true);ch.set(nb,46);cen.push(ch);off+=lh.length+data.length;});var cs=0;cen.forEach(function(p){cs+=p.length;});var eo=new Uint8Array(22),ev=new DataView(eo.buffer);ev.setUint32(0,0x06054b50,true);ev.setUint16(4,0,true);ev.setUint16(6,0,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);ev.setUint32(12,cs,true);ev.setUint32(16,off,true);ev.setUint16(20,0,true);var tot=0;loc.forEach(function(p){tot+=p.length;});cen.forEach(function(p){tot+=p.length;});tot+=22;var out=new Uint8Array(tot),o=0;loc.forEach(function(p){out.set(p,o);o+=p.length;});cen.forEach(function(p){out.set(p,o);o+=p.length;});out.set(eo,o);return out;}
+function saveBlob(bytes,name){
+ var blob=new Blob([bytes],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'});
+ var url=URL.createObjectURL(blob);var a=document.createElement('a');a.href=url;a.download=name;
+ document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(url);},4000);
+}
+function docFiles(xml){var enc=new TextEncoder();return[{name:'[Content_Types].xml',data:enc.encode(CT_XML)},{name:'_rels/.rels',data:enc.encode(RELS_XML)},{name:'word/document.xml',data:enc.encode(xml)},{name:'word/styles.xml',data:enc.encode(STYLES_XML)},{name:'word/_rels/document.xml.rels',data:enc.encode(DRELS_XML)}];}
+function downloadDocx(){
+ saveBlob(zipStore(docFiles(buildDoc())),'Ekologicheskaya_politika_'+today()+'.docx');
+ $('downloadNote').textContent='Запрос на скачивание отправлен. Проверьте сохранение файла.';
+ resizeIframe();
+}
+
+/* ========== СТАРТ ========== */
+document.addEventListener('DOMContentLoaded',function(){
+ try{
+  testStorage();
+  if(loadPolicy())$('restoreNote').style.display='block';
+  bindFields();
+  resizeIframe();
+  if('ResizeObserver' in window){var ro=new ResizeObserver(function(){resizeIframe();});ro.observe(document.body);}
+ }catch(e){showBoot(e.message);}
+});
+window.addEventListener('load',function(){resizeIframe();});
+</script>
+</body>
+</html>
