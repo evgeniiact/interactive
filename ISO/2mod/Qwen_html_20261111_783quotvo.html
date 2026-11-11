@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Разбор цели СЭМ</title>
+<style>
+  :root {
+    --primary: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --gray: #f8fafc;
+    --accent: #2563eb;
+    --accent-bg: #eff6ff;
+    --accent-bd: #bfdbfe;
+    --r: 10px;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--primary);
+    background: #fff;
+    margin: 0;
+    padding: 14px;
+  }
+
+  .container {
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  .hint-top {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 560px;
+  }
+
+  th, td {
+    padding: 10px 10px;
+    text-align: left;
+    vertical-align: top;
+    border-right: 1px solid var(--border);
+    font-size: 13px;
+    line-height: 1.45;
+  }
+
+  th:last-child, td:last-child {
+    border-right: none;
+  }
+
+  th {
+    background: var(--gray);
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--primary);
+    cursor: pointer;
+    user-select: none;
+    transition: background 0.15s ease;
+    position: relative;
+  }
+
+  th:hover {
+    background: var(--accent-bg);
+  }
+
+  th.active {
+    background: var(--accent-bg);
+    color: var(--accent);
+    border-bottom: 2px solid var(--accent);
+  }
+
+  th .col-num {
+    display: block;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted);
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+
+  th.active .col-num {
+    color: var(--accent);
+  }
+
+  td {
+    border-top: 1px solid var(--border);
+  }
+
+  td.active-col {
+    background: var(--accent-bg);
+  }
+
+  .cell-hint {
+    font-size: 11px;
+    color: var(--muted);
+    margin-top: 6px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+
+  .cell-hint::before {
+    content: 'i';
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 1px solid var(--muted);
+    font-size: 10px;
+    font-style: normal;
+    flex-shrink: 0;
+  }
+
+  .explain {
+    margin-top: 14px;
+    padding: 14px 16px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-bd);
+    border-radius: var(--r);
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--primary);
+    display: none;
+    animation: fadeIn 0.2s ease;
+  }
+
+  .explain.show {
+    display: block;
+  }
+
+  .explain-title {
+    font-weight: 700;
+    font-size: 14px;
+    margin-bottom: 6px;
+    color: var(--accent);
+  }
+
+  .explain p {
+    margin: 0;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 10px; }
+    th, td { padding: 8px 6px; font-size: 12px; }
+    th { font-size: 11px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="hint-top">Нажмите на заголовок любой колонки, чтобы увидеть разбор</div>
+
+  <div class="table-wrap">
+    <table>
+      <thead>
+        <tr>
+          <th data-col="goal" onclick="showExplain('goal')">
+            <span class="col-num">1</span>
+            Цель
+          </th>
+          <th data-col="action" onclick="showExplain('action')">
+            <span class="col-num">2</span>
+            Что будет сделано
+          </th>
+          <th data-col="resources" onclick="showExplain('resources')">
+            <span class="col-num">3</span>
+            Ресурсы
+          </th>
+          <th data-col="owner" onclick="showExplain('owner')">
+            <span class="col-num">4</span>
+            Ответственный
+          </th>
+          <th data-col="terms" onclick="showExplain('terms')">
+            <span class="col-num">5</span>
+            Сроки и проверка
+          </th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td data-col="goal">Снизить потери шихты на 15% к декабрю</td>
+          <td data-col="action">Заменить дозирующее оборудование на участке смешивания</td>
+          <td data-col="resources">450 тыс. руб., 2 новых дозатора, 40 часов рабочего времени технолога</td>
+          <td data-col="owner">Начальник производства</td>
+          <td data-col="terms">Март–май: монтаж.<br>Июнь: обучение.<br>Проверка: акты ввода в эксплуатацию и ежемесячный учет потерь.</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="explain" id="explain"></div>
+
+</div>
+
+<script>
+  const explains = {
+    goal: {
+      title: 'Цель',
+      text: 'Формулировка содержит измеримый показатель (15%) и срок (к декабрю). Без цифры цель нельзя проверить, без срока – невозможно контролировать. Это основа, от которой строятся все остальные колонки.'
+    },
+    action: {
+      title: 'Что будет сделано',
+      text: 'Конкретное действие с глаголом совершенного вида – «заменить», «внедрить», «разработать». Никаких «улучшить процесс» или «повысить культуру»: такие формулировки не дают понимания, что именно нужно сделать.'
+    },
+    resources: {
+      title: 'Ресурсы',
+      text: 'Не только деньги. Указаны финансы, оборудование и время людей. Без этого директор не подпишет бюджет, а исполнитель не сможет выполнить задачу. Ресурсы – это доказательство реалистичности плана.'
+    },
+    owner: {
+      title: 'Ответственный',
+      text: 'Должность, а не имя. Если «Иванов И.И.» уволится, процесс не встанет, потому что ответственность лежит на роли «начальник производства». При смене сотрудника цель сохраняет владельца.'
+    },
+    terms: {
+      title: 'Сроки и проверка',
+      text: 'Есть дата окончания и конкретный артефакт, по которому мы поймем, что действие выполнено: акт, отчет, лист ознакомления. Без артефакта цель остается декларацией – никто не сможет подтвердить результат.'
+    }
+  };
+
+  let activeCol = null;
+
+  function showExplain(col) {
+    const explainEl = document.getElementById('explain');
+
+    // Если кликнули по той же колонке – закрываем
+    if (activeCol === col) {
+      explainEl.classList.remove('show');
+      clearActive();
+      activeCol = null;
+      resizeIframe();
+      return;
+    }
+
+    activeCol = col;
+
+    // Подсвечиваем заголовок и ячейку
+    document.querySelectorAll('th').forEach(th => th.classList.remove('active'));
+    document.querySelectorAll('td').forEach(td => td.classList.remove('active-col'));
+
+    document.querySelector(`th[data-col="${col}"]`).classList.add('active');
+    document.querySelector(`td[data-col="${col}"]`).classList.add('active-col');
+
+    // Показываем разбор
+    const data = explains[col];
+    explainEl.innerHTML = `
+      <div class="explain-title">${data.title}</div>
+      <p>${data.text}</p>
+    `;
+    explainEl.classList.add('show');
+
+    resizeIframe();
+  }
+
+  function clearActive() {
+    document.querySelectorAll('th').forEach(th => th.classList.remove('active'));
+    document.querySelectorAll('td').forEach(td => td.classList.remove('active-col'));
+  }
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
+  }
+
+  window.addEventListener('load', resizeIframe);
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(resizeIframe).observe(document.body);
+  }
+</script>
+
+</body>
+</html>
