@@ -1,0 +1,377 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Тренажер: экологические цели</title>
+<style>
+  :root {
+    --primary: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --gray: #f8fafc;
+    --accent: #2563eb;
+    --accent-d: #1d4ed8;
+    --bad-bg: #fef2f2;
+    --bad-bd: #fecaca;
+    --bad-text: #991b1b;
+    --ok-bg: #f0fdf4;
+    --ok-bd: #bbf7d0;
+    --ok-text: #166534;
+    --r: 10px;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--primary);
+    background: #fff;
+    margin: 0;
+    padding: 20px;
+  }
+
+  .container {
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  .screen { display: none; }
+  .screen.active { display: block; }
+
+  .case-num {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-weight: 600;
+  }
+
+  .scenario {
+    font-size: 14px;
+    margin-bottom: 20px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .scenario strong {
+    display: block;
+    margin-bottom: 8px;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .option {
+    padding: 14px 16px;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    cursor: pointer;
+    background: #fff;
+    font-size: 14px;
+    line-height: 1.5;
+    text-align: left;
+    font-family: inherit;
+    color: var(--primary);
+    transition: all 0.15s ease;
+  }
+
+  .option:hover:not(:disabled) {
+    background: var(--gray);
+    border-color: var(--accent);
+  }
+
+  .option:focus-visible {
+    outline: 2px solid var(--accent-d);
+    outline-offset: 1px;
+  }
+
+  .option:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+
+  .option.selected-correct {
+    background: var(--ok-bg);
+    border-color: var(--ok-bd);
+    color: var(--ok-text);
+  }
+
+  .option.selected-wrong {
+    background: var(--bad-bg);
+    border-color: var(--bad-bd);
+    color: var(--bad-text);
+  }
+
+  .feedback {
+    font-size: 14px;
+    margin-bottom: 20px;
+    padding: 16px;
+    border-radius: var(--r);
+    display: none;
+    line-height: 1.6;
+  }
+
+  .feedback.show { display: block; }
+  .feedback.correct { 
+    background: var(--ok-bg); 
+    border: 1px solid var(--ok-bd);
+    color: var(--ok-text); 
+  }
+  .feedback.wrong { 
+    background: var(--bad-bg); 
+    border: 1px solid var(--bad-bd);
+    color: var(--bad-text); 
+  }
+
+  .actions {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 10px 18px;
+    border-radius: var(--r);
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    background: #fff;
+    color: var(--primary);
+    border: 1px solid var(--border);
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .btn:hover {
+    background: var(--gray);
+    border-color: var(--muted);
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--accent-d);
+    outline-offset: 2px;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .btn-primary:hover {
+    background: var(--accent-d);
+    border-color: var(--accent-d);
+  }
+
+  .progress {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 16px;
+    text-align: right;
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <!-- Экран 1 -->
+  <div class="screen active" id="screen1">
+    <div class="progress">Кейс 1 из 3</div>
+    <div class="scenario">
+      <strong>Ситуация:</strong>
+      Вы подготовили проект экологических целей для стекольного завода. Цели связаны с политикой, измеримы, имеют сроки и ответственных. На совещании с руководством начальник цеха варки говорит: «Зачем нам эти цели про снижение выбросов на 15%? Это же огромные деньги на фильтры и обслуживание. Давайте напишем просто: "стремиться к снижению выбросов". Так безопаснее – если не получится, никто не спросит. А если напишем конкретные 15%, нас потом будут тыкать носом в эти цифры каждый квартал».
+    </div>
+
+    <div class="options" id="options1">
+      <button class="option" onclick="selectOption(1, 1, this)">Согласиться с начальником цеха, переписать цели общими фразами и убрать конкретные показатели, чтобы не создавать лишних обязательств.</button>
+      <button class="option" onclick="selectOption(1, 2, this)">Заявить начальнику цеха, что он нарушает требования стандарта, и настоять на своих формулировках без объяснений.</button>
+      <button class="option" onclick="selectOption(1, 3, this)">Объяснить начальнику цеха, что цели без конкретных показателей нельзя проверить, и это гарантированное несоответствие на аудите. Показать, что конкретные цифры дают основание запросить бюджет на фильтры и показать руководству реальную потребность в ресурсах. Предложить разбить цель на этапы: первый квартал – анализ, второй – закупка, третий-четвертый – внедрение и проверка результата.</button>
+    </div>
+
+    <div class="feedback" id="feedback1"></div>
+
+    <div class="actions" id="actions1" style="display:none">
+      <button class="btn" onclick="nextCase(1)">Следующий кейс</button>
+      <button class="btn" onclick="resetCase(1)">Ответить заново</button>
+    </div>
+  </div>
+
+  <!-- Экран 2 -->
+  <div class="screen" id="screen2">
+    <div class="progress">Кейс 2 из 3</div>
+    <div class="scenario">
+      <strong>Ситуация:</strong>
+      Вы анализируете проект целей, который подготовил новый эколог на заводе. В документе пять целей: (1) Снизить выбросы от печей на 20% к концу года. Ответственный – Петров А.С. (2) Улучшить экологическую ситуацию. (3) Снизить потери шихты на 10%. Ответственный – эколог. (4) Внедрить раздельный сбор отходов в цехах. (5) Повысить экологическую культуру персонала. Срок выполнения всех целей – «по мере возможности».
+    </div>
+
+    <div class="options" id="options2">
+      <button class="option" onclick="selectOption(2, 1, this)">Принять все цели – они охватывают разные направления и показывают комплексный подход.</button>
+      <button class="option" onclick="selectOption(2, 2, this)">Вернуть цели на доработку: цель 2 не измерима, в цели 3 неверный ответственный, у всех целей нет конкретных сроков, цель 4 и 5 не связаны с политикой завода.</button>
+      <button class="option" onclick="selectOption(2, 3, this)">Оставить только цель 1 – она единственная содержит конкретный показатель и срок.</button>
+      <button class="option" onclick="selectOption(2, 4, this)">Убрать имя Петров А.С. и заменить на «начальник цеха варки», добавить срок «к концу года» ко всем целям.</button>
+    </div>
+
+    <div class="feedback" id="feedback2"></div>
+
+    <div class="actions" id="actions2" style="display:none">
+      <button class="btn" onclick="nextCase(2)">Следующий кейс</button>
+      <button class="btn" onclick="resetCase(2)">Ответить заново</button>
+    </div>
+  </div>
+
+  <!-- Экран 3 -->
+  <div class="screen" id="screen3">
+    <div class="progress">Кейс 3 из 3</div>
+    <div class="scenario">
+      <strong>Ситуация:</strong>
+      Директор завода требует поставить амбициозную цель: «Снизить потребление природного газа на 40% за 6 месяцев». Вы знаете, что текущее оборудование не позволяет достичь такого результата без полной замены печей, на что нет бюджета. При этом в политике завода есть обязательство по рациональному использованию ресурсов.
+    </div>
+
+    <div class="options" id="options3">
+      <button class="option" onclick="selectOption(3, 1, this)">Включить цель в документ – директор лучше знает возможности предприятия, а если не получится, всегда можно объяснить внешними факторами.</button>
+      <button class="option" onclick="selectOption(3, 2, this)">Отказаться включать нереалистичную цель, сославшись на отсутствие бюджета и технического потенциала.</button>
+      <button class="option" onclick="selectOption(3, 3, this)">Предложить провести аудит текущего потребления газа, рассчитать реалистичный процент снижения на основе данных, разбить цель на этапы с конкретными мероприятиями и показать директору план достижения с оценкой необходимых ресурсов.</button>
+      <button class="option" onclick="selectOption(3, 4, this)">Включить цель, но добавить примечание «при наличии финансирования».</button>
+    </div>
+
+    <div class="feedback" id="feedback3"></div>
+
+    <div class="actions" id="actions3" style="display:none">
+      <button class="btn btn-primary" onclick="showFinal()">Завершить тренажер</button>
+      <button class="btn" onclick="resetCase(3)">Ответить заново</button>
+    </div>
+  </div>
+
+  <!-- Финальный экран -->
+  <div class="screen" id="screenFinal">
+    <div class="scenario" style="border:none; text-align:center; padding: 20px 0;">
+      <h2 style="margin:0 0 12px; font-size:20px">Тренажер завершен</h2>
+      <p style="margin:0; font-size:15px; color:var(--muted)">Вы разобрали все кейсы. Теперь вы лучше понимаете, как формулировать измеримые и реалистичные экологические цели.</p>
+    </div>
+    <div class="actions" style="justify-content:center">
+      <button class="btn btn-primary" onclick="restartAll()">Пройти заново</button>
+    </div>
+  </div>
+
+</div>
+
+<script>
+  const answers = {
+    1: {
+      correct: 3,
+      feedback: {
+        1: 'Вы уступили и сделали цели нерабочими. На аудите предприятие получит несоответствие: цели не измеримы, их нельзя проверить. Вам придется переделывать документ.',
+        2: 'Вы разрушили контакт с руководителем подразделения. Эколог в роли директивного лектора не сможет внедрить систему, где выполнение целей зависит от руководителей цехов.',
+        3: 'Вы поступили правильно. Вы сохранили позицию доброжелательного ментора, защитили достоверность СЭМ и показали начальнику цеха, что конкретные цели – это инструмент для получения ресурсов, а не ловушка. Вы предложили разбить цель на этапы, что делает ее более реалистичной.'
+      }
+    },
+    2: {
+      correct: 2,
+      feedback: {
+        1: 'Ошибка. Цели 2 и 5 не измеримы, цель 3 имеет неверного ответственного, у всех нет сроков. На аудите это приведет к множественным несоответствиям.',
+        2: 'Верно. Вы выявили ключевые проблемы: цель 2 («улучшить ситуацию») не измерима, в цели 3 ответственным должен быть начальник производства, а не эколог, сроки «по мере возможности» недопустимы, цели 4 и 5 не связаны с политикой стекольного завода.',
+        3: 'Неполное решение. Хотя цель 1 действительно единственная корректная, вы упускаете возможность исправить другие цели и сохранить полезные направления.',
+        4: 'Частичное решение. Замена имени на роль – правильный шаг, но это не решает проблему измеримости целей 2 и 5, а также неверного ответственного в цели 3.'
+      }
+    },
+    3: {
+      correct: 3,
+      feedback: {
+        1: 'Ошибка. Включение заведомо невыполнимой цели дискредитирует систему СЭМ. Аудитор проверит план достижения и отсутствие ресурсов, что приведет к несоответствию.',
+        2: 'Риск конфликта. Прямой отказ без предложений альтернативы может разрушить доверие руководства к системе СЭМ.',
+        3: 'Правильно. Вы показали себя как профессионал: не отвергли требование директора, но предложили реалистичный путь достижения на основе данных. Это сохраняет доверие и обеспечивает выполнение требований стандарта о реалистичности целей.',
+        4: 'Ошибка. Примечание не делает цель реалистичной. Аудитор все равно зафиксирует несоответствие, так как цель не подкреплена планом и ресурсами.'
+      }
+    }
+  };
+
+  let currentAnswers = {};
+
+  function selectOption(caseNum, optionNum, btn) {
+    const options = document.querySelectorAll(`#options${caseNum} .option`);
+    options.forEach(o => {
+      o.disabled = true;
+      o.classList.remove('selected-correct', 'selected-wrong');
+    });
+
+    const feedback = document.getElementById(`feedback${caseNum}`);
+    const actions = document.getElementById(`actions${caseNum}`);
+    const isCorrect = optionNum === answers[caseNum].correct;
+
+    currentAnswers[caseNum] = optionNum;
+
+    if (isCorrect) {
+      btn.classList.add('selected-correct');
+      feedback.className = 'feedback correct show';
+    } else {
+      btn.classList.add('selected-wrong');
+      feedback.className = 'feedback wrong show';
+    }
+
+    feedback.innerHTML = answers[caseNum].feedback[optionNum];
+    actions.style.display = 'flex';
+    resizeIframe();
+  }
+
+  function nextCase(caseNum) {
+    document.getElementById(`screen${caseNum}`).classList.remove('active');
+    document.getElementById(`screen${caseNum + 1}`).classList.add('active');
+    resizeIframe();
+    window.scrollTo(0, 0);
+  }
+
+  function resetCase(caseNum) {
+    const options = document.querySelectorAll(`#options${caseNum} .option`);
+    options.forEach(o => {
+      o.disabled = false;
+      o.classList.remove('selected-correct', 'selected-wrong');
+    });
+    document.getElementById(`feedback${caseNum}`).className = 'feedback';
+    document.getElementById(`feedback${caseNum}`).innerHTML = '';
+    document.getElementById(`actions${caseNum}`).style.display = 'none';
+    delete currentAnswers[caseNum];
+    resizeIframe();
+  }
+
+  function showFinal() {
+    document.getElementById('screen3').classList.remove('active');
+    document.getElementById('screenFinal').classList.add('active');
+    resizeIframe();
+  }
+
+  function restartAll() {
+    [1, 2, 3].forEach(num => {
+      resetCase(num);
+      document.getElementById(`screen${num}`).classList.remove('active');
+    });
+    document.getElementById('screenFinal').classList.remove('active');
+    document.getElementById('screen1').classList.add('active');
+    currentAnswers = {};
+    resizeIframe();
+    window.scrollTo(0, 0);
+  }
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
+  }
+
+  window.addEventListener('load', resizeIframe);
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(resizeIframe).observe(document.body);
+  }
+</script>
+
+</body>
+</html>
