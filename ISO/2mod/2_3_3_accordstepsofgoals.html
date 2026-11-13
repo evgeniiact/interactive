@@ -25,6 +25,8 @@
     background: #fff;
     margin: 0;
     padding: 14px;
+    /* Стабилизируем начальную высоту, чтобы избежать схлопывания при загрузке */
+    min-height: 400px; 
   }
 
   .container {
@@ -261,22 +263,38 @@
 </div>
 
 <script>
-  document.querySelectorAll('details').forEach(detail => {
-    detail.addEventListener('toggle', () => {
-      resizeIframe();
-    });
-  });
-
+  // Дебанс-функция для предотвращения множественных вызовов resizeIframe
+  let resizeTimeout;
   function resizeIframe() {
-    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
-      window.parentIFrame.size();
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+        window.parentIFrame.size();
+      }
+    }, 50); // Задержка 50 мс сглаживает скачки при загрузке
+  }
+
+  // Наблюдаем только за контейнером, а не за всем body (меньше ложных срабатываний)
+  if ('ResizeObserver' in window) {
+    const container = document.querySelector('.container');
+    if (container) {
+      const ro = new ResizeObserver(() => {
+        resizeIframe();
+      });
+      ro.observe(container);
     }
   }
 
+  // Вызываем при готовности DOM и полной загрузке (шрифты, стили)
+  window.addEventListener('DOMContentLoaded', resizeIframe);
   window.addEventListener('load', resizeIframe);
-  if ('ResizeObserver' in window) {
-    new ResizeObserver(resizeIframe).observe(document.body);
-  }
+
+  // При открытии/закрытии details даем браузеру 50 мс на отрисовку перед запросом высоты
+  document.querySelectorAll('details').forEach(detail => {
+    detail.addEventListener('toggle', () => {
+      setTimeout(resizeIframe, 50);
+    });
+  });
 </script>
 
 </body>
