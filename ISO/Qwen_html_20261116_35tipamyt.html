@@ -1,0 +1,533 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Соотнеси пару: роли и задачи СЭМ</title>
+<style>
+  :root {
+    --primary: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg: #ffffff;
+    --gray: #f8fafc;
+    --accent: #2563eb;
+    --accent-bg: #eff6ff;
+    --ok: #166534;
+    --ok-bg: #f0fdf4;
+    --ok-bd: #bbf7d0;
+    --bad: #991b1b;
+    --bad-bg: #fef2f2;
+    --bad-bd: #fecaca;
+    --r: 10px;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--primary);
+    background: var(--bg);
+    margin: 0;
+    padding: 12px;
+  }
+
+  .container {
+    max-width: 650px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .match-grid {
+    display: grid;
+    grid-template-columns: 1fr 60px 1fr;
+    gap: 0;
+    position: relative;
+    min-height: 400px;
+  }
+
+  .col {
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    height: 100%;
+    padding: 4px 0;
+  }
+
+  .svg-layer {
+    grid-column: 1 / -1;
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .svg-layer path {
+    fill: none;
+    stroke: var(--accent);
+    stroke-width: 2;
+    stroke-dasharray: 6 4;
+    transition: stroke 0.3s ease, stroke-width 0.3s ease;
+  }
+
+  .svg-layer path.correct {
+    stroke: var(--ok);
+    stroke-width: 2.5;
+    stroke-dasharray: none;
+  }
+
+  .svg-layer path.wrong {
+    stroke: var(--bad);
+    stroke-width: 2;
+  }
+
+  .card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 12px 14px;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    min-height: 60px;
+  }
+
+  .card:hover:not(.correct):not(.wrong) {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 6px rgba(37, 99, 235, 0.08);
+  }
+
+  .card.selected {
+    border-color: var(--accent);
+    background: var(--accent-bg);
+    box-shadow: 0 0 0 2px var(--accent-bg);
+  }
+
+  .card.correct {
+    border-color: var(--ok-bd);
+    background: var(--ok-bg);
+    color: var(--ok);
+    cursor: default;
+  }
+
+  .card.wrong {
+    border-color: var(--bad-bd);
+    background: var(--bad-bg);
+    color: var(--bad);
+  }
+
+  .card-text {
+    font-size: 13px;
+    line-height: 1.45;
+    pointer-events: none;
+  }
+
+  .card-role {
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  /* Всплывающее пояснение в стиле интерактивов чата */
+  .explanation {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 0;
+    right: 0;
+    background: #fff;
+    border: 1px solid var(--ok-bd);
+    border-left: 3px solid var(--ok);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--primary);
+    opacity: 0;
+    visibility: hidden;
+    transform: translateY(5px);
+    transition: all 0.2s ease;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+    pointer-events: none;
+  }
+
+  .explanation::after {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: var(--ok-bd) transparent transparent transparent;
+  }
+
+  .explanation::before {
+    content: '';
+    position: absolute;
+    top: 100%;
+    left: 20px;
+    border-width: 5px;
+    border-style: solid;
+    border-color: #fff transparent transparent transparent;
+    margin-top: -1px;
+  }
+
+  .card.correct:hover .explanation,
+  .card.correct:focus .explanation,
+  .card.correct.show-tooltip .explanation {
+    opacity: 1;
+    visibility: visible;
+    transform: translateY(0);
+    pointer-events: auto;
+  }
+
+  .actions {
+    margin-top: 16px;
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+  }
+
+  .btn {
+    padding: 10px 20px;
+    border-radius: var(--r);
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--primary);
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .btn:hover {
+    background: var(--gray);
+    border-color: var(--muted);
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+
+  .btn-primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
+  }
+
+  .feedback {
+    text-align: center;
+    font-size: 14px;
+    font-weight: 600;
+    margin-top: 12px;
+    min-height: 20px;
+  }
+
+  .feedback.success { color: var(--ok); }
+  .feedback.error { color: var(--bad); }
+
+  .hint {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 12px;
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 8px; }
+    .match-grid { grid-template-columns: 1fr 40px 1fr; }
+    .card { padding: 10px; min-height: 50px; }
+    .card-text { font-size: 12px; }
+    .card-role { font-size: 13px; }
+    .explanation { 
+      position: fixed; 
+      bottom: 20px; 
+      left: 10px; 
+      right: 10px; 
+      z-index: 100;
+    }
+    .explanation::after, .explanation::before { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="hint">Нажмите на роль слева, затем на соответствующую задачу справа</div>
+  
+  <div class="match-grid" id="matchGrid">
+    <svg class="svg-layer" id="svgLayer"></svg>
+    <div class="col" id="leftCol"></div>
+    <div class="col" style="visibility: hidden;"></div>
+    <div class="col" id="rightCol"></div>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+
+  <div class="actions">
+    <button class="btn btn-primary" id="checkBtn" onclick="checkAnswers()">Проверить</button>
+    <button class="btn" id="resetBtn" onclick="resetAll()" style="display:none">Начать заново</button>
+  </div>
+</div>
+
+<script>
+  const data = [
+    {
+      id: '1',
+      role: 'Генеральный директор',
+      task: 'Стратегия и ресурсы. Определяет экологическую политику. Выделяет персонал, финансы и технологии. Несет ответственность за результативность системы.',
+      explanation: 'Высшее руководство задает вектор. Без выделения ресурсов и утверждения политики система СЭМ остается формальностью.'
+    },
+    {
+      id: '2',
+      role: 'Координатор СЭМ (специалист по ООС)',
+      task: 'Методология и мониторинг. Разрабатывает проекты документов и программ обучения. Ведет реестр требований. Мониторит показатели и информирует руководителей об отклонениях. Координирует рабочие группы.',
+      explanation: 'Это "двигатель" системы. Специалист не заменяет начальников цехов, а обеспечивает их методической поддержкой и контролем.'
+    },
+    {
+      id: '3',
+      role: 'Руководители подразделений (начальники цехов)',
+      task: 'Внедрение на местах. Обеспечивают выявление аспектов на своих участках. Включают экологические критерии в технологические инструкции. Организуют обучение и контроль своих работников.',
+      explanation: 'Экологические процессы встроены в производство. Начальник цеха отвечает за то, чтобы его сотрудники соблюдали правила ежедневно.'
+    },
+    {
+      id: '4',
+      role: 'Работники подразделения',
+      task: 'Исполнение на рабочем месте. Знают политику и значимые аспекты своей деятельности. Соблюдают правила управления отходами и знают свои действия в аварийных ситуациях.',
+      explanation: 'Конечное звено системы. Результативность СЭМ зависит от того, понимает ли каждый сотрудник свои ежедневные экологические обязанности.'
+    }
+  ];
+
+  let selectedLeft = null;
+  let connections = {};
+  let isChecked = false;
+
+  function shuffle(array) {
+    const arr = [...array];
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+  }
+
+  function render() {
+    const leftCol = document.getElementById('leftCol');
+    const rightCol = document.getElementById('rightCol');
+    leftCol.innerHTML = '';
+    rightCol.innerHTML = '';
+
+    data.forEach(item => {
+      const leftCard = document.createElement('div');
+      leftCard.className = 'card';
+      leftCard.dataset.id = item.id;
+      leftCard.dataset.type = 'left';
+      leftCard.innerHTML = `
+        <div class="card-text card-role">${item.role}</div>
+        <div class="explanation">${item.explanation}</div>
+      `;
+      leftCard.onclick = () => handleLeftClick(item.id);
+      leftCol.appendChild(leftCard);
+    });
+
+    const shuffledData = shuffle(data);
+    shuffledData.forEach(item => {
+      const rightCard = document.createElement('div');
+      rightCard.className = 'card';
+      rightCard.dataset.id = item.id;
+      rightCard.dataset.type = 'right';
+      rightCard.innerHTML = `<div class="card-text">${item.task}</div>`;
+      rightCard.onclick = () => handleRightClick(item.id);
+      rightCol.appendChild(rightCard);
+    });
+
+    document.querySelectorAll('.card.correct').forEach(card => {
+      card.addEventListener('click', function() {
+        if (window.innerWidth <= 640) {
+          document.querySelectorAll('.card.correct').forEach(c => c.classList.remove('show-tooltip'));
+          this.classList.toggle('show-tooltip');
+        }
+      });
+    });
+  }
+
+  function handleLeftClick(id) {
+    if (isChecked) return;
+
+    if (connections[id]) {
+      delete connections[id];
+      selectedLeft = null;
+      updateSelection();
+      drawLines();
+      return;
+    }
+
+    selectedLeft = (selectedLeft === id) ? null : id;
+    updateSelection();
+  }
+
+  function handleRightClick(id) {
+    if (isChecked || !selectedLeft) return;
+
+    connections[selectedLeft] = id;
+    
+    for (const key in connections) {
+      if (connections[key] === id && key !== selectedLeft) {
+        delete connections[key];
+      }
+    }
+
+    selectedLeft = null;
+    updateSelection();
+    drawLines();
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className = 'feedback';
+  }
+
+  function updateSelection() {
+    document.querySelectorAll('.card').forEach(card => {
+      card.classList.remove('selected');
+      if (card.dataset.type === 'left' && card.dataset.id === selectedLeft) {
+        card.classList.add('selected');
+      }
+    });
+  }
+
+  function drawLines() {
+    const svg = document.getElementById('svgLayer');
+    svg.innerHTML = '';
+    const gridRect = document.getElementById('matchGrid').getBoundingClientRect();
+
+    for (const [leftId, rightId] of Object.entries(connections)) {
+      const leftCard = document.querySelector(`.card[data-type="left"][data-id="${leftId}"]`);
+      const rightCard = document.querySelector(`.card[data-type="right"][data-id="${rightId}"]`);
+      
+      if (!leftCard || !rightCard) continue;
+
+      const leftRect = leftCard.getBoundingClientRect();
+      const rightRect = rightCard.getBoundingClientRect();
+
+      const x1 = leftRect.right - gridRect.left;
+      const y1 = leftRect.top + leftRect.height / 2 - gridRect.top;
+      const x2 = rightRect.left - gridRect.left;
+      const y2 = rightRect.top + rightRect.height / 2 - gridRect.top;
+
+      // Плавная кривая Безье
+      const midX = (x1 + x2) / 2;
+      const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
+      const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
+      path.setAttribute('d', d);
+      
+      if (isChecked) {
+        if (leftId === rightId) {
+          path.classList.add('correct');
+        } else {
+          path.classList.add('wrong');
+        }
+      }
+      
+      svg.appendChild(path);
+    }
+  }
+
+  function checkAnswers() {
+    const totalPairs = data.length;
+    const correctCount = Object.entries(connections).filter(([left, right]) => left === right).length;
+    const feedback = document.getElementById('feedback');
+
+    if (Object.keys(connections).length < totalPairs) {
+      feedback.textContent = 'Соедините все пары перед проверкой';
+      feedback.className = 'feedback error';
+      return;
+    }
+
+    isChecked = true;
+    document.getElementById('checkBtn').style.display = 'none';
+    document.getElementById('resetBtn').style.display = 'inline-block';
+
+    document.querySelectorAll('.card').forEach(card => {
+      const id = card.dataset.id;
+      if (card.dataset.type === 'left') {
+        if (connections[id] === id) {
+          card.classList.add('correct');
+        } else {
+          card.classList.add('wrong');
+        }
+      } else {
+        const leftId = Object.keys(connections).find(key => connections[key] === id);
+        if (leftId === id) {
+          card.classList.add('correct');
+        } else {
+          card.classList.add('wrong');
+        }
+      }
+    });
+
+    drawLines();
+
+    if (correctCount === totalPairs) {
+      feedback.textContent = 'Все верно! Наведите на карточки (или нажмите на мобильных), чтобы увидеть пояснения.';
+      feedback.className = 'feedback success';
+    } else {
+      feedback.textContent = `Верно: ${correctCount} из ${totalPairs}. Нажмите "Начать заново", чтобы исправить ошибки.`;
+      feedback.className = 'feedback error';
+    }
+    
+    resizeIframe();
+  }
+
+  function resetAll() {
+    isChecked = false;
+    connections = {};
+    selectedLeft = null;
+    document.getElementById('feedback').textContent = '';
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('checkBtn').style.display = 'inline-block';
+    document.getElementById('resetBtn').style.display = 'none';
+    render();
+    drawLines();
+    resizeIframe();
+  }
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
+  }
+
+  window.addEventListener('load', () => {
+    render();
+    setTimeout(() => {
+      drawLines();
+      resizeIframe();
+    }, 100);
+  });
+
+  window.addEventListener('resize', () => {
+    drawLines();
+    resizeIframe();
+  });
+
+  if ('ResizeObserver' in window) {
+    const container = document.querySelector('.container');
+    if (container) {
+      new ResizeObserver(() => {
+        drawLines();
+        resizeIframe();
+      }).observe(container);
+    }
+  }
+</script>
+
+</body>
+</html>
