@@ -1,0 +1,1123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Матрица обязанностей СЭМ</title>
+<style>
+  :root {
+    --primary: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg: #ffffff;
+    --gray: #f8fafc;
+    --accent: #2563eb;
+    --accent-d: #1d4ed8;
+    --accent-bg: #eff6ff;
+    --ok: #166534;
+    --ok-bg: #f0fdf4;
+    --ok-bd: #bbf7d0;
+    --bad: #991b1b;
+    --bad-bg: #fef2f2;
+    --bad-bd: #fecaca;
+    --warn: #ea580c;
+    --warn-bg: #fff7ed;
+    --warn-bd: #fed7aa;
+    --r: 10px;
+    --col-policy: #f1f5f9;
+    --col-aspects: #fef3c7;
+    --col-oblig: #f0fdf4;
+    --col-ops: #fef9c3;
+    --col-mon: #fce7f3;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--primary);
+    background: var(--bg);
+    margin: 0;
+    padding: 12px;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+    position: relative;
+  }
+
+  .header {
+    margin-bottom: 12px;
+    position: relative;
+  }
+
+  .header-title {
+    font-size: 17px;
+    font-weight: 700;
+    margin: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .warn-icon {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--warn);
+    color: #fff;
+    font-size: 13px;
+    font-weight: 700;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+
+  .warn-icon:hover { transform: scale(1.1); }
+
+  .disclaimer-tooltip {
+    position: absolute;
+    top: 32px;
+    left: 0;
+    right: 0;
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-bd);
+    border-left: 3px solid var(--warn);
+    border-radius: var(--r);
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--primary);
+    z-index: 50;
+    display: none;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+  }
+
+  .disclaimer-tooltip.show { display: block; }
+  .disclaimer-tooltip strong { color: var(--warn); }
+
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    background: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    transition: all 0.15s ease;
+    text-align: center;
+  }
+
+  .tab-btn:hover { background: var(--gray); }
+  .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tab-btn:focus-visible { outline: 2px solid var(--accent-d); outline-offset: 2px; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .table-wrap {
+    overflow-x: auto;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    position: relative;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 620px;
+  }
+
+  th, td {
+    padding: 8px 8px;
+    text-align: left;
+    vertical-align: top;
+    font-size: 12px;
+    line-height: 1.4;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+
+  th:last-child, td:last-child { border-right: none; }
+  tr:last-child td { border-bottom: none; }
+
+  th {
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+    color: var(--primary);
+    background: var(--gray);
+    position: sticky;
+    top: 0;
+  }
+
+  th .col-code {
+    display: block;
+    font-size: 10px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 2px;
+  }
+
+  th .col-name { display: block; font-size: 11px; font-weight: 700; }
+
+  th:nth-child(2), td:nth-child(2) { background: var(--col-policy); }
+  th:nth-child(3), td:nth-child(3) { background: var(--col-aspects); }
+  th:nth-child(4), td:nth-child(4) { background: var(--col-oblig); }
+  th:nth-child(5), td:nth-child(5) { background: var(--col-ops); }
+  th:nth-child(6), td:nth-child(6) { background: var(--col-mon); }
+
+  td.role-cell {
+    font-weight: 700;
+    font-size: 12px;
+    background: var(--gray) !important;
+    min-width: 130px;
+  }
+
+  .cell-index {
+    display: inline-block;
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--accent-d);
+    margin-right: 3px;
+  }
+
+  .cell-missing {
+    cursor: pointer;
+    position: relative;
+    min-height: 50px;
+    transition: all 0.15s ease;
+  }
+
+  .cell-missing:hover:not(.filled) {
+    background: var(--bad-bg) !important;
+  }
+
+  .cell-missing.filled { cursor: default; }
+  .cell-missing.filled:hover { background: inherit !important; }
+
+  /* Подсветка правильной ячейки после проверки */
+  .cell-missing.correct {
+    background: var(--ok-bg) !important;
+    outline: 2px solid var(--ok-bd);
+    outline-offset: -2px;
+  }
+
+  .cell-missing.correct.show-analysis {
+    outline-color: var(--accent);
+    outline-width: 2.5px;
+    z-index: 5;
+    background: var(--accent-bg) !important;
+  }
+
+  .cell-missing.wrong {
+    background: var(--bad-bg) !important;
+    outline: 2px solid var(--bad-bd);
+    outline-offset: -2px;
+  }
+
+  .missing-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 50px;
+    color: var(--bad);
+    font-size: 18px;
+    font-weight: 700;
+  }
+
+  .cell-missing.filled .missing-mark { display: none; }
+
+  .filled-content {
+    display: none;
+    font-size: 12px;
+    line-height: 1.4;
+  }
+
+  .cell-missing.filled .filled-content { display: block; }
+
+  .hint-box {
+    margin-top: 6px;
+    padding: 6px 8px;
+    background: #fff;
+    border: 1px dashed var(--bad-bd);
+    border-radius: 6px;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--bad);
+  }
+
+  .hint-box strong {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  /* Tooltip разбора при наведении на правильную ячейку */
+  .analysis-tooltip {
+    position: absolute;
+    background: #fff;
+    border: 1px solid var(--ok-bd);
+    border-left: 3px solid var(--ok);
+    border-radius: var(--r);
+    padding: 12px 14px;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--primary);
+    z-index: 100;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    max-width: 320px;
+    min-width: 240px;
+    display: none;
+    pointer-events: none;
+  }
+
+  .analysis-tooltip.show { display: block; }
+
+  .analysis-tooltip-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--ok);
+    margin-bottom: 4px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .analysis-tooltip-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--ok);
+    color: #fff;
+    font-size: 11px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .analysis-tooltip-cell {
+    font-size: 11px;
+    color: var(--muted);
+    margin-bottom: 8px;
+    font-style: italic;
+  }
+
+  .analysis-tooltip-body p {
+    margin: 0 0 6px 0;
+  }
+
+  .analysis-tooltip-body p:last-child { margin-bottom: 0; }
+
+  .analysis-tooltip-body strong {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  .analysis-tooltip::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -7px;
+    transform: translateY(-50%);
+    border-width: 7px;
+    border-style: solid;
+    border-color: transparent var(--ok-bd) transparent transparent;
+  }
+
+  .analysis-tooltip::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: -5px;
+    transform: translateY(-50%);
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent #fff transparent transparent;
+  }
+
+  .analysis-tooltip.left-side::before {
+    left: auto;
+    right: -7px;
+    border-color: transparent transparent transparent var(--ok-bd);
+  }
+
+  .analysis-tooltip.left-side::after {
+    left: auto;
+    right: -5px;
+    border-color: transparent transparent transparent #fff;
+  }
+
+  .legend {
+    margin-top: 12px;
+    padding: 10px 12px;
+    background: var(--gray);
+    border-radius: var(--r);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .legend-title {
+    font-weight: 700;
+    margin-bottom: 4px;
+    font-size: 12px;
+  }
+
+  .legend-list {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px 12px;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .legend-list li { font-size: 12px; line-height: 1.4; }
+  .legend-list strong { color: var(--accent-d); margin-right: 4px; }
+
+  .mode2-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 9px 16px;
+    border-radius: var(--r);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--primary);
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .btn:hover { background: var(--gray); border-color: var(--muted); }
+  .btn:focus-visible { outline: 2px solid var(--accent-d); outline-offset: 2px; }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: var(--accent-d); border-color: var(--accent-d); }
+
+  .feedback {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 10px;
+    min-height: 18px;
+  }
+  .feedback.success { color: var(--ok); }
+  .feedback.error { color: var(--bad); }
+
+  .mode2-hint {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 10px;
+  }
+
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(30, 41, 59, 0.5);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: #fff;
+    border-radius: var(--r);
+    max-width: 400px;
+    width: 100%;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+  }
+
+  .modal-section { margin-bottom: 16px; }
+  .modal-section:last-of-type { margin-bottom: 20px; }
+
+  .modal-label {
+    display: block;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    margin-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  .index-options {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+
+  .index-btn {
+    padding: 6px 12px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--primary);
+    transition: all 0.15s ease;
+  }
+
+  .index-btn:hover { background: var(--gray); }
+  .index-btn.selected { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .modal-select {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    font-family: inherit;
+    font-size: 13px;
+    background: #fff;
+    cursor: pointer;
+  }
+
+  .modal-select:focus { outline: 2px solid var(--accent-d); outline-offset: 1px; }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .modal-btn {
+    padding: 8px 16px;
+    border-radius: var(--r);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .modal-btn:hover { background: var(--gray); }
+  .modal-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .modal-btn.primary:hover { background: var(--accent-d); }
+
+  @media (max-width: 640px) {
+    body { padding: 8px; }
+    .legend-list { grid-template-columns: 1fr; }
+    th, td { padding: 6px 5px; font-size: 11px; }
+    td.role-cell { min-width: 100px; font-size: 11px; }
+    .modal { padding: 16px; }
+    .analysis-tooltip {
+      position: fixed;
+      bottom: 20px;
+      left: 10px;
+      right: 10px;
+      max-width: none;
+      z-index: 200;
+    }
+    .analysis-tooltip::before, .analysis-tooltip::after { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="header">
+    <div class="header-title">
+      <span class="warn-icon" id="warnIcon" onclick="toggleDisclaimer()" title="Нажмите для пояснения">!</span>
+      Матрица обязанностей СЭМ
+    </div>
+    <div class="disclaimer-tooltip" id="disclaimer">
+      <strong>Важно:</strong> Представленная матрица — это учебная модель. Стандарт ГОСТ Р ИСО 14001-2016 не устанавливает жесткую форму такой матрицы и не закрепляет конкретные должности. На вашем предприятии схема распределения задач может отличаться. Например, в крупных холдингах оценку аспектов часто возглавляет главный инженер, а проверку договоров и законов берет на себя юридическая служба. Адаптируйте эту таблицу под реальное штатное расписание и процессы вашего завода.
+    </div>
+  </div>
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="mode1" onclick="switchTab('mode1')">Режим 1. Базовая матрица</button>
+    <button class="tab-btn" data-tab="mode2" onclick="switchTab('mode2')">Режим 2. Завод «Стекло»</button>
+  </div>
+
+  <!-- РЕЖИМ 1 -->
+  <div class="tab-content active" id="mode1">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Должность</th>
+            <th><span class="col-code">5.2</span><span class="col-name">Экологическая политика</span></th>
+            <th><span class="col-code">6.1.2</span><span class="col-name">Экологические аспекты</span></th>
+            <th><span class="col-code">6.1.3</span><span class="col-name">Обязательства и законы</span></th>
+            <th><span class="col-code">7.2</span><span class="col-name">Обучение персонала</span></th>
+            <th><span class="col-code">7.4</span><span class="col-name">Обмен информацией</span></th>
+          </tr>
+        </thead>
+        <tbody id="mode1Body"></tbody>
+      </table>
+    </div>
+    <div class="legend">
+      <div class="legend-title">Обозначения индексов</div>
+      <ul class="legend-list">
+        <li><strong>О</strong> – Ответственный на уровне завода (строго один на столбец)</li>
+        <li><strong>Оц</strong> – Ответственный в подразделении</li>
+        <li><strong>У</strong> – Участник (собирает данные, готовит документы)</li>
+        <li><strong>С</strong> – Согласующее лицо (проверяет и визирует)</li>
+        <li><strong>И</strong> – Информированный (знает и применяет правила)</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- РЕЖИМ 2 -->
+  <div class="tab-content" id="mode2">
+    <div class="mode2-hint">
+      Посмотрите, как базовые роли работают на стекольном производстве. Заполните 4 пустые ячейки (отмечены красным <strong>?</strong>), выбрав правильный индекс роли и действие из списка.
+    </div>
+
+    <div class="table-wrap" id="tableWrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Должность</th>
+            <th><span class="col-code">5.2</span><span class="col-name">Экологическая политика</span></th>
+            <th><span class="col-code">6.1.2</span><span class="col-name">Экологические аспекты</span></th>
+            <th><span class="col-code">6.1.3</span><span class="col-name">Обязательства и законы</span></th>
+            <th><span class="col-code">8.1</span><span class="col-name">Управление операциями</span></th>
+            <th><span class="col-code">9.1</span><span class="col-name">Мониторинг и измерение</span></th>
+          </tr>
+        </thead>
+        <tbody id="mode2Body"></tbody>
+      </table>
+      <!-- Tooltip разбора, позиционируется абсолютно внутри table-wrap -->
+      <div class="analysis-tooltip" id="analysisTooltip">
+        <div class="analysis-tooltip-title">
+          <span class="analysis-tooltip-num" id="tooltipNum">1</span>
+          <span id="tooltipTitle">Заголовок</span>
+        </div>
+        <div class="analysis-tooltip-cell" id="tooltipCell">Ячейка</div>
+        <div class="analysis-tooltip-body" id="tooltipBody"></div>
+      </div>
+    </div>
+
+    <div class="legend">
+      <div class="legend-title">Обозначения индексов</div>
+      <ul class="legend-list">
+        <li><strong>О</strong> – Ответственный на уровне завода</li>
+        <li><strong>Оц</strong> – Ответственный в подразделении</li>
+        <li><strong>У</strong> – Участник</li>
+        <li><strong>С</strong> – Согласующее лицо</li>
+        <li><strong>И</strong> – Информированный</li>
+      </ul>
+    </div>
+
+    <div class="mode2-actions">
+      <button class="btn btn-primary" id="checkBtn" onclick="checkAnswers()">Проверить</button>
+      <button class="btn" id="resetBtn" onclick="resetMode2()" style="display:none">Начать заново</button>
+    </div>
+    <div class="feedback" id="mode2Feedback"></div>
+  </div>
+
+</div>
+
+<!-- Модальное окно редактора -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title">Заполните ячейку</div>
+    
+    <div class="modal-section">
+      <label class="modal-label">Индекс роли</label>
+      <div class="index-options" id="modalIndexOptions">
+        <button class="index-btn" data-index="О" onclick="selectIndex('О')">О</button>
+        <button class="index-btn" data-index="Оц" onclick="selectIndex('Оц')">Оц</button>
+        <button class="index-btn" data-index="У" onclick="selectIndex('У')">У</button>
+        <button class="index-btn" data-index="С" onclick="selectIndex('С')">С</button>
+        <button class="index-btn" data-index="И" onclick="selectIndex('И')">И</button>
+      </div>
+    </div>
+
+    <div class="modal-section">
+      <label class="modal-label">Действие</label>
+      <select class="modal-select" id="modalActionSelect">
+        <option value="">Выберите действие...</option>
+      </select>
+    </div>
+
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeModal()">Отмена</button>
+      <button class="modal-btn primary" onclick="saveCell()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const mode1Data = [
+    { role: 'Генеральный директор', cells: ['О Утверждает текст и выделяет ресурсы', 'И Знает список значимых аспектов', 'И Знает критические требования', 'У Утверждает план обучения', 'И Одобряет внешние заявления'] },
+    { role: 'Координатор СЭМ (эколог)', cells: ['У Готовит проект политики', 'О Ведет реестр и методику', 'О Ведет реестр законов и сроков', 'О Разрабатывает программы по СЭМ', 'О Координирует обмен данными'] },
+    { role: 'Руководители подразделений', cells: ['И Доводят политику до смен', 'Оц Выявляют аспекты в цехах', 'У Исполняют правила на участках', 'У Направляют рабочих на обучение', 'У Сообщают об изменениях'] },
+    { role: 'Уполномоченный по СЭМ', cells: ['И Знает основные тезисы', 'У Собирает данные по участкам', 'У Проверяет порядок на местах', 'У Контролирует прохождение смен', 'У Передает данные экологу'] },
+    { role: 'Работники участков', cells: ['И Знают основные тезисы', 'И Знают аспекты рабочего места', 'И Соблюдают правила на месте', 'У Проходят обучение и инструктажи', 'У Сообщают мастеру о сбоях'] }
+  ];
+
+  const mode2Data = [
+    {
+      role: 'Генеральный директор',
+      cells: [
+        { missing: true, id: 'm1', correctIndex: 'О', correctText: 'Утверждает политику со снижением выбросов печей' },
+        { text: 'И Утверждает приоритеты по цеху варки и шихты' },
+        { text: 'И Контролирует отсутствие штрафов и исков' },
+        { text: 'И Получает сводку при разливе масел' },
+        { text: 'И Изучает итоги по всем цехам' }
+      ]
+    },
+    {
+      role: 'Координатор СЭМ (эколог)',
+      cells: [
+        { text: 'У Пишет проект текста под специфику завода' },
+        { text: 'О Сводит реестр и проверяет ранги аспектов' },
+        { text: 'О Контролирует сроки вывоза ртутных ламп' },
+        { missing: true, id: 'm2', correctIndex: 'С', correctText: 'Согласует инструкцию по уборке просыпей соды' },
+        { text: 'О Организует замеры выбросов труб' }
+      ]
+    },
+    {
+      role: 'Руководители подразделений',
+      cells: [
+        { text: 'И Размещают политику на стендах в цехах' },
+        { missing: true, id: 'm3', correctIndex: 'Оц', correctText: 'Организуют выявление потерь в цехе шихты' },
+        { text: 'У Обеспечивают герметичность тары под отходы' },
+        { text: 'Оц Включают правила упаковки простоев в инструкции' },
+        { text: 'Оц Контролируют режим горения горелок варки' }
+      ]
+    },
+    {
+      role: 'Уполномоченный по СЭМ',
+      cells: [
+        { text: 'И Знает приоритеты завода' },
+        { text: 'У Фиксирует точки просыпей сырья у дозаторов' },
+        { text: 'У Проверяет маркировку контейнеров на участке' },
+        { text: 'У Следит за чистотой площадки накопления' },
+        { missing: true, id: 'm4', correctIndex: 'У', correctText: 'Ежедневно записывает массу боя стекла в журнал' }
+      ]
+    },
+    {
+      role: 'Работники участков',
+      cells: [
+        { text: 'И Знают тезисы вводного инструктажа' },
+        { text: 'И Знают аспекты своего станка или печи' },
+        { text: 'И Складируют ветошь только в закрытые ящики' },
+        { text: 'У Аккуратно растаривают мешки с содой' },
+        { text: 'У Передают сменные листы учета мастеру' }
+      ]
+    }
+  ];
+
+  const actionOptions = [
+    'Утверждает политику со снижением выбросов печей',
+    'Согласует инструкцию по уборке просыпей соды',
+    'Организуют выявление потерь в цехе шихты',
+    'Ежедневно записывает массу боя стекла в журнал',
+    'Разрабатывает годовой план экологических мероприятий',
+    'Проводит аудит поставщиков сырья',
+    'Координирует работу с надзорными органами'
+  ];
+
+  // Разбор для каждой ячейки
+  const cellAnalysis = {
+    m1: {
+      num: 1,
+      title: 'Разделение «руководства» и «исполнения»',
+      cell: 'Пункт 5.2 — Директор [О]',
+      why: 'Утверждать политику и выделять бюджет может только первое лицо предприятия.',
+      error: 'Если в эту ячейку поставить эколога, политика превратится во внутреннюю памятку отдела ООС. Начальники цехов и служба закупок проигнорируют ее требования, так как у эколога нет административной власти над другими подразделениями.'
+    },
+    m2: {
+      num: 2,
+      title: 'Защита эколога от чужой работы',
+      cell: 'Пункт 8.1 — Координатор СЭМ [С]',
+      why: 'Эколог проверяет, что в технологические инструкции включены нормы закона (согласование С). Управляют оборудованием и рабочими в цехе шихты или раскроя только руководители подразделений (Оц).',
+      error: 'Если назначить эколога ответственным (О) за операции на линиях, он превратится в «надзирателя», который должен круглосуточно бегать по цехам. При первой же аварии или проливе масла вину возложат на экологическую службу, а не на мастера смены.'
+    },
+    m3: {
+      num: 3,
+      title: 'Связка управления и реального производства',
+      cell: 'Пункт 6.1.2 — Руководители подразделений [Оц]',
+      why: 'Начальник цеха лучше всех знает, где просыпается сода, где течет гидравлика и куда девается стеклобой.',
+      error: 'Если эколог выявляет аспекты в одиночку по старым отчетам, в реестр попадут шаблонные фразы. Реальные источники потерь сырья останутся за кадром, а производственники откажутся выполнять цели СЭМ, в разработке которых они не участвовали.'
+    },
+    m4: {
+      num: 4,
+      title: 'Снятие рутины с начальников цехов',
+      cell: 'Пункт 9.1 — Уполномоченный по СЭМ [У]',
+      why: 'Начальник производства отвечает за выпуск стекла и не успевает лично взвешивать отходы каждую смену. Эту задачу берет на себя уполномоченный (мастер или технолог).',
+      error: 'Без уполномоченного на участке первичный учет отходов будет вестись от случая к случаю. Эколог получит противоречивые цифры от разных смен и не сможет доказать внешнему аудитору, что завод контролирует свои показатели.'
+    }
+  };
+
+  let mode2State = {};
+  let currentEditingId = null;
+  let selectedIndex = null;
+  let isChecked = false;
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(tab).classList.add('active');
+    closeDisclaimer();
+    hideTooltip();
+    resizeIframe();
+  }
+
+  function toggleDisclaimer() {
+    document.getElementById('disclaimer').classList.toggle('show');
+    resizeIframe();
+  }
+
+  function closeDisclaimer() {
+    document.getElementById('disclaimer').classList.remove('show');
+  }
+
+  document.addEventListener('click', (e) => {
+    if (!e.target.closest('#warnIcon') && !e.target.closest('#disclaimer')) {
+      closeDisclaimer();
+    }
+  });
+
+  function renderMode1() {
+    const tbody = document.getElementById('mode1Body');
+    tbody.innerHTML = '';
+    mode1Data.forEach(row => {
+      const tr = document.createElement('tr');
+      const roleTd = document.createElement('td');
+      roleTd.className = 'role-cell';
+      roleTd.textContent = row.role;
+      tr.appendChild(roleTd);
+      row.cells.forEach(cell => {
+        const td = document.createElement('td');
+        const match = cell.match(/^([ОУСИ]+)\s+(.+)$/);
+        if (match) {
+          td.innerHTML = `<span class="cell-index">${match[1]}</span>${match[2]}`;
+        } else {
+          td.textContent = cell;
+        }
+        tr.appendChild(td);
+      });
+      tbody.appendChild(tr);
+    });
+  }
+
+  function renderMode2() {
+    const tbody = document.getElementById('mode2Body');
+    tbody.innerHTML = '';
+    mode2State = {};
+    isChecked = false;
+    hideTooltip();
+
+    mode2Data.forEach(row => {
+      const tr = document.createElement('tr');
+      const roleTd = document.createElement('td');
+      roleTd.className = 'role-cell';
+      roleTd.textContent = row.role;
+      tr.appendChild(roleTd);
+
+      row.cells.forEach(cell => {
+        const td = document.createElement('td');
+        if (cell.missing) {
+          td.className = 'cell-missing';
+          td.dataset.id = cell.id;
+          td.innerHTML = `
+            <div class="missing-mark">?</div>
+            <div class="filled-content"></div>
+          `;
+          td.onclick = () => {
+            if (!isChecked) openModal(cell.id);
+          };
+          // Наведение для разбора (после успешной проверки)
+          td.addEventListener('mouseenter', () => handleCellHover(cell.id, td));
+          td.addEventListener('mouseleave', () => hideTooltip());
+          // Клик на мобильных
+          td.addEventListener('click', (e) => {
+            if (isChecked && td.classList.contains('correct')) {
+              e.stopPropagation();
+              toggleTooltipMobile(cell.id, td);
+            }
+          });
+        } else {
+          const match = cell.text.match(/^([ОУСИ]+)\s+(.+)$/);
+          if (match) {
+            td.innerHTML = `<span class="cell-index">${match[1]}</span>${match[2]}`;
+          } else {
+            td.textContent = cell.text;
+          }
+        }
+        tr.appendChild(td);
+      });
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function handleCellHover(cellId, cellEl) {
+    if (!isChecked) return;
+    if (!cellEl.classList.contains('correct')) return;
+    showTooltip(cellId, cellEl);
+  }
+
+  function showTooltip(cellId, cellEl) {
+    const analysis = cellAnalysis[cellId];
+    if (!analysis) return;
+
+    const tooltip = document.getElementById('analysisTooltip');
+    document.getElementById('tooltipNum').textContent = analysis.num;
+    document.getElementById('tooltipTitle').textContent = analysis.title;
+    document.getElementById('tooltipCell').textContent = analysis.cell;
+    document.getElementById('tooltipBody').innerHTML = `
+      <p><strong>Почему так:</strong> ${analysis.why}</p>
+      <p><strong>Что будет при ошибке:</strong> ${analysis.error}</p>
+    `;
+
+    // Позиционирование tooltip
+    const tableWrap = document.getElementById('tableWrap');
+    const tableRect = tableWrap.getBoundingClientRect();
+    const cellRect = cellEl.getBoundingClientRect();
+
+    // Относительные координаты внутри table-wrap
+    const relLeft = cellRect.right - tableRect.left;
+    const relTop = cellRect.top - tableRect.top + (cellRect.height / 2);
+
+    tooltip.style.left = (relLeft + 12) + 'px';
+    tooltip.style.top = relTop + 'px';
+    tooltip.style.transform = 'translateY(-50%)';
+    tooltip.classList.remove('left-side');
+
+    // Проверяем, помещается ли справа
+    const tooltipWidth = 320;
+    if (relLeft + 12 + tooltipWidth > tableRect.width) {
+      // Показываем слева от ячейки
+      tooltip.style.left = (cellRect.left - tableRect.left - 12) + 'px';
+      tooltip.style.transform = 'translateY(-50%) translateX(-100%)';
+      tooltip.classList.add('left-side');
+    }
+
+    // Проверяем вертикальные границы
+    const tooltipHeight = tooltip.offsetHeight || 200;
+    if (relTop - tooltipHeight / 2 < 0) {
+      tooltip.style.top = (tooltipHeight / 2 + 10) + 'px';
+    } else if (relTop + tooltipHeight / 2 > tableRect.height) {
+      tooltip.style.top = (tableRect.height - tooltipHeight / 2 - 10) + 'px';
+    }
+
+    tooltip.classList.add('show');
+    cellEl.classList.add('show-analysis');
+    resizeIframe();
+  }
+
+  function hideTooltip() {
+    const tooltip = document.getElementById('analysisTooltip');
+    tooltip.classList.remove('show');
+    document.querySelectorAll('.cell-missing.show-analysis').forEach(c => {
+      c.classList.remove('show-analysis');
+    });
+  }
+
+  function toggleTooltipMobile(cellId, cellEl) {
+    const tooltip = document.getElementById('analysisTooltip');
+    if (tooltip.classList.contains('show') && tooltip.dataset.currentCell === cellId) {
+      hideTooltip();
+    } else {
+      tooltip.dataset.currentCell = cellId;
+      showTooltip(cellId, cellEl);
+    }
+  }
+
+  function openModal(id) {
+    currentEditingId = id;
+    selectedIndex = null;
+
+    document.querySelectorAll('#modalIndexOptions .index-btn').forEach(btn => {
+      btn.classList.remove('selected');
+    });
+
+    const select = document.getElementById('modalActionSelect');
+    select.innerHTML = '<option value="">Выберите действие...</option>';
+    actionOptions.forEach(action => {
+      const option = document.createElement('option');
+      option.value = action;
+      option.textContent = action;
+      select.appendChild(option);
+    });
+
+    if (mode2State[id]) {
+      document.querySelectorAll('#modalIndexOptions .index-btn').forEach(btn => {
+        if (btn.dataset.index === mode2State[id].index) {
+          btn.classList.add('selected');
+          selectedIndex = mode2State[id].index;
+        }
+      });
+      select.value = mode2State[id].text || '';
+    }
+
+    document.getElementById('modalOverlay').classList.add('show');
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('show');
+    currentEditingId = null;
+    selectedIndex = null;
+  }
+
+  function closeModalOnOverlay(event) {
+    if (event.target === event.currentTarget) closeModal();
+  }
+
+  function selectIndex(index) {
+    selectedIndex = index;
+    document.querySelectorAll('#modalIndexOptions .index-btn').forEach(btn => {
+      btn.classList.toggle('selected', btn.dataset.index === index);
+    });
+  }
+
+  function saveCell() {
+    const select = document.getElementById('modalActionSelect');
+    const action = select.value;
+
+    if (!selectedIndex || !action) {
+      select.style.borderColor = 'var(--bad)';
+      setTimeout(() => select.style.borderColor = '', 1000);
+      return;
+    }
+
+    mode2State[currentEditingId] = { index: selectedIndex, text: action };
+
+    const cell = document.querySelector(`.cell-missing[data-id="${currentEditingId}"]`);
+    const filledContent = cell.querySelector('.filled-content');
+    filledContent.innerHTML = `<span class="cell-index">${selectedIndex}</span>${action}`;
+    cell.classList.add('filled');
+    cell.classList.remove('correct', 'wrong', 'show-analysis');
+    const oldHint = cell.querySelector('.hint-box');
+    if (oldHint) oldHint.remove();
+
+    closeModal();
+    hideTooltip();
+    resizeIframe();
+  }
+
+  function checkAnswers() {
+    const missingCells = mode2Data.flatMap(row => row.cells.filter(c => c.missing));
+    const filledCount = Object.keys(mode2State).length;
+
+    if (filledCount < missingCells.length) {
+      document.getElementById('mode2Feedback').textContent = `Заполнено ${filledCount} из ${missingCells.length} ячеек. Нажмите на красный знак ?, чтобы заполнить остальные.`;
+      document.getElementById('mode2Feedback').className = 'feedback error';
+      return;
+    }
+
+    isChecked = true;
+    let correctCount = 0;
+    let hasErrors = false;
+
+    missingCells.forEach(cell => {
+      const userAnswer = mode2State[cell.id];
+      const cellEl = document.querySelector(`.cell-missing[data-id="${cell.id}"]`);
+      cellEl.classList.remove('correct', 'wrong', 'show-analysis');
+
+      const oldHint = cellEl.querySelector('.hint-box');
+      if (oldHint) oldHint.remove();
+
+      if (userAnswer && userAnswer.index === cell.correctIndex && userAnswer.text === cell.correctText) {
+        cellEl.classList.add('correct');
+        correctCount++;
+      } else {
+        cellEl.classList.add('wrong');
+        hasErrors = true;
+
+        const hint = document.createElement('div');
+        hint.className = 'hint-box';
+        hint.innerHTML = `<strong>Правильный ответ:</strong> <span class="cell-index">${cell.correctIndex}</span> ${cell.correctText}`;
+        cellEl.appendChild(hint);
+      }
+    });
+
+    const feedback = document.getElementById('mode2Feedback');
+    document.getElementById('checkBtn').style.display = 'none';
+    document.getElementById('resetBtn').style.display = 'inline-block';
+
+    if (!hasErrors) {
+      feedback.textContent = 'Все 4 ячейки заполнены верно! Наведите на любую зеленую ячейку, чтобы увидеть разбор принципа.';
+      feedback.className = 'feedback success';
+    } else {
+      feedback.textContent = `Верно: ${correctCount} из ${missingCells.length}. Ячейки с ошибками выделены красным, правильный ответ показан в подсказке. Нажмите "Начать заново".`;
+      feedback.className = 'feedback error';
+    }
+
+    resizeIframe();
+  }
+
+  function resetMode2() {
+    renderMode2();
+    document.getElementById('mode2Feedback').textContent = '';
+    document.getElementById('mode2Feedback').className = 'feedback';
+    document.getElementById('checkBtn').style.display = 'inline-block';
+    document.getElementById('resetBtn').style.display = 'none';
+    resizeIframe();
+  }
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
+  }
+
+  window.addEventListener('load', () => {
+    renderMode1();
+    renderMode2();
+    resizeIframe();
+  });
+
+  if ('ResizeObserver' in window) {
+    const container = document.querySelector('.container');
+    if (container) {
+      new ResizeObserver(() => resizeIframe()).observe(container);
+    }
+  }
+</script>
+
+</body>
+</html>
