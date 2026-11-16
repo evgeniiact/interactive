@@ -53,6 +53,7 @@
     justify-content: space-between;
     height: 100%;
     padding: 4px 0;
+    position: relative;
   }
 
   .svg-layer {
@@ -136,10 +137,10 @@
     font-size: 14px;
   }
 
-  /* Всплывающее пояснение в стиле интерактивов чата */
+  /* Всплывающее пояснение — теперь появляется снизу от карточки */
   .explanation {
     position: absolute;
-    bottom: calc(100% + 8px);
+    top: calc(100% + 8px);
     left: 0;
     right: 0;
     background: #fff;
@@ -152,32 +153,33 @@
     color: var(--primary);
     opacity: 0;
     visibility: hidden;
-    transform: translateY(5px);
+    transform: translateY(-5px);
     transition: all 0.2s ease;
     z-index: 10;
     box-shadow: 0 2px 8px rgba(0,0,0,0.06);
     pointer-events: none;
-  }
-
-  .explanation::after {
-    content: '';
-    position: absolute;
-    top: 100%;
-    left: 20px;
-    border-width: 6px;
-    border-style: solid;
-    border-color: var(--ok-bd) transparent transparent transparent;
+    max-width: 280px;
   }
 
   .explanation::before {
     content: '';
     position: absolute;
-    top: 100%;
+    bottom: 100%;
+    left: 20px;
+    border-width: 6px;
+    border-style: solid;
+    border-color: transparent transparent var(--ok-bd) transparent;
+  }
+
+  .explanation::after {
+    content: '';
+    position: absolute;
+    bottom: 100%;
     left: 20px;
     border-width: 5px;
     border-style: solid;
-    border-color: #fff transparent transparent transparent;
-    margin-top: -1px;
+    border-color: transparent transparent #fff transparent;
+    margin-bottom: -1px;
   }
 
   .card.correct:hover .explanation,
@@ -255,8 +257,9 @@
       left: 10px; 
       right: 10px; 
       z-index: 100;
+      max-width: none;
     }
-    .explanation::after, .explanation::before { display: none; }
+    .explanation::before, .explanation::after { display: none; }
   }
 </style>
 </head>
@@ -422,7 +425,6 @@
       const x2 = rightRect.left - gridRect.left;
       const y2 = rightRect.top + rightRect.height / 2 - gridRect.top;
 
-      // Плавная кривая Безье
       const midX = (x1 + x2) / 2;
       const path = document.createElementNS('http://www.w3.org/2000/svg', 'path');
       const d = `M ${x1} ${y1} C ${midX} ${y1}, ${midX} ${y2}, ${x2} ${y2}`;
