@@ -416,7 +416,57 @@ function check(){
  });if(own.length>1)msgs.push({t:'info',x:c.id+': проверьте границы работы организаторов. Несколько участников не являются ошибкой.'});
  });return {errs:errs,soft:soft,msgs:msgs};
 }
-function paintMsgs(){var f=check();$('msgs').innerHTML=f.msgs.map(function(m){return '<div class="msg '+m.t+'">'+esc(m.x)+'</div>';}).join('');}
+function paintMsgs() {
+  var host = $('msgs');
+  var wasOpen = host.querySelector('details');
+  var keepOpen = Boolean(wasOpen && wasOpen.open);
+  var result = check();
+  var messages = result.msgs || [];
+
+  host.innerHTML = '';
+
+  if (!messages.length) {
+    resize();
+    return;
+  }
+
+  var details = document.createElement('details');
+  details.open = keepOpen;
+  details.style.cssText =
+    'margin:8px 0;border:1px solid #e2e8f0;' +
+    'border-radius:10px;background:#f8fafc;';
+
+  var summary = document.createElement('summary');
+  summary.textContent = 'Что проверить · ' + messages.length;
+  summary.style.cssText =
+    'padding:10px 12px;cursor:pointer;' +
+    'font:inherit;font-weight:600;';
+
+  var list = document.createElement('div');
+  list.style.cssText =
+    'max-height:220px;overflow-y:auto;' +
+    'padding:0 10px 10px;overscroll-behavior:contain;';
+
+  messages.forEach(function (message) {
+    var item = document.createElement('div');
+    var type = ['info', 'soft', 'error', 'err', 'ok']
+      .indexOf(message.t) >= 0 ? message.t : 'info';
+
+    item.className = 'msg ' + type;
+    item.textContent = message.x;
+    list.appendChild(item);
+  });
+
+  details.appendChild(summary);
+  details.appendChild(list);
+  host.appendChild(details);
+
+  details.addEventListener('toggle', function () {
+    resize();
+  });
+
+  resize();
+}
 
 /* ===== рендер конструктора ===== */
 function render(){
