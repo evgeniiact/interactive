@@ -129,6 +129,12 @@ td.pv.I{background:var(--I-bg);color:var(--I-tx)}
 .toast.on{opacity:1;transform:translateX(-50%)}
 .hidden{display:none}
 @media (max-width:640px){body{padding:12px}h1{font-size:19px}.quick{width:100%}.quick .btn,.quick .link{flex:1 1 auto}.f{flex:1 1 100%}.bar .btn,.bar .mini{flex:1 1 auto}}
+
+.validation-box{margin:8px 0;border:1px solid #e2e8f0;border-radius:10px;background:#f8fafc;overflow:hidden}
+.validation-box>summary{padding:10px 12px;cursor:pointer;font:inherit;font-weight:600}
+.validation-box:not([open])>.validation-list{display:none!important}
+.validation-box .validation-list{max-height:220px;overflow-y:auto;overscroll-behavior:contain;padding:0 10px 10px;box-sizing:border-box}
+.validation-box>summary:focus-visible{outline:2px solid #2563eb;outline-offset:-3px}
 </style>
 </head>
 <body>
@@ -416,56 +422,20 @@ function check(){
  });if(own.length>1)msgs.push({t:'info',x:c.id+': проверьте границы работы организаторов. Несколько участников не являются ошибкой.'});
  });return {errs:errs,soft:soft,msgs:msgs};
 }
-function paintMsgs() {
-  var host = $('msgs');
-  var wasOpen = host.querySelector('details');
-  var keepOpen = Boolean(wasOpen && wasOpen.open);
-  var result = check();
-  var messages = result.msgs || [];
-
-  host.innerHTML = '';
-
-  if (!messages.length) {
-    resize();
-    return;
-  }
-
-  var details = document.createElement('details');
-  details.open = keepOpen;
-  details.style.cssText =
-    'margin:8px 0;border:1px solid #e2e8f0;' +
-    'border-radius:10px;background:#f8fafc;';
-
-  var summary = document.createElement('summary');
-  summary.textContent = 'Что проверить · ' + messages.length;
-  summary.style.cssText =
-    'padding:10px 12px;cursor:pointer;' +
-    'font:inherit;font-weight:600;';
-
-  var list = document.createElement('div');
-  list.style.cssText =
-    'max-height:220px;overflow-y:auto;' +
-    'padding:0 10px 10px;overscroll-behavior:contain;';
-
-  messages.forEach(function (message) {
-    var item = document.createElement('div');
-    var type = ['info', 'soft', 'error', 'err', 'ok']
-      .indexOf(message.t) >= 0 ? message.t : 'info';
-
-    item.className = 'msg ' + type;
-    item.textContent = message.x;
-    list.appendChild(item);
-  });
-
-  details.appendChild(summary);
-  details.appendChild(list);
-  host.appendChild(details);
-
-  details.addEventListener('toggle', function () {
-    resize();
-  });
-
-  resize();
+function paintMsgs(){
+ var host=$('msgs');if(!host)return;
+ var previous=host.querySelector('details');
+ var opened=!!(previous&&previous.open);
+ var messages=check().msgs||[];
+ host.innerHTML='';
+ if(!messages.length){resize();return;}
+ var box=document.createElement('details');box.className='validation-box';box.open=opened;
+ var title=document.createElement('summary');title.textContent='Что проверить · '+messages.length;
+ var list=document.createElement('div');list.className='validation-list';
+ list.setAttribute('role','region');list.setAttribute('aria-label','Замечания к распределению');list.tabIndex=0;
+ messages.forEach(function(m){var item=document.createElement('div');item.className='msg '+(['info','soft','error','err','ok'].indexOf(m.t)>=0?m.t:'info');item.textContent=m.x;list.appendChild(item);});
+ box.appendChild(title);box.appendChild(list);host.appendChild(box);
+ box.addEventListener('toggle',resize);resize();
 }
 
 /* ===== рендер конструктора ===== */
@@ -491,7 +461,7 @@ function render(){
   $('mxBox').innerHTML=h;
  }
  $('stat').textContent='Столбцов: '+cls.length+' · должностей: '+S.roles.length+' · заполнено ячеек: '+filled()+' из '+(S.roles.length*cls.length)+'. Нажмите на ячейку, чтобы выбрать индекс.';
- $('msgs').innerHTML=flag.msgs.map(function(m){return '<div class="msg '+m.t+'">'+esc(m.x)+'</div>';}).join('');
+ paintMsgs();
  var rest=CLAUSES.filter(function(c){return !S.active[c.id];}),sel=$('selClause');
  if(rest.length){
   var o='<option value="">Дополнительные пункты ГОСТ…</option>';
@@ -538,7 +508,7 @@ function takeExample(){
  if(!S.meta.org)S.meta.org='Стекольный завод «Стекло» (учебный пример)';
  if(!S.meta.date)S.meta.date=today();
  S.notes=EX_NOTES;
- syncInputs();save();render();show('work');
+ syncInputs();save();render();var checks=$('msgs').querySelector('details');if(checks)checks.open=false;show('work');
  toast('Пример перенесен в конструктор. Адаптируйте должности и формулировки под свое предприятие.');
 }
 
@@ -621,7 +591,7 @@ function loadFile(file){
   });
   Object.keys(own.active||{}).forEach(function(x){if(cl(x)&&own.active[x])S.active[x]=true;});
   if(own.notes&&!S.notes)S.notes=own.notes;var importedMeta=(d.steps&&d.steps.roles&&d.steps.roles.meta)||d.meta||{};['org','date','author'].forEach(function(f){if(!S.meta[f]&&importedMeta[f])S.meta[f]=importedMeta[f];});
-  fixNext();syncInputs();save();render();show('work');
+  fixNext();syncInputs();save();render();var checks=$('msgs').querySelector('details');if(checks)checks.open=false;show('work');
   toast('Файл загружен: новых должностей '+added+', дополнено ячеек '+fl+'. Заполненное не перезаписано.');
  };
  rd.readAsText(file);
