@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Матрица ответственности и полномочий СЭМ</title>
+<style>
+:root{--bg:#fff;--text:#1e293b;--muted:#64748b;--line:#e2e8f0;--gray:#f8fafc;--accent:#2563eb;--accent-d:#1d4ed8;
+--warn:#ea580c;--warn-bg:#fff7ed;--warn-bd:#fed7aa;--bad:#b91c1c;--bad-bg:#fef2f2;--bad-bd:#fecaca;
+--O-bg:#e3f0fd;--O-tx:#0d47a1;--O-bd:#9cc3ee;
+--Oc-bg:#e6f4ea;--Oc-tx:#1b5e20;--Oc-bd:#a8d5b5;
+--U-bg:#fdf6e7;--U-tx:#92400e;--U-bd:#eadfc3;
+--S-bg:#f3e8fd;--S-tx:#6b21a8;--S-bd:#d8b4fe;
+--I-bg:#f8fafc;--I-tx:#475569;--I-bd:#cbd5e1}
+*{box-sizing:border-box}
+body{margin:0;padding:20px;background:var(--bg);color:var(--text);font-family:system-ui,-apple-system,'Segoe UI',Roboto,sans-serif;font-size:15px;line-height:1.55}
+.wrap{max-width:820px;margin:0 auto}
+.screen{display:none}.screen.on{display:block;animation:fi .25s ease-out}
+@keyframes fi{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+h1{font-size:22px;font-weight:800;margin:0 0 6px;outline:none;line-height:1.25}
+h2{font-size:16px;margin:16px 0 8px}
+.sub{font-size:12.5px;color:var(--muted);margin:0 0 12px}
+.lead{font-size:14px;color:var(--muted);margin:0 0 12px}
+.note{background:var(--gray);border:1px solid var(--line);border-left:4px solid var(--muted);border-radius:0 8px 8px 0;padding:10px 13px;font-size:13px;color:var(--muted);margin:10px 0}
+.note.accent{border-left-color:var(--accent);color:var(--text)}
+.note.warn{background:var(--warn-bg);border-left-color:var(--warn-bd);color:var(--warn)}
+.head{display:flex;gap:12px;flex-wrap:wrap;align-items:flex-start;justify-content:space-between}
+.quick{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.meta{display:flex;gap:10px;flex-wrap:wrap;margin:10px 0}
+.f{flex:1 1 200px}
+.f label{display:block;font-size:12px;font-weight:700;color:var(--muted);margin-bottom:4px}
+.f input,.f textarea{width:100%;padding:9px 11px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:14px;background:#fff;color:var(--text)}
+.f textarea{min-height:64px;resize:vertical}
+.f input:focus,.f textarea:focus{outline:3px solid var(--accent-d);outline-offset:1px}
+.bar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin:12px 0}
+.bar select{flex:1 1 260px;padding:8px 10px;border:1px solid var(--line);border-radius:8px;font:inherit;font-size:13px;background:#fff}
+.btn{border:none;border-radius:8px;padding:11px 18px;font:inherit;font-size:14px;font-weight:600;cursor:pointer;font-family:inherit}
+.btn-p{background:var(--accent);color:#fff}.btn-p:hover{background:var(--accent-d)}
+.btn-s{background:#fff;color:var(--text);border:1px solid var(--line)}.btn-s:hover{background:var(--gray)}
+.btn:disabled{background:var(--gray);color:#94a3b8;border-color:var(--line);cursor:not-allowed}
+.mini{border:1px solid var(--line);background:#fff;color:var(--text);border-radius:7px;padding:7px 11px;font:inherit;font-size:12.5px;font-weight:600;cursor:pointer}
+.mini:hover{background:var(--gray)}
+.mini.add{border-style:dashed;border-color:var(--accent);color:var(--accent)}
+.link{background:none;border:none;color:var(--accent);font:inherit;font-size:13px;font-weight:600;cursor:pointer;text-decoration:underline;padding:6px 2px}
+.legend{display:flex;gap:6px;flex-wrap:wrap;padding:9px 10px;border:1px solid var(--line);border-radius:10px;background:var(--gray);margin:10px 0}
+.legend.sticky{position:sticky;top:0;z-index:6}
+.lg{display:inline-flex;align-items:center;gap:6px;border:1px solid;border-radius:999px;padding:3px 10px;font-size:12px;background:#fff}
+.lg i{width:11px;height:11px;border-radius:3px;border:1px solid;display:inline-block;flex:0 0 auto}
+.lg b{font-weight:800}
+.lg.O{color:var(--O-tx);border-color:var(--O-bd)}.lg.O i{background:var(--O-bg);border-color:var(--O-bd)}
+.lg.Oc{color:var(--Oc-tx);border-color:var(--Oc-bd)}.lg.Oc i{background:var(--Oc-bg);border-color:var(--Oc-bd)}
+.lg.U{color:var(--U-tx);border-color:var(--U-bd)}.lg.U i{background:var(--U-bg);border-color:var(--U-bd)}
+.lg.S{color:var(--S-tx);border-color:var(--S-bd)}.lg.S i{background:var(--S-bg);border-color:var(--S-bd)}
+.lg.I{color:var(--I-tx);border-color:var(--I-bd)}.lg.I i{background:var(--I-bg);border-color:var(--I-bd)}
+.scroll{overflow-x:auto;border:1px solid var(--line);border-radius:10px;scrollbar-width:thin;scrollbar-color:var(--accent) var(--gray)}
+.scroll::-webkit-scrollbar{height:11px}
+.scroll::-webkit-scrollbar-track{background:var(--gray);border-radius:0 0 10px 10px}
+.scroll::-webkit-scrollbar-thumb{background:var(--accent);border-radius:8px;border:2px solid var(--gray)}
+.scroll::-webkit-scrollbar-thumb:hover{background:var(--accent-d)}
+table.mx{border-collapse:separate;border-spacing:0;width:100%;font-size:13px}
+table.mx th,table.mx td{border-bottom:1px solid var(--line);border-right:1px solid var(--line);padding:7px 8px;vertical-align:top;background:#fff}
+table.mx thead th{background:var(--gray);vertical-align:bottom}
+table.mx th.role,table.mx td.role{position:sticky;left:0;z-index:3;background:#fff;min-width:190px;max-width:210px;box-shadow:7px 0 9px -8px rgba(15,23,42,.45)}
+table.mx thead th.role{z-index:4;background:var(--gray)}
+table.mx th:last-child,table.mx td:last-child{border-right:none}
+table.mx tbody tr:last-child td{border-bottom:none}
+.code{display:block;font-size:11.5px;font-weight:800;color:var(--accent-d)}
+.ct{display:block;font-size:12px;font-weight:700;line-height:1.25;margin-top:2px}
+.thwrap{display:flex;gap:4px;align-items:flex-start;justify-content:space-between}
+.x{border:none;background:transparent;color:#94a3b8;cursor:pointer;font-size:14px;line-height:1;padding:2px 4px;border-radius:5px}
+.x:hover{background:var(--bad-bg);color:var(--bad)}
+.role-in{width:100%;border:1px solid transparent;border-radius:6px;padding:5px 6px;font:inherit;font-size:13px;font-weight:700;background:transparent}
+.role-in:hover{background:var(--gray)}
+.role-in:focus{outline:2px solid var(--accent-d);background:#fff}
+.rolewrap{display:flex;gap:3px;align-items:center}
+button.cell{display:block;width:100%;min-width:124px;min-height:46px;border:1px dashed #cbd5e1;border-radius:8px;background:#fff;cursor:pointer;padding:5px 7px;font:inherit;text-align:center;transition:.12s}
+button.cell:hover{border-color:var(--accent);background:#f5f9ff}
+button.cell .lt{display:block;font-size:14px;font-weight:800;line-height:1.2}
+button.cell .cm{display:block;font-size:11px;font-style:italic;line-height:1.25;margin-top:2px;opacity:.92}
+button.cell.empty{color:#94a3b8}
+button.cell.O{background:var(--O-bg);color:var(--O-tx);border:1px solid var(--O-bd)}
+button.cell.Oc{background:var(--Oc-bg);color:var(--Oc-tx);border:1px solid var(--Oc-bd)}
+button.cell.U{background:var(--U-bg);color:var(--U-tx);border:1px solid var(--U-bd)}
+button.cell.S{background:var(--S-bg);color:var(--S-tx);border:1px solid var(--S-bd)}
+button.cell.I{background:var(--I-bg);color:var(--I-tx);border:1px solid var(--I-bd)}
+button.cell.err{border:2px solid #dc2626;box-shadow:0 0 0 3px rgba(220,38,38,.12)}
+button.cell.soft{border:2px solid var(--warn)}
+td.pv{text-align:center}
+td.pv .lt{display:block;font-size:14px;font-weight:800}
+td.pv .cm{display:block;font-size:11px;font-style:italic;margin-top:2px}
+td.pv.O{background:var(--O-bg);color:var(--O-tx)}
+td.pv.Oc{background:var(--Oc-bg);color:var(--Oc-tx)}
+td.pv.U{background:var(--U-bg);color:var(--U-tx)}
+td.pv.S{background:var(--S-bg);color:var(--S-tx)}
+td.pv.I{background:var(--I-bg);color:var(--I-tx)}
+.msgs{margin:10px 0}
+.msg{border-radius:9px;padding:9px 12px;font-size:13px;margin-bottom:6px;border:1px solid}
+.msg.err{background:var(--bad-bg);border-color:var(--bad-bd);color:var(--bad)}
+.msg.soft{background:var(--warn-bg);border-color:var(--warn-bd);color:var(--warn)}
+.msg.info{background:var(--gray);border-color:var(--line);color:var(--muted)}
+.stat{font-size:12.5px;color:var(--muted);margin:8px 0}
+.hint{font-size:12px;color:var(--muted);margin-top:4px}
+#pop{position:absolute;z-index:100;display:none;width:238px;background:#fff;border:1px solid var(--line);border-radius:11px;box-shadow:0 16px 36px -14px rgba(15,23,42,.45);padding:10px}
+#pop.on{display:block}
+#pop .ttl{font-size:11.5px;font-weight:800;color:var(--muted);margin-bottom:7px;line-height:1.3}
+.pgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:5px}
+.pbtn{border:1px solid var(--line);border-radius:7px;background:#fff;padding:7px 0;font:inherit;font-size:13px;font-weight:800;cursor:pointer}
+.pbtn:hover{background:var(--gray)}
+.pbtn.O{color:var(--O-tx)}.pbtn.Oc{color:var(--Oc-tx)}.pbtn.U{color:var(--U-tx)}.pbtn.S{color:var(--S-tx)}.pbtn.I{color:var(--I-tx)}
+.pbtn.sel.O{background:var(--O-bg);border-color:var(--O-bd)}
+.pbtn.sel.Oc{background:var(--Oc-bg);border-color:var(--Oc-bd)}
+.pbtn.sel.U{background:var(--U-bg);border-color:var(--U-bd)}
+.pbtn.sel.S{background:var(--S-bg);border-color:var(--S-bd)}
+.pbtn.sel.I{background:var(--I-bg);border-color:var(--I-bd)}
+.pbtn.sel.none{background:var(--gray);border-color:#94a3b8}
+#popCm{width:100%;margin-top:8px;padding:7px 8px;border:1px solid var(--line);border-radius:7px;font:inherit;font-size:12.5px}
+#popCm:focus{outline:2px solid var(--accent-d)}
+.popfoot{display:flex;justify-content:space-between;align-items:center;margin-top:8px}
+.ov{position:fixed;inset:0;background:rgba(15,23,42,.5);display:none;z-index:120;padding:18px;overflow:auto}
+.ov.on{display:flex;align-items:flex-start;justify-content:center}
+.ovp{background:#fff;border-radius:12px;max-width:640px;width:100%;overflow:hidden}
+.ovh{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:13px 16px;border-bottom:1px solid var(--line);background:var(--gray)}
+.ovh h3{margin:0;font-size:15px}
+.ovb{padding:14px 16px}
+.step{display:flex;gap:10px;margin-bottom:10px;font-size:13.5px}
+.step .n{flex:0 0 auto;width:24px;height:24px;border-radius:7px;background:var(--accent);color:#fff;display:grid;place-items:center;font-size:12px;font-weight:800}
+.toast{position:fixed;left:50%;bottom:20px;transform:translateX(-50%) translateY(16px);background:#1e293b;color:#fff;border-radius:9px;padding:10px 15px;font-size:13px;max-width:min(560px,92vw);opacity:0;pointer-events:none;transition:.22s;z-index:140}
+.toast.on{opacity:1;transform:translateX(-50%)}
+.hidden{display:none}
+@media (max-width:640px){body{padding:12px}h1{font-size:19px}.quick{width:100%}.quick .btn,.quick .link{flex:1 1 auto}.f{flex:1 1 100%}.bar .btn,.bar .mini{flex:1 1 auto}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<div id="boot" class="msg err hidden"></div>
+<input type="file" id="fileIn" accept=".json,application/json" class="hidden">
+
+<!-- СТАРТОВЫЙ ЭКРАН -->
+<div id="s-intro" class="screen on">
+<h1 tabindex="-1">Матрица ответственности и полномочий СЭМ</h1>
+<p class="sub">ГОСТ Р ИСО 14001-2016</p>
+<p class="lead">Распределите экологическую работу по должностям: кто отвечает, кто собирает данные, кто согласует и кого информируют. Заполните матрицу для своего предприятия и скачайте документ для обсуждения с руководством.</p>
+<div class="note accent">СЭМ не держится на одном экологе: решения принимает руководство, работу на местах выполняют подразделения. Матрица помогает подготовить предложения. Она не назначает обязанности и не предоставляет полномочия.</div>
+<h2>Обозначения индексов</h2>
+<div class="legend">
+<span class="lg O"><i></i><span><b>О</b> – Ответственный на уровне завода (границы действий уточняются)</span></span>
+<span class="lg Oc"><i></i><span><b>Оц</b> – Ответственный в подразделении</span></span>
+<span class="lg U"><i></i><span><b>У</b> – Участник (собирает данные, готовит документы)</span></span>
+<span class="lg S"><i></i><span><b>С</b> – Согласующее лицо (проверяет и визирует)</span></span>
+<span class="lg I"><i></i><span><b>И</b> – Информированный (знает и применяет правила)</span></span>
+</div>
+<div class="bar">
+<button class="btn btn-p" data-go="work">Начать работу</button>
+<button class="btn btn-s" data-go="example">Пример заполнения</button>
+<button class="link" data-help>? Как заполнять</button>
+</div>
+<div class="bar">
+<button class="btn btn-s" data-import>Импортировать данные из прошлых уроков</button>
+<button class="btn btn-s" data-load>Загрузить общий файл (JSON)</button>
+</div>
+<div class="note warn">Черновик хранится только в этом браузере. Word и Excel сохраняют документ для обсуждения. Для переноса черновика используйте общий JSON. Изменения из Word и Excel обратно не импортируются.</div>
+<div id="stWarn" class="msg err hidden">Браузер не разрешает сохранять черновик. Скачайте файл до закрытия страницы.</div>
+<div id="stRestore" class="note hidden">Найден сохраненный черновик — матрица восстановлена.</div>
+</div>
+
+<!-- КОНСТРУКТОР -->
+<div id="s-work" class="screen">
+<div class="head">
+<div>
+<h1 tabindex="-1">Матрица ответственности и полномочий СЭМ</h1>
+<p class="sub">ГОСТ Р ИСО 14001-2016 · заполнение для своего предприятия</p>
+</div>
+<div class="quick">
+<button class="btn btn-s" data-go="example">Пример заполнения</button>
+<button class="link" data-help>? Как заполнять</button>
+<button class="link" data-go="intro">К началу</button>
+</div>
+</div>
+
+<div class="meta">
+<div class="f"><label for="mOrg">Название предприятия</label><input id="mOrg" type="text" placeholder="ООО «Стекло»"></div>
+<div class="f"><label for="mDate">Дата</label><input id="mDate" type="text"></div>
+<div class="f"><label for="mAuthor">Кто подготовил (ФИО, должность)</label><input id="mAuthor" type="text" placeholder="Иванов И.И., эколог"></div>
+</div>
+
+<div class="bar">
+<select id="selClause"></select>
+<button class="mini add" id="bAddClause">+ Добавить пункт</button>
+<button class="mini add" id="bAddRole">+ Добавить должность</button>
+<button class="mini" id="bCore">Только основные пункты</button>
+<button class="mini" id="bUndo" style="display:none">Отменить</button>
+<button class="mini" id="bClear">Очистить матрицу</button>
+<button class="mini" data-import>Импортировать данные</button>
+</div>
+
+<div class="legend sticky">
+<span class="lg O"><i></i><span><b>О</b> – ответственный на уровне завода</span></span>
+<span class="lg Oc"><i></i><span><b>Оц</b> – ответственный в подразделении</span></span>
+<span class="lg U"><i></i><span><b>У</b> – участник</span></span>
+<span class="lg S"><i></i><span><b>С</b> – согласует</span></span>
+<span class="lg I"><i></i><span><b>И</b> – информирован</span></span>
+</div>
+
+<div class="scroll"><div id="mxBox"></div></div>
+<div class="stat" id="stat"></div>
+<div class="msgs" id="msgs"></div>
+
+<div class="f" style="margin-top:12px">
+<label for="fNotes">Общие примечания к проекту</label>
+<textarea id="fNotes" placeholder="Начальник цеха вправе остановить неисправный погрузчик при утечке масла; координатор СЭМ вправе запрашивать первичные журналы учета у смен."></textarea>
+<div class="hint">Укажите общие вопросы. Источник, полномочия, связи и вопросы по конкретному поручению заполните в окне ячейки. Все записи попадут в экспорт.</div>
+</div>
+
+<div class="bar">
+<button class="btn btn-p" id="bDocx">Скачать Word</button>
+<button class="btn btn-p" id="bXlsx">Скачать Excel (.xlsx)</button>
+<button class="btn btn-s" id="bJson">Скачать единый файл курса</button>
+<button class="btn btn-s" data-load>Загрузить общий файл (JSON)</button>
+</div>
+<div class="hint" id="dlNote"></div>
+</div>
+
+<!-- ПРИМЕР -->
+<div id="s-example" class="screen">
+<div class="head">
+<div>
+<h1 tabindex="-1">Пример заполнения: завод «Стекло»</h1>
+<p class="sub">ГОСТ Р ИСО 14001-2016 · учебный пример, реквизиты и формулировки условные</p>
+</div>
+<div class="quick">
+<button class="btn btn-p" data-go="work">Заполнить свою матрицу</button>
+<button class="link" data-go="intro">К началу</button>
+</div>
+</div>
+<p class="lead">Так выглядит распределение работы на стекольном производстве: выбранные пункты стандарта и пять уровней должностей. Индекс показывает роль, курсив – конкретное действие должности.</p>
+<div class="legend">
+<span class="lg O"><i></i><span><b>О</b> – Ответственный на уровне завода (границы действий уточняются)</span></span>
+<span class="lg Oc"><i></i><span><b>Оц</b> – Ответственный в подразделении</span></span>
+<span class="lg U"><i></i><span><b>У</b> – Участник (собирает данные, готовит документы)</span></span>
+<span class="lg S"><i></i><span><b>С</b> – Согласующее лицо (проверяет и визирует)</span></span>
+<span class="lg I"><i></i><span><b>И</b> – Информированный (знает и применяет правила)</span></span>
+</div>
+<div class="scroll"><div id="exBox"></div></div>
+<div class="note">Обратите внимание на пункт 8.1: за работу в цехах отвечают руководители подразделений (Оц), а координатор СЭМ согласует рабочие инструкции (С). Такое распределение задано в примере. На предприятии проверьте фактические полномочия.</div>
+<div class="note accent"><b>Полномочия из примера.</b> Участникам необходимы полномочия для порученной работы. Основания полномочий проверяют по действующим документам предприятия.</div>
+<div class="bar">
+<button class="btn btn-p" data-go="work">Заполнить свою матрицу</button>
+<button class="btn btn-s" id="bTakeEx">Взять пример за основу</button>
+<button class="link" data-help>? Как заполнять</button>
+</div>
+<div class="hint">Пример не обязателен к копированию: в своей матрице оставьте только те должности и пункты, которые есть у вас.</div>
+</div>
+</div>
+
+<div id="pop">
+<div class="ttl" id="popTtl">Выберите обозначение</div>
+<div class="pgrid">
+<button class="pbtn O" data-set="О">О</button>
+<button class="pbtn Oc" data-set="Оц">Оц</button>
+<button class="pbtn U" data-set="У">У</button>
+<button class="pbtn S" data-set="С">С</button>
+<button class="pbtn I" data-set="И">И</button>
+<button class="pbtn none" data-set="">—</button>
+</div>
+<input id="popCm" type="text" placeholder="Комментарий / действие (необязательно)">
+<div class="hint">Проект распределения. Заполнение не назначает обязанности.</div><label class="hint" for="pop_basis">Действует сейчас или предлагается</label><textarea class="" id="pop_basis" rows="2" style="width:100%;box-sizing:border-box"></textarea><label class="hint" for="pop_source">Источник действующего порядка</label><textarea class="" id="pop_source" rows="2" style="width:100%;box-sizing:border-box"></textarea><label class="hint" for="pop_authority">Необходимые полномочия и основание</label><textarea class="" id="pop_authority" rows="2" style="width:100%;box-sizing:border-box"></textarea><label class="hint" for="pop_question">Что уточнить и у кого</label><textarea class="" id="pop_question" rows="2" style="width:100%;box-sizing:border-box"></textarea><label class="hint" for="pop_links">Связанные записи и ID</label><textarea class="" id="pop_links" rows="2" style="width:100%;box-sizing:border-box"></textarea><div class="popfoot"><span class="hint">Необязательно</span><button class="mini" id="popDone">Готово</button></div>
+</div>
+
+<div class="ov" id="ovHelp">
+<div class="ovp">
+<div class="ovh"><h3>Как заполнять матрицу</h3><button class="x" id="helpClose" style="font-size:18px">×</button></div>
+<div class="ovb">
+<div class="step"><div class="n">1</div><div><b>Разделите действия.</b> Несколько организаторов допустимы. Уточните границы работы и результаты каждого.</div></div>
+<div class="step"><div class="n">2</div><div><b>Опишите действие и результат.</b> Укажите, что делает участник: «Утверждает политику», «Ведет учет в цехе».</div></div>
+<div class="step"><div class="n">3</div><div><b>Проверьте полномочия.</b> У О и Оц должны быть реальные права: остановить неисправное оборудование, запросить первичные данные у служб.</div></div>
+<div class="step"><div class="n">4</div><div><b>Подготовьте к обсуждению.</b> Обсудите проект с участниками и руководством. После принятия решений оформите изменения по установленному порядку.</div></div>
+<div class="note">В обзорной матрице удобно указывать должности. Конкретных работников определяют по принятому порядку. Назначение координатора не снимает с руководства ответственности за результативность СЭМ.</div>
+</div>
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+function boot(m){var b=document.getElementById('boot');b.classList.remove('hidden');b.textContent='Конструктор не запустился: '+m;}
+window.addEventListener('error',function(e){boot((e&&e.message)||'ошибка скрипта');});
+
+/* ===== разделы и пункты по ГОСТ Р ИСО 14001-2016 ===== */
+var SECTIONS=[['4','Контекст организации'],['5','Лидерство'],['6','Планирование'],['7','Обеспечение'],['8','Деятельность'],['9','Оценка результатов деятельности'],['10','Улучшение']];
+var CLAUSES=[
+{id:'5.2',sec:'5',t:'Экологическая политика',core:true},
+{id:'6.1.2',sec:'6',t:'Экологические аспекты',core:true},
+{id:'6.1.3',sec:'6',t:'Принятые обязательства',core:true},
+{id:'7.2',sec:'7',t:'Компетентность',core:true},
+{id:'7.4',sec:'7',t:'Обмен информацией',core:true},
+{id:'8.1',sec:'8',t:'Планирование и управление деятельностью',core:true},
+{id:'9.1',sec:'9',t:'Мониторинг, измерения, анализ и оценка',core:true},
+{id:'9.3',sec:'9',t:'Анализ со стороны руководства',core:true},
+{id:'4.1',sec:'4',t:'Понимание организации и ее контекста',core:false},
+{id:'4.2',sec:'4',t:'Понимание потребностей и ожиданий заинтересованных сторон',core:false},
+{id:'4.3',sec:'4',t:'Определение области применения системы экологического менеджмента',core:false},
+{id:'4.4',sec:'4',t:'Система экологического менеджмента',core:false},
+{id:'5.1',sec:'5',t:'Лидерство и приверженность',core:false},
+{id:'5.3',sec:'5',t:'Обеспечение соответствия СЭМ и отчетность руководству',core:true},
+{id:'6.1.1',sec:'6',t:'Общие положения (риски и возможности)',core:false},
+{id:'6.1.4',sec:'6',t:'Планирование действий',core:false},
+{id:'6.2.1',sec:'6',t:'Экологические цели',core:false},
+{id:'6.2.2',sec:'6',t:'Планирование действий по достижению экологических целей',core:false},
+{id:'7.1',sec:'7',t:'Ресурсы',core:false},
+{id:'7.3',sec:'7',t:'Осведомленность',core:false},
+{id:'7.4.2',sec:'7',t:'Внутренний обмен информацией',core:false},
+{id:'7.4.3',sec:'7',t:'Внешний обмен информацией',core:false},
+{id:'7.5',sec:'7',t:'Документированная информация',core:false},
+{id:'8.2',sec:'8',t:'Готовность к аварийным ситуациям и реагирование на них',core:false},
+{id:'9.1.2',sec:'9',t:'Оценка соответствия',core:false},
+{id:'9.2',sec:'9',t:'Внутренний аудит',core:false},
+{id:'10.2',sec:'10',t:'Несоответствия и корректирующие действия',core:false},
+{id:'10.3',sec:'10',t:'Постоянное улучшение',core:false}];
+var ROLES=['Генеральный директор','Координатор СЭМ (эколог)','Руководители подразделений','Уполномоченный по СЭМ','Работники участков'];
+var XF={'':10,'О':5,'Оц':6,'У':7,'С':8,'И':9};
+var FILL={'':'FFFFFF','О':'E3F0FD','Оц':'E6F4EA','У':'FDF6E7','С':'F3E8FD','И':'F8FAFC'};
+var COLOR={'':'475569','О':'0D47A1','Оц':'1B5E20','У':'92400E','С':'6B21A8','И':'475569'};
+var LEGEND_TEXT="О - организует указанную работу на уровне завода; Оц - организует работу в подразделении; У - выполняет часть работы или принимает отдельное решение; С - проверяет и согласует проект; И - получает информацию.";
+var STEPS=[["Выберите участников.", "Используйте действующее распределение и сведения прошлых уроков. Участники импорта являются предложениями, а не назначенными ответственными."], ["Опишите действия и результаты.", "Для каждой заполненной ячейки уточните работу. Несколько организаторов допустимы, если границы их работы разделены."], ["Проверьте действующий порядок.", "Укажите источник обязанностей и отделите действующий порядок от предложения."], ["Проверьте полномочия.", "Определите необходимые решения и права. Если основание неизвестно, сохраните вопрос и его адресата."], ["Обсудите проект.", "Сопоставьте распределение с руководителями подразделений. Нерешенные вопросы передайте руководству."], ["Оформите принятые решения.", "После согласования оформите изменения и доведите их до работников по установленному порядку. Заполнение конструктора не назначает обязанности."]];
+
+/* пример: завод «Стекло», порядок ролей как в ROLES */
+var EX={"5.2": [["О", "Определяет политику и принимает решение о ее применении"], ["У", "Готовит проект с подразделениями"], ["Оц", "Организуют доведение политики"], ["И", "Получает информацию о политике"], ["И", "Получают информацию о политике"]], "6.1.2": [["И", "Получает перечень значимых аспектов"], ["О", "Координирует выявление и оценку аспектов"], ["Оц", "Организуют выявление аспектов своих процессов"], ["У", "Собирает сведения об операциях участка"], ["У", "Сообщают о воздействии операций"]], "6.1.3": [["И", "Получает сведения о применимых обязательствах"], ["О", "Организует проверку применимости требований"], ["Оц", "Обеспечивают сведения о процессах"], ["У", "Передает сведения об изменениях"], ["У", "Предоставляют сведения о фактической работе"]], "7.2": [["У", "Принимает решения о ресурсах подготовки"], ["О", "Координирует определение потребностей в подготовке"], ["Оц", "Определяют потребности своих работников"], ["У", "Собирает сведения о подготовке"], ["У", "Проходят предусмотренную подготовку"]], "7.4": [["У", "Принимает решения по сообщениям в пределах полномочий"], ["О", "Координирует обмен сведениями"], ["Оц", "Организуют передачу информации"], ["У", "Передает предусмотренные данные"], ["У", "Сообщают об отклонениях"]], "8.1": [["У", "Принимает решения о ресурсах"], ["С", "Согласует экологическую часть проектов инструкций"], ["Оц", "Организуют выполнение рабочих правил"], ["У", "Сообщает о выявленных отклонениях"], ["У", "Выполняют рабочие правила"]], "9.1": [["И", "Получает сводные результаты"], ["О", "Координирует обобщение результатов мониторинга"], ["Оц", "Организуют сбор показателей подразделения"], ["У", "Собирает предусмотренные показатели"], ["У", "Передают первичные данные"]], "9.3": [["О", "Организует анализ и принимает решения"], ["У", "Готовит сводные материалы"], ["У", "Предоставляют результаты подразделений"], ["У", "Готовит данные участка"], ["И", "Получают относящиеся к их работе решения"]]};
+var EX_NOTES='Учебный проект. Координатору требуется доступ к первичным данным. Основание полномочий и порядок согласования инструкций нужно проверить. Вопрос руководителям подразделений и руководству. Роль уполномоченного используется только как вариант распределения.';
+
+EX['5.3']=[['У','Определяет участников и обеспечивает полномочия'],['О','Координирует обеспечение соответствия СЭМ и готовит отчет руководству'],['У','Предоставляют сведения о работе подразделений'],['У','Передает предусмотренные данные участка'],['И','Получают относящиеся к их работе решения']];
+/* ===== общий файл курса ===== */
+var importedBundle=null;try{importedBundle=JSON.parse(localStorage.getItem('sem_roles_import_bundle')||'null');}catch(ignore){}
+var BK='sem_bundle';
+var REG=[
+{n:'swot',t:'Условия и границы',k:['sem_swot','sem-conditions-analysis-v1']},
+{n:'parties',t:'Заинтересованные стороны',k:['sem_parties','sem-stakeholder-registry-v1']},
+{n:'scope',t:'Область применения',k:['sem_scope','sem-scope-v1']},
+{n:'aspects',t:'Реестр аспектов',k:['sem_aspects','sem-aspect-records-v3','sem-aspect-records-v2','sem-aspect-records-v1']},
+{n:'significance',t:'Оценка значимости',k:['sem_significance','sem-ranks-v3','sem-ranks-significance-v3','sem-ranks-v2','sem-ranks-v1']},
+{n:'obligations',t:'Реестр обязательств',k:['sem_obligations','sem-obligations-registry-v3','sem-obligations-registry-v2','sem-obligations-registry-v1']},
+{n:'risks',t:'Риски и возможности',k:['sem_risks','sem-risks-opps-v2','sem-risks-opps-v1']},
+{n:'policy',t:'Политика',k:['sem_policy','sem-policy-v1']},
+{n:'goals',t:'Цели и показатели',k:['sem_goals','sem-goals-v1']},
+{n:'plan',t:'План действий',k:['sem_plan','sem-plan-v1']},
+{n:'roles',t:'Матрица ответственности',k:['sem_roles','sem-roles-v1']},
+{n:'rollout',t:'План внедрения',k:['sem_rollout']}];
+function hasData(p){return !!(p&&((Array.isArray(p.rows)&&p.rows.length)||(Array.isArray(p.conditions)&&p.conditions.length)||(Array.isArray(p.parties)&&p.parties.length)||p.data||p.result));}
+function live(k){try{var r=localStorage.getItem(k);if(!r)return false;return hasData(JSON.parse(r));}catch(e){return false;}}
+function readStep(st){for(var i=0;i<st.k.length;i++){if(live(st.k[i])){try{return JSON.parse(localStorage.getItem(st.k[i]));}catch(e){}}}return null;}
+function cache(){try{var r=localStorage.getItem(BK);if(!r)return{steps:{}};var d=JSON.parse(r);return (d&&d.steps)?d:{steps:{}};}catch(e){return{steps:{}};}}
+function payload(n){if(importedBundle&&importedBundle.steps&&importedBundle.steps[n])return importedBundle.steps[n];var st=null;REG.forEach(function(s){if(s.n===n)st=s;});if(st){var l=readStep(st);if(l)return l;}return cache().steps[n]||null;}
+function rowsOf(n){var p=payload(n);return (p&&Array.isArray(p.rows))?p.rows:[];}
+function dataOf(n){var p=payload(n);return (p&&p.data)||null;}
+function bundle(){var c=cache(),s=Object.assign({},importedBundle?importedBundle.steps:{});REG.forEach(function(x){s[x.n]=x.n==='roles'?(readStep(x)||c.steps[x.n]||null):(s[x.n]||readStep(x)||c.steps[x.n]||null);});Object.keys(c.steps).forEach(function(k){if(s[k]===undefined)s[k]=c.steps[k];});return Object.assign({},importedBundle||{},{schema:(importedBundle&&importedBundle.schema)||'sem.bundle.v1',program:'СЭМ',exportedAt:new Date().toISOString(),steps:s});}
+function cacheBundle(b){var c=cache();Object.keys(b.steps||{}).forEach(function(n){var p=b.steps[n];if(!hasData(p))return;var o=c.steps[n];var pl=(p.rows&&p.rows.length)||0,ol=o?((o.rows&&o.rows.length)||0):0;if(!o||pl>ol||Number(p.rev||0)>Number(o.rev||0))c.steps[n]=p;});c.savedAt=new Date().toISOString();try{localStorage.setItem(BK,JSON.stringify(c));}catch(e){}}
+function restore(b,skip){var n=0;Object.keys(b.steps||{}).forEach(function(k){if(k===skip)return;var p=b.steps[k];if(!hasData(p))return;var key=null;REG.forEach(function(s){if(s.n===k)key=s.k[0];});if(!key)key=k;if(live(key))return;try{localStorage.setItem(key,JSON.stringify(p));n++;}catch(e){}});return n;}
+
+/* ===== утилиты ===== */
+function $(i){return document.getElementById(i);}
+function esc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');}
+function xesc(s){return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&apos;');}
+function today(){var d=new Date();return ('0'+d.getDate()).slice(-2)+'.'+('0'+(d.getMonth()+1)).slice(-2)+'.'+d.getFullYear();}
+function low(s){return String(s||'').trim().toLowerCase();}
+function resize(){if(window.parentIFrame&&typeof window.parentIFrame.size==='function')window.parentIFrame.size();}
+var tT=null;
+function toast(t){var e=$('toast');e.textContent=t;e.classList.add('on');if(tT)clearTimeout(tT);tT=setTimeout(function(){e.classList.remove('on');},3200);}
+function cl(id){var r=null;CLAUSES.forEach(function(c){if(c.id===id)r=c;});return r;}
+function active(){return CLAUSES.filter(function(c){return S.active[c.id];});}
+function show(id){
+ closePop();
+ ['s-intro','s-work','s-example'].forEach(function(s){$(s).classList.remove('on');});
+ $('s-'+id).classList.add('on');
+ var h=$('s-'+id).querySelector('h1');if(h){h.setAttribute('tabindex','-1');h.focus({preventScroll:true});}
+ window.scrollTo(0,0);resize();
+}
+
+/* ===== состояние ===== */
+var KEY='sem_roles',SCH='sem.roles.v5';
+var S={meta:{org:'',date:'',author:''},roles:[],active:{},cells:{},notes:'',next:1,rev:1};
+var ok=true,snap=null,popT=null;
+function k(rn,ci){return rn+'|'+ci;}
+function getC(rn,ci){return S.cells[k(rn,ci)]||{i:'',a:''};}
+function setC(rn,ci,p){var kk=k(rn,ci);S.cells[kk]=Object.assign({},S.cells[kk]||{i:'',a:''},p);}
+function core(){CLAUSES.forEach(function(c){S.active[c.id]=!!c.core;});}
+function addRole(n){S.roles.push({num:S.next++,name:n||''});}
+function fixNext(){var m=0;S.roles.forEach(function(r){if(r.num>m)m=r.num;});if(S.next<=m)S.next=m+1;}
+function filled(){var n=0;active().forEach(function(c){S.roles.forEach(function(r){if(getC(r.num,c.id).i)n++;});});return n;}
+function save(){
+ if(!ok)return;
+ try{S.rev++;var old={};try{old=JSON.parse(localStorage.getItem(KEY)||'{}')||{};}catch(ignore){}var pack=Object.assign({},old,{schema:SCH,rev:S.rev,updatedAt:new Date().toISOString(),meta:S.meta,data:Object.assign({},old.data||{},{roles:S.roles,active:S.active,cells:S.cells,notes:S.notes,next:S.next,status:'draft'})});localStorage.setItem(KEY,JSON.stringify(pack));}
+ catch(e){ok=false;$('stWarn').classList.remove('hidden');}
+}
+function load(){
+ try{
+  var r=localStorage.getItem(KEY);
+  if(r){var d=JSON.parse(r);if(d&&d.data&&Array.isArray(d.data.roles)){S.meta=Object.assign({org:'',date:'',author:''},d.meta||{});S.roles=d.data.roles;S.notes=d.data.notes||'';S.next=Number(d.data.next)||1;S.rev=Number(d.rev)||1;core();Object.keys(d.data.active||{}).forEach(function(x){if(cl(x))S.active[x]=!!d.data.active[x];});S.cells=d.data.cells||{};Object.keys(S.cells).forEach(function(kk){if(['','О','Оц','У','С','И'].indexOf(S.cells[kk].i)<0)S.cells[kk].i='';});fixNext();return true;}}
+  var o=localStorage.getItem('sem-roles-v1');
+  if(o){var p=JSON.parse(o);if(p&&Array.isArray(p.rows)){core();var map=['5.2','6.1.2','6.1.3','8.1','9.1'];p.rows.forEach(function(rr){var n=S.next++;S.roles.push({num:n,name:rr.name||''});(rr.cells||[]).forEach(function(v,ci){if(map[ci]&&v)setC(n,map[ci],{i:v,a:''});});});S.notes=p.notes||'';fixNext();return true;}}
+ }catch(e){}
+ return false;
+}
+function testStore(){try{localStorage.setItem(KEY+'-t','1');localStorage.removeItem(KEY+'-t');}catch(e){ok=false;$('stWarn').classList.remove('hidden');}}
+function takeSnap(){snap=JSON.stringify({meta:S.meta,roles:S.roles,active:S.active,cells:S.cells,notes:S.notes,next:S.next});$('bUndo').style.display='';}
+function undo(){if(!snap)return;var d=JSON.parse(snap);S.meta=d.meta;S.roles=d.roles;S.active=d.active;S.cells=d.cells;S.notes=d.notes;S.next=d.next;snap=null;$('bUndo').style.display='none';syncInputs();save();render();toast('Действие отменено.');}
+function syncInputs(){$('mOrg').value=S.meta.org;$('mDate').value=S.meta.date;$('mAuthor').value=S.meta.author;$('fNotes').value=S.notes;}
+
+/* ===== проверка ===== */
+function check(){
+ var errs={},soft={},msgs=[];
+ active().forEach(function(c){var own=[];S.roles.forEach(function(r){var v=getC(r.num,c.id),kk=k(r.num,c.id);
+ if(v.i==='О'||v.i==='Оц')own.push(r);
+ if(v.i&&!v.a.trim()){soft[kk]=1;msgs.push({t:'soft',x:(r.name||'Должность')+' / '+c.id+': опишите действие и ожидаемый результат.'});}
+ if(v.i&&v.i!=='И'&&!v.authority&&!v.question){soft[kk]=1;msgs.push({t:'info',x:(r.name||'Должность')+' / '+c.id+': проверьте полномочия либо запишите вопрос и адресата.'});}
+ });if(own.length>1)msgs.push({t:'info',x:c.id+': проверьте границы работы организаторов. Несколько участников не являются ошибкой.'});
+ });return {errs:errs,soft:soft,msgs:msgs};
+}
+function paintMsgs(){var f=check();$('msgs').innerHTML=f.msgs.map(function(m){return '<div class="msg '+m.t+'">'+esc(m.x)+'</div>';}).join('');}
+
+/* ===== рендер конструктора ===== */
+function render(){
+ var cls=active(),flag=check();
+ if(!cls.length){$('mxBox').innerHTML='<div class="note" style="margin:10px">Столбцов нет. Добавьте пункт ГОСТ кнопкой выше.</div>';}
+ else{
+  var h='<table class="mx" style="min-width:'+(196+cls.length*136)+'px"><thead><tr><th class="role">Должность</th>';
+  cls.forEach(function(c){h+='<th><div class="thwrap"><span><span class="code">'+esc(c.id)+'</span><span class="ct">'+esc(c.t)+'</span></span><button class="x" data-delc="'+c.id+'" title="Убрать столбец">×</button></div></th>';});
+  h+='</tr></thead><tbody>';
+  S.roles.forEach(function(r){
+   h+='<tr><td class="role"><div class="rolewrap"><input class="role-in" data-role="'+r.num+'" value="'+esc(r.name)+'" placeholder="Должность"><button class="x" data-delr="'+r.num+'" title="Удалить должность">×</button></div></td>';
+   cls.forEach(function(c){
+    var v=getC(r.num,c.id),kk=k(r.num,c.id);
+    var cl2='cell '+(v.i||'empty')+(flag.errs[kk]?' err':'')+(flag.soft[kk]?' soft':'');
+    var inner=v.i?('<span class="lt">'+v.i+'</span>'+(v.a?'<span class="cm">'+esc(v.a)+'</span>':'')):'<span class="lt">—</span>';
+    h+='<td><button type="button" class="'+cl2+'" data-cell="'+r.num+'|'+c.id+'">'+inner+'</button></td>';
+   });
+   h+='</tr>';
+  });
+  if(!S.roles.length)h+='<tr><td class="role" colspan="'+(cls.length+1)+'">Добавьте должность кнопкой выше.</td></tr>';
+  h+='</tbody></table>';
+  $('mxBox').innerHTML=h;
+ }
+ $('stat').textContent='Столбцов: '+cls.length+' · должностей: '+S.roles.length+' · заполнено ячеек: '+filled()+' из '+(S.roles.length*cls.length)+'. Нажмите на ячейку, чтобы выбрать индекс.';
+ $('msgs').innerHTML=flag.msgs.map(function(m){return '<div class="msg '+m.t+'">'+esc(m.x)+'</div>';}).join('');
+ var rest=CLAUSES.filter(function(c){return !S.active[c.id];}),sel=$('selClause');
+ if(rest.length){
+  var o='<option value="">Дополнительные пункты ГОСТ…</option>';
+  SECTIONS.forEach(function(s){
+   var g=rest.filter(function(c){return c.sec===s[0];});if(!g.length)return;
+   o+='<optgroup label="'+s[0]+' '+esc(s[1])+'">';
+   g.forEach(function(c){o+='<option value="'+c.id+'">'+esc(c.id)+' · '+esc(c.t)+'</option>';});
+   o+='</optgroup>';
+  });
+  sel.innerHTML=o;sel.disabled=false;$('bAddClause').disabled=false;
+ }else{sel.innerHTML='<option value="">Все пункты ГОСТ уже в матрице</option>';sel.disabled=true;$('bAddClause').disabled=true;}
+ syncImportBtns();resize();
+}
+function refreshCell(rn,ci){
+ var b=$('mxBox').querySelector('button[data-cell="'+rn+'|'+ci+'"]');if(!b)return;
+ var f=check(),v=getC(rn,ci),kk=k(rn,ci);
+ b.className='cell '+(v.i||'empty')+(f.errs[kk]?' err':'')+(f.soft[kk]?' soft':'');
+ b.innerHTML=v.i?('<span class="lt">'+v.i+'</span>'+(v.a?'<span class="cm">'+esc(v.a)+'</span>':'')):'<span class="lt">—</span>';
+}
+
+/* ===== пример ===== */
+function renderExample(){
+ var cls=CLAUSES.filter(function(c){return c.core;});
+ var h='<table class="mx" style="min-width:'+(196+cls.length*140)+'px"><thead><tr><th class="role">Должность</th>';
+ cls.forEach(function(c){h+='<th><span class="code">'+esc(c.id)+'</span><span class="ct">'+esc(c.t)+'</span></th>';});
+ h+='</tr></thead><tbody>';
+ ROLES.forEach(function(name,ri){
+  h+='<tr><td class="role"><b>'+esc(name)+'</b></td>';
+  cls.forEach(function(c){
+   var v=(EX[c.id]&&EX[c.id][ri])||['',''];
+   h+='<td class="pv '+v[0]+'">'+(v[0]?'<span class="lt">'+v[0]+'</span>'+(v[1]?'<span class="cm">'+esc(v[1])+'</span>':''):'—')+'</td>';
+  });
+  h+='</tr>';
+ });
+ h+='</tbody></table>';
+ $('exBox').innerHTML=h;resize();
+}
+function takeExample(){
+ if(filled()>0&&!confirm('Заменить текущие записи учебным примером завода «Стекло»? Действие можно отменить кнопкой «Отменить».'))return;
+ takeSnap();
+ S.roles=[];S.cells={};core();
+ ROLES.forEach(addRole);
+ CLAUSES.forEach(function(c){var row=EX[c.id];if(!row)return;S.roles.forEach(function(r,i){if(row[i])setC(r.num,c.id,{i:row[i][0],a:row[i][1]});});});
+ if(!S.meta.org)S.meta.org='Стекольный завод «Стекло» (учебный пример)';
+ if(!S.meta.date)S.meta.date=today();
+ S.notes=EX_NOTES;
+ syncInputs();save();render();show('work');
+ toast('Пример перенесен в конструктор. Адаптируйте должности и формулировки под свое предприятие.');
+}
+
+/* ===== меню ячейки ===== */
+function openPop(rn,ci){
+ popT={rn:rn,ci:ci};
+ var c=cl(ci),v=getC(rn,ci);
+ $('popTtl').textContent=c.id+' · '+c.t;
+ $('popCm').value=v.a||'';
+ ['basis','source','authority','question','links'].forEach(function(f){$('pop_'+f).value=v[f]||'';});
+ var bs=$('pop').querySelectorAll('.pbtn');
+ for(var i=0;i<bs.length;i++){var val=bs[i].getAttribute('data-set');bs[i].className='pbtn '+(val||'none')+(val===v.i?' sel':'');}
+ $('pop').classList.add('on');placePop();
+}
+function placePop(){
+ if(!popT)return;
+ var b=$('mxBox').querySelector('button[data-cell="'+popT.rn+'|'+popT.ci+'"]');
+ if(!b){closePop();return;}
+ var r=b.getBoundingClientRect(),p=$('pop'),w=p.offsetWidth||238,h=p.offsetHeight||200;
+ var left=r.left+window.pageXOffset,maxL=window.pageXOffset+document.documentElement.clientWidth-w-8;
+ if(left>maxL)left=maxL;if(left<window.pageXOffset+8)left=window.pageXOffset+8;
+ var top=r.bottom+window.pageYOffset+6;
+ if(r.bottom+h+14>document.documentElement.clientHeight&&r.top>h+14)top=r.top+window.pageYOffset-h-6;
+ p.style.left=left+'px';p.style.top=top+'px';
+}
+function closePop(){$('pop').classList.remove('on');popT=null;}
+$('pop').addEventListener('click',function(e){
+ var b=e.target.closest('.pbtn');if(!b||!popT)return;
+ var val=b.getAttribute('data-set');
+ setC(popT.rn,popT.ci,{i:val});
+ 
+ var bs=$('pop').querySelectorAll('.pbtn');
+ for(var i=0;i<bs.length;i++){var v=bs[i].getAttribute('data-set');bs[i].className='pbtn '+(v||'none')+(v===val?' sel':'');}
+ save();render();placePop();
+});
+$('popCm').addEventListener('input',function(){if(!popT)return;setC(popT.rn,popT.ci,{a:this.value});save();refreshCell(popT.rn,popT.ci);});
+
+['basis','source','authority','question','links'].forEach(function(f){$('pop_'+f).addEventListener('input',function(){if(!popT)return;var p={};p[f]=this.value;setC(popT.rn,popT.ci,p);save();paintMsgs();placePop();});});
+$('popDone').onclick=closePop;
+window.addEventListener('resize',placePop);
+window.addEventListener('scroll',placePop,true);
+
+/* ===== импорт и файлы ===== */
+function collectCandidates(){
+ var out=[];['goals','obligations','risks','plan'].forEach(function(step){rowsOf(step).forEach(function(row){['responsible','participants'].forEach(function(field){var values=Array.isArray(row[field])?row[field]:[row[field]];values.forEach(function(value){if(typeof value!=='string'||!value.trim())return;out.push({name:value.trim(),source:{step:step,id:row.id===undefined?null:row.id,field:field,value:value}});});});});});return out;
+}
+function collectNames(){return collectCandidates().map(function(x){return x.name;}).filter(function(x,i,a){return a.indexOf(x)===i;});}
+function syncImportBtns(){
+ var av=collectNames().length>0;
+ var bs=document.querySelectorAll('[data-import]');
+ for(var i=0;i<bs.length;i++){bs[i].disabled=!av;bs[i].title=av?'Добавить должности из прошлых шагов курса':'Нет сохраненных данных прошлых уроков в этом браузере';}
+}
+function doImport(){
+ var names=collectNames(),added=[];
+ takeSnap();
+ collectCandidates().forEach(function(candidate){var role=S.roles.find(function(r){return low(r.name)===low(candidate.name);});if(!role){addRole(candidate.name);role=S.roles[S.roles.length-1];added.push(candidate.name);}role.sourceRefs=role.sourceRefs||[];if(!role.sourceRefs.some(function(x){return JSON.stringify(x)===JSON.stringify(candidate.source);}))role.sourceRefs.push(candidate.source);});
+ save();render();show('work');
+ toast(added.length?'Добавлены должности: '+added.join(', '):'Новых должностей не найдено — заполните матрицу вручную.');
+}
+function loadFile(file){
+ var rd=new FileReader();
+ rd.onload=function(){
+  var d;try{d=JSON.parse(rd.result);}catch(e){toast('Файл не читается как JSON.');return;}
+  var own=null;
+  if(d&&d.steps&&typeof d.steps==='object'){if(!confirm('Загрузить общий файл? Другие шаги не будут перезаписаны в браузере. Они сохранятся в экспортируемом общем файле.'))return;importedBundle=d;try{localStorage.setItem('sem_roles_import_bundle',JSON.stringify(d));}catch(ignore){toast('Файл открыт без сохранения в браузере. Скачайте общий JSON перед закрытием.');}var p=d.steps.roles;own=(p&&p.data)||null;}
+  else if(d&&d.data&&d.data.roles){own=d.data;}
+  if(!own||!Array.isArray(own.roles)){syncImportBtns();toast('Матрицы в файле нет. Данные других шагов доступны для импорта участников и сохранятся в общем файле.');return;}
+  takeSnap();
+  var added=0,fl=0;
+  own.roles.forEach(function(r){
+   var ex=null;S.roles.forEach(function(x){if(low(x.name)===low(r.name)&&low(r.name))ex=x;});
+   if(!ex){var n=S.next++;S.roles.push(Object.assign({},r,{num:n,name:r.name||''}));ex={num:n};added++;}
+   Object.keys(own.cells||{}).forEach(function(kk){
+    if(kk.indexOf(r.num+'|')!==0)return;
+    var ci=kk.split('|')[1];if(!cl(ci))return;
+    var v=own.cells[kk],cur=getC(ex.num,ci);
+    if(['О','Оц','У','С','И'].indexOf(v.i)>=0&&!cur.i){setC(ex.num,ci,Object.assign({},v,{i:v.i,a:v.a||''}));fl++;}
+    else {var patch={};Object.keys(v).forEach(function(f){if(!cur[f]&&v[f])patch[f]=v[f];});if(Object.keys(patch).length){setC(ex.num,ci,patch);fl++;}}
+   });
+  });
+  Object.keys(own.active||{}).forEach(function(x){if(cl(x)&&own.active[x])S.active[x]=true;});
+  if(own.notes&&!S.notes)S.notes=own.notes;var importedMeta=(d.steps&&d.steps.roles&&d.steps.roles.meta)||d.meta||{};['org','date','author'].forEach(function(f){if(!S.meta[f]&&importedMeta[f])S.meta[f]=importedMeta[f];});
+  fixNext();syncInputs();save();render();show('work');
+  toast('Файл загружен: новых должностей '+added+', дополнено ячеек '+fl+'. Заполненное не перезаписано.');
+ };
+ rd.readAsText(file);
+}
+function saveJson(){
+ save();
+ var b=bundle(),present=[];
+ REG.forEach(function(s){if(b.steps[s.n]&&hasData(b.steps[s.n]))present.push(s.t);});
+ dl(new Blob([JSON.stringify(b,null,2)],{type:'application/json'}),'SEM_programma_polnyy_nabor_'+today()+'.json');
+ toast('Единый файл курса скачан. Шаги: '+(present.length?present.join(', '):'матрица'));
+}
+
+
+function detailNotes(){var lines=[S.notes||''];S.roles.forEach(function(r){if(r.sourceRefs&&r.sourceRefs.length)lines.push((r.name||'Должность')+' / источники предложенных участников: '+JSON.stringify(r.sourceRefs));active().forEach(function(c){var v=getC(r.num,c.id);if(!v.i&&!v.a)return;lines.push((r.name||'Должность')+' / '+c.id+' / проект. '+['basis','source','authority','question','links'].map(function(f){var labels={basis:'Статус порядка',source:'Источник',authority:'Полномочия',question:'Вопрос и адресат',links:'Связи'};return labels[f]+': '+(v[f]||'не указано');}).join('; '));});});return lines.join('\n');}
+
+/* ===== WORD ===== */
+function run(t,o){o=o||{};var r='';if(o.b)r+='<w:b/>';if(o.i)r+='<w:i/>';if(o.color)r+='<w:color w:val="'+o.color+'"/>';if(o.sz)r+='<w:sz w:val="'+o.sz+'"/><w:szCs w:val="'+o.sz+'"/>';return '<w:r>'+(r?'<w:rPr>'+r+'</w:rPr>':'')+'<w:t xml:space="preserve">'+xesc(t)+'</w:t></w:r>';}
+function para(t,o){o=o||{};var p='';if(o.style)p+='<w:pStyle w:val="'+o.style+'"/>';if(o.after!==undefined||o.before)p+='<w:spacing w:before="'+(o.before||0)+'" w:after="'+(o.after||0)+'"/>';if(o.jc)p+='<w:jc w:val="'+o.jc+'"/>';return '<w:p>'+(p?'<w:pPr>'+p+'</w:pPr>':'')+run(t,o)+'</w:p>';}
+function tc(w,inner,fill){return '<w:tc><w:tcPr><w:tcW w:w="'+w+'" w:type="dxa"/>'+(fill?'<w:shd w:val="clear" w:color="auto" w:fill="'+fill+'"/>':'')+'<w:vAlign w:val="center"/></w:tcPr>'+(inner||'<w:p/>')+'</w:tc>';}
+var TB='<w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:left w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:right w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="9CA3AF"/></w:tblBorders>';
+var CM='<w:tblCellMar><w:top w:w="60" w:type="dxa"/><w:left w:w="70" w:type="dxa"/><w:bottom w:w="60" w:type="dxa"/><w:right w:w="70" w:type="dxa"/></w:tblCellMar>';
+function docXml(){
+ var cls=active(),b=[];
+ b.push(para('Матрица ответственности и полномочий СЭМ',{style:'Title'}));
+ b.push(para('ГОСТ Р ИСО 14001-2016 · проект для обсуждения с руководством',{i:true,color:'64748B',sz:20,after:100}));
+ b.push(para('Предприятие: '+(S.meta.org||'не указано')+'. Дата: '+(S.meta.date||today())+'. Подготовил: '+(S.meta.author||'не указан')+'.',{sz:20,after:120}));
+ b.push(para(LEGEND_TEXT+' В обзорной матрице удобно указывать должности. Конкретных работников определяют по принятому порядку.',{sz:20,after:140}));
+ var roleW=2400,cw=Math.max(680,Math.floor((14570-roleW)/Math.max(1,cls.length))),widths=[roleW];
+ for(var i=0;i<cls.length;i++)widths.push(cw);
+ var head='<w:tr>'+tc(roleW,para('Должность',{b:true,sz:18}),'F1F5F9')+cls.map(function(c){return tc(cw,para(c.id,{b:true,sz:18,jc:'center',color:'1D4ED8'})+para(c.t,{b:true,sz:15,jc:'center'}),'F1F5F9');}).join('')+'</w:tr>';
+ var trs='';
+ S.roles.forEach(function(r){
+  trs+='<w:tr>'+tc(roleW,para(r.name||'без названия',{sz:18}));
+  cls.forEach(function(c){
+   var v=getC(r.num,c.id);
+   var inner=v.i?para(v.i,{b:true,sz:20,jc:'center',color:COLOR[v.i]})+(v.a?para(v.a,{i:true,sz:15,jc:'center',color:'64748B'}):''):para('—',{sz:18,jc:'center',color:'94A3B8'});
+   trs+=tc(cw,inner,v.i?FILL[v.i]:null);
+  });
+  trs+='</w:tr>';
+ });
+ if(!S.roles.length)trs='<w:tr>'+widths.map(function(w){return tc(w,para('должности не добавлены',{i:true,sz:18,color:'64748B'}));}).join('')+'</w:tr>';
+ b.push('<w:tbl><w:tblPr><w:tblW w:w="14570" w:type="dxa"/>'+TB+CM+'<w:tblLayout w:type="fixed"/></w:tblPr><w:tblGrid>'+widths.map(function(w){return '<w:gridCol w:w="'+w+'"/>';}).join('')+'</w:tblGrid>'+head+trs+'</w:tbl>');
+ if(detailNotes().trim()){b.push(para('Полномочия и примечания',{style:'Heading2'}));b.push(para(detailNotes(),{sz:20,after:120}));}
+ b.push(para('Инструкция по заполнению матрицы',{style:'Heading2'}));
+ STEPS.forEach(function(s,i){b.push(para((i+1)+'. '+s[0]+' '+s[1],{sz:20,after:70}));});
+ b.push(para('ГОСТ Р ИСО 14001-2016 не устанавливает единую обязательную форму матрицы и не задает названия должностей: предприятие настраивает схему под свою структуру.',{i:true,color:'64748B',sz:20,before:120}));
+ b.push(para('После обсуждения руководство принимает решения. Оформление и доведение изменений выполняются по установленному порядку. Назначение координатора не снимает с высшего руководства ответственности за результативность СЭМ.',{i:true,color:'64748B',sz:20,before:100}));
+ b.push('<w:sectPr><w:footerReference w:type="default" r:id="rId1"/><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>');
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><w:body>'+b.join('')+'</w:body></w:document>';
+}
+var W_CT='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/><Override PartName="/word/footer1.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.footer+xml"/></Types>';
+var W_RELS='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/></Relationships>';
+var W_DR='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/footer" Target="footer1.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+var W_FT='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:p><w:pPr><w:jc w:val="right"/></w:pPr><w:fldSimple w:instr=" PAGE "><w:r><w:t>1</w:t></w:r></w:fldSimple></w:p></w:ftr>';
+var W_ST='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main"><w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="ru-RU"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="264" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults><w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/></w:style><w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="80"/></w:pPr><w:rPr><w:b/><w:sz w:val="34"/><w:szCs w:val="34"/><w:color w:val="1E293B"/></w:rPr></w:style><w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:pPr><w:keepNext/><w:spacing w:before="220" w:after="110"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:sz w:val="26"/><w:szCs w:val="26"/><w:color w:val="1D4ED8"/></w:rPr></w:style></w:styles>';
+
+/* ===== XLSX ===== */
+function colL(i){var s='';i++;while(i>0){var m=(i-1)%26;s=String.fromCharCode(65+m)+s;i=Math.floor((i-1)/26);}return s;}
+function ref(c,r){return colL(c)+r;}
+var X_ST='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'+
+'<fonts count="9"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><i/><sz val="10"/><color rgb="FF64748B"/><name val="Calibri"/></font><font><b/><sz val="12"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FF0D47A1"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FF1B5E20"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FF92400E"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FF6B21A8"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="FF475569"/><name val="Calibri"/></font></fonts>'+
+'<fills count="11"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF1E3A8A"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF1F5F9"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF8FAFC"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE3F0FD"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE6F4EA"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFDF6E7"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF3E8FD"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF8FAFC"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF7ED"/><bgColor indexed="64"/></patternFill></fill></fills>'+
+'<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left style="thin"><color rgb="FF9CA3AF"/></left><right style="thin"><color rgb="FF9CA3AF"/></right><top style="thin"><color rgb="FF9CA3AF"/></top><bottom style="thin"><color rgb="FF9CA3AF"/></bottom><diagonal/></border></borders>'+
+'<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="15">'+
+'<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'+
+'<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"><alignment vertical="center" wrapText="1"/></xf>'+
+'<xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyBorder="1" applyFont="1" applyFill="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf>'+
+'<xf numFmtId="0" fontId="3" fillId="2" borderId="1" xfId="0" applyBorder="1" applyFont="1" applyFill="1"><alignment vertical="center" horizontal="left" wrapText="1"/></xf>'+
+'<xf numFmtId="0" fontId="1" fillId="4" borderId="1" xfId="0" applyBorder="1" applyFont="1" applyFill="1"><alignment vertical="center" horizontal="center" wrapText="1"/></xf>'+
+'<xf numFmtId="0" fontId="4" fillId="5" borderId="1" xfId="0" applyBorder="1" applyFont="1" applyFill="1"><alignment vertical="center" horizontal="center"/></xf>'+
+'<xf numFmtId="0" fontId="5" fillId="6" borderId="1" xfId="0" applyBorder="1" applyFont="1" applyFill="1"><alignment vertical="center" horizontal="center"/></xf>'+
+'<xf numFmtId="0" fontId="6" fillId="7" borderId="1" xfId="0" applyBorder="1" applyFont="1" applyFill="1"><alignment vertical="center" horizontal="center"/></xf>'+
+'<xf numFmtId="0" fontId="7" fillId="8" borderId="1" xfId="0" applyBorder="1" applyFont="1" applyFill="1"><alignment vertical="center" horizontal="center"/></xf>'+
+'<xf numFmtId="0" fontId="8" fillId="9" borderId="1" xfId="0" applyBorder="1" applyFont="1" applyFill="1"><alignment vertical="center" horizontal="center"/></xf>'+
+'<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"><alignment vertical="center" horizontal="center"/></xf>'+
+'<xf numFmtId="0" fontId="2" fillId="0" borderId="1" xfId="0" applyBorder="1" applyFont="1"><alignment vertical="center" wrapText="1"/></xf>'+
+'<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"><alignment vertical="top" wrapText="1"/></xf>'+
+'<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"><alignment vertical="top" wrapText="1"/></xf>'+
+'<xf numFmtId="0" fontId="0" fillId="10" borderId="1" xfId="0" applyBorder="1" applyFill="1"><alignment vertical="top" wrapText="1"/></xf>'+
+'</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>'+
+'<dxfs count="5">'+
+'<dxf><font><b/><color rgb="FF0D47A1"/></font><fill><patternFill><bgColor rgb="FFE3F0FD"/></patternFill></fill></dxf>'+
+'<dxf><font><b/><color rgb="FF1B5E20"/></font><fill><patternFill><bgColor rgb="FFE6F4EA"/></patternFill></fill></dxf>'+
+'<dxf><font><b/><color rgb="FF92400E"/></font><fill><patternFill><bgColor rgb="FFFDF6E7"/></patternFill></fill></dxf>'+
+'<dxf><font><b/><color rgb="FF6B21A8"/></font><fill><patternFill><bgColor rgb="FFF3E8FD"/></patternFill></fill></dxf>'+
+'<dxf><font><b/><color rgb="FF475569"/></font><fill><patternFill><bgColor rgb="FFF8FAFC"/></patternFill></fill></dxf>'+
+'</dxfs></styleSheet>';
+function cx(c,r,v,s){return '<c r="'+ref(c,r)+'" s="'+s+'" t="inlineStr"><is><t xml:space="preserve">'+xesc(v==null?'':v)+'</t></is></c>';}
+function matrixSheet(){
+ var cls=active(),pairs=cls.length+1,total=1+2*pairs,lastC=colL(total-1);
+ var rows=S.roles.length+6,first=4,last=first+rows-1;
+ var body=[],merges=[],ranges=[];
+ body.push('<row r="1" ht="30" customHeight="1">'+cx(0,1,'МАТРИЦА ОТВЕТСТВЕННОСТИ И ПОЛНОМОЧИЙ СЭМ · ГОСТ Р ИСО 14001-2016 · '+(S.meta.org||'предприятие не указано')+' · '+(S.meta.date||today())+' · подготовил: '+(S.meta.author||'не указан'),3)+'</row>');
+ merges.push('A1:'+lastC+'1');
+ var h2=cx(0,2,'Должность',2);
+ for(var p=0;p<pairs;p++){var c=1+2*p,t=p<cls.length?(cls[p].id+' '+cls[p].t):'Выберите пункт ГОСТ';h2+=cx(c,2,t,2)+cx(c+1,2,'',2);merges.push(ref(c,2)+':'+ref(c+1,2));}
+ merges.push('A2:A3');
+ body.push('<row r="2" ht="42" customHeight="1">'+h2+'</row>');
+ var h3=cx(0,3,'',4);
+ for(var q=0;q<pairs;q++){var c2=1+2*q;h3+=cx(c2,3,'Индекс',4)+cx(c2+1,3,'Действие',4);ranges.push(ref(c2,first)+':'+ref(c2,last));}
+ body.push('<row r="3" ht="19" customHeight="1">'+h3+'</row>');
+ for(var i=0;i<rows;i++){
+  var rn=first+i,role=S.roles[i],line=cx(0,rn,role?role.name:'',1);
+  for(var q2=0;q2<pairs;q2++){var ci=1+2*q2,c=cls[q2],v=(role&&c)?getC(role.num,c.id):{i:'',a:''};line+=cx(ci,rn,v.i,XF[v.i]||10)+cx(ci+1,rn,v.a,11);}
+  body.push('<row r="'+rn+'" ht="30" customHeight="1">'+line+'</row>');
+ }
+ var n1=last+2;
+ body.push('<row r="'+n1+'" ht="40" customHeight="1">'+cx(0,n1,LEGEND_TEXT,14)+'</row>');merges.push('A'+n1+':'+lastC+n1);
+ body.push('<row r="'+(n1+1)+'" ht="44" customHeight="1">'+cx(0,n1+1,'Полномочия и примечания: '+(detailNotes()||'не указано'),14)+'</row>');merges.push('A'+(n1+1)+':'+lastC+(n1+1));
+ body.push('<row r="'+(n1+2)+'" ht="32" customHeight="1">'+cx(0,n1+2,'Индекс выбирается из выпадающего списка, действие пишется рядом. Свободный столбец справа: выберите пункт ГОСТ из списка в шапке, названия – на листе «Пункты ГОСТ». Порядок работы – на листе «Инструкция».',14)+'</row>');merges.push('A'+(n1+2)+':'+lastC+(n1+2));
+ var cols='<cols><col min="1" max="1" width="30" customWidth="1"/>';
+ for(var q3=0;q3<pairs;q3++){var cc=2+2*q3;cols+='<col min="'+cc+'" max="'+cc+'" width="9" customWidth="1"/><col min="'+(cc+1)+'" max="'+(cc+1)+'" width="26" customWidth="1"/>';}
+ cols+='</cols>';
+ var mg='<mergeCells count="'+merges.length+'">'+merges.map(function(m){return '<mergeCell ref="'+m+'"/>';}).join('')+'</mergeCells>';
+ var sq=ranges.join(' ');
+ var cf='<conditionalFormatting sqref="'+sq+'"><cfRule type="cellIs" dxfId="0" priority="1" operator="equal"><formula>"О"</formula></cfRule><cfRule type="cellIs" dxfId="1" priority="2" operator="equal"><formula>"Оц"</formula></cfRule><cfRule type="cellIs" dxfId="2" priority="3" operator="equal"><formula>"У"</formula></cfRule><cfRule type="cellIs" dxfId="3" priority="4" operator="equal"><formula>"С"</formula></cfRule><cfRule type="cellIs" dxfId="4" priority="5" operator="equal"><formula>"И"</formula></cfRule></conditionalFormatting>';
+ var codes=CLAUSES.map(function(c){return c.id;}).join(',');
+ var dv='<dataValidations count="2"><dataValidation type="list" allowBlank="1" showInputMessage="1" showErrorMessage="1" sqref="'+sq+'"><formula1>"О,Оц,У,С,И"</formula1></dataValidation><dataValidation type="list" allowBlank="1" showInputMessage="1" showErrorMessage="0" sqref="'+ref(1+2*cls.length,2)+'"><formula1>"'+codes+'"</formula1></dataValidation></dataValidations>';
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><dimension ref="A1:'+lastC+(n1+2)+'"/><sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane xSplit="1" ySplit="3" topLeftCell="B4" activePane="bottomRight" state="frozen"/><selection pane="bottomRight" activeCell="B4" sqref="B4"/></sheetView></sheetViews>'+cols+'<sheetData>'+body.join('')+'</sheetData>'+mg+cf+dv+'<pageSetup paperSize="9" orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>';
+}
+function catalogSheet(){
+ var body=[],r=1;
+ body.push('<row r="1" ht="30" customHeight="1">'+cx(0,1,'ПУНКТЫ ГОСТ Р ИСО 14001-2016 · справочник для добавления столбцов',3)+'</row>');
+ body.push('<row r="2" ht="22" customHeight="1">'+cx(0,2,'Раздел',2)+cx(1,2,'Пункт',2)+cx(2,2,'Название',2)+cx(3,2,'В матрице',2)+'</row>');
+ body.push('<row r="3" ht="18" customHeight="1">'+cx(0,3,'',4)+cx(1,3,'',4)+cx(2,3,'',4)+cx(3,3,'',4)+'</row>');
+ r=4;
+ SECTIONS.forEach(function(s){
+  CLAUSES.filter(function(c){return c.sec===s[0];}).forEach(function(c){
+   body.push('<row r="'+r+'" ht="24" customHeight="1">'+cx(0,r,s[0]+' '+s[1],1)+cx(1,r,c.id,1)+cx(2,r,c.t,1)+cx(3,r,S.active[c.id]?'да':'нет',10)+'</row>');r++;
+  });
+ });
+ var cols='<cols><col min="1" max="1" width="34" customWidth="1"/><col min="2" max="2" width="12" customWidth="1"/><col min="3" max="3" width="56" customWidth="1"/><col min="4" max="4" width="12" customWidth="1"/></cols>';
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><dimension ref="A1:D'+(r-1)+'"/><sheetViews><sheetView workbookViewId="0" showGridLines="0"><pane xSplit="0" ySplit="3" topLeftCell="A4" activePane="bottomLeft" state="frozen"/></sheetView></sheetViews>'+cols+'<sheetData>'+body.join('')+'</sheetData><mergeCells count="1"><mergeCell ref="A1:D1"/></mergeCells><autoFilter ref="A2:D'+(r-1)+'"/><pageSetup paperSize="9" orientation="portrait" fitToWidth="1" fitToHeight="0"/></worksheet>';
+}
+function instructionSheet(){
+ var body=[],merges=[],r=1;
+ function line(t,s,h){body.push('<row r="'+r+'" ht="'+h+'" customHeight="1">'+cx(0,r,t,s)+'</row>');merges.push('A'+r+':B'+r);r++;}
+ line('ИНСТРУКЦИЯ ПО ЗАПОЛНЕНИЮ МАТРИЦЫ ОТВЕТСТВЕННОСТИ',3,30);
+ line('ГОСТ Р ИСО 14001-2016 не задает единую форму матрицы и названия должностей: состав пунктов и ролей предприятие настраивает под свою структуру.',12,32);
+ STEPS.forEach(function(s,i){line((i+1)+'. '+s[0],13,20);line(s[1],12,58);});
+ line('ОБОЗНАЧЕНИЯ ИНДЕКСОВ',13,20);
+ line(LEGEND_TEXT,12,44);
+ line('КАК РАБОТАТЬ В ФАЙЛЕ',13,20);
+ line('В столбце «Индекс» выберите значение из выпадающего списка, в столбце «Действие» напишите, что делает должность. Цвет ячейки меняется автоматически.',12,40);
+ line('Свободный столбец справа: выберите номер пункта ГОСТ из выпадающего списка в шапке и заполните его. Полные названия – на листе «Пункты ГОСТ». Ниже оставлены пустые строки для новых должностей.',12,44);
+ line('Проверьте границы работы участников. Несколько индексов О не являются автоматической ошибкой.',12,34);
+ line('ПОЛНОМОЧИЯ И ПРИМЕЧАНИЯ',13,20);
+ line(detailNotes()||'Опишите, что вправе делать ответственные: например, начальник цеха вправе остановить неисправное оборудование, координатор СЭМ вправе запрашивать первичные журналы учета.',12,44);
+ line('После обсуждения оформите принятые решения и доведите их до работников по установленному порядку. Назначение координатора не снимает с руководства ответственности за результативность СЭМ.',12,44);
+ var cols='<cols><col min="1" max="1" width="96" customWidth="1"/><col min="2" max="2" width="14" customWidth="1"/></cols>';
+ var mg='<mergeCells count="'+merges.length+'">'+merges.map(function(m){return '<mergeCell ref="'+m+'"/>';}).join('')+'</mergeCells>';
+ return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><dimension ref="A1:B'+(r-1)+'"/><sheetViews><sheetView workbookViewId="0" showGridLines="0"/></sheetViews>'+cols+'<sheetData>'+body.join('')+'</sheetData>'+mg+'<pageSetup paperSize="9" orientation="portrait" fitToWidth="1" fitToHeight="0"/></worksheet>';
+}
+function xlsxFiles(){
+ var sheets=[{n:'Матрица',x:matrixSheet()},{n:'Пункты ГОСТ',x:catalogSheet()},{n:'Инструкция',x:instructionSheet()}];
+ var enc=new TextEncoder(),f=[];
+ var ct='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>'+sheets.map(function(s,i){return '<Override PartName="/xl/worksheets/sheet'+(i+1)+'.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>';}).join('')+'</Types>';
+ var wb='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><sheets>'+sheets.map(function(s,i){return '<sheet name="'+xesc(s.n)+'" sheetId="'+(i+1)+'" r:id="rId'+(i+1)+'"/>';}).join('')+'</sheets><definedNames><definedName name="_xlnm.Print_Titles" localSheetId="0">Матрица!$1:$3</definedName></definedNames></workbook>';
+ var wr='<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">'+sheets.map(function(s,i){return '<Relationship Id="rId'+(i+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet'+(i+1)+'.xml"/>';}).join('')+'<Relationship Id="rId'+(sheets.length+1)+'" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>';
+ f.push({name:'[Content_Types].xml',data:enc.encode(ct)});
+ f.push({name:'_rels/.rels',data:enc.encode('<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>')});
+ f.push({name:'xl/workbook.xml',data:enc.encode(wb)});
+ f.push({name:'xl/_rels/workbook.xml.rels',data:enc.encode(wr)});
+ f.push({name:'xl/styles.xml',data:enc.encode(X_ST)});
+ sheets.forEach(function(s,i){f.push({name:'xl/worksheets/sheet'+(i+1)+'.xml',data:enc.encode(s.x)});});
+ return f;
+}
+
+/* ===== zip и скачивание ===== */
+var CRC=(function(){var t=new Uint32Array(256);for(var n=0;n<256;n++){var c=n;for(var k=0;k<8;k++)c=(c&1)?(0xEDB88320^(c>>>1)):(c>>>1);t[n]=c>>>0;}return t;})();
+function crc32(u){var c=0xFFFFFFFF;for(var i=0;i<u.length;i++)c=CRC[(c^u[i])&0xFF]^(c>>>8);return (c^0xFFFFFFFF)>>>0;}
+function zip(files){
+ var enc=new TextEncoder(),now=new Date();
+ var dt=((now.getHours()<<11)|(now.getMinutes()<<5)|(now.getSeconds()>>1))&0xFFFF;
+ var dd=(((now.getFullYear()-1980)<<9)|((now.getMonth()+1)<<5)|now.getDate())&0xFFFF;
+ var loc=[],cen=[],off=0;
+ files.forEach(function(f){
+  var nb=enc.encode(f.name),data=f.data,crc=crc32(data);
+  var lh=new Uint8Array(30+nb.length),dv=new DataView(lh.buffer);
+  dv.setUint32(0,0x04034b50,true);dv.setUint16(4,20,true);dv.setUint16(6,0x0800,true);dv.setUint16(8,0,true);
+  dv.setUint16(10,dt,true);dv.setUint16(12,dd,true);dv.setUint32(14,crc,true);dv.setUint32(18,data.length,true);dv.setUint32(22,data.length,true);
+  dv.setUint16(26,nb.length,true);dv.setUint16(28,0,true);lh.set(nb,30);loc.push(lh,data);
+  var ch=new Uint8Array(46+nb.length),cv=new DataView(ch.buffer);
+  cv.setUint32(0,0x02014b50,true);cv.setUint16(4,20,true);cv.setUint16(6,20,true);cv.setUint16(8,0x0800,true);cv.setUint16(10,0,true);
+  cv.setUint16(12,dt,true);cv.setUint16(14,dd,true);cv.setUint32(16,crc,true);cv.setUint32(20,data.length,true);cv.setUint32(24,data.length,true);
+  cv.setUint16(28,nb.length,true);cv.setUint16(30,0,true);cv.setUint16(32,0,true);cv.setUint16(34,0,true);cv.setUint16(36,0,true);
+  cv.setUint32(38,0,true);cv.setUint32(42,off,true);ch.set(nb,46);cen.push(ch);off+=lh.length+data.length;
+ });
+ var cs=0;cen.forEach(function(p){cs+=p.length;});
+ var eo=new Uint8Array(22),ev=new DataView(eo.buffer);
+ ev.setUint32(0,0x06054b50,true);ev.setUint16(8,files.length,true);ev.setUint16(10,files.length,true);ev.setUint32(12,cs,true);ev.setUint32(16,off,true);
+ var tot=22;loc.forEach(function(p){tot+=p.length;});cen.forEach(function(p){tot+=p.length;});
+ var out=new Uint8Array(tot),o=0;
+ loc.forEach(function(p){out.set(p,o);o+=p.length;});cen.forEach(function(p){out.set(p,o);o+=p.length;});out.set(eo,o);
+ return out;
+}
+function dl(blob,name){var u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;document.body.appendChild(a);a.click();document.body.removeChild(a);setTimeout(function(){URL.revokeObjectURL(u);},4000);}
+function docx(){
+ var e=new TextEncoder();
+ var f=[{name:'[Content_Types].xml',data:e.encode(W_CT)},{name:'_rels/.rels',data:e.encode(W_RELS)},{name:'word/document.xml',data:e.encode(docXml())},{name:'word/styles.xml',data:e.encode(W_ST)},{name:'word/footer1.xml',data:e.encode(W_FT)},{name:'word/_rels/document.xml.rels',data:e.encode(W_DR)}];
+ dl(new Blob([zip(f)],{type:'application/vnd.openxmlformats-officedocument.wordprocessingml.document'}),'Matritsa_otvetstvennosti_SEM_'+today()+'.docx');
+ $('dlNote').textContent='Word скачан: матрица с индексами и действиями, полномочия и инструкция.';
+ toast('Word скачан. Обсудите матрицу с руководством.');
+}
+function xlsx(){
+ dl(new Blob([zip(xlsxFiles())],{type:'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'}),'Matritsa_otvetstvennosti_SEM_'+today()+'.xlsx');
+ $('dlNote').textContent='Excel скачан: индексы и пункты ГОСТ выбираются из выпадающих списков, есть листы «Пункты ГОСТ» и «Инструкция».';
+ toast('Excel скачан: инструкция на отдельном листе.');
+}
+
+/* ===== события ===== */
+document.addEventListener('click',function(e){
+ var t=e.target;
+ var go=t.closest('[data-go]');
+ if(go){
+  var id=go.getAttribute('data-go');
+  if(id==='work'){if(!S.roles.length)ROLES.forEach(addRole);if(!S.meta.date)S.meta.date=today();syncInputs();save();render();}
+  if(id==='example')renderExample();
+  show(id);return;
+ }
+ var hp=t.closest('[data-help]');if(hp){$('ovHelp').classList.add('on');return;}
+ var im=t.closest('[data-import]');if(im){if(!im.disabled)doImport();return;}
+ var ld=t.closest('[data-load]');if(ld){$('fileIn').click();return;}
+ if(t.closest('#pop'))return;
+ var cb=t.closest('button[data-cell]');
+ if(cb){var p=cb.getAttribute('data-cell').split('|');openPop(Number(p[0]),p[1]);return;}
+ closePop();
+ var dc=t.closest('[data-delc]');if(dc){S.active[dc.getAttribute('data-delc')]=false;save();render();return;}
+ var dr=t.closest('[data-delr]');
+ if(dr){
+  var num=Number(dr.getAttribute('data-delr')),role=null;S.roles.forEach(function(r){if(r.num===num)role=r;});
+  if(!role)return;
+  var used=false;active().forEach(function(c){if(getC(num,c.id).i)used=true;});
+  if(used&&!confirm('Удалить должность «'+(role.name||'без названия')+'» вместе с отметками?'))return;
+  takeSnap();
+  S.roles=S.roles.filter(function(r){return r.num!==num;});
+  Object.keys(S.cells).forEach(function(kk){if(kk.indexOf(num+'|')===0)delete S.cells[kk];});
+  save();render();return;
+ }
+});
+document.addEventListener('input',function(e){
+ var t=e.target;
+ if(t.hasAttribute&&t.hasAttribute('data-role')){
+  var n=Number(t.getAttribute('data-role'));S.roles.forEach(function(r){if(r.num===n)r.name=t.value;});
+  save();paintMsgs();
+ }
+});
+document.addEventListener('keydown',function(e){if(e.key==='Escape'){closePop();$('ovHelp').classList.remove('on');}});
+$('bAddClause').onclick=function(){var v=$('selClause').value;if(!v)return;S.active[v]=true;save();render();toast('Добавлен столбец '+v+' · '+cl(v).t);};
+$('bAddRole').onclick=function(){addRole('');save();render();var ins=$('mxBox').querySelectorAll('.role-in');if(ins.length)ins[ins.length-1].focus();};
+$('bCore').onclick=function(){takeSnap();core();save();render();toast('Оставлены основные пункты ГОСТ.');};
+$('bClear').onclick=function(){
+ if(!confirm('Очистить матрицу: удалить отметки, комментарии и должности?'))return;
+ takeSnap();S.roles=[];S.cells={};S.notes='';core();ROLES.forEach(addRole);
+ syncInputs();save();render();toast('Матрица очищена. Действие можно отменить.');
+};
+$('bUndo').onclick=undo;
+$('bTakeEx').onclick=takeExample;
+$('helpClose').onclick=function(){$('ovHelp').classList.remove('on');};
+$('ovHelp').addEventListener('click',function(e){if(e.target===this)this.classList.remove('on');});
+$('bDocx').onclick=docx;
+$('bXlsx').onclick=xlsx;
+$('bJson').onclick=saveJson;
+$('fileIn').onchange=function(){if(this.files&&this.files[0])loadFile(this.files[0]);this.value='';};
+['mOrg','mDate','mAuthor'].forEach(function(id){$(id).addEventListener('input',function(){S.meta[id==='mOrg'?'org':id==='mDate'?'date':'author']=this.value;save();});});
+$('fNotes').addEventListener('input',function(){S.notes=this.value;save();});
+
+/* ===== старт ===== */
+(function(){
+ try{
+  testStore();core();
+  var restored=load();
+  if(!S.roles.length)ROLES.forEach(addRole);
+  if(!S.meta.date)S.meta.date=today();
+  if(restored)$('stRestore').classList.remove('hidden');
+  syncInputs();render();renderExample();syncImportBtns();resize();
+  if('ResizeObserver' in window){new ResizeObserver(function(){resize();}).observe(document.body);}
+ }catch(e){boot(e.message);}
+})();
+window.addEventListener('load',resize);
+</script>
+</body>
+</html>
