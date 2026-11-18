@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Тест: внутренняя коммуникация</title>
+<style>
+  :root {
+    --primary: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --gray: #f8fafc;
+    --accent: #2563eb;
+    --accent-d: #1d4ed8;
+    --ok: #166534;
+    --ok-bg: #f0fdf4;
+    --ok-bd: #bbf7d0;
+    --bad: #991b1b;
+    --bad-bg: #fef2f2;
+    --bad-bd: #fecaca;
+    --r: 10px;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--primary);
+    background: #fff;
+    margin: 0;
+    padding: 14px;
+  }
+
+  .container {
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  .scenario {
+    background: var(--gray);
+    border-left: 3px solid var(--accent);
+    border-radius: 0 var(--r) var(--r) 0;
+    padding: 12px 14px;
+    margin-bottom: 16px;
+    font-size: 14px;
+  }
+
+  .scenario strong {
+    display: block;
+    margin-bottom: 6px;
+    font-size: 14px;
+  }
+
+  .question {
+    font-weight: 600;
+    margin-bottom: 12px;
+    font-size: 14px;
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .option {
+    padding: 12px 14px;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    cursor: pointer;
+    background: #fff;
+    font-size: 13px;
+    line-height: 1.5;
+    text-align: left;
+    font-family: inherit;
+    color: var(--primary);
+    transition: all 0.15s ease;
+  }
+
+  .option:hover:not(:disabled) {
+    background: var(--gray);
+    border-color: var(--accent);
+  }
+
+  .option:focus-visible {
+    outline: 2px solid var(--accent-d);
+    outline-offset: 1px;
+  }
+
+  .option:disabled {
+    cursor: default;
+    opacity: 0.7;
+  }
+
+  .option.selected-correct {
+    background: var(--ok-bg);
+    border-color: var(--ok-bd);
+    color: var(--ok);
+  }
+
+  .option.selected-wrong {
+    background: var(--bad-bg);
+    border-color: var(--bad-bd);
+    color: var(--bad);
+  }
+
+  .feedback {
+    font-size: 13px;
+    margin: 0 0 14px 0;
+    padding: 12px 14px;
+    border-radius: var(--r);
+    display: none;
+    line-height: 1.55;
+  }
+
+  .feedback.show { display: block; }
+  .feedback.correct {
+    background: var(--ok-bg);
+    border: 1px solid var(--ok-bd);
+    color: var(--ok);
+  }
+  .feedback.wrong {
+    background: var(--bad-bg);
+    border: 1px solid var(--bad-bd);
+    color: var(--bad);
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .btn {
+    padding: 9px 16px;
+    border-radius: var(--r);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--primary);
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .btn:hover {
+    background: var(--gray);
+    border-color: var(--muted);
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--accent-d);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 10px; }
+    .actions { flex-direction: column; }
+    .btn { width: 100%; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="scenario">
+    <strong>Ситуация:</strong>
+    Смены фиксировали потери шихты в разных форматах: одна – в журнале, другая – на листке. Координатор СЭМ не мог свести данные для месячного отчета.
+  </div>
+
+  <div class="question">Какое решение устранит эту проблему коммуникации и обеспечит достоверность данных?</div>
+
+  <div class="options" id="optionsList">
+    <button class="option" onclick="selectOption(1, this)">Обязать координатора СЭМ лично обходить все смены в конце месяца и переписывать данные из листков в единый журнал.</button>
+    <button class="option" onclick="selectOption(2, this)">Внедрить единую форму записи потерь и закрепить правило: мастер смены заполняет ее до конца своей смены и передает старшему мастеру.</button>
+    <button class="option" onclick="selectOption(3, this)">Объявить выговор мастерам смен за нарушение дисциплины ведения документации и потребовать переписать все данные задним числом.</button>
+    <button class="option" onclick="selectOption(4, this)">Установить автоматические счетчики расхода шихты, чтобы полностью исключить человеческий фактор при записи данных.</button>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+
+  <div class="actions" id="actions" style="display:none">
+    <button class="btn" onclick="resetTest()">Ответить заново</button>
+  </div>
+</div>
+
+<script>
+  const answers = {
+    1: {
+      isCorrect: false,
+      text: 'Неверно. Это не процесс коммуникации, а «костыль». Координатор СЭМ не должен выполнять работу мастеров. Перекладывание ручной сборки данных на одного человека не решает системную проблему.'
+    },
+    2: {
+      isCorrect: true,
+      text: 'Верно. Это и есть выстроенный процесс внутренней коммуникации. Определено: <strong>что</strong> пишем (единая форма), <strong>куда</strong> (в эту форму), <strong>когда</strong> (до конца смены) и <strong>кто читает дальше</strong> (старший мастер). Данные становятся сопоставимыми и своевременными.'
+    },
+    3: {
+      isCorrect: false,
+      text: 'Неверно. Карательные меры не создают систему. Если единого правила и формы не существует, требование «переписать задним числом» приведет к формальному заполнению и недостоверным цифрам.'
+    },
+    4: {
+      isCorrect: false,
+      text: 'Неверно. Автоматизация – отличное техническое решение, но оно не отвечает на вопрос о <strong>процессе коммуникации</strong>. Даже с счетчиками нужно правило: кто, когда и в каком виде фиксирует и передает эти показания.'
+    }
+  };
+
+  function selectOption(num, btn) {
+    const options = document.querySelectorAll('#optionsList .option');
+    options.forEach(o => {
+      o.disabled = true;
+      o.classList.remove('selected-correct', 'selected-wrong');
+    });
+
+    const feedback = document.getElementById('feedback');
+    const actions = document.getElementById('actions');
+    const data = answers[num];
+
+    if (data.isCorrect) {
+      btn.classList.add('selected-correct');
+      feedback.className = 'feedback correct show';
+    } else {
+      btn.classList.add('selected-wrong');
+      feedback.className = 'feedback wrong show';
+    }
+
+    feedback.innerHTML = data.text;
+    actions.style.display = 'flex';
+    resizeIframe();
+  }
+
+  function resetTest() {
+    const options = document.querySelectorAll('#optionsList .option');
+    options.forEach(o => {
+      o.disabled = false;
+      o.classList.remove('selected-correct', 'selected-wrong');
+    });
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('feedback').innerHTML = '';
+    document.getElementById('actions').style.display = 'none';
+    resizeIframe();
+  }
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
+  }
+
+  window.addEventListener('load', resizeIframe);
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(resizeIframe).observe(document.body);
+  }
+</script>
+
+</body>
+</html>
