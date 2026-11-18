@@ -1,0 +1,257 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Пример: проверка навыков бригады</title>
+<style>
+  :root {
+    --primary: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --gray: #f8fafc;
+    --accent: #2563eb;
+    --accent-d: #1d4ed8;
+    --bad: #991b1b;
+    --bad-bg: #fef2f2;
+    --bad-bd: #fecaca;
+    --ok: #166534;
+    --ok-bg: #f0fdf4;
+    --ok-bd: #bbf7d0;
+    --r: 10px;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--primary);
+    background: #fff;
+    margin: 0;
+    padding: 12px;
+  }
+
+  .container {
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  .scenario {
+    background: var(--gray);
+    border-left: 3px solid var(--accent);
+    padding: 10px 12px;
+    border-radius: 0 var(--r) var(--r) 0;
+    margin-bottom: 12px;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .scenario strong {
+    display: block;
+    margin-bottom: 4px;
+    font-size: 13px;
+  }
+
+  .question {
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--primary);
+  }
+
+  .options {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .option {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    cursor: pointer;
+    background: #fff;
+    font-size: 13px;
+    line-height: 1.45;
+    text-align: left;
+    font-family: inherit;
+    color: var(--primary);
+    transition: all 0.15s ease;
+  }
+
+  .option:hover:not(:disabled) {
+    background: var(--gray);
+    border-color: var(--accent);
+  }
+
+  .option:focus-visible {
+    outline: 2px solid var(--accent-d);
+    outline-offset: 1px;
+  }
+
+  .option:disabled {
+    cursor: default;
+    opacity: 0.75;
+  }
+
+  .option.selected-correct {
+    background: var(--ok-bg);
+    border-color: var(--ok-bd);
+    color: var(--ok);
+  }
+
+  .option.selected-wrong {
+    background: var(--bad-bg);
+    border-color: var(--bad-bd);
+    color: var(--bad);
+  }
+
+  .feedback {
+    font-size: 13px;
+    margin: 0 0 10px 0;
+    padding: 10px 12px;
+    border-radius: var(--r);
+    display: none;
+    line-height: 1.5;
+  }
+
+  .feedback.show { display: block; }
+  .feedback.correct {
+    background: var(--ok-bg);
+    border: 1px solid var(--ok-bd);
+    color: var(--ok);
+  }
+  .feedback.wrong {
+    background: var(--bad-bg);
+    border: 1px solid var(--bad-bd);
+    color: var(--bad);
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .btn {
+    padding: 7px 12px;
+    border-radius: var(--r);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    background: #fff;
+    color: var(--primary);
+    border: 1px solid var(--border);
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .btn:hover {
+    background: var(--gray);
+    border-color: var(--muted);
+  }
+
+  .btn:focus-visible {
+    outline: 2px solid var(--accent-d);
+    outline-offset: 2px;
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 8px; }
+    .actions { flex-wrap: wrap; }
+    .btn { flex: 1; min-width: 0; text-align: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="scenario">
+    <strong>Пример со стекольного завода</strong>
+    Мастер заметил ошибки у новой бригады, которая перемещает листовое стекло на тележках. Начальник производства просит эколога назначить бригаде лекцию про политику и отходы – чтобы работали внимательнее.
+  </div>
+
+  <div class="question">Что сделает эколог?</div>
+
+  <div class="options" id="options">
+    <button class="option" onclick="selectOption(1, this)">Согласится с начальником и включит бригаду в ближайший план обучения по осведомленности. Лекция займет час и закроет вопрос.</button>
+    <button class="option" onclick="selectOption(2, this)">Откажет начальнику: обучение не входит в обязанности эколога, пусть отдел кадров сам разбирается с новой бригадой.</button>
+    <button class="option" onclick="selectOption(3, this)">Попросит мастера показать, как бригада выполняет операцию на месте. Вместе с руководителем подразделения проверит условия работы, инструкции и фактические навыки – и только после этого определит, нужно ли обучение или другое действие.</button>
+  </div>
+
+  <div class="feedback" id="feedback"></div>
+
+  <div class="actions" id="actions" style="display:none">
+    <button class="btn" onclick="retry()">Пройти заново</button>
+  </div>
+
+</div>
+
+<script>
+  const answers = {
+    1: {
+      correct: false,
+      text: 'Лекция про политику не устранит причину ошибок. Работники, возможно, не умеют работать с новым материалом или используют противоречивые инструкции. Формальное обучение «для галочки» не даст результата, а аудитор по п. 7.2 не примет его как свидетельство компетентности.'
+    },
+    2: {
+      correct: false,
+      text: 'Эколог не должен уходить от задачи. Определение потребностей в подготовке – часть работы по п. 7.2. Отказ разрушит контакт с производством и оставит проблему без решения.'
+    },
+    3: {
+      correct: true,
+      text: 'Верно. Сначала проверяете причину: условия работы, актуальность инструкций, фактические навыки. Только после этого определяете действие – обучение, наставничество, устранение организационного пробела или подтверждение компетентности. Это соответствует алгоритму из п. 7.2 и защищает от формальных решений.'
+    }
+  };
+
+  function selectOption(num, btn) {
+    const options = document.querySelectorAll('#options .option');
+    options.forEach(o => {
+      o.disabled = true;
+      o.classList.remove('selected-correct', 'selected-wrong');
+    });
+
+    const feedback = document.getElementById('feedback');
+    const actions = document.getElementById('actions');
+    const isCorrect = answers[num].correct;
+
+    if (isCorrect) {
+      btn.classList.add('selected-correct');
+      feedback.className = 'feedback correct show';
+    } else {
+      btn.classList.add('selected-wrong');
+      feedback.className = 'feedback wrong show';
+    }
+
+    feedback.innerHTML = answers[num].text;
+    actions.style.display = 'flex';
+    resizeIframe();
+  }
+
+  function retry() {
+    const options = document.querySelectorAll('#options .option');
+    options.forEach(o => {
+      o.disabled = false;
+      o.classList.remove('selected-correct', 'selected-wrong');
+    });
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('feedback').innerHTML = '';
+    document.getElementById('actions').style.display = 'none';
+    resizeIframe();
+  }
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
+  }
+
+  window.addEventListener('load', resizeIframe);
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(resizeIframe).observe(document.body);
+  }
+</script>
+
+</body>
+</html>
