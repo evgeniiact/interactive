@@ -72,16 +72,6 @@
   .field textarea { resize: vertical; min-height: 40px; }
   .field .hint { font-size: 11px; color: var(--muted); margin-top: 3px; }
 
-  .intro-note {
-    background: var(--gray);
-    border-left: 3px solid var(--accent);
-    border-radius: 8px;
-    padding: 10px 12px;
-    font-size: 13px;
-    line-height: 1.5;
-    margin-bottom: 12px;
-  }
-
   .nav-buttons {
     display: flex;
     gap: 8px;
@@ -144,16 +134,17 @@
   .note-box.accent { border-left-color: var(--accent); background: #eff6ff; color: var(--accent-d); }
 
   .matrix-wrap {
-    overflow-x: auto;
     border: 1px solid var(--border);
     border-radius: var(--r);
     margin-bottom: 10px;
+    overflow-x: auto;
   }
 
   .matrix {
     width: 100%;
     border-collapse: collapse;
     min-width: 720px;
+    table-layout: fixed;
   }
 
   .matrix th, .matrix td {
@@ -164,6 +155,7 @@
     border-bottom: 1px solid var(--border);
     font-size: 12px;
     line-height: 1.4;
+    word-wrap: break-word;
   }
   .matrix th:last-child, .matrix td:last-child { border-right: none; }
   .matrix tr:last-child td { border-bottom: none; }
@@ -172,8 +164,6 @@
     background: var(--gray);
     font-weight: 700;
     font-size: 11px;
-    position: sticky;
-    top: 0;
   }
 
   .matrix th .th-hint {
@@ -310,16 +300,10 @@
     border-bottom: 1px solid var(--border);
   }
 
-  .data-bar .btn {
-    flex: 1;
-    min-width: 140px;
-  }
-
   @media (max-width: 640px) {
     body { padding: 8px; }
     .nav-buttons { flex-direction: column; }
     .btn { width: 100%; }
-    .data-bar .btn { min-width: 100%; }
   }
 </style>
 </head>
@@ -336,10 +320,6 @@
 
     <div class="storage-warn" id="storageWarn1">
       Локальное хранилище недоступно. Черновики не будут сохраняться автоматически.
-    </div>
-
-    <div class="intro-note">
-      Заполните три строки по поручениям из Урока 15. Если по поручению есть только вводный инструктаж без наблюдения на линии и без протокола – выбирайте «Данных недостаточно» и запишите вопрос мастеру. Не выдумывайте свидетельства.
     </div>
 
     <div class="field">
@@ -377,7 +357,6 @@
     </div>
 
     <div class="data-bar">
-      <button class="btn btn-small" onclick="exportStepJSON()">Скачать этот шаг (JSON)</button>
       <button class="btn btn-small" onclick="exportBundle()">Скачать единый файл программы (JSON)</button>
       <button class="btn btn-small" onclick="document.getElementById('fileInput').click()">Загрузить единый файл программы (JSON)</button>
       <button class="btn btn-small" onclick="toggleRules()">Правила</button>
@@ -449,15 +428,13 @@
 </div>
 
 <script>
-  // ===== SEM-BUNDLE v1.1 =====
   const SEM_STEP = {
     name: 'competence_matrix',
     title: 'Матрица компетенций СЭМ',
     keys: ['sem_competence_matrix', 'sem_competence_matrix_v1']
   };
-  const SEM_BUNDLE_KEY = 'sem_bundle';
-  const SCHEMA = 'sem.competence_matrix.v1';
   const BUNDLE_SCHEMA = 'sem.bundle.v1';
+  const SCHEMA = 'sem.competence_matrix.v1';
 
   const conclusions = [
     { value: '', label: '— выбрать —' },
@@ -471,11 +448,11 @@
   const SEM_RULES = [
     'Конструктор собирает матрицу компетенций по поручениям из Урока 15.',
     'Все поля необязательные. Черновик можно выгрузить на любом этапе.',
-    'Кнопка «Скачать этот шаг» сохраняет только матрицу компетенций в формате JSON.',
-    'Кнопка «Скачать единый файл программы» собирает все шаги программы в один JSON-файл.',
-    'Единый файл можно загрузить в любой конструктор программы — данные распределятся по шагам.',
+    'Единый файл JSON содержит данные всех шагов программы и переносится между устройствами.',
     'При загрузке заполненные поля не перезаписываются, дополняются только пустые.',
     'Черновик автоматически сохраняется в этом браузере при каждом изменении.',
+    'Кнопка «Скачать единый файл» сохраняет JSON с именем SEM_programma_дата.json.',
+    'Кнопки Word и Excel генерируют документы для обсуждения с руководством.',
     'Номера строк сквозные, после удаления не пересдаются.',
     'Выбор «Данных недостаточно» не блокирует переход к предпросмотру.',
     'Данные не отправляются на сервер и хранятся только в вашем браузере.'
@@ -485,8 +462,8 @@
   let rowCounter = 0;
   let draftRev = 0;
   let storageAvailable = true;
+  let resizeTimeout;
 
-  // ===== Хранилище =====
   function checkStorage() {
     try {
       const test = '__storage_test__';
@@ -566,17 +543,8 @@
     }
   }
 
-  // ===== Экспорт/импорт =====
-  function exportStepJSON() {
-    const step = buildStepDraft();
-    const dateStr = step.meta.date ? new Date(step.meta.date).toLocaleDateString('ru-RU').replace(/\./g, '-') : new Date().toISOString().split('T')[0];
-    const fileName = `SEM_kompetencii_${dateStr}.json`;
-    downloadJSON(step, fileName);
-    showJsonMsg('ok', `Шаг сохранен: ${fileName}. Этот файл содержит только матрицу компетенций.`);
-  }
-
   function exportBundle() {
-    // Собираем все шаги из localStorage + текущий шаг
+    saveDraft();
     const bundle = {
       schema: BUNDLE_SCHEMA,
       rev: 1,
@@ -584,10 +552,6 @@
       steps: {}
     };
 
-    // Сначала сохраняем текущий шаг в localStorage, чтобы он попал в bundle
-    saveDraft();
-
-    // Собираем все шаги из localStorage
     for (let i = 0; i < localStorage.length; i++) {
       const key = localStorage.key(i);
       if (!key) continue;
@@ -596,16 +560,12 @@
         if (!raw) continue;
         const data = JSON.parse(raw);
         if (data && data.schema && data.schema.startsWith('sem.') && data.rows) {
-          // Это шаг программы
           const stepName = extractStepName(data.schema);
-          if (stepName) {
-            bundle.steps[stepName] = data;
-          }
+          if (stepName) bundle.steps[stepName] = data;
         }
       } catch (e) { /* skip */ }
     }
 
-    // Если текущий шаг не попал (например, schema не совпала), добавляем вручную
     if (!bundle.steps[SEM_STEP.name]) {
       bundle.steps[SEM_STEP.name] = buildStepDraft();
     }
@@ -613,17 +573,12 @@
     const dateStr = new Date().toLocaleDateString('ru-RU').replace(/\./g, '-');
     const fileName = `SEM_programma_${dateStr}.json`;
     downloadJSON(bundle, fileName);
-
-    const stepCount = Object.keys(bundle.steps).length;
-    showJsonMsg('ok', `Единый файл программы сохранен: ${fileName}. Включает ${stepCount} шаг(ов).`);
+    showJsonMsg('ok', `Единый файл программы сохранен: ${fileName}.`);
   }
 
   function extractStepName(schema) {
-    // schema: "sem.competence_matrix.v1" -> "competence_matrix"
     const parts = schema.split('.');
-    if (parts.length >= 3) {
-      return parts[1];
-    }
+    if (parts.length >= 3) return parts[1];
     return null;
   }
 
@@ -649,60 +604,49 @@
         const data = JSON.parse(e.target.result);
         processImport(data);
       } catch (err) {
-        showJsonMsg('bad', 'Файл не является корректным JSON. Проверьте формат и попробуйте снова.');
+        showJsonMsg('bad', 'Файл не является корректным JSON.');
       }
     };
     reader.onerror = () => showJsonMsg('bad', 'Не удалось прочитать файл.');
     reader.readAsText(file);
-
     event.target.value = '';
   }
 
   function processImport(data) {
-    // Распознаем формат: bundle (единый файл программы) или step (отдельный шаг)
     const isBundle = data && data.schema === BUNDLE_SCHEMA && data.steps;
     const isStep = data && data.schema === SCHEMA && data.rows;
 
     if (!isBundle && !isStep) {
-      showJsonMsg('bad', 'Файл не содержит данных программы СЭМ. Проверьте источник файла.');
+      showJsonMsg('bad', 'Файл не содержит данных программы СЭМ.');
       return;
     }
 
     let importedStep = null;
 
     if (isBundle) {
-      // Единый файл программы — ищем свой шаг
       importedStep = data.steps[SEM_STEP.name];
       if (!importedStep) {
-        showJsonMsg('accent', 'Единый файл загружен, но матрица компетенций в нем не найдена. Другие шаги программы сохранены в localStorage.');
-        // Сохраняем другие шаги в localStorage
+        showJsonMsg('accent', 'Единый файл загружен, но матрица компетенций в нем не найдена.');
         Object.keys(data.steps).forEach(stepName => {
           if (stepName !== SEM_STEP.name) {
             const stepData = data.steps[stepName];
             const key = `sem_${stepName}`;
-            try {
-              localStorage.setItem(key, JSON.stringify(stepData));
-            } catch (e) { /* skip */ }
+            try { localStorage.setItem(key, JSON.stringify(stepData)); } catch (e) { /* skip */ }
           }
         });
         return;
       }
-      // Сохраняем другие шаги из bundle в localStorage
       Object.keys(data.steps).forEach(stepName => {
         if (stepName !== SEM_STEP.name) {
           const stepData = data.steps[stepName];
           const key = `sem_${stepName}`;
-          try {
-            localStorage.setItem(key, JSON.stringify(stepData));
-          } catch (e) { /* skip */ }
+          try { localStorage.setItem(key, JSON.stringify(stepData)); } catch (e) { /* skip */ }
         }
       });
     } else {
-      // Отдельный шаг
       importedStep = data;
     }
 
-    // Правило слияния: заполненные поля не перезаписываются
     if (importedStep.meta) {
       const orgField = document.getElementById('orgName');
       const dateField = document.getElementById('docDate');
@@ -712,7 +656,6 @@
       if (importedStep.meta.author && !authorField.value) authorField.value = importedStep.meta.author;
     }
 
-    // Миграция строк: дополняем только пустые поля
     const existingById = {};
     rows.forEach(r => { existingById[r.id] = r; });
 
@@ -722,7 +665,6 @@
     (importedStep.rows || []).forEach(imported => {
       const existing = existingById[imported.id];
       if (existing) {
-        // Дополняем только пустые поля
         let updated = false;
         if (!existing.task && imported.task) { existing.task = imported.task; updated = true; }
         if (!existing.skills && imported.skills) { existing.skills = imported.skills; updated = true; }
@@ -731,7 +673,6 @@
         if (!existing.action && imported.action) { existing.action = imported.action; updated = true; }
         if (updated) updatedCount++;
       } else {
-        // Новая строка
         rowCounter = Math.max(rowCounter, imported.id || 0);
         rows.push({
           id: imported.id || ++rowCounter,
@@ -752,7 +693,6 @@
     let msg = `Загружено строк: ${importedStep.rows ? importedStep.rows.length : 0}.`;
     if (addedCount > 0) msg += ` Добавлено новых: ${addedCount}.`;
     if (updatedCount > 0) msg += ` Дополнено существующих: ${updatedCount}.`;
-    msg += ' Заполненные поля не были перезаписаны.';
     showJsonMsg('ok', msg);
     resizeIframe();
   }
@@ -762,10 +702,8 @@
     box.className = 'note-box show ' + (type === 'ok' ? 'ok' : type === 'bad' ? 'bad' : 'accent');
     box.textContent = text;
     setTimeout(() => { box.classList.remove('show'); }, 6000);
-    resizeIframe();
   }
 
-  // ===== Правила =====
   function toggleRules() {
     const targets = [document.getElementById('semRules1'), document.getElementById('semRules2')];
     const anyOpen = targets.some(t => t.classList.contains('show'));
@@ -789,7 +727,6 @@
     resizeIframe();
   }
 
-  // ===== Навигация =====
   function showScreen(id) {
     document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
     document.getElementById(id).classList.add('active');
@@ -800,10 +737,7 @@
 
   function addRow(data = null) {
     rowCounter++;
-    const row = data || {
-      id: rowCounter,
-      task: '', skills: '', evidence: '', conclusion: '', action: ''
-    };
+    const row = data || { id: rowCounter, task: '', skills: '', evidence: '', conclusion: '', action: '' };
     if (!data) row.id = rowCounter;
     rows.push(row);
     renderMatrix();
@@ -819,7 +753,7 @@
   }
 
   function clearAll() {
-    if (!confirm('Очистить все строки матрицы? Вводные данные (предприятие, дата, автор) сохранятся.')) return;
+    if (!confirm('Очистить все строки матрицы? Вводные данные сохранятся.')) return;
     rows = [];
     renderMatrix();
     saveDraft();
@@ -958,7 +892,16 @@
     return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
   }
 
-  // ===== Word =====
+  function resizeIframe() {
+    clearTimeout(resizeTimeout);
+    resizeTimeout = setTimeout(() => {
+      if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+        window.parentIFrame.size();
+      }
+    }, 100);
+  }
+
+  // Word
   function crc32(str) {
     let crc = 0xFFFFFFFF;
     const table = [];
@@ -1029,45 +972,49 @@
     const author = document.getElementById('author').value;
     const dateStr = docDate ? new Date(docDate).toLocaleDateString('ru-RU') : new Date().toLocaleDateString('ru-RU');
 
-    let tableRows = `
-      <w:tr>
-        ${['Поручение','Знания и навыки','Свидетельства','Вывод','Действие / Вопрос'].map(h =>
-          `<w:tc><w:tcPr><w:shd w:fill="FFF2CC"/><w:tcW w:w="2000" w:type="dxa"/></w:tcPr><w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr><w:r><w:b/><w:t>${escapeXml(h)}</w:t></w:r></w:p></w:tc>`
-        ).join('')}
-      </w:tr>
-    `;
+    let tableRows = `<w:tr>`;
+    ['Поручение','Знания и навыки','Свидетельства','Вывод','Действие / Вопрос'].forEach(h => {
+      tableRows += `<w:tc><w:tcPr><w:shd w:fill="FFF2CC" w:val="clear"/><w:tcW w:w="2000" w:type="dxa"/></w:tcPr><w:p><w:r><w:b/><w:t>${escapeXml(h)}</w:t></w:r></w:p></w:tc>`;
+    });
+    tableRows += `</w:tr>`;
 
     rows.forEach(row => {
       const conclusionLabel = conclusions.find(c => c.value === row.conclusion)?.label || '—';
       const cells = [row.task, row.skills, row.evidence, conclusionLabel, row.action];
       const isInsufficient = row.conclusion === 'insufficient';
-      tableRows += `<w:tr>${cells.map((c, i) => {
-        const shd = isInsufficient && i === 3 ? '<w:shd w:fill="FFF7ED"/>' : '';
+      tableRows += `<w:tr>`;
+      cells.forEach((c, i) => {
+        const shd = isInsufficient && i === 3 ? '<w:shd w:fill="FFF7ED" w:val="clear"/>' : '';
         const prefix = isInsufficient && i === 3 ? '[!] ' : '';
-        return `<w:tc><w:tcPr>${shd}<w:tcW w:w="2000" w:type="dxa"/></w:tcPr><w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr><w:r><w:t>${escapeXml(prefix + (c || '—'))}</w:t></w:r></w:p></w:tc>`;
-      }).join('')}</w:tr>`;
+        tableRows += `<w:tc><w:tcPr>${shd}<w:tcW w:w="2000" w:type="dxa"/></w:tcPr><w:p><w:r><w:t>${escapeXml(prefix + (c || '—'))}</w:t></w:r></w:p></w:tc>`;
+      });
+      tableRows += `</w:tr>`;
     });
 
     const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
 <w:body>
 <w:p><w:pPr><w:pStyle w:val="Title"/></w:pPr><w:r><w:t>Матрица компетенций СЭМ</w:t></w:r></w:p>
-<w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr><w:r><w:t>Предприятие: ${escapeXml(orgName || '—')}</w:t></w:r></w:p>
-<w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr><w:r><w:t>Дата: ${escapeXml(dateStr)}</w:t></w:r></w:p>
-<w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr><w:r><w:t>Подготовил: ${escapeXml(author || '—')}</w:t></w:r></w:p>
+<w:p><w:r><w:t>Предприятие: ${escapeXml(orgName || '—')}</w:t></w:r></w:p>
+<w:p><w:r><w:t>Дата: ${escapeXml(dateStr)}</w:t></w:r></w:p>
+<w:p><w:r><w:t>Подготовил: ${escapeXml(author || '—')}</w:t></w:r></w:p>
 <w:p/>
-<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders><w:top w:val="single" w:sz="4"/><w:left w:val="single" w:sz="4"/><w:bottom w:val="single" w:sz="4"/><w:right w:val="single" w:sz="4"/><w:insideH w:val="single" w:sz="4"/><w:insideV w:val="single" w:sz="4"/></w:tblBorders></w:tblPr>
+<w:tbl><w:tblPr><w:tblW w:w="0" w:type="auto"/><w:tblBorders><w:top w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:left w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:bottom w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:right w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:insideH w:val="single" w:sz="4" w:space="0" w:color="auto"/><w:insideV w:val="single" w:sz="4" w:space="0" w:color="auto"/></w:tblBorders></w:tblPr>
 ${tableRows}
 </w:tbl>
-<w:p/><w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr><w:r><w:i/><w:t>Примечание: строки с пометкой [!] – данных недостаточно для вывода. Требуется уточнение у мастера или руководителя подразделения.</w:t></w:r></w:p>
-<w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/></w:sectPr>
-</w:body></w:document>`;
+<w:p/><w:p><w:pPr><w:rPr><w:i/></w:rPr></w:pPr><w:r><w:t>Примечание: строки с пометкой [!] – данных недостаточно для вывода. Требуется уточнение у мастера или руководителя подразделения.</w:t></w:r></w:p>
+<w:sectPr><w:pgSz w:w="16838" w:h="11906" w:orient="landscape"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134" w:header="708" w:footer="708" w:gutter="0"/></w:sectPr>
+</w:body>
+</w:document>`;
 
     const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
-<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr></w:rPrDefault></w:docDefaults>
-<w:style w:type="paragraph" w:styleId="Normal" w:default="1"><w:name w:val="Normal"/><w:pPr><w:spacing w:after="80"/></w:pPr></w:style>
-<w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:pPr><w:spacing w:after="200"/><w:jc w:val="center"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/></w:rPr></w:style>
+<w:docDefaults>
+<w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:eastAsia="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr></w:rPrDefault>
+<w:pPrDefault><w:pPr><w:spacing w:after="80" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault>
+</w:docDefaults>
+<w:style w:type="paragraph" w:styleId="Normal" w:default="1"><w:name w:val="Normal"/></w:style>
+<w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="200"/><w:jc w:val="center"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/></w:rPr></w:style>
 </w:styles>`;
 
     const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -1107,7 +1054,6 @@ ${tableRows}
     URL.revokeObjectURL(url);
   }
 
-  // ===== Excel =====
   function downloadExcel() {
     const orgName = document.getElementById('orgName').value;
     const docDate = document.getElementById('docDate').value;
@@ -1117,18 +1063,9 @@ ${tableRows}
     const headers = ['Поручение','Требуемые знания и навыки','Имеющиеся свидетельства','Вывод','Действие / Вопрос'];
 
     let sheetRows = '';
-    sheetRows += `<row r="1"><c r="A1" s="1"><v>Матрица компетенций СЭМ</v></c>`;
-    for (let i = 1; i < 5; i++) sheetRows += `<c r="${String.fromCharCode(65+i)}1" s="1"/>`;
-    sheetRows += `</row>`;
-
-    sheetRows += `<row r="2">`;
-    sheetRows += `<c r="A2" s="2"><v>Предприятие: ${escapeXml(orgName || '—')}</v></c>`;
-    sheetRows += `<c r="B2" s="2"><v>Дата: ${escapeXml(dateStr)}</v></c>`;
-    sheetRows += `<c r="C2" s="2"><v>Подготовил: ${escapeXml(author || '—')}</v></c>`;
-    sheetRows += `</row>`;
-
+    sheetRows += `<row r="1"><c r="A1" s="1"><v>Матрица компетенций СЭМ</v></c><c r="B1" s="1"/><c r="C1" s="1"/><c r="D1" s="1"/><c r="E1" s="1"/></row>`;
+    sheetRows += `<row r="2"><c r="A2" s="2"><v>Предприятие: ${escapeXml(orgName || '—')}</v></c><c r="B2" s="2"><v>Дата: ${escapeXml(dateStr)}</v></c><c r="C2" s="2"><v>Подготовил: ${escapeXml(author || '—')}</v></c></row>`;
     sheetRows += `<row r="3"/>`;
-
     sheetRows += `<row r="4">`;
     headers.forEach((h, i) => {
       sheetRows += `<c r="${String.fromCharCode(65+i)}4" s="3"><v>${escapeXml(h)}</v></c>`;
@@ -1149,7 +1086,7 @@ ${tableRows}
     });
 
     const sheetXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
-<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
 <dimension ref="A1:E${Math.max(4, rows.length + 4)}"/>
 <cols><col min="1" max="5" width="25" customWidth="1"/></cols>
 <sheetData>${sheetRows}</sheetData>
@@ -1163,10 +1100,33 @@ ${tableRows}
 
     const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
 <styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
-<fonts><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="14"/><name val="Calibri"/></font><font><i/><sz val="10"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><color rgb="EA580C"/><name val="Calibri"/></font></fonts>
-<fills><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF2CC"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="F1F5F9"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFF7ED"/></patternFill></fill></fills>
-<borders><border><left/><right/><top/><bottom/></border><border><left style="thin"><color auto="1"/></left><right style="thin"><color auto="1"/></right><top style="thin"><color auto="1"/></top><bottom style="thin"><color auto="1"/></bottom></border></borders>
-<cellXfs><xf fontId="0" fillId="0" borderId="0"/><xf fontId="1" fillId="0" borderId="0" applyFont="1"/><xf fontId="2" fillId="0" borderId="0" applyFont="1"/><xf fontId="3" fillId="3" borderId="1" applyFont="1" applyFill="1" applyBorder="1"/><xf fontId="4" fillId="0" borderId="1" applyBorder="1"/><xf fontId="5" fillId="4" borderId="1" applyFont="1" applyFill="1" applyBorder="1"/></cellXfs>
+<fonts count="6">
+<font><sz val="11"/><name val="Calibri"/></font>
+<font><b/><sz val="14"/><name val="Calibri"/></font>
+<font><i/><sz val="10"/><name val="Calibri"/></font>
+<font><b/><sz val="11"/><name val="Calibri"/></font>
+<font><sz val="11"/><name val="Calibri"/></font>
+<font><b/><sz val="11"/><color rgb="FFEA580C"/><name val="Calibri"/></font>
+</fonts>
+<fills count="5">
+<fill><patternFill patternType="none"/></fill>
+<fill><patternFill patternType="gray125"/></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFF1F5F9"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFFFF7ED"/></patternFill></fill>
+</fills>
+<borders count="2">
+<border><left/><right/><top/><bottom/></border>
+<border><left style="thin"><color auto="1"/></left><right style="thin"><color auto="1"/></right><top style="thin"><color auto="1"/></top><bottom style="thin"><color auto="1"/></bottom></border>
+</borders>
+<cellXfs count="7">
+<xf fontId="0" fillId="0" borderId="0"/>
+<xf fontId="1" fillId="0" borderId="0" applyFont="1"/>
+<xf fontId="2" fillId="0" borderId="0" applyFont="1"/>
+<xf fontId="3" fillId="3" borderId="1" applyFont="1" applyFill="1" applyBorder="1"/>
+<xf fontId="4" fillId="0" borderId="1" applyBorder="1"/>
+<xf fontId="5" fillId="4" borderId="1" applyFont="1" applyFill="1" applyBorder="1"/>
+</cellXfs>
 </styleSheet>`;
 
     const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -1209,12 +1169,6 @@ ${tableRows}
     URL.revokeObjectURL(url);
   }
 
-  function resizeIframe() {
-    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
-      window.parentIFrame.size();
-    }
-  }
-
   window.addEventListener('load', () => {
     checkStorage();
     document.getElementById('docDate').value = new Date().toISOString().split('T')[0];
@@ -1237,11 +1191,6 @@ ${tableRows}
 
     resizeIframe();
   });
-
-  if ('ResizeObserver' in window) {
-    const container = document.querySelector('.container');
-    if (container) new ResizeObserver(() => resizeIframe()).observe(container);
-  }
 </script>
 
 </body>
