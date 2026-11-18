@@ -107,6 +107,7 @@
   .btn-primary:hover { background: var(--accent-d); border-color: var(--accent-d); }
   .btn-danger { color: var(--warn); border-color: var(--warn-bd); }
   .btn-danger:hover { background: var(--warn-bg); }
+  .btn-small { padding: 6px 12px; font-size: 12px; }
 
   .save-line {
     font-size: 11px;
@@ -232,7 +233,6 @@
   .matrix tr.row-insufficient td textarea,
   .matrix tr.row-insufficient td input { background: transparent; }
 
-  /* Правила */
   .sem-rules {
     display: none;
     background: var(--gray);
@@ -244,15 +244,8 @@
     line-height: 1.5;
   }
   .sem-rules.show { display: block; }
-  .sem-rules h3 {
-    font-size: 13px;
-    font-weight: 700;
-    margin: 0 0 8px 0;
-  }
-  .sem-rules ol {
-    margin: 0;
-    padding-left: 20px;
-  }
+  .sem-rules h3 { font-size: 13px; font-weight: 700; margin: 0 0 8px 0; }
+  .sem-rules ol { margin: 0; padding-left: 20px; }
   .sem-rules li { margin-bottom: 4px; }
 
   .preview-meta {
@@ -317,10 +310,16 @@
     border-bottom: 1px solid var(--border);
   }
 
+  .data-bar .btn {
+    flex: 1;
+    min-width: 140px;
+  }
+
   @media (max-width: 640px) {
     body { padding: 8px; }
     .nav-buttons { flex-direction: column; }
     .btn { width: 100%; }
+    .data-bar .btn { min-width: 100%; }
   }
 </style>
 </head>
@@ -337,6 +336,10 @@
 
     <div class="storage-warn" id="storageWarn1">
       Локальное хранилище недоступно. Черновики не будут сохраняться автоматически.
+    </div>
+
+    <div class="intro-note">
+      Заполните три строки по поручениям из Урока 15. Если по поручению есть только вводный инструктаж без наблюдения на линии и без протокола – выбирайте «Данных недостаточно» и запишите вопрос мастеру. Не выдумывайте свидетельства.
     </div>
 
     <div class="field">
@@ -374,10 +377,11 @@
     </div>
 
     <div class="data-bar">
-      <button class="btn btn-small" onclick="exportJSON()">Скачать единый файл (JSON)</button>
-      <button class="btn btn-small" onclick="document.getElementById('fileInput').click()">Загрузить единый файл (JSON)</button>
-      <button class="btn btn-small" onclick="toggleRules()">Правила и передача данных</button>
-      <input type="file" id="fileInput" class="file-input" accept=".json" onchange="importJSON(event)">
+      <button class="btn btn-small" onclick="exportStepJSON()">Скачать этот шаг (JSON)</button>
+      <button class="btn btn-small" onclick="exportBundle()">Скачать единый файл программы (JSON)</button>
+      <button class="btn btn-small" onclick="document.getElementById('fileInput').click()">Загрузить единый файл программы (JSON)</button>
+      <button class="btn btn-small" onclick="toggleRules()">Правила</button>
+      <input type="file" id="fileInput" class="file-input" accept=".json" onchange="importFile(event)">
     </div>
 
     <div class="note-box" id="jsonMsg"></div>
@@ -391,7 +395,7 @@
             <th>Требуемые знания и навыки<span class="th-hint">Что нужно знать и уметь</span></th>
             <th>Имеющиеся свидетельства<span class="th-hint">Дипломы, протоколы, листы</span></th>
             <th>Вывод<span class="th-hint">Выберите из списка</span></th>
-            <th>Действие и проверка<span class="th-hint" id="actionHint">Что сделать и как проверить</span></th>
+            <th>Действие и проверка<span class="th-hint">Что сделать и как проверить</span></th>
             <th style="width:40px"></th>
           </tr>
         </thead>
@@ -453,6 +457,7 @@
   };
   const SEM_BUNDLE_KEY = 'sem_bundle';
   const SCHEMA = 'sem.competence_matrix.v1';
+  const BUNDLE_SCHEMA = 'sem.bundle.v1';
 
   const conclusions = [
     { value: '', label: '— выбрать —' },
@@ -464,9 +469,15 @@
   ];
 
   const SEM_RULES = [
+    'Конструктор собирает матрицу компетенций по поручениям из Урока 15.',
+    'Все поля необязательные. Черновик можно выгрузить на любом этапе.',
+    'Кнопка «Скачать этот шаг» сохраняет только матрицу компетенций в формате JSON.',
+    'Кнопка «Скачать единый файл программы» собирает все шаги программы в один JSON-файл.',
+    'Единый файл можно загрузить в любой конструктор программы — данные распределятся по шагам.',
+    'При загрузке заполненные поля не перезаписываются, дополняются только пустые.',
     'Черновик автоматически сохраняется в этом браузере при каждом изменении.',
-    'Кнопка «Скачать единый файл» сохраняет JSON с именем Matrica_kompetencij_дата.json.',
-    'Кнопки Word и Excel генерируют документы для обсуждения с руководством.',
+    'Номера строк сквозные, после удаления не пересдаются.',
+    'Выбор «Данных недостаточно» не блокирует переход к предпросмотру.',
     'Данные не отправляются на сервер и хранятся только в вашем браузере.'
   ];
 
@@ -493,23 +504,27 @@
   function saveDraft() {
     if (!storageAvailable) return;
     try {
-      const draft = {
-        schema: SCHEMA,
-        rev: ++draftRev,
-        updatedAt: new Date().toISOString(),
-        meta: {
-          org: document.getElementById('orgName').value,
-          date: document.getElementById('docDate').value,
-          author: document.getElementById('author').value
-        },
-        rows: rows.map(r => ({ ...r }))
-      };
+      const draft = buildStepDraft();
       localStorage.setItem(SEM_STEP.keys[0], JSON.stringify(draft));
       const time = new Date().toLocaleTimeString('ru-RU', { hour: '2-digit', minute: '2-digit' });
       document.getElementById('saveStatus').textContent = `Черновик сохранен в этом браузере в ${time}.`;
     } catch (e) {
       console.warn('Не удалось сохранить черновик', e);
     }
+  }
+
+  function buildStepDraft() {
+    return {
+      schema: SCHEMA,
+      rev: ++draftRev,
+      updatedAt: new Date().toISOString(),
+      meta: {
+        org: document.getElementById('orgName').value,
+        date: document.getElementById('docDate').value,
+        author: document.getElementById('author').value
+      },
+      rows: rows.map(r => ({ ...r }))
+    };
   }
 
   function loadDraft() {
@@ -520,7 +535,7 @@
         if (!raw) continue;
         const draft = JSON.parse(raw);
         if (draft && draft.rows) {
-          applyDraft(draft);
+          applyStepDraft(draft);
           return true;
         }
       } catch (e) { /* skip */ }
@@ -528,17 +543,14 @@
     return false;
   }
 
-  function applyDraft(draft) {
+  function applyStepDraft(draft) {
     if (draft.meta) {
-      if (draft.meta.org && !document.getElementById('orgName').value) {
-        document.getElementById('orgName').value = draft.meta.org;
-      }
-      if (draft.meta.date && !document.getElementById('docDate').value) {
-        document.getElementById('docDate').value = draft.meta.date;
-      }
-      if (draft.meta.author && !document.getElementById('author').value) {
-        document.getElementById('author').value = draft.meta.author;
-      }
+      const orgField = document.getElementById('orgName');
+      const dateField = document.getElementById('docDate');
+      const authorField = document.getElementById('author');
+      if (draft.meta.org && !orgField.value) orgField.value = draft.meta.org;
+      if (draft.meta.date && !dateField.value) dateField.value = draft.meta.date;
+      if (draft.meta.author && !authorField.value) authorField.value = draft.meta.author;
     }
     if (draft.rows && Array.isArray(draft.rows)) {
       rows = draft.rows.map(r => ({
@@ -554,26 +566,69 @@
     }
   }
 
-  // ===== Экспорт/импорт JSON =====
-  function semBuildBundle() {
-    return {
-      schema: SCHEMA,
-      rev: draftRev + 1,
-      updatedAt: new Date().toISOString(),
-      meta: {
-        org: document.getElementById('orgName').value,
-        date: document.getElementById('docDate').value,
-        author: document.getElementById('author').value
-      },
-      rows: rows.map(r => ({ ...r }))
-    };
+  // ===== Экспорт/импорт =====
+  function exportStepJSON() {
+    const step = buildStepDraft();
+    const dateStr = step.meta.date ? new Date(step.meta.date).toLocaleDateString('ru-RU').replace(/\./g, '-') : new Date().toISOString().split('T')[0];
+    const fileName = `SEM_kompetencii_${dateStr}.json`;
+    downloadJSON(step, fileName);
+    showJsonMsg('ok', `Шаг сохранен: ${fileName}. Этот файл содержит только матрицу компетенций.`);
   }
 
-  function exportJSON() {
-    const bundle = semBuildBundle();
-    const dateStr = bundle.meta.date ? new Date(bundle.meta.date).toLocaleDateString('ru-RU').replace(/\./g, '-') : new Date().toISOString().split('T')[0];
-    const fileName = `Matrica_kompetencij_${dateStr}.json`;
-    const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+  function exportBundle() {
+    // Собираем все шаги из localStorage + текущий шаг
+    const bundle = {
+      schema: BUNDLE_SCHEMA,
+      rev: 1,
+      updatedAt: new Date().toISOString(),
+      steps: {}
+    };
+
+    // Сначала сохраняем текущий шаг в localStorage, чтобы он попал в bundle
+    saveDraft();
+
+    // Собираем все шаги из localStorage
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (!key) continue;
+      try {
+        const raw = localStorage.getItem(key);
+        if (!raw) continue;
+        const data = JSON.parse(raw);
+        if (data && data.schema && data.schema.startsWith('sem.') && data.rows) {
+          // Это шаг программы
+          const stepName = extractStepName(data.schema);
+          if (stepName) {
+            bundle.steps[stepName] = data;
+          }
+        }
+      } catch (e) { /* skip */ }
+    }
+
+    // Если текущий шаг не попал (например, schema не совпала), добавляем вручную
+    if (!bundle.steps[SEM_STEP.name]) {
+      bundle.steps[SEM_STEP.name] = buildStepDraft();
+    }
+
+    const dateStr = new Date().toLocaleDateString('ru-RU').replace(/\./g, '-');
+    const fileName = `SEM_programma_${dateStr}.json`;
+    downloadJSON(bundle, fileName);
+
+    const stepCount = Object.keys(bundle.steps).length;
+    showJsonMsg('ok', `Единый файл программы сохранен: ${fileName}. Включает ${stepCount} шаг(ов).`);
+  }
+
+  function extractStepName(schema) {
+    // schema: "sem.competence_matrix.v1" -> "competence_matrix"
+    const parts = schema.split('.');
+    if (parts.length >= 3) {
+      return parts[1];
+    }
+    return null;
+  }
+
+  function downloadJSON(data, fileName) {
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -582,11 +637,9 @@
     a.click();
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
-
-    showJsonMsg('ok', `Единый файл сохранен: ${fileName}. Загрузите его в другом конструкторе программы, чтобы продолжить работу.`);
   }
 
-  function importJSON(event) {
+  function importFile(event) {
     const file = event.target.files[0];
     if (!file) return;
 
@@ -606,41 +659,77 @@
   }
 
   function processImport(data) {
-    // Распознаем формат: bundle (полный файл) или step (только свой шаг)
-    const isBundle = data && data.schema && data.meta && data.rows;
-    const isStep = data && Array.isArray(data.rows);
+    // Распознаем формат: bundle (единый файл программы) или step (отдельный шаг)
+    const isBundle = data && data.schema === BUNDLE_SCHEMA && data.steps;
+    const isStep = data && data.schema === SCHEMA && data.rows;
 
     if (!isBundle && !isStep) {
-      showJsonMsg('bad', 'Файл не содержит данных матрицы компетенций. Проверьте источник файла.');
+      showJsonMsg('bad', 'Файл не содержит данных программы СЭМ. Проверьте источник файла.');
       return;
     }
 
-    const importedRows = isStep ? data.rows : (data.rows || []);
-    const importedMeta = isBundle ? data.meta : null;
+    let importedStep = null;
+
+    if (isBundle) {
+      // Единый файл программы — ищем свой шаг
+      importedStep = data.steps[SEM_STEP.name];
+      if (!importedStep) {
+        showJsonMsg('accent', 'Единый файл загружен, но матрица компетенций в нем не найдена. Другие шаги программы сохранены в localStorage.');
+        // Сохраняем другие шаги в localStorage
+        Object.keys(data.steps).forEach(stepName => {
+          if (stepName !== SEM_STEP.name) {
+            const stepData = data.steps[stepName];
+            const key = `sem_${stepName}`;
+            try {
+              localStorage.setItem(key, JSON.stringify(stepData));
+            } catch (e) { /* skip */ }
+          }
+        });
+        return;
+      }
+      // Сохраняем другие шаги из bundle в localStorage
+      Object.keys(data.steps).forEach(stepName => {
+        if (stepName !== SEM_STEP.name) {
+          const stepData = data.steps[stepName];
+          const key = `sem_${stepName}`;
+          try {
+            localStorage.setItem(key, JSON.stringify(stepData));
+          } catch (e) { /* skip */ }
+        }
+      });
+    } else {
+      // Отдельный шаг
+      importedStep = data;
+    }
 
     // Правило слияния: заполненные поля не перезаписываются
-    if (importedMeta) {
+    if (importedStep.meta) {
       const orgField = document.getElementById('orgName');
       const dateField = document.getElementById('docDate');
       const authorField = document.getElementById('author');
-      if (importedMeta.org && !orgField.value) orgField.value = importedMeta.org;
-      if (importedMeta.date && !dateField.value) dateField.value = importedMeta.date;
-      if (importedMeta.author && !authorField.value) authorField.value = importedMeta.author;
+      if (importedStep.meta.org && !orgField.value) orgField.value = importedStep.meta.org;
+      if (importedStep.meta.date && !dateField.value) dateField.value = importedStep.meta.date;
+      if (importedStep.meta.author && !authorField.value) authorField.value = importedStep.meta.author;
     }
 
     // Миграция строк: дополняем только пустые поля
     const existingById = {};
     rows.forEach(r => { existingById[r.id] = r; });
 
-    importedRows.forEach(imported => {
+    let addedCount = 0;
+    let updatedCount = 0;
+
+    (importedStep.rows || []).forEach(imported => {
       const existing = existingById[imported.id];
       if (existing) {
         // Дополняем только пустые поля
-        if (!existing.task && imported.task) existing.task = imported.task;
-        if (!existing.skills && imported.skills) existing.skills = imported.skills;
-        if (!existing.evidence && imported.evidence) existing.evidence = imported.evidence;
-        if (!existing.conclusion && imported.conclusion) existing.conclusion = imported.conclusion;
-        if (!existing.action && imported.action) existing.action = imported.action;
+        let updated = false;
+        if (!existing.task && imported.task) { existing.task = imported.task; updated = true; }
+        if (!existing.skills && imported.skills) { existing.skills = imported.skills; updated = true; }
+        if (!existing.evidence && imported.evidence) { existing.evidence = imported.evidence; updated = true; }
+        if (!existing.conclusion && imported.conclusion) { existing.conclusion = imported.conclusion; updated = true; }
+        if (!existing.action && imported.action) { existing.action = imported.action; updated = true; }
+        if (updated) updatedCount++;
       } else {
         // Новая строка
         rowCounter = Math.max(rowCounter, imported.id || 0);
@@ -652,13 +741,19 @@
           conclusion: imported.conclusion || '',
           action: imported.action || ''
         });
+        addedCount++;
       }
     });
 
     draftRev++;
     renderMatrix();
     saveDraft();
-    showJsonMsg('ok', `Загружено строк: ${importedRows.length}. Заполненные поля не были перезаписаны.`);
+
+    let msg = `Загружено строк: ${importedStep.rows ? importedStep.rows.length : 0}.`;
+    if (addedCount > 0) msg += ` Добавлено новых: ${addedCount}.`;
+    if (updatedCount > 0) msg += ` Дополнено существующих: ${updatedCount}.`;
+    msg += ' Заполненные поля не были перезаписаны.';
+    showJsonMsg('ok', msg);
     resizeIframe();
   }
 
@@ -1126,7 +1221,6 @@ ${tableRows}
 
     const loaded = loadDraft();
     if (!loaded) {
-      // Стартовые примеры стекольного завода
       const seedRows = [
         { task: 'Оператор газоочистки цеха шихты: настройка рукавных фильтров и фиксация перепада давления', skills: 'Знание устройства рукавного фильтра, умение снимать показания манометра, понимание связи перепада давления с эффективностью очистки', evidence: 'Удостоверение по охране труда №127 от 15.03.2026, протокол проверки знаний от 20.03.2026', conclusion: 'confirmed', action: 'Компетенция подтверждена. Включить в план наблюдения на линии в следующем квартале.' },
         { task: 'Водитель погрузчика на складе готовой продукции: обращение с боем стекла и действия при проливе масла', skills: 'Знание значимых аспектов участка склада, порядок сортировки боя стекла по контейнерам, алгоритм действий при проливе масла', evidence: 'Запись о вводном инструктаже от 10.01.2026', conclusion: 'insufficient', action: 'Спросить мастера смены Иванова А.В.: проводилось ли наблюдение за работой водителя на линии и есть ли лист ознакомления с аспектами участка.' },
@@ -1137,7 +1231,6 @@ ${tableRows}
       renderMatrix();
     }
 
-    // Автосохранение при изменении вводных данных
     ['orgName', 'docDate', 'author'].forEach(id => {
       document.getElementById(id).addEventListener('input', saveDraft);
     });
