@@ -1,0 +1,658 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Матрица коммуникаций СЭМ</title>
+<style>
+  :root {
+    --primary: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg: #ffffff;
+    --gray: #f8fafc;
+    --accent: #2563eb;
+    --accent-d: #1d4ed8;
+    --ok: #166534;
+    --ok-bg: #f0fdf4;
+    --ok-bd: #bbf7d0;
+    --bad: #991b1b;
+    --bad-bg: #fef2f2;
+    --bad-bd: #fecaca;
+    --warn: #ea580c;
+    --warn-bg: #fff7ed;
+    --r: 10px;
+    --col-flow: #f1f5f9;
+    --col-about: #fef3c7;
+    --col-when: #f0fdf4;
+    --col-who: #eff6ff;
+    --col-channel: #fdf4ff;
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--primary);
+    background: var(--bg);
+    margin: 0;
+    padding: 12px;
+  }
+
+  .container { max-width: 680px; margin: 0 auto; }
+
+  .tabs {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .tab-btn {
+    flex: 1;
+    padding: 9px 12px;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    background: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--muted);
+    transition: all 0.15s ease;
+    text-align: center;
+  }
+
+  .tab-btn:hover { background: var(--gray); }
+  .tab-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .tab-btn:focus-visible { outline: 2px solid var(--accent-d); outline-offset: 2px; }
+
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  .task-hint {
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 10px;
+    line-height: 1.5;
+  }
+
+  .table-wrap {
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    overflow: hidden;
+  }
+
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    table-layout: fixed;
+  }
+
+  th, td {
+    padding: 6px 7px;
+    text-align: left;
+    vertical-align: top;
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    line-height: 1.35;
+    word-wrap: break-word;
+    overflow-wrap: break-word;
+  }
+
+  th:last-child, td:last-child { border-right: none; }
+  tr:last-child td { border-bottom: none; }
+
+  th {
+    font-weight: 700;
+    font-size: 11px;
+    background: var(--gray);
+    position: sticky;
+    top: 0;
+  }
+
+  th .th-hint {
+    display: block;
+    font-size: 10px;
+    font-weight: 400;
+    color: var(--muted);
+    margin-top: 1px;
+    line-height: 1.3;
+  }
+
+  th:nth-child(1), td:nth-child(1) { background: var(--col-flow); width: 18%; }
+  th:nth-child(2), td:nth-child(2) { background: var(--col-about); width: 22%; }
+  th:nth-child(3), td:nth-child(3) { background: var(--col-when); width: 18%; }
+  th:nth-child(4), td:nth-child(4) { background: var(--col-who); width: 22%; }
+  th:nth-child(5), td:nth-child(5) { background: var(--col-channel); width: 20%; }
+
+  td.flow-cell {
+    font-weight: 700;
+    font-size: 12px;
+  }
+
+  /* Ячейка с пропуском */
+  .cell-missing {
+    cursor: pointer;
+    position: relative;
+    min-height: 44px;
+    transition: all 0.15s ease;
+  }
+
+  .cell-missing:hover:not(.filled) {
+    background: var(--warn-bg) !important;
+  }
+
+  .cell-missing.filled { cursor: default; }
+  .cell-missing.filled:hover { background: inherit !important; }
+
+  .cell-missing.correct {
+    background: var(--ok-bg) !important;
+    outline: 2px solid var(--ok-bd);
+    outline-offset: -2px;
+  }
+
+  .cell-missing.wrong {
+    background: var(--bad-bg) !important;
+    outline: 2px solid var(--bad-bd);
+    outline-offset: -2px;
+  }
+
+  .missing-mark {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+    min-height: 44px;
+    color: var(--warn);
+    font-size: 16px;
+    font-weight: 700;
+  }
+
+  .cell-missing.filled .missing-mark { display: none; }
+
+  .filled-content {
+    display: none;
+    font-size: 12px;
+    line-height: 1.35;
+  }
+
+  .cell-missing.filled .filled-content { display: block; }
+
+  .hint-box {
+    margin-top: 4px;
+    padding: 4px 6px;
+    background: #fff;
+    border: 1px dashed var(--bad-bd);
+    border-radius: 4px;
+    font-size: 10px;
+    line-height: 1.3;
+    color: var(--bad);
+  }
+
+  .hint-box strong {
+    display: block;
+    margin-bottom: 2px;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.02em;
+  }
+
+  /* Модальное окно */
+  .modal-overlay {
+    position: fixed;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: rgba(30, 41, 59, 0.5);
+    z-index: 100;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+  }
+
+  .modal-overlay.show { display: flex; }
+
+  .modal {
+    background: #fff;
+    border-radius: var(--r);
+    max-width: 420px;
+    width: 100%;
+    padding: 20px;
+    box-shadow: 0 8px 24px rgba(0,0,0,0.15);
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+
+  .modal-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 0 0 4px 0;
+  }
+
+  .modal-subtitle {
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0 0 14px 0;
+  }
+
+  .option-list {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 16px;
+  }
+
+  .option-btn {
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.4;
+    text-align: left;
+    color: var(--primary);
+    transition: all 0.15s ease;
+  }
+
+  .option-btn:hover { background: var(--gray); border-color: var(--accent); }
+  .option-btn.selected { background: var(--accent-bg); border-color: var(--accent); color: var(--accent-d); }
+
+  .modal-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+  }
+
+  .modal-btn {
+    padding: 8px 16px;
+    border-radius: var(--r);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: #fff;
+    font-family: inherit;
+  }
+
+  .modal-btn:hover { background: var(--gray); }
+  .modal-btn.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .modal-btn.primary:hover { background: var(--accent-d); }
+
+  .mode2-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    padding: 9px 16px;
+    border-radius: var(--r);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--primary);
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .btn:hover { background: var(--gray); border-color: var(--muted); }
+  .btn:focus-visible { outline: 2px solid var(--accent-d); outline-offset: 2px; }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: var(--accent-d); border-color: var(--accent-d); }
+
+  .feedback {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 10px;
+    min-height: 18px;
+  }
+  .feedback.success { color: var(--ok); }
+  .feedback.error { color: var(--bad); }
+
+  @media (max-width: 640px) {
+    body { padding: 8px; }
+    th, td { padding: 5px 5px; font-size: 11px; }
+    th .th-hint { display: none; }
+    .modal { padding: 16px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="tabs">
+    <button class="tab-btn active" data-tab="example" onclick="switchTab('example')">Пример заполнения</button>
+    <button class="tab-btn" data-tab="practice" onclick="switchTab('practice')">Заполните сами</button>
+  </div>
+
+  <!-- ВКЛАДКА 1: Пример -->
+  <div class="tab-content active" id="tab-example">
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Поток информации</th>
+            <th>О чем сообщать<span class="th-hint">Содержание</span></th>
+            <th>Когда<span class="th-hint">Срок</span></th>
+            <th>От кого и кому<span class="th-hint">Отправитель → Получатель</span></th>
+            <th>Канал передачи<span class="th-hint">Формат</span></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td class="flow-cell">Поломка пылеуловителя в цехе шихты</td>
+            <td>Время остановки, причина сбоя, время запуска</td>
+            <td>В течение 2 часов после сбоя</td>
+            <td>От уполномоченного в цехе – экологу и главному инженеру</td>
+            <td>Звонок + запись в сменном журнале</td>
+          </tr>
+          <tr>
+            <td class="flow-cell">Изменение правил сортировки стеклобоя</td>
+            <td>Новые требования к разделению брака и тары</td>
+            <td>За 3 дня до вступления в силу</td>
+            <td>От эколога – начальнику производства и мастерам</td>
+            <td>Приказ на портале + разбор на планерке</td>
+          </tr>
+          <tr>
+            <td class="flow-cell">Обращение жителя или запрос клиента</td>
+            <td>Суть вопроса, дата поступления, привязка к цеху</td>
+            <td>В день регистрации письма</td>
+            <td>От секретаря – экологу; ответ подписывает директор</td>
+            <td>Журнал входящих + официальное письмо</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <!-- ВКЛАДКА 2: Практика -->
+  <div class="tab-content" id="tab-practice">
+    <div class="task-hint">
+      Заполните 6 пустых ячеек (отмечены красным <strong>?</strong>). Нажмите на ячейку и выберите правильный вариант из списка.
+    </div>
+
+    <div class="table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Поток информации</th>
+            <th>О чем сообщать<span class="th-hint">Содержание</span></th>
+            <th>Когда<span class="th-hint">Срок</span></th>
+            <th>От кого и кому<span class="th-hint">Отправитель → Получатель</span></th>
+            <th>Канал передачи<span class="th-hint">Формат</span></th>
+          </tr>
+        </thead>
+        <tbody id="practiceBody"></tbody>
+      </table>
+    </div>
+
+    <div class="mode2-actions">
+      <button class="btn btn-primary" id="checkBtn" onclick="checkAnswers()">Проверить</button>
+      <button class="btn" id="resetBtn" onclick="resetPractice()" style="display:none">Начать заново</button>
+    </div>
+    <div class="feedback" id="practiceFeedback"></div>
+  </div>
+
+</div>
+
+<!-- Модальное окно выбора -->
+<div class="modal-overlay" id="modalOverlay" onclick="closeModalOnOverlay(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-title" id="modalTitle">Заполните ячейку</div>
+    <div class="modal-subtitle" id="modalSubtitle"></div>
+    <div class="option-list" id="optionList"></div>
+    <div class="modal-actions">
+      <button class="modal-btn" onclick="closeModal()">Отмена</button>
+      <button class="modal-btn primary" onclick="saveCell()">Сохранить</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  // Данные практики: строки и пропуски
+  const practiceData = [
+    {
+      flow: 'Поломка пылеуловителя в цехе шихты',
+      cells: [
+        { text: 'Время остановки, причина сбоя, время запуска' },
+        { missing: true, id: 'p1', correct: 'В течение 2 часов после сбоя',
+          options: ['В течение 2 часов после сбоя', 'В конце рабочей смены', 'По запросу эколога', 'Раз в неделю при планерке'] },
+        { text: 'От уполномоченного в цехе – экологу и главному инженеру' },
+        { missing: true, id: 'p2', correct: 'Звонок + запись в сменном журнале',
+          options: ['Звонок + запись в сменном журнале', 'Устное сообщение на обеде', 'Письмо директору в течение месяца', 'Запись в личной записке мастера'] }
+      ]
+    },
+    {
+      flow: 'Изменение правил сортировки стеклобоя',
+      cells: [
+        { text: 'Новые требования к разделению брака и тары' },
+        { missing: true, id: 'p3', correct: 'За 3 дня до вступления в силу',
+          options: ['За 3 дня до вступления в силу', 'После первого нарушения', 'Когда вспомнят мастера', 'В течение квартала'] },
+        { text: 'От эколога – начальнику производства и мастерам' },
+        { missing: true, id: 'p4', correct: 'Приказ на портале + разбор на планерке',
+          options: ['Приказ на портале + разбор на планерке', 'Объявление на доске у проходной', 'Личное сообщение в мессенджере', 'Записка в почтовый ящик цеха'] }
+      ]
+    },
+    {
+      flow: 'Обращение жителя или запрос клиента',
+      cells: [
+        { text: 'Суть вопроса, дата поступления, привязка к цеху' },
+        { missing: true, id: 'p5', correct: 'В день регистрации письма',
+          options: ['В день регистрации письма', 'В течение месяца', 'Когда будет время у эколога', 'После ответа клиента'] },
+        { text: 'От секретаря – экологу; ответ подписывает директор' },
+        { missing: true, id: 'p6', correct: 'Журнал входящих + официальное письмо',
+          options: ['Журнал входящих + официальное письмо', 'Устный ответ по телефону', 'Записка от руки на бланке', 'Сообщение в соцсетях завода'] }
+      ]
+    }
+  ];
+
+  let practiceState = {};
+  let currentEditingId = null;
+  let isChecked = false;
+
+  function switchTab(tab) {
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+    document.querySelector(`.tab-btn[data-tab="${tab}"]`).classList.add('active');
+    document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+    document.getElementById(`tab-${tab}`).classList.add('active');
+    if (tab === 'practice') renderPractice();
+    resizeIframe();
+  }
+
+  function renderPractice() {
+    const tbody = document.getElementById('practiceBody');
+    tbody.innerHTML = '';
+    practiceState = {};
+    isChecked = false;
+
+    practiceData.forEach(row => {
+      const tr = document.createElement('tr');
+
+      const flowTd = document.createElement('td');
+      flowTd.className = 'flow-cell';
+      flowTd.textContent = row.flow;
+      tr.appendChild(flowTd);
+
+      row.cells.forEach(cell => {
+        const td = document.createElement('td');
+        if (cell.missing) {
+          td.className = 'cell-missing';
+          td.dataset.id = cell.id;
+          td.innerHTML = `
+            <div class="missing-mark">?</div>
+            <div class="filled-content"></div>
+          `;
+          td.onclick = () => {
+            if (!isChecked) openModal(cell);
+          };
+        } else {
+          td.textContent = cell.text;
+        }
+        tr.appendChild(td);
+      });
+
+      tbody.appendChild(tr);
+    });
+  }
+
+  function openModal(cell) {
+    currentEditingId = cell.id;
+    document.getElementById('modalTitle').textContent = 'Выберите правильный вариант';
+    document.getElementById('modalSubtitle').textContent = 'Кликните по подходящему ответу';
+
+    const list = document.getElementById('optionList');
+    list.innerHTML = '';
+
+    // Перемешиваем варианты
+    const shuffled = [...cell.options].sort(() => Math.random() - 0.5);
+
+    shuffled.forEach(opt => {
+      const btn = document.createElement('button');
+      btn.className = 'option-btn';
+      btn.textContent = opt;
+      btn.onclick = () => selectOption(btn, opt);
+      list.appendChild(btn);
+    });
+
+    // Восстановить предыдущий выбор
+    if (practiceState[cell.id]) {
+      list.querySelectorAll('.option-btn').forEach(b => {
+        if (b.textContent === practiceState[cell.id]) {
+          b.classList.add('selected');
+        }
+      });
+    }
+
+    document.getElementById('modalOverlay').classList.add('show');
+  }
+
+  function selectOption(btn, value) {
+    document.querySelectorAll('.option-btn').forEach(b => b.classList.remove('selected'));
+    btn.classList.add('selected');
+    btn.dataset.value = value;
+  }
+
+  function closeModal() {
+    document.getElementById('modalOverlay').classList.remove('show');
+    currentEditingId = null;
+  }
+
+  function closeModalOnOverlay(event) {
+    if (event.target === event.currentTarget) closeModal();
+  }
+
+  function saveCell() {
+    const selected = document.querySelector('.option-btn.selected');
+    if (!selected) {
+      selected = document.querySelector('.option-btn');
+      if (selected) selected.style.borderColor = 'var(--bad)';
+      setTimeout(() => {
+        document.querySelectorAll('.option-btn').forEach(b => b.style.borderColor = '');
+      }, 800);
+      return;
+    }
+
+    const value = selected.dataset.value;
+    practiceState[currentEditingId] = value;
+
+    const cellEl = document.querySelector(`.cell-missing[data-id="${currentEditingId}"]`);
+    const filledContent = cellEl.querySelector('.filled-content');
+    filledContent.textContent = value;
+    cellEl.classList.add('filled');
+    cellEl.classList.remove('correct', 'wrong');
+    const oldHint = cellEl.querySelector('.hint-box');
+    if (oldHint) oldHint.remove();
+
+    closeModal();
+    resizeIframe();
+  }
+
+  function checkAnswers() {
+    const missingCells = practiceData.flatMap(row => row.cells.filter(c => c.missing));
+    const filledCount = Object.keys(practiceState).length;
+
+    if (filledCount < missingCells.length) {
+      document.getElementById('practiceFeedback').textContent = `Заполнено ${filledCount} из ${missingCells.length} ячеек. Нажмите на красный знак ?, чтобы заполнить остальные.`;
+      document.getElementById('practiceFeedback').className = 'feedback error';
+      return;
+    }
+
+    isChecked = true;
+    let correctCount = 0;
+
+    missingCells.forEach(cell => {
+      const userAnswer = practiceState[cell.id];
+      const cellEl = document.querySelector(`.cell-missing[data-id="${cell.id}"]`);
+      cellEl.classList.remove('correct', 'wrong');
+
+      const oldHint = cellEl.querySelector('.hint-box');
+      if (oldHint) oldHint.remove();
+
+      if (userAnswer === cell.correct) {
+        cellEl.classList.add('correct');
+        correctCount++;
+      } else {
+        cellEl.classList.add('wrong');
+        const hint = document.createElement('div');
+        hint.className = 'hint-box';
+        hint.innerHTML = `<strong>Правильный ответ:</strong> ${cell.correct}`;
+        cellEl.appendChild(hint);
+      }
+    });
+
+    const feedback = document.getElementById('practiceFeedback');
+    document.getElementById('checkBtn').style.display = 'none';
+    document.getElementById('resetBtn').style.display = 'inline-block';
+
+    if (correctCount === missingCells.length) {
+      feedback.textContent = 'Все 6 ячеек заполнены верно!';
+      feedback.className = 'feedback success';
+    } else {
+      feedback.textContent = `Верно: ${correctCount} из ${missingCells.length}. Ячейки с ошибками выделены красным. Нажмите "Начать заново".`;
+      feedback.className = 'feedback error';
+    }
+
+    resizeIframe();
+  }
+
+  function resetPractice() {
+    renderPractice();
+    document.getElementById('practiceFeedback').textContent = '';
+    document.getElementById('practiceFeedback').className = 'feedback';
+    document.getElementById('checkBtn').style.display = 'inline-block';
+    document.getElementById('resetBtn').style.display = 'none';
+    resizeIframe();
+  }
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
+  }
+
+  window.addEventListener('load', () => {
+    renderPractice();
+    resizeIframe();
+  });
+
+  if ('ResizeObserver' in window) {
+    const container = document.querySelector('.container');
+    if (container) {
+      new ResizeObserver(() => resizeIframe()).observe(container);
+    }
+  }
+</script>
+
+</body>
+</html>
