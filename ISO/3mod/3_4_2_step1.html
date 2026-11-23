@@ -200,7 +200,7 @@
 
   .missing-note strong { color: var(--warn); }
 
-  /* Вопросы и ответы */
+  /* Вопросы-аккордеоны */
   .qa {
     display: flex;
     flex-direction: column;
@@ -209,40 +209,80 @@
   }
 
   .qa-row {
-    display: flex;
-    gap: 10px;
-    align-items: flex-start;
-    text-align: left;
     border: 1px solid var(--border);
     border-radius: var(--r);
     background: #fff;
-    padding: 10px 12px;
     cursor: pointer;
     font-family: inherit;
     font-size: 12px;
     line-height: 1.45;
     color: var(--primary);
     transition: all 0.15s ease;
+    overflow: hidden;
+    text-align: left;
+    padding: 0;
   }
 
-  .qa-row:hover { background: var(--gray); border-color: var(--accent); }
+  .qa-row:hover {
+    border-color: var(--accent);
+    background: var(--gray);
+  }
+
+  .qa-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 12px;
+    gap: 10px;
+  }
+
+  .qa-q {
+    font-weight: 700;
+    flex: 1;
+  }
+
+  .qa-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background: var(--gray);
+    border: 1px solid var(--border);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    font-weight: 300;
+    color: var(--muted);
+    flex-shrink: 0;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
 
   .qa-row.active {
     background: var(--accent-bg);
     border-color: var(--accent);
   }
 
-  .qa-q {
-    flex: 0 0 38%;
-    font-weight: 700;
+  .qa-row.active .qa-icon {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+    transform: rotate(45deg);
   }
 
-  .qa-a {
-    flex: 1;
-    color: var(--muted);
+  .qa-answer {
+    padding: 0 12px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease, padding 0.25s ease;
+    color: var(--primary);
+    font-size: 12px;
+    line-height: 1.5;
   }
 
-  .qa-row.active .qa-a { color: var(--primary); }
+  .qa-row.active .qa-answer {
+    max-height: 120px;
+    padding: 0 12px 12px;
+  }
 
   .disclaimer {
     font-size: 11px;
@@ -254,15 +294,13 @@
   @media (max-width: 560px) {
     body { padding: 10px; }
     .panels { flex-direction: column; }
-    .qa-row { flex-direction: column; gap: 4px; }
-    .qa-q { flex: none; }
   }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="hint">Нажмите на вопрос ниже – подсветится нужная часть формы или записи</div>
+  <div class="hint">Нажмите на вопрос, чтобы увидеть ответ и подсветку в таблице</div>
 
   <div class="panels">
 
@@ -339,16 +377,25 @@
 
   <div class="qa">
     <button class="qa-row" data-q="1">
-      <span class="qa-q">Что делает форма?</span>
-      <span class="qa-a">Показывает, какие четыре пункта проверять и какие сведения внести</span>
+      <div class="qa-header">
+        <span class="qa-q">Что делает форма?</span>
+        <span class="qa-icon">+</span>
+      </div>
+      <div class="qa-answer">Показывает, какие четыре пункта проверять и какие сведения внести. В пустом бланке структура таблицы задает обязательные поля: результат (норма / отклонение) и что обнаружили.</div>
     </button>
     <button class="qa-row" data-q="2">
-      <span class="qa-q">Что показывает запись?</span>
-      <span class="qa-a">Что 15 января по пунктам 2 и 4 нашли отклонения</span>
+      <div class="qa-header">
+        <span class="qa-q">Что показывает запись?</span>
+        <span class="qa-icon">+</span>
+      </div>
+      <div class="qa-answer">Что 15 января по пунктам 2 и 4 нашли отклонения: в поддоне скопилась жидкость, а сорбент закончился. Пункты 1 и 3 прошли проверку в норме.</div>
     </button>
     <button class="qa-row" data-q="3">
-      <span class="qa-q">Что запись не показывает?</span>
-      <span class="qa-a">Что сделали после осмотра. Для этого нужна отдельная запись или поле</span>
+      <div class="qa-header">
+        <span class="qa-q">Что запись не показывает?</span>
+        <span class="qa-icon">+</span>
+      </div>
+      <div class="qa-answer">Что сделали после осмотра. В форме нет поля «Что сделано», поэтому по записи невозможно понять, устранили ли отклонения. Для этого нужна отдельная запись или дополнительное поле в форме.</div>
     </button>
   </div>
 
@@ -368,11 +415,13 @@
       const q = btn.dataset.q;
       const wasActive = btn.classList.contains('active');
 
+      // Сбросить все
       qaRows.forEach(b => b.classList.remove('active'));
       panelForm.classList.remove('hl-q1');
       panelRecord.classList.remove('hl-q2', 'hl-q3');
       missingNote.classList.remove('show');
 
+      // Применить только если было не активно (toggle)
       if (!wasActive) {
         btn.classList.add('active');
         if (q === '1') panelForm.classList.add('hl-q1');
@@ -383,7 +432,7 @@
         }
       }
 
-      resizeIframe();
+      requestAnimationFrame(() => resizeIframe());
     });
   });
 
