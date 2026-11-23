@@ -1,0 +1,411 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Форма и запись: чек-лист осмотра</title>
+<style>
+  :root {
+    --primary: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg: #ffffff;
+    --gray: #f8fafc;
+    --accent: #2563eb;
+    --accent-bg: #eff6ff;
+    --accent-bd: #bfdbfe;
+    --fill: #fef9c3;
+    --fill-bd: #fde047;
+    --bad: #991b1b;
+    --bad-bg: #fef2f2;
+    --bad-bd: #fecaca;
+    --warn: #ea580c;
+    --warn-bg: #fff7ed;
+    --warn-bd: #fed7aa;
+    --r: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--primary);
+    background: var(--bg);
+    padding: 14px;
+  }
+
+  .container {
+    max-width: 650px;
+    margin: 0 auto;
+  }
+
+  .hint {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0 0 12px 0;
+  }
+
+  .panels {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    margin-bottom: 12px;
+  }
+
+  .panel {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 10px;
+    background: #fff;
+    display: flex;
+    flex-direction: column;
+    transition: outline-color 0.2s ease;
+    outline: 2px solid transparent;
+    outline-offset: -2px;
+  }
+
+  .panel.hl-q3 {
+    outline: 2px dashed var(--warn-bd);
+  }
+
+  .panel-title {
+    font-size: 12px;
+    font-weight: 700;
+    text-align: center;
+    margin-bottom: 8px;
+  }
+
+  .meta {
+    font-size: 11px;
+    line-height: 1.6;
+    margin-bottom: 8px;
+  }
+
+  .meta div { margin-bottom: 2px; }
+
+  .meta-label { color: var(--muted); }
+
+  .blank {
+    display: inline-block;
+    min-width: 70px;
+    border-bottom: 1px solid var(--muted);
+    height: 10px;
+    vertical-align: middle;
+  }
+
+  .filled {
+    background: var(--fill);
+    border-radius: 3px;
+    padding: 0 3px;
+    font-weight: 600;
+  }
+
+  table.check {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 10.5px;
+    line-height: 1.35;
+    margin-bottom: 8px;
+  }
+
+  table.check th, table.check td {
+    border: 1px solid var(--border);
+    padding: 4px 4px;
+    vertical-align: top;
+    text-align: left;
+  }
+
+  table.check th {
+    background: var(--gray);
+    font-weight: 700;
+    font-size: 10px;
+  }
+
+  table.check td.num {
+    width: 14px;
+    text-align: center;
+    color: var(--muted);
+  }
+
+  table.check td.res, table.check td.fnd {
+    min-height: 22px;
+  }
+
+  table.check td.dev {
+    background: var(--bad-bg);
+    color: var(--bad);
+    font-weight: 600;
+  }
+
+  .foot {
+    font-size: 10.5px;
+    line-height: 1.6;
+    margin-top: auto;
+  }
+
+  .foot div { margin-bottom: 2px; }
+
+  .caption {
+    text-align: center;
+    font-size: 12px;
+    font-weight: 700;
+    margin-top: 8px;
+    padding-top: 6px;
+    border-top: 1px solid var(--border);
+  }
+
+  .caption small {
+    display: block;
+    font-weight: 400;
+    font-size: 10px;
+    color: var(--muted);
+  }
+
+  /* Подсветки по вопросам */
+  #panelForm.hl-q1 td.what,
+  #panelForm.hl-q1 th.what {
+    background: var(--accent-bg);
+    box-shadow: inset 0 0 0 2px var(--accent-bd);
+  }
+
+  #panelRecord.hl-q2 tr.dev-row td {
+    box-shadow: inset 0 0 0 2px var(--bad-bd);
+  }
+
+  /* Заметка про отсутствующее поле */
+  .missing-note {
+    display: none;
+    background: var(--warn-bg);
+    border: 1px solid var(--warn-bd);
+    border-left: 3px solid var(--warn);
+    border-radius: var(--r);
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 12px;
+  }
+
+  .missing-note.show { display: block; }
+
+  .missing-note strong { color: var(--warn); }
+
+  /* Вопросы и ответы */
+  .qa {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 12px;
+  }
+
+  .qa-row {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    text-align: left;
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    background: #fff;
+    padding: 10px 12px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--primary);
+    transition: all 0.15s ease;
+  }
+
+  .qa-row:hover { background: var(--gray); border-color: var(--accent); }
+
+  .qa-row.active {
+    background: var(--accent-bg);
+    border-color: var(--accent);
+  }
+
+  .qa-q {
+    flex: 0 0 38%;
+    font-weight: 700;
+  }
+
+  .qa-a {
+    flex: 1;
+    color: var(--muted);
+  }
+
+  .qa-row.active .qa-a { color: var(--primary); }
+
+  .disclaimer {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+    text-align: center;
+  }
+
+  @media (max-width: 560px) {
+    body { padding: 10px; }
+    .panels { flex-direction: column; }
+    .qa-row { flex-direction: column; gap: 4px; }
+    .qa-q { flex: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="hint">Нажмите на вопрос ниже – подсветится нужная часть формы или записи</div>
+
+  <div class="panels">
+
+    <!-- ФОРМА -->
+    <div class="panel" id="panelForm">
+      <div class="panel-title">Чек-лист осмотра оборудования</div>
+      <div class="meta">
+        <div><span class="meta-label">Номер, версия, дата формы:</span> <span class="blank"></span></div>
+        <div><span class="meta-label">Участок:</span> <span class="blank"></span></div>
+        <div><span class="meta-label">Оборудование:</span> <span class="blank"></span></div>
+        <div><span class="meta-label">Дата осмотра:</span> <span class="blank"></span></div>
+      </div>
+      <table class="check">
+        <thead>
+          <tr>
+            <th>№</th>
+            <th class="what">Что проверить</th>
+            <th>Результат (норма / отклонение)</th>
+            <th>Что обнаружили</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">1</td><td class="what">Видимые утечки</td><td class="res"></td><td class="fnd"></td></tr>
+          <tr><td class="num">2</td><td class="what">Состояние емкостей и поддонов</td><td class="res"></td><td class="fnd"></td></tr>
+          <tr><td class="num">3</td><td class="what">Маркировка и места накопления отходов</td><td class="res"></td><td class="fnd"></td></tr>
+          <tr><td class="num">4</td><td class="what">Исправность средств локализации (сорбент, заглушки)</td><td class="res"></td><td class="fnd"></td></tr>
+        </tbody>
+      </table>
+      <div class="foot">
+        <div><span class="meta-label">Осмотр провел (ФИО, должность):</span> <span class="blank"></span></div>
+        <div><span class="meta-label">Подпись:</span> <span class="blank"></span></div>
+        <div><span class="meta-label">Мастер ознакомлен (ФИО, подпись):</span> <span class="blank"></span></div>
+      </div>
+      <div class="caption">Форма<small>пустой бланк</small></div>
+    </div>
+
+    <!-- ЗАПИСЬ -->
+    <div class="panel" id="panelRecord">
+      <div class="panel-title">Чек-лист осмотра оборудования</div>
+      <div class="meta">
+        <div><span class="meta-label">Номер, версия, дата формы:</span> <span class="filled">Ф.00.00, версия 1, 01.01.2026</span></div>
+        <div><span class="meta-label">Участок:</span> <span class="filled">Участок 1</span></div>
+        <div><span class="meta-label">Оборудование:</span> <span class="filled">Установка А</span></div>
+        <div><span class="meta-label">Дата осмотра:</span> <span class="filled">15.01.2026</span></div>
+      </div>
+      <table class="check">
+        <thead>
+          <tr>
+            <th>№</th>
+            <th class="what">Что проверить</th>
+            <th>Результат</th>
+            <th>Что обнаружили</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr><td class="num">1</td><td class="what">Видимые утечки</td><td class="res"><span class="filled">Норма</span></td><td class="fnd"><span class="filled">Утечек нет</span></td></tr>
+          <tr class="dev-row"><td class="num">2</td><td class="what">Состояние емкостей и поддонов</td><td class="res dev">Отклонение</td><td class="fnd"><span class="filled">В поддоне скопилась жидкость</span></td></tr>
+          <tr><td class="num">3</td><td class="what">Маркировка и места накопления отходов</td><td class="res"><span class="filled">Норма</span></td><td class="fnd"><span class="filled">Маркировка читается</span></td></tr>
+          <tr class="dev-row"><td class="num">4</td><td class="what">Исправность средств локализации</td><td class="res dev">Отклонение</td><td class="fnd"><span class="filled">Сорбент закончился</span></td></tr>
+        </tbody>
+      </table>
+      <div class="foot">
+        <div><span class="meta-label">Осмотр провел:</span> <span class="filled">Иванов И. И., оператор</span>. <span class="meta-label">Подпись:</span> <span class="filled">(подпись)</span></div>
+        <div><span class="meta-label">Мастер ознакомлен:</span> <span class="filled">Петров П. П.</span> <span class="meta-label">Подпись:</span> <span class="filled">(подпись)</span></div>
+      </div>
+      <div class="caption">Запись<small>заполненная форма, данные вымышленные</small></div>
+    </div>
+
+  </div>
+
+  <div class="missing-note" id="missingNote">
+    <strong>Поля «Что сделано» в форме нет</strong> – поэтому запись не показывает, что произошло после осмотра: устранили ли течь в поддоне и пополнили ли сорбент. Если мастеру нужны не только отклонения, но и действия по ним, это поле стоит добавить в действующий чек-лист.
+  </div>
+
+  <div class="qa">
+    <button class="qa-row" data-q="1">
+      <span class="qa-q">Что делает форма?</span>
+      <span class="qa-a">Показывает, какие четыре пункта проверять и какие сведения внести</span>
+    </button>
+    <button class="qa-row" data-q="2">
+      <span class="qa-q">Что показывает запись?</span>
+      <span class="qa-a">Что 15 января по пунктам 2 и 4 нашли отклонения</span>
+    </button>
+    <button class="qa-row" data-q="3">
+      <span class="qa-q">Что запись не показывает?</span>
+      <span class="qa-a">Что сделали после осмотра. Для этого нужна отдельная запись или поле</span>
+    </button>
+  </div>
+
+  <div class="disclaimer">
+    Пример учебный. Его пункты не задают требования стандарта или законодательства. Кодировка «Ф.00.00» условная.
+  </div>
+</div>
+
+<script>
+  const qaRows = document.querySelectorAll('.qa-row');
+  const panelForm = document.getElementById('panelForm');
+  const panelRecord = document.getElementById('panelRecord');
+  const missingNote = document.getElementById('missingNote');
+
+  qaRows.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const q = btn.dataset.q;
+      const wasActive = btn.classList.contains('active');
+
+      qaRows.forEach(b => b.classList.remove('active'));
+      panelForm.classList.remove('hl-q1');
+      panelRecord.classList.remove('hl-q2', 'hl-q3');
+      missingNote.classList.remove('show');
+
+      if (!wasActive) {
+        btn.classList.add('active');
+        if (q === '1') panelForm.classList.add('hl-q1');
+        if (q === '2') panelRecord.classList.add('hl-q2');
+        if (q === '3') {
+          panelRecord.classList.add('hl-q3');
+          missingNote.classList.add('show');
+        }
+      }
+
+      resizeIframe();
+    });
+  });
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
+  }
+
+  window.addEventListener('load', resizeIframe);
+
+  if ('ResizeObserver' in window) {
+    const container = document.querySelector('.container');
+    if (container) {
+      let t;
+      new ResizeObserver(() => {
+        clearTimeout(t);
+        t = setTimeout(resizeIframe, 50);
+      }).observe(container);
+    }
+  }
+</script>
+
+</body>
+</html>
