@@ -1,0 +1,366 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Жизненный цикл документации СЭМ</title>
+<style>
+  :root {
+    --primary: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg: #ffffff;
+    --gray: #f8fafc;
+    --r: 10px;
+    --c1: #2563eb;
+    --c1-bg: #eff6ff;
+    --c1-bd: #bfdbfe;
+    --c2: #7c3aed;
+    --c2-bg: #f5f3ff;
+    --c2-bd: #ddd6fe;
+    --c3: #0891b2;
+    --c3-bg: #ecfeff;
+    --c3-bd: #a5f3fc;
+    --c4: #16a34a;
+    --c4-bg: #f0fdf4;
+    --c4-bd: #bbf7d0;
+    --c5: #ea580c;
+    --c5-bg: #fff7ed;
+    --c5-bd: #fed7aa;
+    --c6: #991b1b;
+    --c6-bg: #fef2f2;
+    --c6-bd: #fecaca;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--primary);
+    background: var(--bg);
+    margin: 0;
+    padding: 14px;
+  }
+
+  .container {
+    max-width: 680px;
+    margin: 0 auto;
+  }
+
+  .hint {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    margin-bottom: 14px;
+  }
+
+  .flow {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-bottom: 16px;
+  }
+
+  .flow-row {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .stage {
+    flex: 1;
+    padding: 12px 10px;
+    border-radius: var(--r);
+    border: 2px solid;
+    background: #fff;
+    cursor: pointer;
+    text-align: center;
+    font-size: 13px;
+    font-weight: 600;
+    line-height: 1.35;
+    transition: all 0.2s ease;
+    position: relative;
+    min-height: 64px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .stage:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  }
+
+  .stage.active {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+  }
+
+  .stage-num {
+    display: block;
+    font-size: 10px;
+    font-weight: 700;
+    opacity: 0.75;
+    margin-bottom: 2px;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+
+  .stage-1 { border-color: var(--c1); color: var(--c1); }
+  .stage-1.active { background: var(--c1-bg); }
+  .stage-2 { border-color: var(--c2); color: var(--c2); }
+  .stage-2.active { background: var(--c2-bg); }
+  .stage-3 { border-color: var(--c3); color: var(--c3); }
+  .stage-3.active { background: var(--c3-bg); }
+  .stage-4 { border-color: var(--c4); color: var(--c4); }
+  .stage-4.active { background: var(--c4-bg); }
+  .stage-5 { border-color: var(--c5); color: var(--c5); }
+  .stage-5.active { background: var(--c5-bg); }
+  .stage-6 { border-color: var(--c6); color: var(--c6); }
+  .stage-6.active { background: var(--c6-bg); }
+
+  .arrow {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .arrow svg {
+    width: 20px;
+    height: 20px;
+  }
+
+  .arrow-down {
+    display: none;
+    width: 100%;
+    justify-content: center;
+    padding: 4px 0;
+  }
+
+  .arrow-down svg {
+    width: 24px;
+    height: 24px;
+    transform: rotate(90deg);
+  }
+
+  .description {
+    border-radius: var(--r);
+    padding: 14px 16px;
+    border-left: 4px solid var(--muted);
+    background: var(--gray);
+    font-size: 13px;
+    line-height: 1.55;
+    display: none;
+    animation: fadeIn 0.25s ease;
+  }
+
+  .description.show { display: block; }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .description.c1 { border-left-color: var(--c1); background: var(--c1-bg); }
+  .description.c2 { border-left-color: var(--c2); background: var(--c2-bg); }
+  .description.c3 { border-left-color: var(--c3); background: var(--c3-bg); }
+  .description.c4 { border-left-color: var(--c4); background: var(--c4-bg); }
+  .description.c5 { border-left-color: var(--c5); background: var(--c5-bg); }
+  .description.c6 { border-left-color: var(--c6); background: var(--c6-bg); }
+
+  .desc-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .desc-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .desc-num.c1 { background: var(--c1); }
+  .desc-num.c2 { background: var(--c2); }
+  .desc-num.c3 { background: var(--c3); }
+  .desc-num.c4 { background: var(--c4); }
+  .desc-num.c5 { background: var(--c5); }
+  .desc-num.c6 { background: var(--c6); }
+
+  .desc-title {
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--primary);
+  }
+
+  .desc-text {
+    margin: 0 0 6px 0;
+    color: var(--primary);
+  }
+
+  .desc-examples {
+    margin: 0;
+    padding-top: 8px;
+    border-top: 1px dashed var(--border);
+    font-size: 12px;
+    color: var(--muted);
+  }
+
+  .desc-examples strong {
+    color: var(--primary);
+    font-weight: 600;
+  }
+
+  @media (max-width: 640px) {
+    body { padding: 10px; }
+    .flow-row { flex-direction: column; align-items: stretch; }
+    .arrow { transform: rotate(90deg); align-self: center; }
+    .arrow-down { display: flex; }
+    .stage { min-height: 52px; font-size: 12px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="hint">Нажмите на этап, чтобы увидеть описание</div>
+
+  <div class="flow">
+    <div class="flow-row">
+      <div class="stage stage-1" data-stage="1" onclick="showStage(1)">
+        <span class="stage-num">Этап 1</span>
+        Создание и оформление
+      </div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="stage stage-2" data-stage="2" onclick="showStage(2)">
+        <span class="stage-num">Этап 2</span>
+        Согласование и утверждение
+      </div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="stage stage-3" data-stage="3" onclick="showStage(3)">
+        <span class="stage-num">Этап 3</span>
+        Публикация
+      </div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+    </div>
+
+    <div class="arrow arrow-down"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+
+    <div class="flow-row">
+      <div class="stage stage-4" data-stage="4" onclick="showStage(4)">
+        <span class="stage-num">Этап 4</span>
+        Внедрение
+      </div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="stage stage-5" data-stage="5" onclick="showStage(5)">
+        <span class="stage-num">Этап 5</span>
+        Актуализация и архивирование
+      </div>
+      <div class="arrow"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg></div>
+      <div class="stage stage-6" data-stage="6" onclick="showStage(6)">
+        <span class="stage-num">Этап 6</span>
+        Изъятие, уничтожение
+      </div>
+    </div>
+  </div>
+
+  <div class="description" id="description">
+    <div class="desc-header">
+      <span class="desc-num" id="descNum">1</span>
+      <span class="desc-title" id="descTitle">Название этапа</span>
+    </div>
+    <p class="desc-text" id="descText"></p>
+    <p class="desc-examples" id="descExamples"></p>
+  </div>
+</div>
+
+<script>
+  const stages = {
+    1: {
+      title: 'Создание и оформление',
+      text: 'Разработка проекта документа в установленном формате. Автор формулирует содержание, структуру и область применения. Документ проходит внутреннюю проверку на соответствие требованиям СЭМ и стандартам оформления.',
+      examples: '<strong>Примеры:</strong> проект экологической политики, черновик процедуры управления отходами, шаблон рабочей инструкции для цеха.'
+    },
+    2: {
+      title: 'Согласование и утверждение',
+      text: 'Проект документа визируют заинтересованные стороны: руководители подразделений, юристы, специалисты по охране труда. После устранения замечаний документ подписывает уполномоченное лицо – обычно директор или главный инженер.',
+      examples: '<strong>Примеры:</strong> лист согласования с подписями начальников цехов, приказ об утверждении процедуры, резолюция директора на проекте политики.'
+    },
+    3: {
+      title: 'Публикация',
+      text: 'Утвержденный документ доводят до сведения работников. Размещают на корпоративном портале, в общей папке СЭМ или на информационных стендах. Фиксируют дату ввода в действие и версию документа.',
+      examples: '<strong>Примеры:</strong> рассылка по электронной почте, размещение на портале с отметкой «действует с 01.03.2027», ознакомительные листы с подписями работников.'
+    },
+    4: {
+      title: 'Внедрение',
+      text: 'Работники применяют документ в повседневной деятельности. Проводят обучение по новым требованиям, включают положения документа в технологические инструкции. Координатор СЭМ контролирует фактическое соблюдение.',
+      examples: '<strong>Примеры:</strong> обучение операторов по новой инструкции, включение экологических критериев в карты процессов, проверки соблюдения на рабочих местах.'
+    },
+    5: {
+      title: 'Актуализация и архивирование',
+      text: 'Документ периодически пересматривают – при изменении законодательства, технологии или по результатам аудитов. Актуальную версию хранят в местах использования, устаревшие экземпляры изымают и архивируют.',
+      examples: '<strong>Примеры:</strong> ежегодный пересмотр процедуры, обновление инструкции после модернизации оборудования, архивная копия предыдущей версии политики.'
+    },
+    6: {
+      title: 'Изъятие, уничтожение',
+      text: 'Документы с истекшим сроком действия или утратившие актуальность изымают из обращения. Уничтожение проводят по акту с указанием причины и даты. Архивные копии хранят согласно номенклатуре дел.',
+      examples: '<strong>Примеры:</strong> акт об уничтожении устаревших инструкций, изъятие старых версий со стендов цехов, передача архивных экземпляров в архив предприятия.'
+    }
+  };
+
+  function showStage(num) {
+    const data = stages[num];
+    if (!data) return;
+
+    document.querySelectorAll('.stage').forEach(s => s.classList.remove('active'));
+    document.querySelector(`.stage[data-stage="${num}"]`).classList.add('active');
+
+    const desc = document.getElementById('description');
+    desc.className = 'description show c' + num;
+    document.getElementById('descNum').className = 'desc-num c' + num;
+    document.getElementById('descNum').textContent = num;
+    document.getElementById('descTitle').textContent = data.title;
+    document.getElementById('descText').textContent = data.text;
+    document.getElementById('descExamples').innerHTML = data.examples;
+
+    resizeIframe();
+  }
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
+  }
+
+  window.addEventListener('load', () => {
+    showStage(1);
+    resizeIframe();
+  });
+
+  if ('ResizeObserver' in window) {
+    const container = document.querySelector('.container');
+    if (container) {
+      let t;
+      new ResizeObserver(() => {
+        clearTimeout(t);
+        t = setTimeout(resizeIframe, 100);
+      }).observe(container);
+    }
+  }
+</script>
+
+</body>
+</html>
