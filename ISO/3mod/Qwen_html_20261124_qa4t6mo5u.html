@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Карта документов и записей СЭМ</title>
+<style>
+  :root {
+    --primary: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg: #ffffff;
+    --gray: #f8fafc;
+    --accent: #2563eb;
+    --accent-d: #1d4ed8;
+    --accent-bg: #eff6ff;
+    --ok: #166534;
+    --ok-bg: #f0fdf4;
+    --ok-bd: #bbf7d0;
+    --r: 10px;
+  }
+
+  * { box-sizing: border-box; }
+
+  html, body {
+    overflow: hidden;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--primary);
+    background: var(--bg);
+    padding: 12px;
+  }
+
+  .container { max-width: 650px; margin: 0 auto; }
+
+  /* Прогресс */
+  .progress-box {
+    background: var(--gray);
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    padding: 10px 12px;
+    margin-bottom: 10px;
+  }
+
+  .progress-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 6px;
+  }
+
+  .progress-text { font-size: 13px; font-weight: 700; }
+
+  .filters { display: flex; gap: 4px; }
+
+  .filter-btn {
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--muted);
+    transition: all 0.15s ease;
+  }
+
+  .filter-btn:hover { background: var(--gray); }
+  .filter-btn.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+  .progress-bar {
+    height: 6px;
+    border-radius: 3px;
+    background: var(--border);
+    overflow: hidden;
+  }
+
+  .progress-fill {
+    height: 100%;
+    width: 0%;
+    background: var(--ok);
+    border-radius: 3px;
+    transition: width 0.3s ease;
+  }
+
+  /* Легенда */
+  .legend {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+
+  .legend-item {
+    flex: 1;
+    font-size: 11px;
+    line-height: 1.4;
+    padding: 6px 10px;
+    border-radius: 8px;
+  }
+
+  .legend-doc { background: var(--accent-bg); color: var(--accent-d); }
+  .legend-rec { background: var(--ok-bg); color: var(--ok); }
+  .legend-item strong { font-weight: 700; }
+
+  /* Блоки */
+  details.block {
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    margin-bottom: 8px;
+    background: #fff;
+    overflow: hidden;
+  }
+
+  details.block[open] { border-color: var(--accent-bd, #bfdbfe); }
+
+  summary.block-head {
+    padding: 10px 12px;
+    cursor: pointer;
+    list-style: none;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    transition: background 0.15s ease;
+  }
+
+  summary.block-head::-webkit-details-marker { display: none; }
+  summary.block-head:hover { background: var(--gray); }
+
+  .block-title {
+    flex: 1;
+    font-size: 13px;
+    font-weight: 700;
+  }
+
+  .block-count {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    background: var(--gray);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 1px 8px;
+    flex-shrink: 0;
+  }
+
+  .block-count.full { color: var(--ok); background: var(--ok-bg); border-color: var(--ok-bd); }
+
+  .block-icon {
+    width: 18px;
+    height: 18px;
+    flex-shrink: 0;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    font-weight: 300;
+    transition: transform 0.2s ease;
+  }
+
+  details[open] .block-icon { transform: rotate(45deg); }
+
+  .block-body { border-top: 1px solid var(--border); }
+
+  /* Строки пунктов */
+  .row {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    width: 100%;
+    padding: 8px 12px;
+    background: #fff;
+    border: none;
+    border-bottom: 1px solid var(--gray);
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: background 0.15s ease;
+  }
+
+  .row:last-child { border-bottom: none; }
+  .row:hover { background: var(--gray); }
+
+  .row.done { background: var(--ok-bg); }
+
+  .check {
+    width: 18px;
+    height: 18px;
+    border: 2px solid var(--border);
+    border-radius: 50%;
+    flex-shrink: 0;
+    margin-top: 1px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 11px;
+    color: #fff;
+    transition: all 0.15s ease;
+  }
+
+  .row.done .check {
+    background: var(--ok);
+    border-color: var(--ok);
+  }
+
+  .row.done .check::after { content: '✓'; }
+
+  .ref {
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--muted);
+    background: var(--gray);
+    border-radius: 6px;
+    padding: 1px 6px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+
+  .row.done .ref { background: #fff; }
+
+  .row-main { flex: 1; min-width: 0; }
+
+  .row-name {
+    display: block;
+    font-size: 12.5px;
+    font-weight: 600;
+    line-height: 1.35;
+  }
+
+  .row-hint {
+    display: block;
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.4;
+    margin-top: 1px;
+  }
+
+  .pill {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 8px;
+    border-radius: 999px;
+    flex-shrink: 0;
+    margin-top: 2px;
+  }
+
+  .pill-doc { background: var(--accent-bg); color: var(--accent-d); }
+  .pill-rec { background: var(--ok-bg); color: var(--ok); }
+
+  /* Итог */
+  .final-note {
+    display: none;
+    background: var(--ok-bg);
+    border: 1px solid var(--ok-bd);
+    border-left: 3px solid var(--ok);
+    border-radius: var(--r);
+    padding: 10px 12px;
+    font-size: 12px;
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .final-note.show { display: block; }
+  .final-note strong { color: var(--ok); }
+
+  .footnote {
+    font-size: 11px;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 10px;
+  }
+
+  .actions {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+  }
+
+  .btn {
+    padding: 8px 14px;
+    border-radius: var(--r);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--primary);
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .btn:hover { background: var(--gray); border-color: var(--muted); }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: var(--accent-d); border-color: var(--accent-d); }
+  .btn-ghost { color: var(--muted); }
+
+  @media (max-width: 640px) {
+    body { padding: 8px; }
+    .legend { flex-direction: column; gap: 4px; }
+    .row-hint { display: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="progress-box">
+    <div class="progress-top">
+      <span class="progress-text" id="progressText">Разобрано 0 из 15</span>
+      <div class="filters">
+        <button class="filter-btn active" data-filter="all" onclick="setFilter('all')">Все 15</button>
+        <button class="filter-btn" data-filter="doc" onclick="setFilter('doc')">Документы 8</button>
+        <button class="filter-btn" data-filter="rec" onclick="setFilter('rec')">Записи 7</button>
+      </div>
+    </div>
+    <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
+  </div>
+
+  <div class="legend">
+    <div class="legend-item legend-doc"><strong>Документ – правило.</strong> Отвечает «как делать», его пересматривают.</div>
+    <div class="legend-item legend-rec"><strong>Запись – свидетельство.</strong> Отвечает «что сделано», его сохраняют.</div>
+  </div>
+
+  <div id="blocks"></div>
+
+  <div class="final-note" id="finalNote">
+    <strong>Карта разобрана полностью.</strong> Вы видите разницу: правило описывает порядок работы, свидетельство подтверждает, что работу выполнили. Пункт 9.1 разделен на два – измерение показателей и проверка выполнения требований.
+  </div>
+
+  <div class="footnote">
+    Это минимум документированной информации по ГОСТ Р ИСО 14001-2016. Остальной перечень предприятие определяет само – по сложности процессов, компетентности работников и обязательствам.
+  </div>
+
+  <div class="actions">
+    <button class="btn btn-primary" onclick="downloadWord()">Скачать перечень в Word</button>
+    <button class="btn btn-ghost" onclick="resetMarks()">Сбросить отметки</button>
+  </div>
+
+</div>
+
+<script>
+  const DATA = [
+    { block: 'Границы и политика', items: [
+      { id: 'b1', ref: '4.3', name: 'Область применения СЭМ', type: 'doc', hint: 'Что входит в систему: площадки, процессы, границы' },
+      { id: 'b2', ref: '5.2', name: 'Экологическая политика', type: 'doc', hint: 'Обязательства высшего руководства, включая предотвращение загрязнения' }
+    ]},
+    { block: 'Планирование', items: [
+      { id: 'p1', ref: '6.1.2', name: 'Экологические аспекты и критерии значимости', type: 'doc', hint: 'Что влияет на среду и какие из воздействий значимые' },
+      { id: 'p2', ref: '6.1.3', name: 'Обязательства соответствия', type: 'doc', hint: 'Законы, разрешения, договоры – что нужно выполнять' },
+      { id: 'p3', ref: '6.2.1', name: 'Экологические цели', type: 'doc', hint: 'Измеримые цели со сроками и ответственными' }
+    ]},
+    { block: 'Обеспечение', items: [
+      { id: 's1', ref: '7.2', name: 'Свидетельства компетентности', type: 'rec', hint: 'Дипломы, удостоверения, протоколы проверки знаний' },
+      { id: 's2', ref: '7.4', name: 'Свидетельства обменов информацией', type: 'rec', hint: 'Что, кому и когда сообщили: письма, запросы, ответы' }
+    ]},
+    { block: 'Деятельность', items: [
+      { id: 'o1', ref: '8.1', name: 'Документация операционного управления', type: 'doc', hint: 'Инструкции и процедуры, по которым работа идет как запланировано' },
+      { id: 'o2', ref: '8.2', name: 'Планы реагирования на аварийные ситуации', type: 'doc', hint: 'Что делать при аварии, проливе, пожаре' }
+    ]},
+    { block: 'Оценка и улучшение', items: [
+      { id: 'e1', ref: '9.1', name: 'Результаты мониторинга и измерений', type: 'rec', hint: 'Цифры показателей: выбросы, отходы, потребление' },
+      { id: 'e2', ref: '9.1.2', name: 'Результаты оценки соответствия', type: 'rec', hint: 'Проверка выполнения требований законодательства' },
+      { id: 'e3', ref: '9.2', name: 'Программа аудитов', type: 'doc', hint: 'График: что, когда и кто проверяет' },
+      { id: 'e4', ref: '9.2', name: 'Результаты аудитов', type: 'rec', hint: 'Что показала проверка: наблюдения и несоответствия' },
+      { id: 'e5', ref: '9.3', name: 'Результаты анализа со стороны руководства', type: 'rec', hint: 'Решения руководства о пригодности и достаточности системы' },
+      { id: 'e6', ref: '10.2', name: 'Несоответствия и корректирующие действия', type: 'rec', hint: 'Что сломалось и что сделали, чтобы не повторилось' }
+    ]}
+  ];
+
+  const TOTAL = 15;
+  const state = {};
+  let filter = 'all';
+
+  function render() {
+    const wrap = document.getElementById('blocks');
+    wrap.innerHTML = '';
+
+    DATA.forEach((group, gi) => {
+      const visibleItems = group.items.filter(it => filter === 'all' || it.type === filter);
+      if (visibleItems.length === 0) return;
+
+      const details = document.createElement('details');
+      details.className = 'block';
+
+      const doneCount = group.items.filter(it => state[it.id]).length;
+
+      const summary = document.createElement('summary');
+      summary.className = 'block-head';
+      summary.innerHTML = `
+        <span class="block-title">${group.block}</span>
+        <span class="block-count ${doneCount === group.items.length ? 'full' : ''}" data-block="${gi}">${doneCount}/${group.items.length}</span>
+        <span class="block-icon">+</span>
+      `;
+      details.appendChild(summary);
+
+      const body = document.createElement('div');
+      body.className = 'block-body';
+
+      visibleItems.forEach(it => {
+        const row = document.createElement('button');
+        row.className = 'row' + (state[it.id] ? ' done' : '');
+        row.dataset.id = it.id;
+        row.onclick = () => toggleItem(it.id);
+        row.innerHTML = `
+          <span class="check"></span>
+          <span class="ref">${it.ref}</span>
+          <span class="row-main">
+            <span class="row-name">${it.name}</span>
+            <span class="row-hint">${it.hint}</span>
+          </span>
+          <span class="pill ${it.type === 'doc' ? 'pill-doc' : 'pill-rec'}">${it.type === 'doc' ? 'документ' : 'запись'}</span>
+        `;
+        body.appendChild(row);
+      });
+
+      details.appendChild(body);
+      wrap.appendChild(details);
+    });
+
+    updateProgress();
+  }
+
+  function toggleItem(id) {
+    state[id] = !state[id];
+    const row = document.querySelector(`.row[data-id="${id}"]`);
+    row.classList.toggle('done', !!state[id]);
+
+    // Обновить счетчик блока
+    DATA.forEach((group, gi) => {
+      if (group.items.some(it => it.id === id)) {
+        const doneCount = group.items.filter(it => state[it.id]).length;
+        const chip = document.querySelector(`.block-count[data-block="${gi}"]`);
+        if (chip) {
+          chip.textContent = `${doneCount}/${group.items.length}`;
+          chip.classList.toggle('full', doneCount === group.items.length);
+        }
+      }
+    });
+
+    updateProgress();
+    resizeIframe();
+  }
+
+  function updateProgress() {
+    const done = Object.values(state).filter(Boolean).length;
+    document.getElementById('progressText').textContent = `Разобрано ${done} из ${TOTAL}`;
+    document.getElementById('progressFill').style.width = (done / TOTAL * 100) + '%';
+    document.getElementById('finalNote').classList.toggle('show', done === TOTAL);
+  }
+
+  function setFilter(f) {
+    filter = f;
+    document.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.toggle('active', b.dataset.filter === f);
+    });
+    render();
+    resizeIframe();
+  }
+
+  function resetMarks() {
+    if (!confirm('Сбросить отметки? Все 15 пунктов снова станут неразобранными.')) return;
+    Object.keys(state).forEach(k => delete state[k]);
+    render();
+    resizeIframe();
+  }
+
+  // ===== Word =====
+  function crc32(str) {
+    let crc = 0xFFFFFFFF;
+    const table = [];
+    for (let i = 0; i < 256; i++) {
+      let c = i;
+      for (let j = 0; j < 8; j++) c = (c & 1) ? (0xEDB88320 ^ (c >>> 1)) : (c >>> 1);
+      table[i] = c;
+    }
+    for (let i = 0; i < str.length; i++) crc = table[(crc ^ str.charCodeAt(i)) & 0xFF] ^ (crc >>> 8);
+    return (crc ^ 0xFFFFFFFF) >>> 0;
+  }
+
+  function zipStore(files) {
+    const parts = [], centralDir = [];
+    let offset = 0;
+    files.forEach(file => {
+      const nameBytes = new TextEncoder().encode(file.name);
+      const contentBytes = new TextEncoder().encode(file.content);
+      const crc = crc32(file.content);
+      const localHeader = new Uint8Array(30 + nameBytes.length);
+      const view = new DataView(localHeader.buffer);
+      view.setUint32(0, 0x04034b50, true);
+      view.setUint16(4, 20, true);
+      view.setUint32(18, crc, true);
+      view.setUint32(22, contentBytes.length, true);
+      view.setUint32(26, contentBytes.length, true);
+      view.setUint16(28, nameBytes.length, true);
+      localHeader.set(nameBytes, 30);
+      parts.push(localHeader, contentBytes);
+
+      const cdEntry = new Uint8Array(46 + nameBytes.length);
+      const cdView = new DataView(cdEntry.buffer);
+      cdView.setUint32(0, 0x02014b50, true);
+      cdView.setUint16(4, 20, true);
+      cdView.setUint16(6, 20, true);
+      cdView.setUint32(18, crc, true);
+      cdView.setUint32(22, contentBytes.length, true);
+      cdView.setUint32(26, contentBytes.length, true);
+      cdView.setUint16(30, nameBytes.length, true);
+      cdView.setUint32(46, offset, true);
+      cdEntry.set(nameBytes, 46);
+      centralDir.push(cdEntry);
+      offset += localHeader.length + contentBytes.length;
+    });
+    const cdSize = centralDir.reduce((s, e) => s + e.length, 0);
+    const endRecord = new Uint8Array(22);
+    const endView = new DataView(endRecord.buffer);
+    endView.setUint32(0, 0x06054b50, true);
+    endView.setUint16(8, files.length, true);
+    endView.setUint16(10, files.length, true);
+    endView.setUint32(12, cdSize, true);
+    endView.setUint32(16, offset, true);
+    parts.push(...centralDir, endRecord);
+    const total = parts.reduce((s, p) => s + p.length, 0);
+    const result = new Uint8Array(total);
+    let pos = 0;
+    parts.forEach(p => { result.set(p, pos); pos += p.length; });
+    return result;
+  }
+
+  function escapeXml(str) {
+    return String(str || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+  }
+
+  function downloadWord() {
+    const dateStr = new Date().toLocaleDateString('ru-RU');
+    let body = `
+      <w:p><w:pPr><w:pStyle w:val="Title"/></w:pPr><w:r><w:t>Карта документов и записей СЭМ</w:t></w:r></w:p>
+      <w:p><w:r><w:t>ГОСТ Р ИСО 14001-2016, минимум документированной информации. Дата: ${escapeXml(dateStr)}</w:t></w:r></w:p>
+      <w:p/>
+    `;
+
+    DATA.forEach(group => {
+      body += `<w:p><w:pPr><w:pStyle w:val="Heading1"/></w:pPr><w:r><w:t>${escapeXml(group.block)}</w:t></w:r></w:p>`;
+      group.items.forEach(it => {
+        const mark = state[it.id] ? '[x]' : '[ ]';
+        const type = it.type === 'doc' ? 'документ' : 'запись';
+        body += `<w:p><w:pPr><w:pStyle w:val="Normal"/></w:pPr><w:r><w:t>${mark} ${escapeXml(it.ref)} – ${escapeXml(it.name)} (${type}). ${escapeXml(it.hint)}</w:t></w:r></w:p>`;
+      });
+      body += `<w:p/>`;
+    });
+
+    const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:document xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:body>
+${body}
+<w:sectPr><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1134" w:right="1134" w:bottom="1134" w:left="1134"/></w:sectPr>
+</w:body>
+</w:document>`;
+
+    const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<w:styles xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main">
+<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:eastAsia="Calibri" w:hAnsi="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="80" w:line="240" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>
+<w:style w:type="paragraph" w:styleId="Normal" w:default="1"><w:name w:val="Normal"/></w:style>
+<w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:after="200"/><w:jc w:val="center"/></w:pPr><w:rPr><w:b/><w:sz w:val="36"/><w:szCs w:val="36"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:pPr><w:spacing w:before="200" w:after="100"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:sz w:val="26"/><w:szCs w:val="26"/></w:rPr></w:style>
+</w:styles>`;
+
+    const contentTypes = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+<Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+<Default Extension="xml" ContentType="application/xml"/>
+<Override PartName="/word/document.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.document.main+xml"/>
+<Override PartName="/word/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.wordprocessingml.styles+xml"/>
+</Types>`;
+
+    const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="word/document.xml"/>
+</Relationships>`;
+
+    const wordRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>`;
+
+    const zip = zipStore([
+      { name: '[Content_Types].xml', content: contentTypes },
+      { name: '_rels/.rels', content: rels },
+      { name: 'word/_rels/document.xml.rels', content: wordRels },
+      { name: 'word/document.xml', content: documentXml },
+      { name: 'word/styles.xml', content: stylesXml }
+    ]);
+
+    const blob = new Blob([zip], { type: 'application/vnd.openxmlformats-officedocument.wordprocessingml.document' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Karta_dokumentov_SEM_${dateStr.replace(/\./g,'-')}.docx`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
+  }
+
+  window.addEventListener('load', () => {
+    render();
+    resizeIframe();
+  });
+
+  document.addEventListener('toggle', (e) => {
+    if (e.target.matches('details.block')) {
+      requestAnimationFrame(resizeIframe);
+    }
+  }, true);
+
+  if ('ResizeObserver' in window) {
+    const container = document.querySelector('.container');
+    if (container) {
+      let t;
+      new ResizeObserver(() => {
+        clearTimeout(t);
+        t = setTimeout(resizeIframe, 50);
+      }).observe(container);
+    }
+  }
+</script>
+
+</body>
+</html>
