@@ -15,16 +15,12 @@
     --r: 10px;
     --lvl1: #dc2626;
     --lvl1-bg: #fef2f2;
-    --lvl1-bd: #fecaca;
     --lvl2: #ea580c;
     --lvl2-bg: #fff7ed;
-    --lvl2-bd: #fed7aa;
     --lvl3: #eab308;
     --lvl3-bg: #fefce8;
-    --lvl3-bd: #fef08a;
     --lvl4: #16a34a;
     --lvl4-bg: #f0fdf4;
-    --lvl4-bd: #bbf7d0;
   }
 
   * { box-sizing: border-box; }
@@ -217,15 +213,15 @@
   <div class="pyramid">
     <div class="level level-1" data-level="1" onclick="showLevel(1)">
       <span class="level-num">1 уровень</span>
-      <span class="level-title">Политика, миссия, стратегия, Руководство</span>
+      <span class="level-title">Политика и стратегические документы</span>
     </div>
     <div class="level level-2" data-level="2" onclick="showLevel(2)">
       <span class="level-num">2 уровень</span>
-      <span class="level-title">Карты процессов и Процедуры</span>
+      <span class="level-title">Цели, план действий, процедуры и карты процессов</span>
     </div>
     <div class="level level-3" data-level="3" onclick="showLevel(3)">
       <span class="level-num">3 уровень</span>
-      <span class="level-title">Рабочие инструкции</span>
+      <span class="level-title">Рабочие инструкции и формы</span>
     </div>
     <div class="level level-4" data-level="4" onclick="showLevel(4)">
       <span class="level-num">4 уровень</span>
@@ -236,7 +232,7 @@
   <div class="description" id="description">
     <div class="desc-header">
       <span class="desc-num" id="descNum">1</span>
-      <span class="desc-title" id="descTitle">Название уровня</span>
+      <span class="desc-title" id="descTitle"></span>
     </div>
     <p class="desc-text" id="descText"></p>
     <div class="desc-examples" id="descExamples"></div>
@@ -246,17 +242,17 @@
 <script>
   const levels = {
     1: {
-      title: 'Политика, миссия, стратегия, Руководство',
+      title: 'Политика и стратегические документы',
       text: 'Документы для общего описания системы, формулирование основных приоритетов развития, главных его целевых установок и стратегий их реализации.',
       examples: 'Примеры: экологическая политика завода, стратегия развития СЭМ, руководство по системе менеджмента.'
     },
     2: {
-      title: 'Карты процессов и Процедуры',
+      title: 'Цели, план действий, процедуры и карты процессов',
       text: 'Документы описывают осуществляемые процессы, устанавливают их цели, порядок управления, необходимые ресурсы, показатели эффективности и результативности по каждому процессу.',
       examples: 'Примеры: процедура управления аспектами, процедура внутренних аудитов, процедура корректирующих действий.'
     },
     3: {
-      title: 'Рабочие инструкции',
+      title: 'Рабочие инструкции и формы',
       text: 'Документы устанавливают порядок действий, права, обязанности, функции и взаимодействие персонала.',
       examples: 'Примеры: инструкция по обращению с отходами I–IV класса, инструкция оператора газоочистки, памятка мастера смены.'
     },
@@ -280,9 +276,10 @@
     document.getElementById('descNum').textContent = num;
     document.getElementById('descTitle').textContent = data.title;
     document.getElementById('descText').textContent = data.text;
-    document.getElementById('descExamples').innerHTML = '<strong>' + data.examples.split(':')[0] + ':</strong>' + data.examples.split(':')[1];
 
-    // Пересчитываем высоту после того, как браузер отрисовал контент
+    const parts = data.examples.split(':');
+    document.getElementById('descExamples').innerHTML = '<strong>' + parts[0] + ':</strong>' + parts.slice(1).join(':');
+
     requestAnimationFrame(() => {
       resizeIframe();
     });
@@ -296,7 +293,6 @@
 
   window.addEventListener('load', () => {
     showLevel(1);
-    // Повторные вызовы: после инициализации iframe-resizer и после загрузки шрифтов
     setTimeout(resizeIframe, 200);
     setTimeout(resizeIframe, 600);
     if (document.fonts && document.fonts.ready) {
