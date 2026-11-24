@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
-<title>Колонтитулы и структура документа</title>
+<title>Лист документа: колонтитулы и структура</title>
 <style>
   :root {
     --primary: #1e293b;
@@ -16,14 +16,19 @@
     --accent-d: #1d4ed8;
     --accent-bg: #eff6ff;
     --accent-bd: #bfdbfe;
+    --ok: #166534;
+    --ok-bg: #f0fdf4;
+    --ok-bd: #bbf7d0;
     --bad: #991b1b;
     --bad-bg: #fef2f2;
     --bad-bd: #fecaca;
+    --warn: #ea580c;
+    --warn-bg: #fff7ed;
+    --warn-bd: #fed7aa;
     --r: 10px;
   }
 
   * { box-sizing: border-box; }
-
   html, body { overflow: hidden; margin: 0; padding: 0; }
 
   body {
@@ -32,77 +37,89 @@
     line-height: 1.5;
     color: var(--primary);
     background: var(--bg);
-    padding: 14px;
+    padding: 12px;
   }
 
   .container { max-width: 650px; margin: 0 auto; }
 
   .hint {
     text-align: center;
-    font-size: 13px;
+    font-size: 12.5px;
     color: var(--muted);
-    margin: 0 0 12px 0;
+    margin: 0 0 10px 0;
   }
 
-  .panels {
-    display: flex;
-    gap: 10px;
-    align-items: stretch;
-    margin-bottom: 12px;
-  }
-
-  .panel { flex: 1; display: flex; flex-direction: column; min-width: 0; }
-
-  .page {
-    flex: 1;
+  /* Один лист документа */
+  .win {
     border: 1px solid var(--border);
-    border-radius: 8px;
+    border-radius: var(--r);
+    overflow: hidden;
     background: #fff;
-    padding: 10px;
-    display: flex;
-    flex-direction: column;
-    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+    box-shadow: 0 2px 8px rgba(30,41,59,.06);
+    margin-bottom: 10px;
   }
+
+  .win-bar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 10px;
+    background: linear-gradient(90deg, var(--gray), var(--accent-bg));
+    border-bottom: 1px solid var(--border);
+  }
+
+  .win-ico {
+    width: 16px; height: 16px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px; font-weight: 800;
+    flex-shrink: 0;
+  }
+
+  .win-title { font-size: 11.5px; font-weight: 700; flex: 1; }
+  .win-code { font-size: 10.5px; font-weight: 700; color: var(--accent-d); background: var(--accent-bg); border: 1px solid var(--accent-bd); border-radius: 5px; padding: 0 6px; }
+
+  .page { padding: 8px 10px 10px; }
 
   .thead-band {
     display: grid;
-    grid-template-columns: auto 1fr auto auto;
+    grid-template-columns: auto 1fr auto auto auto;
     border: 1px solid var(--border);
     border-radius: 6px;
     overflow: hidden;
-    background: #fff;
     transition: all 0.2s ease;
   }
 
-  .cell { padding: 6px 8px; border-right: 1px solid var(--border); min-width: 0; }
+  .cell { padding: 4px 8px; border-right: 1px solid var(--border); min-width: 0; }
   .cell:last-child { border-right: none; }
 
   .cell-label {
     display: block;
-    font-size: 9px;
+    font-size: 8.5px;
     text-transform: uppercase;
     letter-spacing: 0.03em;
     color: var(--muted);
-    margin-bottom: 1px;
   }
 
-  .cell-value { display: block; font-size: 11px; font-weight: 700; line-height: 1.3; word-wrap: break-word; }
+  .cell-value { display: block; font-size: 10.5px; font-weight: 700; line-height: 1.3; word-wrap: break-word; }
   .cell-code .cell-value { color: var(--accent); }
 
   .struct-title {
-    font-size: 10px;
+    font-size: 9.5px;
     font-weight: 700;
     text-transform: uppercase;
     letter-spacing: 0.03em;
     color: var(--muted);
-    margin: 8px 0 0 0;
+    margin: 7px 0 0 0;
   }
 
   .struct-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 4px;
-    margin-top: 5px;
+    gap: 3px;
+    margin-top: 4px;
     padding: 2px;
     border-radius: 8px;
     transition: box-shadow 0.2s ease;
@@ -110,16 +127,16 @@
 
   .struct-item {
     display: flex;
-    gap: 5px;
+    gap: 4px;
     align-items: flex-start;
     text-align: left;
     border: 1px solid transparent;
     background: var(--gray);
-    border-radius: 6px;
-    padding: 4px 6px;
+    border-radius: 5px;
+    padding: 3px 6px;
     cursor: pointer;
     font-family: inherit;
-    font-size: 10.5px;
+    font-size: 10px;
     line-height: 1.3;
     color: var(--primary);
     transition: all 0.15s ease;
@@ -140,48 +157,56 @@
 
   .sec-explain {
     display: none;
-    margin-top: 6px;
+    margin-top: 4px;
     background: var(--accent-bg);
     border: 1px solid var(--accent-bd);
     border-left: 3px solid var(--accent);
     border-radius: 6px;
-    padding: 6px 8px;
+    padding: 5px 8px;
     font-size: 10.5px;
     line-height: 1.45;
-    color: var(--primary);
   }
 
   .sec-explain.show { display: block; }
   .sec-explain strong { color: var(--accent-d); }
 
-  .line { height: 7px; background: var(--gray); border-radius: 4px; margin-bottom: 6px; }
-  .line.w60 { width: 60%; }
-  .line.w85 { width: 85%; }
+  .line { height: 6px; background: var(--gray); border-radius: 4px; margin: 6px 0 0 0; }
   .line.w70 { width: 70%; }
+  .line + .line { margin-top: 4px; }
 
   .tfoot-band {
-    margin-top: auto;
+    margin-top: 8px;
     background: var(--bad-bg);
     border: 1px solid var(--bad-bd);
     color: var(--bad);
-    font-size: 10.5px;
+    font-size: 10px;
     font-weight: 600;
     line-height: 1.4;
-    padding: 6px 8px;
+    padding: 4px 8px;
     border-radius: 6px;
     text-align: center;
     transition: all 0.2s ease;
   }
 
-  .caption { text-align: center; font-size: 12px; font-weight: 700; margin-top: 8px; }
-  .caption small { display: block; font-weight: 400; font-size: 10px; color: var(--muted); }
+  .sheet-caption {
+    text-align: center;
+    font-size: 11px;
+    color: var(--muted);
+    padding: 7px 10px;
+    border-top: 1px solid var(--border);
+    background: var(--gray);
+    line-height: 1.4;
+  }
 
-  .panel.hl-band .thead-band { box-shadow: 0 0 0 2px var(--accent); background: var(--accent-bg); }
-  .panel.hl-code .cell-code { box-shadow: inset 0 0 0 2px var(--accent); background: var(--accent-bg); }
-  .panel.hl-struct .struct-grid { box-shadow: 0 0 0 2px var(--accent-bd); }
-  .panel.hl-foot .tfoot-band { box-shadow: 0 0 0 2px var(--bad); }
+  /* Подсветки на листе */
+  .page.hl-band .thead-band { box-shadow: 0 0 0 2px var(--accent); background: var(--accent-bg); }
+  .page.hl-band .tfoot-band { box-shadow: 0 0 0 2px var(--bad); }
+  .page.hl-foot .tfoot-band { box-shadow: 0 0 0 2px var(--bad); }
+  .page.hl-code .cell-code { box-shadow: inset 0 0 0 2px var(--accent); background: var(--accent-bg); }
+  .page.hl-struct .struct-grid { box-shadow: 0 0 0 2px var(--accent-bd); }
 
-  .qa { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
+  /* Вопросы */
+  .qa { display: flex; flex-direction: column; gap: 5px; margin-bottom: 10px; }
 
   .qa-row {
     border: 1px solid var(--border);
@@ -201,16 +226,16 @@
 
   .qa-row:hover { border-color: var(--accent); background: var(--gray); }
 
-  .qa-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; gap: 10px; }
+  .qa-header { display: flex; justify-content: space-between; align-items: center; padding: 8px 11px; gap: 10px; }
   .qa-q { font-weight: 700; flex: 1; }
 
   .qa-icon {
-    width: 20px; height: 20px;
+    width: 18px; height: 18px;
     border-radius: 50%;
     background: var(--gray);
     border: 1px solid var(--border);
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 300; color: var(--muted);
+    font-size: 13px; font-weight: 300; color: var(--muted);
     flex-shrink: 0;
     transition: transform 0.2s ease, background 0.2s ease;
   }
@@ -219,23 +244,53 @@
   .qa-row.active .qa-icon { background: var(--accent); color: #fff; border-color: var(--accent); transform: rotate(45deg); }
 
   .qa-answer {
-    padding: 0 12px;
+    padding: 0 11px;
     max-height: 0;
     overflow: hidden;
     transition: max-height 0.25s ease, padding 0.25s ease;
     color: var(--primary);
-    font-size: 12px;
+    font-size: 11.5px;
     line-height: 1.5;
   }
 
-  .qa-row.active .qa-answer { max-height: 260px; padding: 0 12px 12px; }
-  .qa-answer .call { display: block; margin-top: 6px; color: var(--accent-d); font-weight: 600; }
+  .qa-row.active .qa-answer { max-height: 320px; padding: 0 11px 10px; }
+  .qa-answer .call { display: block; margin-top: 5px; color: var(--accent-d); font-weight: 600; }
 
-  .disclaimer { font-size: 11px; color: var(--muted); line-height: 1.5; text-align: center; }
+  /* Блок: как организуют работу с актуальными документами */
+  .docs-block { margin-bottom: 10px; }
+
+  .docs-title {
+    font-size: 12.5px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+  }
+
+  .docs-cards { display: flex; flex-direction: column; gap: 5px; }
+
+  .doc-card {
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 7px 10px;
+    font-size: 11.5px;
+    line-height: 1.45;
+    background: #fff;
+  }
+
+  .doc-card b { font-weight: 700; }
+
+  .doc-card.doc-e { border-left: 3px solid var(--ok); background: var(--ok-bg); }
+  .doc-card.doc-e b { color: var(--ok); }
+
+  .doc-card.doc-p { border-left: 3px solid var(--accent); background: var(--accent-bg); }
+  .doc-card.doc-p b { color: var(--accent-d); }
+
+  .doc-card.doc-u { border-left: 3px solid var(--warn); background: var(--warn-bg); }
+  .doc-card.doc-u b { color: var(--warn); }
+
+  .disclaimer { font-size: 10.5px; color: var(--muted); line-height: 1.5; text-align: center; }
 
   @media (max-width: 560px) {
-    body { padding: 10px; }
-    .panels { flex-direction: column; }
+    body { padding: 8px; }
     .struct-grid { grid-template-columns: 1fr; }
     .thead-band { grid-template-columns: 1fr 1fr; }
     .cell { border-bottom: 1px solid var(--border); }
@@ -245,75 +300,52 @@
 <body>
 
 <div class="container">
-  <div class="hint">Нажмите на вопрос, чтобы увидеть ответ и подсветку на схемах</div>
+  <div class="hint">Нажмите на вопрос, чтобы увидеть ответ и подсветку на листе. Разделы структуры тоже открываются по клику.</div>
 
-  <div class="panels">
-
-    <div class="panel" id="panelHead">
-      <div class="page">
-        <div class="thead-band">
-          <div class="cell cell-code">
-            <span class="cell-label">Код</span>
-            <span class="cell-value">И.02.07</span>
-          </div>
-          <div class="cell">
-            <span class="cell-label">Название</span>
-            <span class="cell-value">Инструкция по передаче отходов подрядчику</span>
-          </div>
-          <div class="cell">
-            <span class="cell-label">Версия</span>
-            <span class="cell-value">01</span>
-          </div>
-          <div class="cell">
-            <span class="cell-label">Дата</span>
-            <span class="cell-value">01.02.2026</span>
-          </div>
-        </div>
-
-        <p class="struct-title">Единая структура документа</p>
-        <div class="struct-grid" id="structGrid"></div>
-        <div class="sec-explain" id="secExplain"></div>
-
-        <div class="line w85" style="margin-top:8px"></div>
-        <div class="line w70"></div>
-      </div>
-      <div class="caption">Схема 1. Верхний колонтитул<small>код, название, версия и дата на каждом листе</small></div>
+  <div class="win">
+    <div class="win-bar">
+      <span class="win-ico">И</span>
+      <span class="win-title">Лист документа СЭМ</span>
+      <span class="win-code">И.02.07 · версия 01</span>
     </div>
 
-    <div class="panel" id="panelFoot">
-      <div class="page">
-        <div class="thead-band" style="opacity:0.45">
-          <div class="cell cell-code">
-            <span class="cell-label">Код</span>
-            <span class="cell-value">И.02.07</span>
-          </div>
-          <div class="cell">
-            <span class="cell-label">Название</span>
-            <span class="cell-value">Инструкция по передаче отходов подрядчику</span>
-          </div>
-          <div class="cell">
-            <span class="cell-label">Версия</span>
-            <span class="cell-value">01</span>
-          </div>
-          <div class="cell">
-            <span class="cell-label">Дата</span>
-            <span class="cell-value">01.02.2026</span>
-          </div>
+    <div class="page" id="page">
+      <div class="thead-band">
+        <div class="cell cell-code">
+          <span class="cell-label">Код</span>
+          <span class="cell-value">И.02.07</span>
         </div>
-
-        <div class="line w85" style="margin-top:10px"></div>
-        <div class="line w60"></div>
-        <div class="line w85"></div>
-        <div class="line w70"></div>
-        <div class="line w60"></div>
-
-        <div class="tfoot-band">
-          Печатная копия не контролируется. Актуальная версия размещена на сервере
+        <div class="cell">
+          <span class="cell-label">Название</span>
+          <span class="cell-value">Инструкция по передаче отходов подрядчику</span>
+        </div>
+        <div class="cell">
+          <span class="cell-label">Версия</span>
+          <span class="cell-value">01</span>
+        </div>
+        <div class="cell">
+          <span class="cell-label">Дата</span>
+          <span class="cell-value">01.02.2026</span>
+        </div>
+        <div class="cell">
+          <span class="cell-label">Лист</span>
+          <span class="cell-value">1 из 4</span>
         </div>
       </div>
-      <div class="caption">Схема 2. Нижний колонтитул<small>предупреждение для распечаток на каждом листе</small></div>
+
+      <p class="struct-title">Единая структура документа</p>
+      <div class="struct-grid" id="structGrid"></div>
+      <div class="sec-explain" id="secExplain"></div>
+
+      <div class="line"></div>
+      <div class="line w70"></div>
+
+      <div class="tfoot-band">
+        Печатная копия не контролируется. Актуальная версия размещена на сервере
+      </div>
     </div>
 
+    <div class="sheet-caption">Схема документа. Верхний и нижний колонтитулы, а также единая структура разделов</div>
   </div>
 
   <div class="qa">
@@ -322,7 +354,7 @@
         <span class="qa-q">Что повторяется на каждом листе документа?</span>
         <span class="qa-icon">+</span>
       </div>
-      <div class="qa-answer">Верхний колонтитул с кодом, названием, версией и датой и нижний колонтитул с предупреждением для распечаток. Даже если лист вырвали или распечатали отдельно, видно, какому документу он принадлежит и можно ли ему доверять.</div>
+      <div class="qa-answer">Верхний колонтитул с кодом, названием, версией, датой и номером листа и нижний колонтитул с предупреждением для распечаток. Даже если лист вырвали или распечатали отдельно, видно, какому документу он принадлежит, какая редакция действует и можно ли ему доверять.</div>
     </button>
     <button class="qa-row" data-q="2">
       <div class="qa-header">
@@ -333,28 +365,36 @@
     </button>
     <button class="qa-row" data-q="3">
       <div class="qa-header">
-        <span class="qa-q">Что внутри документа, кроме колонтитулов?</span>
+        <span class="qa-q">Зачем нужна пометка внизу листа?</span>
         <span class="qa-icon">+</span>
       </div>
-      <div class="qa-answer">Единая структура из восьми разделов: назначение и область применения, нормативные ссылки, термины, ответственность и полномочия, порядок действий, приложения, лист регистрации изменений и лист согласования. Разделы всегда на одних и тех же местах – не нужно искать ответственного в чужом документе.</div>
+      <div class="qa-answer">Она защищает завод от работы по устаревшим распечаткам и закрывает требования пункта 7.5.3 ГОСТ Р ИСО 14001-2016. Эталонный документ всегда хранится только в электронном виде на сервере, где за его обновлением следит координатор СЭМ. Бумажные распечатки для личного удобства никто не отслеживает, поэтому перед применением работник обязан сверить номер версии и дату с файлом на сервере. Если в цехе нужен обязательный бумажный документ, на него ставят штамп «Контролируемый экземпляр», учитывают в журнале рассылки и при обновлении заменяют на новую редакцию под подпись.</div>
     </button>
     <button class="qa-row" data-q="4">
-      <div class="qa-header">
-        <span class="qa-q">От чего защищает красная пометка внизу листа?</span>
-        <span class="qa-icon">+</span>
-      </div>
-      <div class="qa-answer">От работы по устаревшей распечатке. Пометка напоминает: контролируемая версия живет только на сервере, а бумажная копия носит справочный характер. Когда инструкцию пересмотрят, старая распечатка не будет выглядеть действующим документом.</div>
-    </button>
-    <button class="qa-row" data-q="5">
       <div class="qa-header">
         <span class="qa-q">Зачем нужны восемь разделов внутри документа?</span>
         <span class="qa-icon">+</span>
       </div>
       <div class="qa-answer">
         Единая структура защищает от пропусков важных деталей. Первые три раздела («Назначение», «Нормативные ссылки» и «Термины») задают границы: на какие цеха распространяется правило и как понимать слова в тексте. Раздел «Ответственность и полномочия» закрепляет должности исполнителей, а «Порядок действий» дает пошаговый алгоритм работы. «Приложения» содержат формы журналов и актов, а листы регистрации изменений и согласования подтверждают, что документ проверен смежными отделами и обновлен по правилам.
-        <span class="call">Нажмите на любой раздел в схеме 1 – покажем его роль на стекольном заводе.</span>
+        <span class="call">Нажмите на любой раздел на листе – покажем его роль на стекольном заводе.</span>
       </div>
     </button>
+  </div>
+
+  <div class="docs-block">
+    <div class="docs-title">Как организуют работу с актуальными документами</div>
+    <div class="docs-cards">
+      <div class="doc-card doc-e">
+        <b>В электронном виде (основной способ).</b> Актуальную версию размещают в специальной защищенной папке на сервере или на корпоративном портале. Права на редактирование дают только координатору СЭМ или ответственному специалисту, а для всех остальных работников открывают доступ только на чтение и скачивание.
+      </div>
+      <div class="doc-card doc-p">
+        <b>В бумажном виде (контролируемые копии).</b> Если в цехе или на посту охраны нужна обязательная бумажная копия (например, план действий при проливе масла), на нее ставят синий штамп «Контролируемый экземпляр» (или «Учтенная копия»), присваивают номер и записывают получателя в лист рассылки.
+      </div>
+      <div class="doc-card doc-u">
+        <b>При обновлении версии.</b> Когда документ пересматривают, координатор СЭМ заменяет файл на сервере, а в цех передает новые учтенные бумажные копии под подпись. Старые бумажные экземпляры изымают и уничтожают, а один архивный оригинал устаревшей версии помечают штампом «Аннулировано» (или «Устаревшая версия») и убирают в архив, если его нужно сохранить по закону или для истории.
+      </div>
+    </div>
   </div>
 
   <div class="disclaimer">
@@ -375,19 +415,17 @@
   ];
 
   const qaRows = document.querySelectorAll('.qa-row');
-  const panelHead = document.getElementById('panelHead');
-  const panelFoot = document.getElementById('panelFoot');
+  const page = document.getElementById('page');
   const structGrid = document.getElementById('structGrid');
   const secExplain = document.getElementById('secExplain');
 
   let activeSection = null;
 
   const highlights = {
-    1: { head: ['hl-band'], foot: ['hl-foot'], invite: false },
-    2: { head: ['hl-code'], foot: [], invite: false },
-    3: { head: ['hl-struct'], foot: [], invite: false },
-    4: { head: [], foot: ['hl-foot'], invite: false },
-    5: { head: ['hl-struct'], foot: [], invite: true }
+    1: { cls: ['hl-band'], invite: false },
+    2: { cls: ['hl-code'], invite: false },
+    3: { cls: ['hl-foot'], invite: false },
+    4: { cls: ['hl-struct'], invite: true }
   };
 
   function renderSections() {
@@ -419,7 +457,7 @@
   }
 
   function clearHighlights() {
-    [panelHead, panelFoot].forEach(p => p.classList.remove('hl-band', 'hl-code', 'hl-struct', 'hl-foot'));
+    page.classList.remove('hl-band', 'hl-code', 'hl-struct', 'hl-foot');
     structGrid.classList.remove('invite');
     activeSection = null;
     secExplain.classList.remove('show');
@@ -438,8 +476,7 @@
       if (!wasActive) {
         btn.classList.add('active');
         const hl = highlights[q];
-        hl.head.forEach(c => panelHead.classList.add(c));
-        hl.foot.forEach(c => panelFoot.classList.add(c));
+        hl.cls.forEach(c => page.classList.add(c));
         if (hl.invite) structGrid.classList.add('invite');
       }
 
