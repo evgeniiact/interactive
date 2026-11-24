@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
-<title>Код документа: тренажер реестра и оформления</title>
+<title>Колонтитулы и структура документа</title>
 <style>
   :root {
     --primary: #1e293b;
@@ -16,29 +16,14 @@
     --accent-d: #1d4ed8;
     --accent-bg: #eff6ff;
     --accent-bd: #bfdbfe;
-    --ok: #166534;
-    --ok-bg: #f0fdf4;
-    --ok-bd: #bbf7d0;
     --bad: #991b1b;
     --bad-bg: #fef2f2;
     --bad-bd: #fecaca;
-    --warn: #ea580c;
-    --warn-bg: #fff7ed;
-    --warn-bd: #fed7aa;
-    --amber: #b45309;
-    --amber-bg: #fffbeb;
-    --slate: #475569;
-    --slate-bg: #f1f5f9;
-    --cat: #2563eb;
-    --cat-bg: #eff6ff;
-    --dept: #7c3aed;
-    --dept-bg: #f5f3ff;
-    --num: #0e7490;
-    --num-bg: #ecfeff;
     --r: 10px;
   }
 
   * { box-sizing: border-box; }
+
   html, body { overflow: hidden; margin: 0; padding: 0; }
 
   body {
@@ -47,840 +32,441 @@
     line-height: 1.5;
     color: var(--primary);
     background: var(--bg);
-    padding: 12px;
+    padding: 14px;
   }
 
   .container { max-width: 650px; margin: 0 auto; }
 
-  .top-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; margin-bottom: 6px; }
-  .progress-text { font-size: 13px; font-weight: 700; }
-  .top-actions { display: flex; gap: 6px; align-items: center; }
-
-  .score-chip {
-    font-size: 11px; font-weight: 700; color: var(--ok);
-    background: var(--ok-bg); border: 1px solid var(--ok-bd);
-    border-radius: 999px; padding: 2px 9px; white-space: nowrap;
+  .hint {
+    text-align: center;
+    font-size: 13px;
+    color: var(--muted);
+    margin: 0 0 12px 0;
   }
 
-  .mini-btn {
-    padding: 4px 10px; border: 1px solid var(--border); border-radius: 999px;
-    background: #fff; cursor: pointer; font-family: inherit;
-    font-size: 11px; font-weight: 600; color: var(--muted); transition: all .15s ease;
+  .panels {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+    margin-bottom: 12px;
   }
-  .mini-btn:hover { background: var(--gray); border-color: var(--muted); }
-  .mini-btn.on { background: var(--accent); color: #fff; border-color: var(--accent); }
 
-  .progress-bar { height: 6px; border-radius: 3px; background: var(--border); overflow: hidden; margin-bottom: 10px; }
-  .progress-fill { height: 100%; width: 0%; background: linear-gradient(90deg, var(--accent), var(--num), var(--ok)); border-radius: 3px; transition: width .35s ease; }
+  .panel { flex: 1; display: flex; flex-direction: column; min-width: 0; }
 
-  .cheat { display: none; background: var(--gray); border: 1px solid var(--border); border-radius: var(--r); padding: 10px 12px; margin-bottom: 10px; font-size: 12px; line-height: 1.5; }
-  .cheat.show { display: block; animation: drop .2s ease; }
-  @keyframes drop { from { opacity: 0; transform: translateY(-4px); } to { opacity: 1; transform: none; } }
+  .page {
+    flex: 1;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    padding: 10px;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  }
 
-  .code-demo { display: flex; align-items: baseline; gap: 2px; font-size: 20px; font-weight: 800; margin-bottom: 2px; }
-  .seg { padding: 1px 7px; border-radius: 6px; }
-  .seg-cat { background: var(--cat-bg); color: var(--cat); }
-  .seg-dept { background: var(--dept-bg); color: var(--dept); }
-  .seg-num { background: var(--num-bg); color: var(--num); }
-  .dot-sep { color: var(--muted); }
-  .seg-labels { display: flex; gap: 14px; font-size: 10px; color: var(--muted); margin-bottom: 8px; }
-  .cheat ul { margin: 0; padding-left: 16px; }
-  .cheat li { margin-bottom: 3px; }
-  .cheat .k { font-weight: 700; }
+  .thead-band {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+    transition: all 0.2s ease;
+  }
 
-  .task-head { display: flex; align-items: center; gap: 8px; margin-bottom: 6px; }
-  .type-badge { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .04em; padding: 2px 9px; border-radius: 999px; }
-  .tb-reg { background: var(--cat-bg); color: var(--cat); }
-  .tb-err { background: var(--warn-bg); color: var(--warn); }
-  .tb-form { background: var(--dept-bg); color: var(--dept); }
-  .tb-sort { background: var(--num-bg); color: var(--num); }
-  .tb-build { background: var(--amber-bg); color: var(--amber); }
+  .cell { padding: 6px 8px; border-right: 1px solid var(--border); min-width: 0; }
+  .cell:last-child { border-right: none; }
 
-  .task-text { font-size: 13px; font-weight: 600; margin: 0 0 10px 0; line-height: 1.45; }
-  .context-note { font-size: 11.5px; color: var(--muted); background: var(--gray); border: 1px dashed var(--border); border-radius: 8px; padding: 6px 9px; margin-bottom: 8px; }
-  .context-note b { color: var(--primary); }
+  .cell-label {
+    display: block;
+    font-size: 9px;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    margin-bottom: 1px;
+  }
 
-  /* Окно реестра */
-  .win { border: 1px solid var(--border); border-radius: var(--r); overflow: hidden; background: #fff; box-shadow: 0 2px 8px rgba(30,41,59,.06); }
-  .win-bar { display: flex; align-items: center; gap: 8px; padding: 7px 10px; background: linear-gradient(90deg, var(--slate-bg), var(--accent-bg)); border-bottom: 1px solid var(--border); }
-  .win-ico { width: 18px; height: 18px; border-radius: 5px; background: var(--accent); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: 800; flex-shrink: 0; }
-  .win-title { font-size: 12px; font-weight: 700; flex: 1; }
-  .win-count { font-size: 10.5px; color: var(--muted); font-weight: 600; }
+  .cell-value { display: block; font-size: 11px; font-weight: 700; line-height: 1.3; word-wrap: break-word; }
+  .cell-code .cell-value { color: var(--accent); }
 
-  .win-tools { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; padding: 8px 10px; background: var(--gray); border-bottom: 1px solid var(--border); }
-  .search-wrap { position: relative; flex: 1; min-width: 140px; }
-  .search-wrap svg { position: absolute; left: 8px; top: 50%; transform: translateY(-50%); width: 13px; height: 13px; color: var(--muted); pointer-events: none; }
-  .search-input { width: 100%; padding: 6px 8px 6px 26px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 12px; background: #fff; color: var(--primary); }
-  .search-input:focus { outline: 2px solid var(--accent-bd); border-color: var(--accent); }
+  .struct-title {
+    font-size: 10px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    color: var(--muted);
+    margin: 8px 0 0 0;
+  }
 
-  .tool-select { padding: 6px 6px; border: 1px solid var(--border); border-radius: 8px; font-family: inherit; font-size: 11.5px; background: #fff; color: var(--primary); cursor: pointer; }
-  .dir-btn { width: 30px; height: 30px; border: 1px solid var(--border); border-radius: 8px; background: #fff; cursor: pointer; font-size: 13px; color: var(--accent-d); transition: all .15s ease; }
-  .dir-btn:hover { background: var(--accent-bg); }
+  .struct-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 4px;
+    margin-top: 5px;
+    padding: 2px;
+    border-radius: 8px;
+    transition: box-shadow 0.2s ease;
+  }
 
-  .filter-row { display: flex; flex-wrap: wrap; gap: 4px; padding: 6px 10px; background: var(--gray); border-bottom: 1px solid var(--border); }
-  .f-chip { padding: 3px 9px; border: 1px solid var(--border); border-radius: 999px; background: #fff; cursor: pointer; font-family: inherit; font-size: 10.5px; font-weight: 600; color: var(--muted); transition: all .15s ease; }
-  .f-chip:hover { border-color: var(--accent); }
-  .f-chip.on { background: var(--accent); border-color: var(--accent); color: #fff; }
+  .struct-item {
+    display: flex;
+    gap: 5px;
+    align-items: flex-start;
+    text-align: left;
+    border: 1px solid transparent;
+    background: var(--gray);
+    border-radius: 6px;
+    padding: 4px 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 10.5px;
+    line-height: 1.3;
+    color: var(--primary);
+    transition: all 0.15s ease;
+  }
 
-  .reg-scroll { max-height: 252px; overflow: auto; }
-  .reg-scroll::-webkit-scrollbar { width: 8px; height: 8px; }
-  .reg-scroll::-webkit-scrollbar-track { background: var(--gray); }
-  .reg-scroll::-webkit-scrollbar-thumb { background: var(--accent-bd); border-radius: 4px; }
-  .reg-scroll::-webkit-scrollbar-thumb:hover { background: var(--accent); }
+  .struct-item:hover { border-color: var(--accent-bd); background: var(--accent-bg); }
+  .struct-item.active { border-color: var(--accent); background: var(--accent-bg); }
 
-  table.reg { width: 100%; border-collapse: collapse; min-width: 520px; }
-  table.reg th { position: sticky; top: 0; background: #fff; font-size: 10px; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); text-align: left; padding: 6px 8px; border-bottom: 1px solid var(--border); z-index: 1; }
-  table.reg td { padding: 6px 8px; border-bottom: 1px solid var(--gray); font-size: 11.5px; vertical-align: middle; }
-  tr.reg-row { cursor: pointer; transition: background .12s ease, transform .12s ease; }
-  tr.reg-row:hover { background: var(--accent-bg); }
-  tr.reg-row.bad { background: var(--bad-bg); }
-  tr.reg-row.good { background: var(--ok-bg); }
-  tr.reg-row.marked { background: var(--warn-bg); }
-  tr.reg-row.marked td:first-child { box-shadow: inset 3px 0 0 var(--warn); }
+  .struct-num { font-weight: 800; color: var(--muted); flex-shrink: 0; }
+  .struct-item.active .struct-num { color: var(--accent); }
 
-  .code-cell { font-weight: 800; color: var(--accent-d); white-space: nowrap; }
-  .code-cell .cc { background: var(--cat-bg); border-radius: 5px; padding: 1px 5px; }
-  tr.reg-row.marked .code-cell .cc { background: var(--warn-bd); color: var(--warn); cursor: pointer; }
-  .code-cell button { border: none; background: var(--cat-bg); color: var(--accent-d); font: inherit; font-weight: 800; border-radius: 5px; padding: 1px 6px; cursor: pointer; transition: all .12s ease; }
-  .code-cell button:hover { background: var(--accent-bd); }
-  tr.reg-row.marked .code-cell button { background: var(--warn); color: #fff; }
+  .struct-grid.invite .struct-item { animation: invite 1.4s ease infinite; }
 
-  .st { font-size: 10px; font-weight: 700; padding: 1px 8px; border-radius: 999px; white-space: nowrap; }
-  .st-active { background: var(--ok-bg); color: var(--ok); border: 1px solid var(--ok-bd); }
-  .st-project { background: var(--amber-bg); color: var(--amber); border: 1px solid var(--warn-bd); }
-  .st-cancel { background: var(--bad-bg); color: var(--bad); border: 1px solid var(--bad-bd); }
-  .st-archive { background: var(--slate-bg); color: var(--slate); border: 1px solid var(--border); }
+  @keyframes invite {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(37,99,235,0); }
+    50% { box-shadow: 0 0 0 2px var(--accent-bd); }
+  }
 
-  .win-foot { padding: 5px 10px; background: var(--gray); border-top: 1px solid var(--border); font-size: 10.5px; color: var(--muted); }
-  .reg-empty { padding: 18px; text-align: center; font-size: 12px; color: var(--muted); }
+  .sec-explain {
+    display: none;
+    margin-top: 6px;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-bd);
+    border-left: 3px solid var(--accent);
+    border-radius: 6px;
+    padding: 6px 8px;
+    font-size: 10.5px;
+    line-height: 1.45;
+    color: var(--primary);
+  }
 
-  /* Форма записи */
-  .form-mock { border: 1px solid var(--border); border-radius: var(--r); background: #fff; padding: 10px; box-shadow: 0 2px 8px rgba(30,41,59,.06); }
-  .zone { border: 1px dashed transparent; border-radius: 8px; padding: 7px 9px; margin-bottom: 6px; cursor: pointer; transition: all .15s ease; font-size: 12px; }
-  .zone:hover { border-color: var(--accent-bd); background: var(--accent-bg); }
-  .zone.marked { border: 1px solid var(--warn); background: var(--warn-bg); box-shadow: 0 0 0 1px var(--warn-bd); }
-  .zone.good { border: 1px solid var(--ok-bd); background: var(--ok-bg); }
-  .zone-label { display: block; font-size: 9.5px; text-transform: uppercase; letter-spacing: .04em; color: var(--muted); margin-bottom: 2px; }
-  .zone-head { display: flex; flex-wrap: wrap; gap: 6px; align-items: baseline; font-weight: 700; }
-  .zone-head .fcode { color: var(--accent-d); background: var(--cat-bg); border-radius: 5px; padding: 0 6px; }
-  .zone-head .fmeta { font-weight: 600; color: var(--muted); font-size: 11px; }
-  .mini-table { width: 100%; border-collapse: collapse; font-size: 11px; }
-  .mini-table td, .mini-table th { border: 1px solid var(--border); padding: 3px 6px; text-align: left; }
-  .mini-table th { background: var(--gray); font-size: 10px; }
-  .stamp { display: inline-block; border: 1.5px solid var(--slate); color: var(--slate); border-radius: 4px; padding: 1px 8px; font-size: 10.5px; font-weight: 700; transform: rotate(-2deg); }
-  .sig-line { color: var(--muted); font-size: 11px; }
+  .sec-explain.show { display: block; }
+  .sec-explain strong { color: var(--accent-d); }
 
-  /* Карточка документа */
-  .field-row { display: flex; gap: 8px; align-items: flex-start; width: 100%; text-align: left; padding: 7px 10px; border: 1px solid var(--border); border-radius: 8px; background: #fff; cursor: pointer; font-family: inherit; font-size: 12px; margin-bottom: 6px; transition: all .15s ease; color: var(--primary); }
-  .field-row:hover { border-color: var(--accent); background: var(--gray); }
-  .field-row.marked { border-color: var(--warn); background: var(--warn-bg); }
-  .field-row.good { border-color: var(--ok-bd); background: var(--ok-bg); }
-  .field-label { flex: 0 0 116px; font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); padding-top: 2px; }
-  .field-value { flex: 1; font-weight: 600; }
+  .line { height: 7px; background: var(--gray); border-radius: 4px; margin-bottom: 6px; }
+  .line.w60 { width: 60%; }
+  .line.w85 { width: 85%; }
+  .line.w70 { width: 70%; }
 
-  /* Сортировка */
-  .pool { display: flex; flex-wrap: wrap; gap: 6px; background: var(--gray); border: 1px dashed var(--border); border-radius: 8px; padding: 8px; min-height: 44px; margin-bottom: 8px; }
-  .pool-empty { font-size: 11px; color: var(--muted); align-self: center; }
-  .chip { padding: 5px 10px; border: 1px solid var(--border); border-radius: 999px; background: #fff; cursor: pointer; font-family: inherit; font-size: 11.5px; font-weight: 600; color: var(--primary); transition: all .15s ease; line-height: 1.35; }
-  .chip:hover { border-color: var(--accent); transform: translateY(-1px); }
-  .chip.sel { background: var(--accent); border-color: var(--accent); color: #fff; }
-  .chip.bad { background: var(--bad-bg); border-color: var(--bad-bd); color: var(--bad); }
-  .chip.good { background: var(--ok-bg); border-color: var(--ok-bd); color: var(--ok); cursor: default; }
-  .buckets { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; }
-  .bucket { border: 1px solid var(--border); border-radius: 8px; background: #fff; padding: 6px 8px; min-height: 62px; cursor: pointer; transition: all .15s ease; }
-  .bucket:hover { border-color: var(--accent-bd); background: var(--accent-bg); }
-  .bucket-label { display: block; font-size: 10.5px; font-weight: 700; color: var(--muted); margin-bottom: 4px; }
-  .bucket-chips { display: flex; flex-wrap: wrap; gap: 4px; }
-  .bucket .chip { font-size: 10.5px; padding: 3px 8px; }
+  .tfoot-band {
+    margin-top: auto;
+    background: var(--bad-bg);
+    border: 1px solid var(--bad-bd);
+    color: var(--bad);
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.4;
+    padding: 6px 8px;
+    border-radius: 6px;
+    text-align: center;
+    transition: all 0.2s ease;
+  }
 
-  /* Сборка кода */
-  .ctx-strip { display: flex; flex-wrap: wrap; gap: 5px; margin-bottom: 8px; }
-  .ctx-code { font-size: 11px; font-weight: 800; color: var(--slate); background: var(--slate-bg); border: 1px solid var(--border); border-radius: 6px; padding: 2px 8px; }
-  .build-preview { text-align: center; font-size: 24px; font-weight: 800; background: var(--gray); border: 1px solid var(--border); border-radius: 8px; padding: 8px; margin-bottom: 8px; min-height: 46px; }
-  .build-preview .q { color: var(--border); }
-  .build-group { margin-bottom: 6px; }
-  .build-label { font-size: 10px; font-weight: 700; text-transform: uppercase; letter-spacing: .03em; color: var(--muted); margin-bottom: 3px; }
-  .build-opts { display: flex; flex-wrap: wrap; gap: 5px; }
-  .opt { padding: 5px 12px; border: 1px solid var(--border); border-radius: 8px; background: #fff; cursor: pointer; font-family: inherit; font-size: 13px; font-weight: 700; color: var(--primary); transition: all .15s ease; }
-  .opt:hover { border-color: var(--accent); transform: translateY(-1px); }
-  .opt.sel-cat { background: var(--cat-bg); border-color: var(--cat); color: var(--cat); }
-  .opt.sel-dept { background: var(--dept-bg); border-color: var(--dept); color: var(--dept); }
-  .opt.sel-num { background: var(--num-bg); border-color: var(--num); color: var(--num); }
-  .opt:disabled { cursor: default; opacity: .8; transform: none; }
+  .caption { text-align: center; font-size: 12px; font-weight: 700; margin-top: 8px; }
+  .caption small { display: block; font-weight: 400; font-size: 10px; color: var(--muted); }
 
-  .hint-box { display: none; background: var(--warn-bg); border: 1px solid var(--warn-bd); border-left: 3px solid var(--warn); border-radius: 8px; padding: 8px 10px; font-size: 12px; line-height: 1.45; margin-top: 8px; }
-  .hint-box.show { display: block; animation: drop .2s ease; }
-  .hint-box strong { color: var(--warn); }
+  .panel.hl-band .thead-band { box-shadow: 0 0 0 2px var(--accent); background: var(--accent-bg); }
+  .panel.hl-code .cell-code { box-shadow: inset 0 0 0 2px var(--accent); background: var(--accent-bg); }
+  .panel.hl-struct .struct-grid { box-shadow: 0 0 0 2px var(--accent-bd); }
+  .panel.hl-foot .tfoot-band { box-shadow: 0 0 0 2px var(--bad); }
 
-  .feedback { display: none; border-radius: 8px; padding: 9px 11px; font-size: 12px; line-height: 1.5; margin-top: 8px; }
-  .feedback.show { display: block; animation: drop .2s ease; }
-  .feedback.ok { background: var(--ok-bg); border: 1px solid var(--ok-bd); color: var(--ok); }
-  .feedback.bad { background: var(--bad-bg); border: 1px solid var(--bad-bd); color: var(--bad); }
-  .feedback ul { margin: 4px 0 0 0; padding-left: 16px; }
+  .qa { display: flex; flex-direction: column; gap: 6px; margin-bottom: 12px; }
 
-  .actions { display: flex; gap: 8px; margin-top: 10px; flex-wrap: wrap; }
-  .btn { padding: 8px 16px; border-radius: var(--r); font-size: 12.5px; font-weight: 600; cursor: pointer; border: 1px solid var(--border); background: #fff; color: var(--primary); font-family: inherit; transition: all .15s ease; }
-  .btn:hover { background: var(--gray); border-color: var(--muted); }
-  .btn:disabled { opacity: .45; cursor: default; }
-  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .btn-primary:hover { background: var(--accent-d); border-color: var(--accent-d); }
-  .btn-primary:disabled:hover { background: var(--accent); }
+  .qa-row {
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    background: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    line-height: 1.45;
+    color: var(--primary);
+    transition: all 0.15s ease;
+    overflow: hidden;
+    text-align: left;
+    padding: 0;
+    width: 100%;
+  }
 
-  .final { display: none; background: var(--ok-bg); border: 1px solid var(--ok-bd); border-left: 3px solid var(--ok); border-radius: var(--r); padding: 12px 14px; }
-  .final.show { display: block; animation: drop .25s ease; }
-  .final h2 { margin: 0 0 6px 0; font-size: 15px; color: var(--ok); }
-  .final p { margin: 0 0 8px 0; font-size: 12.5px; }
-  .final ul { margin: 0 0 10px 0; padding-left: 16px; font-size: 12px; line-height: 1.55; }
+  .qa-row:hover { border-color: var(--accent); background: var(--gray); }
+
+  .qa-header { display: flex; justify-content: space-between; align-items: center; padding: 10px 12px; gap: 10px; }
+  .qa-q { font-weight: 700; flex: 1; }
+
+  .qa-icon {
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    background: var(--gray);
+    border: 1px solid var(--border);
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 300; color: var(--muted);
+    flex-shrink: 0;
+    transition: transform 0.2s ease, background 0.2s ease;
+  }
+
+  .qa-row.active { background: var(--accent-bg); border-color: var(--accent); }
+  .qa-row.active .qa-icon { background: var(--accent); color: #fff; border-color: var(--accent); transform: rotate(45deg); }
+
+  .qa-answer {
+    padding: 0 12px;
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.25s ease, padding 0.25s ease;
+    color: var(--primary);
+    font-size: 12px;
+    line-height: 1.5;
+  }
+
+  .qa-row.active .qa-answer { max-height: 260px; padding: 0 12px 12px; }
+  .qa-answer .call { display: block; margin-top: 6px; color: var(--accent-d); font-weight: 600; }
+
+  .disclaimer { font-size: 11px; color: var(--muted); line-height: 1.5; text-align: center; }
 
   @media (max-width: 560px) {
-    body { padding: 8px; }
-    .buckets { grid-template-columns: 1fr; }
-    .field-label { flex-basis: 88px; }
-    .win-tools { gap: 4px; }
+    body { padding: 10px; }
+    .panels { flex-direction: column; }
+    .struct-grid { grid-template-columns: 1fr; }
+    .thead-band { grid-template-columns: 1fr 1fr; }
+    .cell { border-bottom: 1px solid var(--border); }
   }
 </style>
 </head>
 <body>
 
 <div class="container">
+  <div class="hint">Нажмите на вопрос, чтобы увидеть ответ и подсветку на схемах</div>
 
-  <div class="top-row">
-    <span class="progress-text" id="progressText">Задание 1 из 8</span>
-    <div class="top-actions">
-      <span class="score-chip" id="scoreChip">С первого раза: 0</span>
-      <button class="mini-btn" id="cheatBtn" onclick="toggleCheat()">Шпаргалка</button>
+  <div class="panels">
+
+    <div class="panel" id="panelHead">
+      <div class="page">
+        <div class="thead-band">
+          <div class="cell cell-code">
+            <span class="cell-label">Код</span>
+            <span class="cell-value">И.02.07</span>
+          </div>
+          <div class="cell">
+            <span class="cell-label">Название</span>
+            <span class="cell-value">Инструкция по передаче отходов подрядчику</span>
+          </div>
+          <div class="cell">
+            <span class="cell-label">Версия</span>
+            <span class="cell-value">01</span>
+          </div>
+          <div class="cell">
+            <span class="cell-label">Дата</span>
+            <span class="cell-value">01.02.2026</span>
+          </div>
+        </div>
+
+        <p class="struct-title">Единая структура документа</p>
+        <div class="struct-grid" id="structGrid"></div>
+        <div class="sec-explain" id="secExplain"></div>
+
+        <div class="line w85" style="margin-top:8px"></div>
+        <div class="line w70"></div>
+      </div>
+      <div class="caption">Схема 1. Верхний колонтитул<small>код, название, версия и дата на каждом листе</small></div>
     </div>
-  </div>
-  <div class="progress-bar"><div class="progress-fill" id="progressFill"></div></div>
 
-  <div class="cheat" id="cheat">
-    <div class="code-demo">
-      <span class="seg seg-cat">И</span><span class="dot-sep">.</span><span class="seg seg-dept">02</span><span class="dot-sep">.</span><span class="seg seg-num">15</span>
+    <div class="panel" id="panelFoot">
+      <div class="page">
+        <div class="thead-band" style="opacity:0.45">
+          <div class="cell cell-code">
+            <span class="cell-label">Код</span>
+            <span class="cell-value">И.02.07</span>
+          </div>
+          <div class="cell">
+            <span class="cell-label">Название</span>
+            <span class="cell-value">Инструкция по передаче отходов подрядчику</span>
+          </div>
+          <div class="cell">
+            <span class="cell-label">Версия</span>
+            <span class="cell-value">01</span>
+          </div>
+          <div class="cell">
+            <span class="cell-label">Дата</span>
+            <span class="cell-value">01.02.2026</span>
+          </div>
+        </div>
+
+        <div class="line w85" style="margin-top:10px"></div>
+        <div class="line w60"></div>
+        <div class="line w85"></div>
+        <div class="line w70"></div>
+        <div class="line w60"></div>
+
+        <div class="tfoot-band">
+          Печатная копия не контролируется. Актуальная версия размещена на сервере
+        </div>
+      </div>
+      <div class="caption">Схема 2. Нижний колонтитул<small>предупреждение для распечаток на каждом листе</small></div>
     </div>
-    <div class="seg-labels"><span>категория</span><span>отдел</span><span>сквозной номер</span></div>
-    <ul>
-      <li><span class="k">Р</span> – руководство, <span class="k">П</span> – процедура, <span class="k">И</span> – инструкция, <span class="k">Ф</span> – форма.</li>
-      <li>Процедуры – процессы всего завода, идут без отдела: <span class="k">П.12</span>. Номер в отделе не повторяется: после И.02.15 идет И.02.16.</li>
-      <li>После каждого изменения – новая версия и дата. Ответственность – должности, а не ФИО.</li>
-      <li>В записи обязательны: номер, версия и дата формы, название, ФИО и подпись исполнителя, нумерация страниц, на копии – отметка «копия верна».</li>
-      <li>Статусы реестра: проект, действующий, аннулирован, в архиве. Работают только по действующей версии.</li>
-    </ul>
+
   </div>
 
-  <div id="taskWrap">
-    <div class="task-head"><span class="type-badge" id="typeBadge"></span></div>
-    <p class="task-text" id="taskText"></p>
-    <div id="taskContext"></div>
-    <div id="taskBody"></div>
-    <div class="hint-box" id="hintBox"></div>
-    <div class="feedback" id="feedback"></div>
-    <div class="actions">
-      <button class="btn" id="hintBtn" onclick="showHint()">Подсказка</button>
-      <button class="btn btn-primary" id="checkBtn" onclick="check()" hidden>Проверить</button>
-      <button class="btn btn-primary" id="nextBtn" onclick="next()" hidden>Дальше</button>
-    </div>
+  <div class="qa">
+    <button class="qa-row" data-q="1">
+      <div class="qa-header">
+        <span class="qa-q">Что повторяется на каждом листе документа?</span>
+        <span class="qa-icon">+</span>
+      </div>
+      <div class="qa-answer">Верхний колонтитул с кодом, названием, версией и датой и нижний колонтитул с предупреждением для распечаток. Даже если лист вырвали или распечатали отдельно, видно, какому документу он принадлежит и можно ли ему доверять.</div>
+    </button>
+    <button class="qa-row" data-q="2">
+      <div class="qa-header">
+        <span class="qa-q">Зачем документу код И.02.07?</span>
+        <span class="qa-icon">+</span>
+      </div>
+      <div class="qa-answer">Код – это адрес документа в системе: по нему находят актуальную версию и отличают одну инструкцию от другой в общей папке. Как устроена кодировка изнутри, разберем в следующем уроке.</div>
+    </button>
+    <button class="qa-row" data-q="3">
+      <div class="qa-header">
+        <span class="qa-q">Что внутри документа, кроме колонтитулов?</span>
+        <span class="qa-icon">+</span>
+      </div>
+      <div class="qa-answer">Единая структура из восьми разделов: назначение и область применения, нормативные ссылки, термины, ответственность и полномочия, порядок действий, приложения, лист регистрации изменений и лист согласования. Разделы всегда на одних и тех же местах – не нужно искать ответственного в чужом документе.</div>
+    </button>
+    <button class="qa-row" data-q="4">
+      <div class="qa-header">
+        <span class="qa-q">От чего защищает красная пометка внизу листа?</span>
+        <span class="qa-icon">+</span>
+      </div>
+      <div class="qa-answer">От работы по устаревшей распечатке. Пометка напоминает: контролируемая версия живет только на сервере, а бумажная копия носит справочный характер. Когда инструкцию пересмотрят, старая распечатка не будет выглядеть действующим документом.</div>
+    </button>
+    <button class="qa-row" data-q="5">
+      <div class="qa-header">
+        <span class="qa-q">Зачем нужны восемь разделов внутри документа?</span>
+        <span class="qa-icon">+</span>
+      </div>
+      <div class="qa-answer">
+        Единая структура защищает от пропусков важных деталей. Первые три раздела («Назначение», «Нормативные ссылки» и «Термины») задают границы: на какие цеха распространяется правило и как понимать слова в тексте. Раздел «Ответственность и полномочия» закрепляет должности исполнителей, а «Порядок действий» дает пошаговый алгоритм работы. «Приложения» содержат формы журналов и актов, а листы регистрации изменений и согласования подтверждают, что документ проверен смежными отделами и обновлен по правилам.
+        <span class="call">Нажмите на любой раздел в схеме 1 – покажем его роль на стекольном заводе.</span>
+      </div>
+    </button>
   </div>
 
-  <div class="final" id="final">
-    <h2>Тренажер пройден</h2>
-    <p id="finalScore"></p>
-    <ul>
-      <li>Код: категория – отдел – сквозной номер. Процедуры всего завода – без отдела.</li>
-      <li>Номер в отделе не повторяется; новая инструкция берет следующий свободный номер.</li>
-      <li>В реестре работают поиском, фильтром статуса и сортировкой; действуют только версии со статусом «Действующий».</li>
-      <li>После изменения – новая версия и дата; ответственность – должности.</li>
-      <li>Запись без подписи, версии формы, нумерации страниц или отметки «копия верна» – неполная.</li>
-    </ul>
-    <button class="btn btn-primary" onclick="restart()">Пройти заново</button>
+  <div class="disclaimer">
+    Пример учебный. Код, название и дата условные – структура кодировки разбирается в следующем уроке.
   </div>
-
 </div>
 
 <script>
-  const ST_CLS = { 'Действующий': 'st-active', 'Проект': 'st-project', 'Аннулирован': 'st-cancel', 'В архиве': 'st-archive' };
-
-  const TASKS = [
-    {
-      type: 'reg-find', badge: 'Реестр: поиск', tb: 'tb-reg',
-      text: 'В реестре лежат старые версии, проекты и похожие документы других отделов. Найдите действующую инструкцию отдела экологии по уборке просыпей шихты и нажмите на строку. Поиск, фильтр и сортировка работают.',
-      rows: [
-        { id: 0, code: 'И.02.09', name: 'Инструкция по уборке просыпей шихты', ver: '02', date: '2026-03-10', status: 'Действующий' },
-        { id: 1, code: 'И.02.09', name: 'Инструкция по уборке просыпей шихты', ver: '01', date: '2025-11-02', status: 'В архиве' },
-        { id: 2, code: 'И.05.09', name: 'Инструкция по уборке просыпей на складе сырья', ver: '01', date: '2026-01-15', status: 'Действующий' },
-        { id: 3, code: 'П.09', name: 'Процедура управления отходами', ver: '03', date: '2026-02-01', status: 'Действующий' },
-        { id: 4, code: 'Ф.02.09', name: 'Форма журнала учета просыпей', ver: '01', date: '2025-12-01', status: 'Действующий' },
-        { id: 5, code: 'И.02.09', name: 'Инструкция по уборке просыпей шихты', ver: '03', date: '2026-06-01', status: 'Проект' },
-        { id: 6, code: 'И.02.10', name: 'Инструкция по маркировке тары', ver: '01', date: '2026-02-20', status: 'Действующий' }
-      ],
-      correct: 0,
-      wrongMsg: {
-        1: 'Это версия 01 со статусом «В архиве»: она заменена и работать по ней нельзя.',
-        2: 'Код И.05 – отдел снабжения. Нужен отдел экологии, код 02.',
-        3: 'П – процедура всего завода, а не инструкция отдела.',
-        4: 'Ф – форма бланка для записи, а не инструкция.',
-        5: 'Версия 03 еще на согласовании: статус «Проект». Действует версия 02.',
-        6: 'Это другая инструкция – по маркировке тары.'
-      },
-      hint: 'Включите фильтр «Действующий» и введите в поиск «просыпей». Затем сверьте код отдела и номер версии.',
-      explain: 'Верно: И.02.09, версия 02, статус «Действующий». Архивная версия 01 и проект версии 03 не действуют, а И.05.09 принадлежит другому отделу.'
-    },
-    {
-      type: 'reg-mark', badge: 'Реестр: ошибки', tb: 'tb-err',
-      text: 'В реестре три ошибки в кодах. Нажмите на код строки, чтобы отметить ошибку, затем нажмите «Проверить».',
-      rows: [
-        { id: 0, code: 'П.02.03', name: 'Процедура внутренних аудитов', ver: '01', date: '2026-02-01', status: 'Действующий', err: 'Процедуры описывают процессы всего завода и идут без отдела: верный код П.03.' },
-        { id: 1, code: 'И.02.15', name: 'Инструкция по передаче отходов подрядчику', ver: '01', date: '2026-02-01', status: 'Действующий', err: null },
-        { id: 2, code: 'И.02.15', name: 'Инструкция по уборке просыпей шихты', ver: '01', date: '2026-02-05', status: 'Действующий', err: 'Номер 15 в отделе 02 уже занят инструкцией по передаче отходов. Второй инструкции нужен свободный номер, например И.02.16.' },
-        { id: 3, code: 'Ф.07', name: 'Форма акта передачи отходов', ver: '01', date: '2026-02-01', status: 'Действующий', err: 'У формы пропущен код отдела: верный код Ф.02.07.' },
-        { id: 4, code: 'И.05.02', name: 'Инструкция по приемке сырья', ver: '02', date: '2026-03-01', status: 'Действующий', err: null }
-      ],
-      errors: [0, 2, 3],
-      hint: 'Три правила: процедуры без отдела, у формы есть отдел, номер в отделе не повторяется.',
-      explain: 'Все три ошибки найдены.'
-    },
-    {
-      type: 'form-mark', badge: 'Форма: ошибки', tb: 'tb-form',
-      text: 'Запись заполнили 12.03.2026. Отметьте три нарушения в оформлении записи и нажмите «Проверить».',
-      context: 'В реестре: <b>Ф.02.07</b> «Акт передачи отходов», действующая <b>версия 02 от 10.03.2026</b>. Перед вами копия заполненной записи.',
-      zones: [
-        { id: 0, label: 'Шапка записи', err: true, html: '<div class="zone-head"><span class="fcode">Ф.02.07</span><span>Акт передачи отходов</span><span class="fmeta">версия 01 от 01.02.2026</span></div>' },
-        { id: 1, label: 'Тело записи', err: false, html: '<table class="mini-table"><tr><th>Дата</th><th>Отход</th><th>Масса</th></tr><tr><td>12.03.2026</td><td>Бой стекла</td><td>140 кг</td></tr></table>' },
-        { id: 2, label: 'Исполнитель', err: true, html: 'Иванов И. И., оператор <span class="sig-line">· подпись: ____________ (не подписано)</span>' },
-        { id: 3, label: 'Нумерация страниц', err: false, html: 'Лист 1 из 2' },
-        { id: 4, label: 'Отметка на копии', err: true, html: '<span class="stamp">Копия</span>' },
-        { id: 5, label: 'Дата заполнения', err: false, html: '12.03.2026' }
-      ],
-      errors: [0, 2, 4],
-      hint: 'Сверьте версию формы в шапке с реестром. Проверьте подпись исполнителя и отметку на копии.',
-      explain: 'Нарушения найдены.'
-    },
-    {
-      type: 'sort', badge: 'Сортировка по смыслу', tb: 'tb-sort',
-      text: 'Разложите описания документов по категориям кода. В описаниях нет слов-подсказок – читайте смысл. Нажмите чип, затем категорию.',
-      buckets: [
-        { key: 'Р', label: 'Р – руководство' },
-        { key: 'П', label: 'П – процедура' },
-        { key: 'И', label: 'И – инструкция' },
-        { key: 'Ф', label: 'Ф – форма' }
-      ],
-      chips: [
-        { t: 'Главный документ системы: политика, цели и обязательства завода', k: 'Р' },
-        { t: 'Порядок внутреннего аудита для всех подразделений', k: 'П' },
-        { t: 'Последовательность действий оператора при замене фильтра', k: 'И' },
-        { t: 'Пустой бланк, который заполняют каждую смену', k: 'Ф' },
-        { t: 'Правила передачи отходов подрядчику для всего завода', k: 'П' },
-        { t: 'Что делать мастеру при проливе масла на участке', k: 'И' }
-      ],
-      hint: 'Руководство – одно на всю систему. Процедура – сквозной процесс для всех отделов. Инструкция – конкретное рабочее место. Форма – бланк под запись.',
-      explain: 'Категория определяется смыслом: уровень системы, сквозной процесс, рабочее место или бланк.'
-    },
-    {
-      type: 'build', badge: 'Собери код', tb: 'tb-build',
-      text: 'Отдел экологии выпускает новую инструкцию по маркировке тары. Посмотрите, какие номера уже заняты, и соберите код нового документа.',
-      ctx: ['И.02.14', 'И.02.15', 'Ф.02.07', 'П.12'],
-      groups: {
-        cat: { label: 'Категория', opts: ['Р', 'П', 'И', 'Ф'], correct: 'И' },
-        dept: { label: 'Отдел', opts: ['01', '02', '05', 'без отдела'], correct: '02' },
-        num: { label: 'Номер', opts: ['15', '16', '17'], correct: '16' }
-      },
-      hint: 'Номер в отделе сквозной и не повторяется: после 15 идет 16. Инструкция отдела – три части кода.',
-      explain: 'И.02.16: номер 15 уже занят, поэтому новая инструкция берет следующий свободный номер отдела.'
-    },
-    {
-      type: 'reg-find', badge: 'Реестр: сортировка', tb: 'tb-reg',
-      text: 'Отсортируйте реестр по дате (сначала старые) и нажмите самый старый действующий документ отдела экологии. Фильтр статуса поможет отсеять лишнее.',
-      rows: [
-        { id: 0, code: 'И.02.04', name: 'Инструкция по уборке просыпей', ver: '01', date: '2025-02-01', status: 'Действующий' },
-        { id: 1, code: 'И.02.01', name: 'Инструкция по учету отходов', ver: '01', date: '2025-01-05', status: 'В архиве' },
-        { id: 2, code: 'И.02.03', name: 'Инструкция по передаче отходов подрядчику', ver: '02', date: '2025-01-12', status: 'Действующий' },
-        { id: 3, code: 'И.02.02', name: 'Инструкция по хранению реагентов', ver: '01', date: '2025-01-08', status: 'Аннулирован' },
-        { id: 4, code: 'П.03', name: 'Процедура управления отходами', ver: '01', date: '2025-01-03', status: 'Действующий' },
-        { id: 5, code: 'И.02.05', name: 'Инструкция по маркировке тары', ver: '01', date: '2025-03-01', status: 'Проект' }
-      ],
-      correct: 2,
-      defaultSort: 'code',
-      wrongMsg: {
-        0: 'Есть действующий документ отдела 02 старше: отсортируйте по дате и сравните.',
-        1: 'Статус «В архиве»: документ заменен и не действует.',
-        3: 'Статус «Аннулирован»: документ отменен.',
-        4: 'Процедура не принадлежит отделу: у нее нет кода отдела. Нужен документ И.02.',
-        5: 'Статус «Проект»: документ еще не утвержден.'
-      },
-      hint: 'Сортировка по дате + фильтр «Действующий». Документы отдела экологии начинаются с И.02.',
-      explain: 'Верно: И.02.03 от 12.01.2025 – самый старый действующий документ отдела. Более старые записи архивные, аннулированные или проектные.'
-    },
-    {
-      type: 'card-mark', badge: 'Карточка: ошибки', tb: 'tb-err',
-      text: 'В карточке документа два нарушения. Отметьте поля с ошибками и нажмите «Проверить».',
-      fields: [
-        { label: 'Код', value: 'И.02.15', err: false },
-        { label: 'Название', value: 'Инструкция по передаче отходов подрядчику', err: false },
-        { label: 'Версия и дата', value: 'версия 01 от 01.02.2026', err: true },
-        { label: 'Ответственный', value: 'Иванов И. И.', err: true },
-        { label: 'Лист изменений', value: 'изм. 2 от 10.03.2026: добавлен пункт о маркировке тары', err: false },
-        { label: 'Статус', value: 'Действующий', err: false }
-      ],
-      errors: [2, 3],
-      hint: 'Сравните лист изменений с версией и датой. Вспомните, кому приписывают ответственность: должности или человеку.',
-      explain: 'Оба нарушения найдены.'
-    },
-    {
-      type: 'build', badge: 'Собери код', tb: 'tb-build',
-      text: 'Завод выпускает процедуру анализа со стороны руководства – процесс для всех подразделений. Соберите код с учетом занятых номеров.',
-      ctx: ['П.12', 'П.13', 'И.02.16'],
-      groups: {
-        cat: { label: 'Категория', opts: ['Р', 'П', 'И', 'Ф'], correct: 'П' },
-        dept: { label: 'Отдел', opts: ['01', '02', '05', 'без отдела'], correct: 'без отдела' },
-        num: { label: 'Номер', opts: ['13', '14', '15'], correct: '14' }
-      },
-      hint: 'Процедура всего завода – две части кода, без отдела. Номер сквозной по заводу: после 13 идет 14.',
-      explain: 'П.14: процедура без отдела, следующий свободный сквозной номер завода.'
-    }
+  const SECTIONS = [
+    { name: 'Назначение и область применения', text: 'Показывает, где правило работает: например, только цех составления шихты и линия раскроя, а не весь завод.' },
+    { name: 'Нормативные ссылки', text: 'Перечисляет законы и пункты ГОСТ, на которых держится правило: по отходам – требования к накоплению стеклобоя.' },
+    { name: 'Термины и определения', text: 'Договаривается о словах: что считаем боем стекла, а что – браком, чтобы цеха понимали одинаково.' },
+    { name: 'Ответственность и полномочия', text: 'Закрепляет должности: мастер смены передает данные о бое, начальник цеха проверяет, эколог сводит учет.' },
+    { name: 'Порядок действий', text: 'Дает пошаговый алгоритм: как собрать бой, куда передать и что записать в журнал.' },
+    { name: 'Приложения', text: 'Содержит формы: бланк журнала учета просыпей и акт передачи отходов подрядчику.' },
+    { name: 'Лист регистрации изменений', text: 'Фиксирует редакции: после замены контейнеров внесли правку и подняли версию с 01 до 02.' },
+    { name: 'Лист согласования', text: 'Подтверждает, что правило проверили смежные отделы: технолог, снабжение и служба качества поставили подписи.' }
   ];
 
-  const S = {
-    i: 0, solved: false, wrong: false, solvedCount: 0, first: 0,
-    marks: new Set(), sel: {}, place: [], selectedChip: null, bad: new Set(),
-    reg: { q: '', filter: 'Все', sort: 'code', dir: 1 }
+  const qaRows = document.querySelectorAll('.qa-row');
+  const panelHead = document.getElementById('panelHead');
+  const panelFoot = document.getElementById('panelFoot');
+  const structGrid = document.getElementById('structGrid');
+  const secExplain = document.getElementById('secExplain');
+
+  let activeSection = null;
+
+  const highlights = {
+    1: { head: ['hl-band'], foot: ['hl-foot'], invite: false },
+    2: { head: ['hl-code'], foot: [], invite: false },
+    3: { head: ['hl-struct'], foot: [], invite: false },
+    4: { head: [], foot: ['hl-foot'], invite: false },
+    5: { head: ['hl-struct'], foot: [], invite: true }
   };
 
-  const $ = id => document.getElementById(id);
-  const fmtDate = iso => iso.split('-').reverse().join('.');
-
-  function toggleCheat() {
-    $('cheat').classList.toggle('show');
-    $('cheatBtn').classList.toggle('on');
-    resizeIframe();
-  }
-
-  function render() {
-    const t = TASKS[S.i];
-    S.solved = false; S.wrong = false;
-    S.marks = new Set(); S.bad = new Set(); S.selectedChip = null;
-    S.sel = { cat: null, dept: null, num: null };
-    S.place = t.chips ? t.chips.map(() => null) : [];
-    S.reg = { q: '', filter: 'Все', sort: t.defaultSort || 'code', dir: 1 };
-
-    $('progressText').textContent = `Задание ${S.i + 1} из ${TASKS.length}`;
-    $('progressFill').style.width = (S.solvedCount / TASKS.length * 100) + '%';
-    $('scoreChip').textContent = `С первого раза: ${S.first}`;
-
-    const badge = $('typeBadge');
-    badge.textContent = t.badge;
-    badge.className = 'type-badge ' + t.tb;
-
-    $('taskText').textContent = t.text;
-    $('taskContext').innerHTML = t.context ? `<div class="context-note">${t.context}</div>` : '';
-    $('hintBox').className = 'hint-box';
-    $('hintBox').innerHTML = '<strong>Подсказка.</strong> ' + t.hint;
-    $('feedback').className = 'feedback';
-    $('feedback').innerHTML = '';
-    $('hintBtn').hidden = false;
-    $('hintBtn').disabled = false;
-    $('nextBtn').hidden = true;
-
-    const body = $('taskBody');
-    body.innerHTML = '';
-    $('checkBtn').hidden = true;
-
-    if (t.type === 'reg-find' || t.type === 'reg-mark') buildRegistry(t, body);
-    if (t.type === 'form-mark') buildForm(t, body);
-    if (t.type === 'card-mark') buildCard(t, body);
-    if (t.type === 'sort') renderSort();
-    if (t.type === 'build') renderBuild();
-
-    if (['reg-mark', 'form-mark', 'card-mark', 'sort', 'build'].includes(t.type)) {
-      $('checkBtn').hidden = false;
-      $('checkBtn').disabled = true;
-    }
-    resizeIframe();
-  }
-
-  /* ===== Окно реестра ===== */
-  function buildRegistry(t, body) {
-    const win = document.createElement('div');
-    win.className = 'win';
-    win.innerHTML = `
-      <div class="win-bar">
-        <span class="win-ico">СЭМ</span>
-        <span class="win-title">Реестр документации</span>
-        <span class="win-count" id="winCount"></span>
-      </div>
-      <div class="win-tools">
-        <div class="search-wrap">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.5" y2="16.5"/></svg>
-          <input class="search-input" id="regSearch" type="text" placeholder="Поиск по коду или названию" autocomplete="off">
-        </div>
-        <select class="tool-select" id="regSort">
-          <option value="code">Сортировка: код</option>
-          <option value="date">Сортировка: дата</option>
-          <option value="ver">Сортировка: версия</option>
-          <option value="name">Сортировка: название</option>
-        </select>
-        <button class="dir-btn" id="regDir" title="Направление сортировки">↑</button>
-      </div>
-      <div class="filter-row" id="regFilters"></div>
-      <div class="reg-scroll"><table class="reg">
-        <thead><tr><th>Код</th><th>Название</th><th>Версия</th><th>Дата</th><th>Статус</th></tr></thead>
-        <tbody id="regBody"></tbody>
-      </table><div class="reg-empty" id="regEmpty" hidden>Ничего не найдено. Измените запрос или фильтр.</div></div>
-      <div class="win-foot">${t.type === 'reg-mark' ? 'Нажмите на код строки, чтобы отметить ошибку' : 'Нажмите на строку, чтобы выбрать документ'}</div>
-    `;
-    body.appendChild(win);
-
-    const filters = ['Все', 'Действующий', 'Проект', 'Аннулирован', 'В архиве'];
-    const frow = win.querySelector('#regFilters');
-    filters.forEach(f => {
+  function renderSections() {
+    structGrid.innerHTML = '';
+    SECTIONS.forEach((s, i) => {
       const b = document.createElement('button');
-      b.className = 'f-chip' + (f === 'Все' ? ' on' : '');
-      b.textContent = f;
-      b.onclick = () => {
-        S.reg.filter = f;
-        frow.querySelectorAll('.f-chip').forEach(c => c.classList.toggle('on', c === b));
-        paintRows(t);
-      };
-      frow.appendChild(b);
+      b.className = 'struct-item';
+      b.dataset.idx = i;
+      b.innerHTML = `<span class="struct-num">${i + 1}</span><span>${s.name}</span>`;
+      b.onclick = () => selectSection(i);
+      structGrid.appendChild(b);
     });
-
-    win.querySelector('#regSearch').addEventListener('input', e => { S.reg.q = e.target.value.toLowerCase(); paintRows(t); });
-    const sortSel = win.querySelector('#regSort');
-    sortSel.value = S.reg.sort;
-    sortSel.addEventListener('change', e => { S.reg.sort = e.target.value; paintRows(t); });
-    win.querySelector('#regDir').addEventListener('click', e => {
-      S.reg.dir *= -1;
-      e.currentTarget.textContent = S.reg.dir === 1 ? '↑' : '↓';
-      paintRows(t);
-    });
-
-    paintRows(t);
   }
 
-  function visibleRows(t) {
-    let rows = t.rows.slice();
-    if (S.reg.filter !== 'Все') rows = rows.filter(r => r.status === S.reg.filter);
-    if (S.reg.q) rows = rows.filter(r => (r.code + ' ' + r.name).toLowerCase().includes(S.reg.q));
-    const k = S.reg.sort;
-    rows.sort((a, b) => {
-      let va = a[k], vb = b[k];
-      if (k === 'ver') { va = +va; vb = +vb; }
-      if (va < vb) return -1 * S.reg.dir;
-      if (va > vb) return 1 * S.reg.dir;
-      return a.id - b.id;
-    });
-    return rows;
-  }
-
-  function paintRows(t) {
-    const tbody = $('regBody');
-    const rows = visibleRows(t);
-    $('winCount').textContent = `Показано ${rows.length} из ${t.rows.length}`;
-    $('regEmpty').hidden = rows.length > 0;
-    tbody.innerHTML = '';
-    rows.forEach(r => {
-      const tr = document.createElement('tr');
-      tr.className = 'reg-row';
-      if (S.marks.has(r.id)) tr.classList.add('marked');
-      const codeInner = t.type === 'reg-mark'
-        ? `<button onclick="event.stopPropagation(); toggleMark(${r.id})">${r.code}</button>`
-        : `<span class="cc">${r.code}</span>`;
-      tr.innerHTML = `
-        <td class="code-cell">${codeInner}</td>
-        <td>${r.name}</td>
-        <td>${r.ver}</td>
-        <td>${fmtDate(r.date)}</td>
-        <td><span class="st ${ST_CLS[r.status]}">${r.status}</span></td>
-      `;
-      if (t.type === 'reg-find') {
-        tr.onclick = () => answerRow(r, tr, t);
-      } else {
-        tr.onclick = () => toggleMark(r.id);
-      }
-      tbody.appendChild(tr);
-    });
-    if (t.type === 'reg-mark') $('checkBtn').disabled = S.marks.size === 0 || S.solved;
-    resizeIframe();
-  }
-
-  function answerRow(r, tr, t) {
-    if (S.solved) return;
-    document.querySelectorAll('tr.reg-row.bad').forEach(x => x.classList.remove('bad'));
-    if (r.id === t.correct) {
-      tr.classList.add('good');
-      solve(t.explain);
+  function selectSection(i) {
+    if (activeSection === i) {
+      activeSection = null;
+      secExplain.classList.remove('show');
+      secExplain.innerHTML = '';
     } else {
-      tr.classList.add('bad');
-      S.wrong = true;
-      fail(t.wrongMsg[r.id]);
+      activeSection = i;
+      secExplain.innerHTML = `<strong>${SECTIONS[i].name}.</strong> ${SECTIONS[i].text}`;
+      secExplain.classList.add('show');
     }
-  }
-
-  function toggleMark(id) {
-    if (S.solved) return;
-    if (S.marks.has(id)) S.marks.delete(id); else S.marks.add(id);
-    const t = TASKS[S.i];
-    if (t.type === 'reg-mark') paintRows(t);
-    if (t.type === 'form-mark') paintZones(t);
-    if (t.type === 'card-mark') paintFields(t);
-    $('checkBtn').disabled = S.marks.size === 0;
-  }
-
-  /* ===== Форма записи ===== */
-  function buildForm(t, body) {
-    const mock = document.createElement('div');
-    mock.className = 'form-mock';
-    mock.id = 'formMock';
-    body.appendChild(mock);
-    paintZones(t);
-  }
-
-  function paintZones(t) {
-    const mock = $('formMock');
-    mock.innerHTML = '';
-    t.zones.forEach(z => {
-      const d = document.createElement('div');
-      d.className = 'zone' + (S.marks.has(z.id) ? ' marked' : '') + (S.solved && z.err ? ' good' : '');
-      d.innerHTML = `<span class="zone-label">${z.label}</span>${z.html}`;
-      d.onclick = () => toggleMark(z.id);
-      mock.appendChild(d);
+    structGrid.querySelectorAll('.struct-item').forEach((b, idx) => {
+      b.classList.toggle('active', idx === activeSection);
     });
-    $('checkBtn').disabled = S.marks.size === 0 || S.solved;
-    resizeIframe();
+    requestAnimationFrame(resizeIframe);
   }
 
-  /* ===== Карточка документа ===== */
-  function buildCard(t, body) {
-    const wrap = document.createElement('div');
-    wrap.id = 'cardWrap';
-    body.appendChild(wrap);
-    paintFields(t);
+  function clearHighlights() {
+    [panelHead, panelFoot].forEach(p => p.classList.remove('hl-band', 'hl-code', 'hl-struct', 'hl-foot'));
+    structGrid.classList.remove('invite');
+    activeSection = null;
+    secExplain.classList.remove('show');
+    secExplain.innerHTML = '';
+    structGrid.querySelectorAll('.struct-item').forEach(b => b.classList.remove('active'));
   }
 
-  function paintFields(t) {
-    const wrap = $('cardWrap');
-    wrap.innerHTML = '';
-    t.fields.forEach((f, idx) => {
-      const b = document.createElement('button');
-      b.className = 'field-row' + (S.marks.has(idx) ? ' marked' : '') + (S.solved && f.err ? ' good' : '');
-      b.innerHTML = `<span class="field-label">${f.label}</span><span class="field-value">${f.value}</span>`;
-      b.onclick = () => toggleMark(idx);
-      wrap.appendChild(b);
-    });
-    $('checkBtn').disabled = S.marks.size === 0 || S.solved;
-    resizeIframe();
-  }
+  qaRows.forEach(btn => {
+    btn.addEventListener('click', () => {
+      const q = btn.dataset.q;
+      const wasActive = btn.classList.contains('active');
 
-  /* ===== Сортировка ===== */
-  function renderSort() {
-    const t = TASKS[S.i];
-    const body = $('taskBody');
-    body.innerHTML = '';
+      qaRows.forEach(b => b.classList.remove('active'));
+      clearHighlights();
 
-    const pool = document.createElement('div');
-    pool.className = 'pool';
-    const inPool = t.chips.map((c, i) => i).filter(i => S.place[i] === null);
-    if (!inPool.length) pool.innerHTML = '<span class="pool-empty">Все чипы разложены – нажмите «Проверить»</span>';
-    inPool.forEach(i => {
-      const c = document.createElement('button');
-      c.className = 'chip' + (S.selectedChip === i ? ' sel' : '') + (S.bad.has(i) ? ' bad' : '');
-      c.textContent = t.chips[i].t;
-      c.onclick = () => { S.selectedChip = S.selectedChip === i ? null : i; renderSort(); };
-      pool.appendChild(c);
-    });
-    body.appendChild(pool);
-
-    const buckets = document.createElement('div');
-    buckets.className = 'buckets';
-    t.buckets.forEach(bk => {
-      const d = document.createElement('div');
-      d.className = 'bucket';
-      d.onclick = () => {
-        if (S.solved || S.selectedChip === null) return;
-        S.place[S.selectedChip] = bk.key;
-        S.bad.delete(S.selectedChip);
-        S.selectedChip = null;
-        renderSort();
-      };
-      d.innerHTML = `<span class="bucket-label">${bk.label}</span>`;
-      const wrap = document.createElement('div');
-      wrap.className = 'bucket-chips';
-      t.chips.forEach((c, i) => {
-        if (S.place[i] === bk.key) {
-          const ch = document.createElement('button');
-          ch.className = 'chip' + (S.solved ? ' good' : '');
-          ch.textContent = c.t;
-          ch.onclick = e => {
-            e.stopPropagation();
-            if (S.solved) return;
-            S.place[i] = null; S.bad.delete(i);
-            renderSort();
-          };
-          wrap.appendChild(ch);
-        }
-      });
-      d.appendChild(wrap);
-      buckets.appendChild(d);
-    });
-    body.appendChild(buckets);
-    $('checkBtn').disabled = S.place.some(p => p === null) || S.solved;
-    resizeIframe();
-  }
-
-  /* ===== Сборка кода ===== */
-  function renderBuild() {
-    const t = TASKS[S.i];
-    const body = $('taskBody');
-    body.innerHTML = '';
-
-    if (t.ctx) {
-      const strip = document.createElement('div');
-      strip.className = 'ctx-strip';
-      strip.innerHTML = '<span class="build-label" style="width:100%;margin:0 0 2px 0">Уже в реестре:</span>' +
-        t.ctx.map(c => `<span class="ctx-code">${c}</span>`).join('');
-      body.appendChild(strip);
-    }
-
-    const prev = document.createElement('div');
-    prev.className = 'build-preview';
-    const { cat, dept, num } = S.sel;
-    const parts = [cat ? `<span class="seg seg-cat">${cat}</span>` : '<span class="q">?</span>'];
-    if (dept !== 'без отдела') {
-      parts.push('<span class="dot-sep">.</span>');
-      parts.push(dept ? `<span class="seg seg-dept">${dept}</span>` : '<span class="q">??</span>');
-    }
-    parts.push('<span class="dot-sep">.</span>');
-    parts.push(num ? `<span class="seg seg-num">${num}</span>` : '<span class="q">??</span>');
-    prev.innerHTML = parts.join('');
-    body.appendChild(prev);
-
-    ['cat', 'dept', 'num'].forEach(g => {
-      const grp = t.groups[g];
-      const wrap = document.createElement('div');
-      wrap.className = 'build-group';
-      wrap.innerHTML = `<div class="build-label">${grp.label}</div>`;
-      const opts = document.createElement('div');
-      opts.className = 'build-opts';
-      grp.opts.forEach(o => {
-        const b = document.createElement('button');
-        b.className = 'opt' + (S.sel[g] === o ? ' sel-' + g : '');
-        b.textContent = o;
-        b.disabled = S.solved;
-        b.onclick = () => { S.sel[g] = o; renderBuild(); };
-        opts.appendChild(b);
-      });
-      wrap.appendChild(opts);
-      body.appendChild(wrap);
-    });
-
-    $('checkBtn').disabled = !(S.sel.cat && S.sel.dept && S.sel.num) || S.solved;
-    resizeIframe();
-  }
-
-  /* ===== Проверка ===== */
-  function check() {
-    if (S.solved) return;
-    const t = TASKS[S.i];
-
-    if (t.type === 'reg-mark' || t.type === 'form-mark' || t.type === 'card-mark') {
-      const errSet = new Set(t.errors);
-      const missed = t.errors.filter(e => !S.marks.has(e));
-      const extra = [...S.marks].filter(m => !errSet.has(m));
-      if (!missed.length && !extra.length) {
-        let list = '';
-        if (t.type === 'reg-mark') list = '<ul>' + t.rows.filter(r => r.err).map(r => `<li>${r.code}: ${r.err}</li>`).join('') + '</ul>';
-        if (t.type === 'form-mark') list = '<ul><li>Шапка: заполнена устаревшая версия 01, действует версия 02 от 10.03.2026.</li><li>Нет подписи исполнителя: ФИО без подписи не подтверждает запись.</li><li>На копии нет отметки «копия верна».</li></ul>';
-        if (t.type === 'card-mark') list = '<ul><li>Версия и дата не обновлены после изменения 2 от 10.03.2026.</li><li>Ответственный указан ФИО: ответственность закрепляют за должностью, иначе при увольнении придется менять документ.</li></ul>';
-        solve(t.explain + list);
-        if (t.type === 'reg-mark') paintRows(t);
-        if (t.type === 'form-mark') paintZones(t);
-        if (t.type === 'card-mark') paintFields(t);
-      } else {
-        S.wrong = true;
-        fail(`Не сходится. Не отмечено ошибок: ${missed.length}. Лишних отметок: ${extra.length}. Снимите лишнее и найдите остальные.`);
+      if (!wasActive) {
+        btn.classList.add('active');
+        const hl = highlights[q];
+        hl.head.forEach(c => panelHead.classList.add(c));
+        hl.foot.forEach(c => panelFoot.classList.add(c));
+        if (hl.invite) structGrid.classList.add('invite');
       }
-      return;
-    }
 
-    if (t.type === 'sort') {
-      const wrongIdx = t.chips.map((c, i) => i).filter(i => S.place[i] !== t.chips[i].k);
-      if (!wrongIdx.length) {
-        solve(t.explain);
-        renderSort();
-      } else {
-        S.wrong = true;
-        S.bad = new Set(wrongIdx);
-        wrongIdx.forEach(i => { S.place[i] = null; });
-        S.selectedChip = null;
-        fail(`Не на месте: ${wrongIdx.length}. Красные чипы вернулись в пул – перечитайте смысл и переместите снова.`);
-        renderSort();
-      }
-      return;
-    }
-
-    if (t.type === 'build') {
-      const badParts = [];
-      if (S.sel.cat !== t.groups.cat.correct) badParts.push('категория');
-      if (S.sel.dept !== t.groups.dept.correct) badParts.push('отдел');
-      if (S.sel.num !== t.groups.num.correct) badParts.push('номер');
-      if (!badParts.length) { solve(t.explain); renderBuild(); }
-      else { S.wrong = true; fail('Код не сходится. Неверно: ' + badParts.join(', ') + '. Сверьтесь со шпаргалкой и занятыми номерами.'); }
-    }
-  }
-
-  function solve(msg) {
-    S.solved = true;
-    S.solvedCount++;
-    if (!S.wrong) S.first++;
-    $('feedback').className = 'feedback ok show';
-    $('feedback').innerHTML = '<strong>Верно.</strong> ' + msg;
-    $('hintBtn').disabled = true;
-    $('checkBtn').hidden = true;
-    $('nextBtn').hidden = false;
-    $('nextBtn').textContent = S.i === TASKS.length - 1 ? 'Итог' : 'Дальше';
-    $('progressFill').style.width = (S.solvedCount / TASKS.length * 100) + '%';
-    $('scoreChip').textContent = `С первого раза: ${S.first}`;
-    resizeIframe();
-  }
-
-  function fail(msg) {
-    $('feedback').className = 'feedback bad show';
-    $('feedback').innerHTML = '<strong>Не то.</strong> ' + msg;
-    resizeIframe();
-  }
-
-  function showHint() { $('hintBox').classList.add('show'); resizeIframe(); }
-
-  function next() {
-    if (S.i === TASKS.length - 1) {
-      $('taskWrap').style.display = 'none';
-      $('finalScore').textContent = `Верно с первого раза: ${S.first} из ${TASKS.length}. Остальное разобрано с подсказками и повторными попытками – это нормальный путь обучения.`;
-      $('final').classList.add('show');
-      $('progressText').textContent = 'Тренажер пройден';
-      $('progressFill').style.width = '100%';
-      resizeIframe();
-      return;
-    }
-    S.i++;
-    render();
-  }
-
-  function restart() {
-    S.i = 0; S.solvedCount = 0; S.first = 0;
-    $('final').classList.remove('show');
-    $('taskWrap').style.display = 'block';
-    render();
-  }
+      requestAnimationFrame(resizeIframe);
+    });
+  });
 
   function resizeIframe() {
-    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') window.parentIFrame.size();
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
   }
 
-  window.addEventListener('load', () => { render(); setTimeout(resizeIframe, 200); });
+  window.addEventListener('load', () => {
+    renderSections();
+    resizeIframe();
+    setTimeout(resizeIframe, 200);
+  });
 
   if ('ResizeObserver' in window) {
     const container = document.querySelector('.container');
     if (container) {
       let t;
-      new ResizeObserver(() => { clearTimeout(t); t = setTimeout(resizeIframe, 50); }).observe(container);
+      new ResizeObserver(() => {
+        clearTimeout(t);
+        t = setTimeout(resizeIframe, 50);
+      }).observe(container);
     }
   }
 </script>
