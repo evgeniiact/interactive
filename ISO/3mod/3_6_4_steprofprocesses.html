@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
-<title>Жизненный цикл: контролирование и влияние</title>
+<title>Жизненный цикл: управление и влияние</title>
 <style>
   :root {
     --primary: #1e293b;
@@ -18,9 +18,8 @@
     --infl: #2563eb;
     --infl-bg: #eff6ff;
     --infl-bd: #bfdbfe;
-    --none: #475569;
+    --none: #64748b;
     --none-bg: #f1f5f9;
-    --none-bd: #cbd5e1;
     --r: 10px;
   }
 
@@ -33,67 +32,57 @@
     line-height: 1.5;
     color: var(--primary);
     background: var(--bg);
-    padding: 14px;
+    padding: 14px 12px;
   }
 
   .container { width: 100%; max-width: 900px; margin: 0 auto; }
 
-  .hint {
-    text-align: center;
-    font-size: 12.5px;
-    color: var(--muted);
-    margin: 0 0 10px 0;
+  /* Переключатель ролей */
+  .roles {
+    display: flex;
+    justify-content: center;
+    gap: 6px;
+    flex-wrap: wrap;
+    margin-bottom: 14px;
   }
 
-  .scene {
+  .role-btn {
+    padding: 6px 14px;
     border: 1px solid var(--border);
-    border-radius: var(--r);
+    border-radius: 999px;
     background: #fff;
-    padding: 12px 12px 14px;
-    margin-bottom: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--muted);
+    transition: all 0.2s ease;
   }
 
-  .scene-title {
-    text-align: center;
-    font-size: 13px;
-    font-weight: 700;
-    margin: 0 0 6px 0;
-  }
+  .role-btn:hover { border-color: var(--infl); color: var(--infl); }
+  .role-btn.active { background: var(--infl); border-color: var(--infl); color: #fff; }
 
   /* Схема */
   .scheme {
     position: relative;
-    height: 235px;
-    margin: 0 4px;
+    height: 268px;
+    margin: 0 2px;
   }
 
-  .oval {
+  .contour {
     position: absolute;
     border: 2px dashed;
     border-radius: 50%;
     cursor: pointer;
-    transition: background 0.2s ease;
+    transition: left 0.5s ease, right 0.5s ease, top 0.5s ease, bottom 0.5s ease, opacity 0.35s ease, background 0.2s ease;
   }
 
-  .oval-blue {
-    border-color: #93c5fd;
-    left: 11%;
-    right: 11%;
-    top: 18px;
-    bottom: 40px;
-  }
+  .contour.off { opacity: 0; pointer-events: none; }
 
-  .oval-blue:hover { background: rgba(37,99,235,0.04); }
-
-  .oval-green {
-    border-color: #86efac;
-    left: 27.5%;
-    width: 30%;
-    top: 44px;
-    bottom: 58px;
-  }
-
-  .oval-green:hover { background: rgba(22,163,74,0.05); }
+  .contour-blue { border-color: #93c5fd; z-index: 1; }
+  .contour-blue:hover { background: rgba(37,99,235,0.04); }
+  .contour-green { border-color: #86efac; z-index: 2; }
+  .contour-green:hover { background: rgba(22,163,74,0.05); }
 
   .oval-label {
     position: absolute;
@@ -102,48 +91,33 @@
     transform: translateX(-50%);
     font-size: 10px;
     font-weight: 800;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    white-space: nowrap;
-  }
-
-  .oval-blue .oval-label { color: var(--infl); }
-  .oval-green .oval-label { color: var(--ctrl); }
-
-  .aspect {
-    position: absolute;
-    font-size: 9.5px;
-    font-style: italic;
-    font-weight: 600;
-    color: var(--ctrl);
+    letter-spacing: 0.05em;
     white-space: nowrap;
     pointer-events: none;
   }
 
-  .aspect-1 { top: 76px; left: 47%; }
-  .aspect-2 { top: 152px; left: 29%; }
-  .aspect-3 { top: 152px; left: 46%; }
+  .contour-blue .oval-label { color: var(--infl); top: 6px; }
+  .contour-green .oval-label { color: var(--ctrl); }
 
   .chain {
     position: absolute;
-    left: 0;
-    right: 0;
-    top: 95px;
+    left: 0; right: 0; top: 96px;
     display: grid;
-    grid-template-columns: repeat(7, 1fr);
-    gap: 16px;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 14px;
+    z-index: 3;
   }
 
   .stage {
     position: relative;
-    border: 1px solid var(--infl-bd);
+    border: 1px solid var(--border);
     background: #fff;
-    border-radius: 6px;
-    padding: 6px 4px;
-    min-height: 52px;
+    border-radius: 7px;
+    padding: 6px 4px 5px;
+    min-height: 100px;
     cursor: pointer;
     font-family: inherit;
-    font-size: 10.5px;
+    font-size: 11px;
     font-weight: 600;
     line-height: 1.25;
     color: var(--primary);
@@ -151,20 +125,18 @@
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
     gap: 3px;
-    transition: all 0.15s ease;
+    transition: all 0.25s ease;
   }
 
-  .stage:hover { background: var(--infl-bg); transform: translateY(-1px); }
+  .stage:hover { transform: translateY(-1px); box-shadow: 0 2px 8px rgba(30,41,59,.1); }
 
   .stage:not(:last-child)::after {
     content: '';
     position: absolute;
-    right: -16px;
-    top: 50%;
-    width: 10px;
-    height: 2px;
+    right: -14px; top: 34px;
+    width: 8px; height: 2px;
     background: #94a3b8;
     transform: translateY(-50%);
   }
@@ -172,8 +144,7 @@
   .stage:not(:last-child)::before {
     content: '';
     position: absolute;
-    right: -16px;
-    top: 50%;
+    right: -14px; top: 34px;
     transform: translateY(-50%);
     border: 4px solid transparent;
     border-left: 6px solid #94a3b8;
@@ -181,55 +152,64 @@
     z-index: 1;
   }
 
-  .stage.active { box-shadow: 0 0 0 2px currentColor; }
-  .stage.active[data-contour="control"] { color: var(--ctrl); background: var(--ctrl-bg); }
-  .stage.active[data-contour="influence"] { color: var(--infl); background: var(--infl-bg); }
-  .stage.active[data-contour="none"] { color: var(--none); background: var(--none-bg); }
-  .stage.active .stage-name { color: inherit; }
-
-  .stage-name { display: block; color: var(--primary); }
+  .stage-name { color: var(--primary); }
 
   .stage-tag {
-    display: none;
-    font-size: 9px;
+    font-size: 8.5px;
     font-weight: 700;
-    padding: 0 6px;
+    padding: 1px 7px;
     border-radius: 999px;
+    line-height: 1.5;
+    white-space: nowrap;
   }
 
-  .waste-drop {
-    position: absolute;
-    top: 152px;
-    left: 92.86%;
-    transform: translateX(-50%);
-    font-size: 10px;
-    color: var(--muted);
-    text-align: center;
-    line-height: 1.2;
-    pointer-events: none;
+  .stage[data-kind="control"] { background: var(--ctrl-bg); border-color: var(--ctrl-bd); }
+  .stage[data-kind="control"] .stage-tag { background: var(--ctrl); color: #fff; }
+  .stage[data-kind="influence"] { background: var(--infl-bg); border-color: var(--infl-bd); }
+  .stage[data-kind="influence"] .stage-tag { background: var(--infl); color: #fff; }
+  .stage[data-kind="none"] { background: var(--gray); border-color: var(--border); }
+  .stage[data-kind="none"] .stage-tag { background: var(--none); color: #fff; }
+
+  .stage.active { box-shadow: 0 0 0 2px currentColor; }
+  .stage.active[data-kind="control"] { color: var(--ctrl); }
+  .stage.active[data-kind="influence"] { color: var(--infl); }
+  .stage.active[data-kind="none"] { color: var(--none); }
+
+  /* Конкретные стадии роли внутри карточек */
+  .conc {
+    display: block;
+    width: 100%;
+    margin-top: 2px;
+    padding: 2px 4px;
+    font-size: 9px;
+    font-weight: 600;
+    line-height: 1.3;
+    border-radius: 5px;
+    border: 1px solid;
+    cursor: pointer;
+    font-family: inherit;
+    background: #fff;
+    transition: all 0.15s ease;
   }
+
+  .conc-c { border-color: var(--ctrl-bd); color: var(--ctrl); }
+  .conc-i { border-color: var(--infl-bd); color: var(--infl); }
+  .conc:hover { transform: translateY(-1px); box-shadow: 0 1px 4px rgba(30,41,59,.12); }
+  .conc.active { box-shadow: 0 0 0 2px currentColor; }
 
   .scene-caption {
     text-align: center;
     font-size: 11.5px;
     color: var(--muted);
-    margin: 8px 0 0 0;
+    margin: 12px auto 0;
+    max-width: 720px;
+    line-height: 1.5;
   }
 
-  .scene-note {
-    text-align: center;
-    font-size: 10.5px;
-    color: var(--muted);
-    font-style: italic;
-    margin: 4px auto 0;
-    max-width: 640px;
-  }
-
-  /* Легенда */
   .legend {
     display: flex;
-    gap: 6px;
     justify-content: center;
+    gap: 8px;
     margin-top: 10px;
     flex-wrap: wrap;
   }
@@ -238,7 +218,7 @@
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    padding: 5px 12px;
+    padding: 5px 13px;
     border: 1px solid var(--border);
     border-radius: 999px;
     background: #fff;
@@ -247,39 +227,41 @@
     font-size: 11.5px;
     font-weight: 600;
     color: var(--primary);
-    transition: all 0.15s ease;
+    transition: all 0.2s ease;
   }
 
   .legend-btn:hover { background: var(--gray); }
   .legend-btn.active-c { border-color: var(--ctrl); background: var(--ctrl-bg); color: var(--ctrl); }
   .legend-btn.active-i { border-color: var(--infl); background: var(--infl-bg); color: var(--infl); }
 
-  .legend-dot {
-    width: 10px;
-    height: 10px;
-    border-radius: 50%;
-    flex-shrink: 0;
-  }
-
+  .legend-dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
   .dot-c { background: var(--ctrl); }
   .dot-i { background: var(--infl); }
 
-  /* Карточка пояснения */
+  /* Панель пояснения */
   .detail {
     border: 1px solid var(--border);
-    border-left: 4px solid var(--none-bd);
+    border-left: 4px solid var(--none);
     border-radius: var(--r);
     background: var(--gray);
-    padding: 10px 12px;
+    padding: 11px 13px;
     font-size: 12.5px;
     line-height: 1.5;
-    min-height: 74px;
-    transition: all 0.2s ease;
+    min-height: 78px;
+    margin-top: 12px;
+    transition: background 0.25s ease, border-color 0.25s ease;
   }
 
   .detail.d-control { border-left-color: var(--ctrl); background: var(--ctrl-bg); }
   .detail.d-influence { border-left-color: var(--infl); background: var(--infl-bg); }
   .detail.d-none { border-left-color: var(--none); background: var(--none-bg); }
+
+  .detail.swap { animation: fadeSlide 0.25s ease; }
+
+  @keyframes fadeSlide {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: none; }
+  }
 
   .detail-head {
     display: flex;
@@ -294,218 +276,462 @@
   .detail-chip {
     font-size: 10px;
     font-weight: 700;
-    padding: 1px 8px;
+    padding: 1px 9px;
     border-radius: 999px;
+    color: #fff;
   }
 
-  .chip-c { background: var(--ctrl-bg); color: var(--ctrl); border: 1px solid var(--ctrl-bd); }
-  .chip-i { background: var(--infl-bg); color: var(--infl); border: 1px solid var(--infl-bd); }
-  .chip-n { background: #fff; color: var(--none); border: 1px solid var(--none-bd); }
+  .chip-c { background: var(--ctrl); }
+  .chip-i { background: var(--infl); }
+  .chip-n { background: var(--none); }
 
   .detail-text { margin: 0 0 4px 0; }
-  .detail-note { margin: 0; font-size: 11.5px; color: var(--muted); }
-  .detail-note strong { color: var(--primary); font-weight: 600; }
+  .detail-text:last-child { margin-bottom: 0; }
+  .detail-note { margin: 4px 0 0 0; font-size: 11.5px; color: var(--muted); }
+
+  .detail-sub {
+    font-size: 10.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+    margin: 7px 0 2px 0;
+  }
+
+  .detail-sub.sub-c { color: var(--ctrl); }
+  .detail-sub.sub-i { color: var(--infl); }
+
+  .dchip {
+    display: inline-block;
+    margin: 3px 4px 0 0;
+    padding: 3px 10px;
+    font-size: 10.5px;
+    font-weight: 600;
+    border-radius: 999px;
+    border: 1px solid;
+    cursor: pointer;
+    background: #fff;
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .dchip-c { border-color: var(--ctrl-bd); color: var(--ctrl); }
+  .dchip-i { border-color: var(--infl-bd); color: var(--infl); }
+  .dchip:hover { background: var(--gray); transform: translateY(-1px); }
+  .dchip.active { box-shadow: 0 0 0 2px currentColor; }
+
+  .bridge {
+    margin-top: 10px;
+    padding: 8px 12px;
+    border: 1px dashed var(--border);
+    border-radius: var(--r);
+    background: #fff;
+    font-size: 12px;
+    line-height: 1.5;
+    color: var(--muted);
+    text-align: center;
+  }
+
+  .bridge b { color: var(--primary); font-weight: 700; }
 
   @media (max-width: 720px) {
-    body { padding: 10px; }
+    body { padding: 10px 8px; }
     .scheme { height: auto; margin: 0; }
-    .oval, .aspect, .waste-drop { display: none; }
-    .chain {
-      position: static;
-      grid-template-columns: 1fr;
-      gap: 14px;
-    }
-    .stage { min-height: 44px; flex-direction: row; justify-content: space-between; padding: 6px 10px; }
-    .stage-tag { display: inline-block; }
+    .contour { display: none; }
+    .chain { position: static; grid-template-columns: 1fr; gap: 14px; }
+    .stage { min-height: 46px; flex-direction: row; flex-wrap: wrap; justify-content: space-between; padding: 6px 10px; gap: 6px; }
+    .stage-tag { font-size: 9px; }
+    .conc { width: auto; margin-top: 0; font-size: 9.5px; }
     .stage:not(:last-child)::after {
-      right: auto;
-      left: 50%;
-      top: 100%;
-      width: 2px;
-      height: 8px;
+      right: auto; left: 50%; top: 100%;
+      width: 2px; height: 8px;
       transform: translateX(-50%);
     }
     .stage:not(:last-child)::before {
-      right: auto;
-      left: 50%;
-      top: calc(100% + 8px);
+      right: auto; left: 50%; top: calc(100% + 8px);
       transform: translateX(-50%);
       border: 4px solid transparent;
       border-top: 6px solid #94a3b8;
       border-bottom: 0;
     }
-    .tag-c { background: var(--ctrl-bg); color: var(--ctrl); border: 1px solid var(--ctrl-bd); }
-    .tag-i { background: var(--infl-bg); color: var(--infl); border: 1px solid var(--infl-bd); }
-    .tag-n { background: var(--none-bg); color: var(--none); border: 1px solid var(--none-bd); }
   }
 </style>
 </head>
 <body>
 
 <div class="container">
-  <div class="hint">Нажмите на стадию цепочки или на контур, чтобы увидеть, что делает предприятие на этом шаге</div>
 
-  <div class="scene">
-    <div class="scene-title">Где предприятие управляет процессами и на что влияет</div>
-
-    <div class="scheme">
-      <div class="oval oval-blue" onclick="selectContour('influence')" title="Возможности влияния">
-        <span class="oval-label">Можем влиять</span>
-      </div>
-      <div class="oval oval-green" onclick="selectContour('control')" title="Прямое управление">
-        <span class="oval-label">Контролируем напрямую</span>
-      </div>
-
-      <span class="aspect aspect-1">Загрязнение атмосферного воздуха</span>
-      <span class="aspect aspect-2">Отходы</span>
-      <span class="aspect aspect-3">Загрязнение сточных вод</span>
-
-      <div class="chain" id="chain"></div>
-
-      <div class="waste-drop">↓<br>Отходы</div>
-    </div>
-
-    <p class="scene-caption">Границы показаны условно. Для своего предприятия определите, какими процессами вы управляете и на какие можете влиять</p>
-    <p class="scene-note">Положение стадии внутри контура влияния не означает полного управления всеми участниками цепочки. Степень управления и влияния определяют для конкретного процесса.</p>
-
-    <div class="legend">
-      <button class="legend-btn" id="legC" onclick="selectContour('control')"><span class="legend-dot dot-c"></span>Прямое управление</button>
-      <button class="legend-btn" id="legI" onclick="selectContour('influence')"><span class="legend-dot dot-i"></span>Возможности влияния</button>
-    </div>
+  <div class="roles" id="roles">
+    <button class="role-btn active" data-role="factory">Завод «Стекло»</button>
+    <button class="role-btn" data-role="contractor">Подрядчик по вывозу</button>
+    <button class="role-btn" data-role="supplier">Поставщик шихты</button>
   </div>
 
-  <div class="detail" id="detail">
-    <div class="detail-head"><span class="detail-title">Разберите цепочку жизненного цикла</span></div>
-    <p class="detail-text">Зеленый контур – процессы, порядок которых предприятие устанавливает само. Синий контур – стадии, где предприятие передает требования другим участникам. Откройте любую стадию, чтобы увидеть действия эколога.</p>
+  <div class="scheme" id="scheme">
+    <div class="contour contour-blue" id="blue1" onclick="selectContour('influence')"><span class="oval-label">Возможности влияния</span></div>
+    <div class="contour contour-blue" id="blue2" onclick="selectContour('influence')"><span class="oval-label">Возможности влияния</span></div>
+    <div class="contour contour-green" id="green1" onclick="selectContour('control')"><span class="oval-label">Прямое управление</span></div>
+    <div class="contour contour-green" id="green2" onclick="selectContour('control')"><span class="oval-label">Прямое управление</span></div>
+    <div class="chain" id="chain"></div>
   </div>
+
+  <p class="scene-caption">Границы показаны условно. Для своего предприятия определите, какими процессами вы управляете и на какие можете влиять. Передача процесса подрядчику сама по себе не означает, что предприятие больше им не управляет.</p>
+
+  <div class="legend">
+    <button class="legend-btn" id="legC" onclick="selectContour('control')"><span class="legend-dot dot-c"></span>Прямое управление</button>
+    <button class="legend-btn" id="legI" onclick="selectContour('influence')"><span class="legend-dot dot-i"></span>Возможности влияния</button>
+  </div>
+
+  <div class="detail" id="detail"></div>
+
+  <div class="bridge"><b>Следующий шаг.</b> Выберите одну производственную операцию. Определите, что должен сделать работник, по какому признаку проверить результат и как действовать при отклонении.</div>
+
 </div>
 
 <script>
   const STAGES = [
-    { id: 'design', name: 'Проектирование', contour: 'none',
-      text: 'Определите, какие экологические требования учесть при выборе материалов, конструкции и упаковки.',
-      note: 'В примере стадия вне контуров: учебный завод выпускает продукцию по стандарту. Если предприятие само разрабатывает продукцию и упаковку, стадия входит в контур контролирования.' },
-    { id: 'mining', name: 'Добыча сырья', contour: 'influence',
-      text: 'Предприятие не управляет добычей у поставщика. Экологические требования передают через условия закупки и критерии выбора поставщика.',
-      note: 'Положение зависит от условий закупки и от того, насколько прозрачен поставщик.' },
-    { id: 'purchase', name: 'Закупка', contour: 'control',
-      text: 'Уточните требования к сырью и материалам. Определите, что запросить у поставщика и проверить при приемке.',
-      note: 'Предприятие само устанавливает правила приемки и требования к поставщикам.' },
-    { id: 'production', name: 'Производство', contour: 'control',
-      text: 'Установите действия работников, условия выполнения операций и способ проверки результатов.',
-      note: 'Предприятие утверждает порядок работы и проверяет выполнение.' },
-    { id: 'delivery', name: 'Доставка', contour: 'influence',
-      text: 'Определите требования к погрузке, перевозке и разгрузке. Уточните, кто проверяет их выполнение.',
-      note: 'Положение зависит от того, кто везет продукцию: собственная служба или подрядчик.' },
-    { id: 'use', name: 'Использование', contour: 'influence',
-      text: 'Решите, какие сведения передать пользователю, чтобы помочь предотвратить загрязнение при применении и обслуживании продукции.',
-      note: 'Влияние идет через информацию о продукции и сервисе.' },
-    { id: 'disposal', name: 'Утилизация', contour: 'none',
-      text: 'Проверьте, нужны ли получателю сведения о разборке, разделении материалов и обращении с продукцией и упаковкой.',
-      note: 'В примере стадия вне контуров. Влияние возможно через информацию для получателя и требования к упаковке.' }
+    { id: 'mining', name: 'Добыча сырья' },
+    { id: 'production', name: 'Производство' },
+    { id: 'storage', name: 'Хранение и отходы' },
+    { id: 'logistics', name: 'Логистика' },
+    { id: 'usage', name: 'Использование' },
+    { id: 'disposal', name: 'После использования' }
   ];
+
+  const ROLES = {
+    factory: {
+      label: 'Завод «Стекло»',
+      intro: 'Сырье добывает поставщик, доставку ведет внешний перевозчик, продукцию использует заказчик. Закупками, производством и накоплением отходов на своей площадке мы управляем сами. На соседние стадии влияем через требования в договорах и информацию о продукции.',
+      ctrl: ['production', 'storage'],
+      infl: ['mining', 'logistics', 'usage', 'disposal'],
+      texts: {
+        mining: 'Мы не устанавливаем порядок работы в карьере поставщика. Но включаем экологические критерии в выбор сырья и поставщика.',
+        production: 'Мы устанавливаем действия работников и рабочие критерии операций на своих линиях.',
+        storage: 'Мы организуем приемку, хранение материалов и накопление отходов на своей площадке.',
+        logistics: 'Мы не командуем чужими грузовиками, но закрепляем требования к перевозке в договоре.',
+        usage: 'Мы передаем заказчику информацию, которая помогает предотвратить загрязнение при применении продукции.',
+        disposal: 'Мы принимаем собственный бой от клиентов и сообщаем получателю отходов сведения о материалах.'
+      },
+      concrete: {
+        mining: [
+          { t: 'Требования к поставщику шихты', a: 'Мы включаем в условия закупки экологические критерии: происхождение песка, наличие рекультивации, сертификаты на добычу. Вместе с отделом закупок решаем, какие сведения запросить и как использовать их при выборе поставщика.' }
+        ],
+        production: [
+          { t: 'Варка стекла в газовых печах', a: 'Мы устанавливаем рабочие критерии в технологической инструкции: температура, давление газа, дозирование. Назначаем ответственного за мониторинг и ведем журнал учета.' },
+          { t: 'Раскрой листового стекла', a: 'Мы определяем правила раскроя и сбора боя по маркам: куда укладывать обрезь, как маркировать контейнеры и что проверять в конце смены.' }
+        ],
+        storage: [
+          { t: 'Приемка и хранение шихты', a: 'Мы устанавливаем порядок приемки и хранения шихты: контроль просыпей, укрытие складов, уборка участков. Проверяем выполнение при обходах.' },
+          { t: 'Накопление отходов на площадке', a: 'Мы организуем раздельное накопление отходов: площадка с покрытием, поддоны под тарой с маслами, журнал движения отходов.' }
+        ],
+        logistics: [
+          { t: 'Требования к перевозчику', a: 'Мы закрепляем в договоре с перевозчиком условия обращения с грузом: герметичная упаковка, сорбенты в машине, осмотр тары перед погрузкой.' }
+        ],
+        usage: [
+          { t: 'Рекомендации заказчику', a: 'Мы передаем заказчику экологический паспорт продукции и рекомендации по применению: как снимать и собирать упаковку, чтобы ее части не попадали в окружающую среду.' }
+        ],
+        disposal: [
+          { t: 'Утилизация стеклобоя потребителем', a: 'Мы принимаем собственный бой от клиента для возврата в печь и сообщаем получателю отходов сведения о составе материалов. Не обещаем переработку упаковки, пока не проверили ее.' }
+        ]
+      }
+    },
+    contractor: {
+      label: 'Подрядчик по вывозу',
+      intro: 'Завод – наш заказчик: мы не управляем его печью и складами, но влияем на них через условия договора. Своими процессами – перевозкой и размещением отходов – управляем сами.',
+      ctrl: ['logistics', 'disposal'],
+      infl: ['production', 'storage'],
+      texts: {
+        mining: 'Эта стадия вне наших процессов: мы не добываем сырье и не отвечаем за карьер поставщика завода.',
+        production: 'Мы не управляем печью, но передаем заводу требования к упаковке отходов перед вывозом.',
+        storage: 'Мы согласуем с заводом правила хранения отходов до вывоза: тара, маркировка, доступ техники.',
+        logistics: 'Мы назначаем водителей, проверяем транспорт и ведем путевые листы на своих маршрутах.',
+        usage: 'Потребитель использует продукцию завода самостоятельно. Эта стадия вне наших процессов и договоров.',
+        disposal: 'Мы размещаем отходы на лицензированном полигоне или передаем их на переработку.'
+      },
+      concrete: {
+        production: [
+          { t: 'Упаковка отходов перед погрузкой', a: 'Мы не управляем печью, но включаем в договор требование: отходы должны быть упакованы в герметичную тару с маркировкой. Проверяем соответствие при погрузке.' }
+        ],
+        storage: [
+          { t: 'Хранение отходов на площадке завода', a: 'Мы согласуем требования к доступу и маркировке: площадка должна быть доступна для грузовика, тара – исправна. Отказываемся вывозить, если тара повреждена.' }
+        ],
+        logistics: [
+          { t: 'Транспортировка отходов', a: 'Мы управляем процессом перевозки: используем герметичный кузов, соблюдаем маршрут, предоставляем акты передачи отходов.' }
+        ],
+        disposal: [
+          { t: 'Утилизация и переработка стеклобоя', a: 'Мы передаем бой на переработку или размещаем отходы на лицензированном полигоне. Получаем подтверждающие документы и передаем их заводу-заказчику.' }
+        ]
+      }
+    },
+    supplier: {
+      label: 'Поставщик шихты',
+      intro: 'Мы добываем и готовим сырье, поэтому управляем этой стадией сами. На варку стекла влияем через качество партии и паспорт состава. Остальные стадии завода и заказчика находятся вне наших процессов.',
+      ctrl: ['mining'],
+      infl: ['production'],
+      texts: {
+        mining: 'Мы выбираем карьер, технологию обогащения и режим добычи на своей площадке.',
+        production: 'Мы не управляем варкой стекла, но влияем на нее через качество и упаковку шихты.',
+        storage: 'После передачи сырья площадка и склады завода находятся вне наших процессов.',
+        logistics: 'Доставку организует завод или отдельный перевозчик. Мы влияем только когда везем сырье своим транспортом.',
+        usage: 'Эксплуатация стекла у заказчика не связана с нашей добычей. Эта стадия вне наших процессов.',
+        disposal: 'Утилизация продукции и упаковки – задача завода и его подрядчиков. Мы передаем сведения о составе сырья по запросу.'
+      },
+      concrete: {
+        mining: [
+          { t: 'Добыча и подготовка сырья', a: 'Мы устанавливаем порядок добычи и обогащения песка: режим изъятия, рекультивация, учет недр. Оформляем лицензии и разрешения.' }
+        ],
+        production: [
+          { t: 'Требования завода к качеству и упаковке шихты', a: 'Мы гарантируем стабильный состав шихты и отсутствие примесей, учитываем требования завода к упаковке. Передаем паспорт качества каждой партии.' }
+        ]
+      }
+    }
+  };
 
   const CONTOURS = {
     control: {
       title: 'Прямое управление',
-      chip: 'Контролирование', chipCls: 'chip-c', detCls: 'd-control',
-      text: 'Предприятие устанавливает порядок работы, распределяет задачи и проверяет выполнение.',
-      note: 'В контур контролирования входят процессы, порядок которых предприятие устанавливает само. На схеме примера это закупка и производство учебного стекольного завода.'
+      text: 'Завод устанавливает порядок работы, распределяет задачи и проверяет выполнение. Например, определяет, как принимать материалы и что проверять перед началом операции.'
     },
     influence: {
       title: 'Возможности влияния',
-      chip: 'Влияние', chipCls: 'chip-i', detCls: 'd-influence',
-      text: 'Предприятие передает требования и информацию поставщикам, подрядчикам и заказчикам. Возможности влияния зависят от условий взаимодействия.',
-      note: 'Положение стадии внутри контура не означает полного управления всеми участниками цепочки. Степень влияния определяют для конкретного процесса.'
+      text: 'Завод передает требования поставщикам, перевозчикам и заказчикам. Например, указывает перевозчику условия обращения с грузом. Возможности влияния зависят от договоренностей и полномочий.'
     }
   };
 
-  const TAGS = {
-    control: ['tag-c', 'chip-c', 'Контроль'],
-    influence: ['tag-i', 'chip-i', 'Влияние'],
-    none: ['tag-n', 'chip-n', 'Вне нашего влияния']
-  };
+  const TAGS = { control: 'Прямое управление', influence: 'Возможности влияния', none: 'Вне роли' };
+
+  let activeRole = 'factory';
+  let active = null; // {type:'stage'|'contour'|'concrete', ...}
 
   const chain = document.getElementById('chain');
   const detail = document.getElementById('detail');
+  const scheme = document.getElementById('scheme');
+  const ovals = {
+    blue: [document.getElementById('blue1'), document.getElementById('blue2')],
+    green: [document.getElementById('green1'), document.getElementById('green2')]
+  };
+
+  function kindOf(id) {
+    const r = ROLES[activeRole];
+    if (r.ctrl.includes(id)) return 'control';
+    if (r.infl.includes(id)) return 'influence';
+    return 'none';
+  }
+
+  function runsOf(pred) {
+    const runs = [];
+    let start = null;
+    STAGES.forEach((s, i) => {
+      const on = pred(s.id);
+      if (on && start === null) start = i;
+      if ((!on || i === STAGES.length - 1) && start !== null) {
+        runs.push([start, on ? i : i - 1]);
+        start = null;
+      }
+    });
+    return runs;
+  }
+
+  function concChipHtml(stageId, idx, c, kind, activeNow) {
+    return `<button class="conc ${kind === 'control' ? 'conc-c' : 'conc-i'}${activeNow ? ' active' : ''}" onclick="event.stopPropagation(); selectConcrete('${stageId}', ${idx})">${c.t}</button>`;
+  }
 
   function renderChain() {
     chain.innerHTML = '';
+    const r = ROLES[activeRole];
     STAGES.forEach(s => {
+      const kind = kindOf(s.id);
       const b = document.createElement('button');
-      b.className = 'stage';
+      b.className = 'stage' + (active && active.type === 'stage' && active.id === s.id ? ' active' : '');
       b.dataset.id = s.id;
-      b.dataset.contour = s.contour;
-      b.innerHTML = `<span class="stage-name">${s.name}</span><span class="stage-tag ${TAGS[s.contour][0]}">${TAGS[s.contour][2]}</span>`;
+      b.dataset.kind = kind;
+      let inner = `<span class="stage-name">${s.name}</span><span class="stage-tag">${TAGS[kind]}</span>`;
+      (r.concrete[s.id] || []).forEach((c, idx) => {
+        const activeNow = active && active.type === 'concrete' && active.stageId === s.id && active.idx === idx;
+        inner += concChipHtml(s.id, idx, c, kind, activeNow);
+      });
+      b.innerHTML = inner;
       b.onclick = () => selectStage(s.id);
       chain.appendChild(b);
     });
   }
 
-  function setActiveStage(id) {
-    document.querySelectorAll('.stage').forEach(b => b.classList.toggle('active', b.dataset.id === id));
+  function placeOvals() {
+    const sRect = scheme.getBoundingClientRect();
+    const stageEls = [...chain.children];
+    if (!stageEls.length) return;
+    const rectOf = i => stageEls[i].getBoundingClientRect();
+
+    const blueRuns = runsOf(id => kindOf(id) !== 'none');
+    const greenRuns = runsOf(id => kindOf(id) === 'control');
+
+    const apply = (els, runs, pad, top, bottom) => {
+      els.forEach((el, idx) => {
+        const run = runs[idx];
+        if (!run) { el.classList.add('off'); return; }
+        const a = rectOf(run[0]), b = rectOf(run[1]);
+        el.classList.remove('off');
+        el.style.left = (a.left - sRect.left - pad) + 'px';
+        el.style.right = (sRect.right - b.right - pad) + 'px';
+        el.style.top = top + 'px';
+        el.style.bottom = bottom + 'px';
+      });
+    };
+
+    apply(ovals.blue, blueRuns, 10, 14, 44);
+    apply(ovals.green, greenRuns, 6, 44, 56);
   }
 
-  function setActiveLegend(key) {
-    document.getElementById('legC').className = 'legend-btn' + (key === 'control' ? ' active-c' : '');
-    document.getElementById('legI').className = 'legend-btn' + (key === 'influence' ? ' active-i' : '');
+  function setDetail(html, cls) {
+    detail.className = 'detail ' + cls;
+    detail.innerHTML = html;
+    void detail.offsetWidth;
+    detail.classList.add('swap');
+  }
+
+  function dchipsHtml(list, kind) {
+    return list.map((c, i) => `<button class="dchip ${kind === 'control' ? 'dchip-c' : 'dchip-i'}${active && active.type === 'concrete' && active.stageId === c.stageId && active.idx === c.idx ? ' active' : ''}" onclick="selectConcrete('${c.stageId}', ${c.idx})">${c.t}</button>`).join('');
+  }
+
+  function concreteList(kind) {
+    const r = ROLES[activeRole];
+    const ids = kind === 'control' ? r.ctrl : r.infl;
+    const out = [];
+    ids.forEach(sid => (r.concrete[sid] || []).forEach((c, idx) => out.push({ ...c, stageId: sid, idx })));
+    return out;
+  }
+
+  function showRoleIntro() {
+    const r = ROLES[activeRole];
+    setDetail(`
+      <div class="detail-head"><span class="detail-title">${r.label}</span></div>
+      <p class="detail-text">${r.intro}</p>
+      <div class="detail-sub sub-c">Прямое управление: стадии роли</div>
+      <div>${dchipsHtml(concreteList('control'), 'control')}</div>
+      <div class="detail-sub sub-i">Возможности влияния: стадии роли</div>
+      <div>${dchipsHtml(concreteList('influence'), 'influence')}</div>
+      <p class="detail-note">Нажмите на стадию в цепочке или на конкретный процесс, чтобы увидеть действия роли.</p>
+    `, 'd-none');
   }
 
   function selectStage(id) {
+    if (active && active.type === 'stage' && active.id === id) {
+      active = null;
+      renderChain();
+      showRoleIntro();
+      resizeIframe();
+      return;
+    }
+    active = { type: 'stage', id };
+    renderChain();
+    syncLegend(null);
+    const kind = kindOf(id);
     const s = STAGES.find(x => x.id === id);
-    if (!s) return;
-    setActiveStage(id);
-    setActiveLegend(null);
-    const t = TAGS[s.contour];
-    detail.className = 'detail d-' + (s.contour === 'none' ? 'none' : s.contour);
-    detail.innerHTML = `
+    const r = ROLES[activeRole];
+    const chips = (r.concrete[id] || []).map((c, idx) => ({ ...c, stageId: id, idx }));
+    setDetail(`
       <div class="detail-head">
         <span class="detail-title">${s.name}</span>
-        <span class="detail-chip ${t[1]}">${t[2]}</span>
+        <span class="detail-chip ${kind === 'control' ? 'chip-c' : kind === 'influence' ? 'chip-i' : 'chip-n'}">${TAGS[kind]}</span>
       </div>
-      <p class="detail-text">${s.text}</p>
-      <p class="detail-note"><strong>От чего зависит положение.</strong> ${s.note}</p>
-    `;
+      <p class="detail-text">${r.texts[id]}</p>
+      ${chips.length ? `<div class="detail-sub ${kind === 'control' ? 'sub-c' : 'sub-i'}">Конкретные процессы роли</div><div>${dchipsHtml(chips, kind)}</div>` : ''}
+    `, 'd-' + kind);
+    resizeIframe();
+  }
+
+  function selectConcrete(stageId, idx) {
+    if (active && active.type === 'concrete' && active.stageId === stageId && active.idx === idx) {
+      active = null;
+      renderChain();
+      showRoleIntro();
+      resizeIframe();
+      return;
+    }
+    active = { type: 'concrete', stageId, idx };
+    renderChain();
+    const kind = kindOf(stageId);
+    const s = STAGES.find(x => x.id === stageId);
+    const c = ROLES[activeRole].concrete[stageId][idx];
+    setDetail(`
+      <div class="detail-head">
+        <span class="detail-title">${c.t}</span>
+        <span class="detail-chip ${kind === 'control' ? 'chip-c' : 'chip-i'}">${TAGS[kind]}</span>
+      </div>
+      <p class="detail-text">${c.a}</p>
+      <p class="detail-note">Стадия жизненного цикла: ${s.name}. Роль: ${ROLES[activeRole].label}.</p>
+    `, 'd-' + kind);
     resizeIframe();
   }
 
   function selectContour(key) {
+    if (active && active.type === 'contour' && active.key === key) {
+      active = null;
+      renderChain();
+      syncLegend(null);
+      showRoleIntro();
+      resizeIframe();
+      return;
+    }
+    active = { type: 'contour', key };
+    renderChain();
+    syncLegend(key);
     const c = CONTOURS[key];
-    setActiveStage(null);
-    setActiveLegend(key);
-    detail.className = 'detail ' + c.detCls;
-    detail.innerHTML = `
+    const list = concreteList(key);
+    setDetail(`
       <div class="detail-head">
         <span class="detail-title">${c.title}</span>
-        <span class="detail-chip ${c.chipCls}">${c.chip}</span>
+        <span class="detail-chip ${key === 'control' ? 'chip-c' : 'chip-i'}">${c.title}</span>
       </div>
       <p class="detail-text">${c.text}</p>
-      <p class="detail-note"><strong>Пояснение.</strong> ${c.note}</p>
-    `;
+      <div class="detail-sub ${key === 'control' ? 'sub-c' : 'sub-i'}">Стадии внутри контура для этой роли</div>
+      <div>${dchipsHtml(list, key)}</div>
+      <p class="detail-note">Степень управления и влияния определяют для конкретного процесса.</p>
+    `, 'd-' + key);
     resizeIframe();
   }
 
+  function syncLegend(key) {
+    document.getElementById('legC').className = 'legend-btn' + (key === 'control' ? ' active-c' : '');
+    document.getElementById('legI').className = 'legend-btn' + (key === 'influence' ? ' active-i' : '');
+  }
+
+  function switchRole(role) {
+    activeRole = role;
+    active = null;
+    document.querySelectorAll('.role-btn').forEach(b => b.classList.toggle('active', b.dataset.role === role));
+    renderChain();
+    syncLegend(null);
+    showRoleIntro();
+    requestAnimationFrame(() => { placeOvals(); resizeIframe(); });
+  }
+
+  document.getElementById('roles').addEventListener('click', e => {
+    const b = e.target.closest('.role-btn');
+    if (b) switchRole(b.dataset.role);
+  });
+
   function resizeIframe() {
-    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
-      window.parentIFrame.size();
-    }
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') window.parentIFrame.size();
   }
 
   window.addEventListener('load', () => {
     renderChain();
+    showRoleIntro();
+    placeOvals();
     resizeIframe();
-    setTimeout(resizeIframe, 200);
+    setTimeout(() => { placeOvals(); resizeIframe(); }, 250);
+  });
+
+  window.addEventListener('resize', () => {
+    clearTimeout(window._rt);
+    window._rt = setTimeout(() => { placeOvals(); resizeIframe(); }, 60);
   });
 
   if ('ResizeObserver' in window) {
-    const container = document.querySelector('.container');
-    if (container) {
-      let t;
-      new ResizeObserver(() => {
-        clearTimeout(t);
-        t = setTimeout(resizeIframe, 50);
-      }).observe(container);
-    }
+    new ResizeObserver(() => {
+      clearTimeout(window._ro);
+      window._ro = setTimeout(() => { placeOvals(); resizeIframe(); }, 60);
+    }).observe(document.querySelector('.container'));
   }
 </script>
 
