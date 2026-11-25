@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Тренажер: разрыв в операционном управлении</title>
+<style>
+  :root {
+    --primary: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg: #ffffff;
+    --gray: #f8fafc;
+    --accent: #2563eb;
+    --accent-bg: #eff6ff;
+    --accent-bd: #bfdbfe;
+    --ok: #166534;
+    --ok-bg: #f0fdf4;
+    --ok-bd: #bbf7d0;
+    --bad: #991b1b;
+    --bad-bg: #fef2f2;
+    --bad-bd: #fecaca;
+    --r: 10px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { overflow: hidden; margin: 0; padding: 0; }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--primary);
+    background: var(--bg);
+    padding: 14px 12px;
+  }
+
+  .container { width: 100%; max-width: 900px; margin: 0 auto; }
+
+  .hint {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    margin: 0 0 12px 0;
+  }
+
+  .card {
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    background: #fff;
+    padding: 14px 14px 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 2px 6px rgba(30,41,59,.05);
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+
+  .task-label {
+    display: inline-block;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--accent);
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-bd);
+    border-radius: 999px;
+    padding: 1px 9px;
+  }
+
+  .attempt-chip {
+    font-size: 10.5px;
+    font-weight: 600;
+    color: var(--muted);
+    background: var(--gray);
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 1px 9px;
+    white-space: nowrap;
+  }
+
+  .situation {
+    font-size: 13px;
+    line-height: 1.55;
+    color: var(--primary);
+    margin: 0 0 10px 0;
+  }
+
+  .situation b { color: var(--accent); font-weight: 700; }
+
+  .question {
+    font-size: 13.5px;
+    font-weight: 700;
+    margin: 0 0 10px 0;
+  }
+
+  .options { display: flex; flex-direction: column; gap: 6px; }
+
+  .opt {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    text-align: left;
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    background: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 12.5px;
+    line-height: 1.45;
+    color: var(--primary);
+    transition: all 0.15s ease;
+  }
+
+  .opt:hover:not(:disabled) { border-color: var(--accent); background: var(--gray); }
+
+  .opt-num {
+    flex-shrink: 0;
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    background: var(--gray);
+    border: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    color: var(--muted);
+    transition: all 0.2s ease;
+  }
+
+  .opt-text { flex: 1; }
+
+  .opt.good { background: var(--ok-bg); border-color: var(--ok-bd); color: var(--ok); }
+  .opt.good .opt-num { background: var(--ok); color: #fff; border-color: var(--ok); }
+
+  .opt.bad { background: var(--bad-bg); border-color: var(--bad-bd); color: var(--bad); }
+  .opt.bad .opt-num { background: var(--bad); color: #fff; border-color: var(--bad); }
+
+  .opt:disabled { cursor: default; }
+
+  .feedback {
+    display: none;
+    margin-top: 12px;
+    padding: 12px 14px;
+    border-radius: var(--r);
+    font-size: 12.5px;
+    line-height: 1.55;
+    animation: drop 0.25s ease;
+  }
+
+  .feedback.show { display: block; }
+  .feedback.ok { background: var(--ok-bg); border: 1px solid var(--ok-bd); border-left: 4px solid var(--ok); color: var(--primary); }
+  .feedback.bad { background: var(--bad-bg); border: 1px solid var(--bad-bd); border-left: 4px solid var(--bad); color: var(--primary); }
+
+  .feedback strong { display: block; margin-bottom: 4px; font-size: 13px; }
+  .feedback.ok strong { color: var(--ok); }
+  .feedback.bad strong { color: var(--bad); }
+
+  .feedback .ref {
+    display: block;
+    margin-top: 6px;
+    font-size: 11.5px;
+    color: var(--muted);
+  }
+
+  .feedback .ref b { color: var(--primary); font-weight: 600; }
+
+  .actions {
+    display: none;
+    gap: 8px;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .actions.show { display: flex; }
+
+  .btn {
+    padding: 8px 16px;
+    border-radius: var(--r);
+    font-size: 12.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--primary);
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .btn:hover { background: var(--gray); border-color: var(--muted); }
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: var(--accent-d, #1d4ed8); border-color: var(--accent-d, #1d4ed8); }
+
+  @keyframes drop {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: none; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="hint">Выберите один вариант. После ответа откроется разбор с привязкой к стандарту.</div>
+
+  <div class="card">
+    <div class="card-top">
+      <span class="task-label">Ситуация на заводе «Стекло»</span>
+      <span class="attempt-chip" id="attemptChip">Попытка 1</span>
+    </div>
+    <p class="situation">
+      В цехе варки стекла установили рабочий критерий для газоочистной установки: разрежение перед фильтром должно быть не ниже <b>900 Па</b>. Датчик выведен на пульт оператора. Во время ночной смены разрежение упало до <b>650 Па</b>. Оператор увидел цифру на экране, но продолжил работу до утра — в инструкции не было написано, нужно ли снижать нагрузку на печь и кого вызывать при падении тяги.
+    </p>
+    <p class="question">Какой элемент управления процессом не настроили в этом цехе?</p>
+
+    <div class="options" id="options">
+      <button class="opt" data-correct="false">
+        <span class="opt-num">1</span>
+        <span class="opt-text">Не установлен сам рабочий критерий — оператор не знал, какое давление считается нормой.</span>
+      </button>
+      <button class="opt" data-correct="true">
+        <span class="opt-num">2</span>
+        <span class="opt-text">Установлен рабочий критерий и есть прибор контроля, но не определен порядок действий оператора при отклонении параметра от нормы.</span>
+      </button>
+      <button class="opt" data-correct="false">
+        <span class="opt-num">3</span>
+        <span class="opt-text">Не хватает бумажного журнала, куда оператор должен переписывать показания датчика каждый час, чтобы эколог потом увидел отклонение.</span>
+      </button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+
+    <div class="actions" id="actions">
+      <button class="btn" onclick="resetRound(false)">Переответить</button>
+      <button class="btn btn-primary" onclick="resetRound(true)">Начать заново</button>
+    </div>
+  </div>
+</div>
+
+<script>
+  const feedback = document.getElementById('feedback');
+  const actions = document.getElementById('actions');
+  const attemptChip = document.getElementById('attemptChip');
+  const opts = document.querySelectorAll('.opt');
+
+  let answered = false;
+  let attempts = 1;
+
+  const EXPLAIN = {
+    right: {
+      title: 'Верно. Цикл PDCA разорван на этапе «Действуй».',
+      text: 'Цифра на пульте и исправный датчик — это только половина управления. По пункту 8.1 ГОСТ Р ИСО 14001-2016 операционное управление требует трех связанных элементов: рабочий критерий, способ его измерения и порядок действий при выходе за границы нормы. Без третьего элемента отклонение фиксируется, но не переходит в корректирующее действие. Оператор в такой ситуации вынужден либо игнорировать сигнал, либо принимать решение на свой страх и риск — оба варианта недопустимы.',
+      ref: 'Пункт 8.1 «Операционное планирование и управление» стандарта ГОСТ Р ИСО 14001-2016.'
+    },
+    wrong1: {
+      title: 'Неверно. Критерий в цехе установлен.',
+      text: 'В условии прямо сказано: рабочий критерий 900 Па закреплен, датчик выведен на пульт, оператор видит фактическое значение. Проблема не в отсутствии нормы, а в том, что инструкция не описывает реакцию на отклонение от нее. Именно этот разрыв и приводит к бездействию в ночную смену.',
+      ref: 'Пункт 8.1 требует не только установить критерии, но и обеспечить их выполнение — включая действия при выходе за допустимые пределы.'
+    },
+    wrong2: {
+      title: 'Неверно. Бумажный журнал не заменит порядок действий.',
+      text: 'Журнал — это запись факта, а не инструмент управления. Даже если оператор каждый час переписывает цифры, от этого печь не перестанет работать на заниженной тяге, а эколог узнает об отклонении только утром. СЭМ требует, чтобы реакция на отклонение происходила в момент события, а не постфактум в отчете.',
+      ref: 'Записи по пункту 7.5 стандарта подтверждают выполнение работы, но не заменяют саму процедуру управления процессом.'
+    }
+  };
+
+  function showFeedback(kind) {
+    const data = EXPLAIN[kind];
+    feedback.className = 'feedback show ' + (kind === 'right' ? 'ok' : 'bad');
+    feedback.innerHTML = `
+      <strong>${data.title}</strong>
+      ${data.text}
+      <span class="ref"><b>Ссылка на стандарт.</b> ${data.ref}</span>
+    `;
+  }
+
+  function resetRound(full) {
+    answered = false;
+    attempts = full ? 1 : attempts + 1;
+    attemptChip.textContent = 'Попытка ' + attempts;
+    opts.forEach(b => {
+      b.disabled = false;
+      b.classList.remove('good', 'bad');
+    });
+    feedback.className = 'feedback';
+    feedback.innerHTML = '';
+    actions.classList.remove('show');
+    resizeIframe();
+  }
+
+  opts.forEach((btn, idx) => {
+    btn.addEventListener('click', () => {
+      if (answered) return;
+      answered = true;
+      const correct = btn.dataset.correct === 'true';
+      opts.forEach(b => {
+        b.disabled = true;
+        if (b.dataset.correct === 'true') b.classList.add('good');
+        else if (b === btn) b.classList.add('bad');
+      });
+      if (correct) showFeedback('right');
+      else if (idx === 0) showFeedback('wrong1');
+      else showFeedback('wrong2');
+      actions.classList.add('show');
+      resizeIframe();
+    });
+  });
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') window.parentIFrame.size();
+  }
+
+  window.addEventListener('load', () => {
+    resizeIframe();
+    setTimeout(resizeIframe, 200);
+  });
+
+  if ('ResizeObserver' in window) {
+    new ResizeObserver(() => {
+      clearTimeout(window._ro);
+      window._ro = setTimeout(resizeIframe, 50);
+    }).observe(document.querySelector('.container'));
+  }
+</script>
+
+</body>
+</html>
