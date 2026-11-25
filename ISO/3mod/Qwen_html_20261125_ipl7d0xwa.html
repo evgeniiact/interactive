@@ -1,0 +1,513 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Жизненный цикл: контролирование и влияние</title>
+<style>
+  :root {
+    --primary: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg: #ffffff;
+    --gray: #f8fafc;
+    --ctrl: #16a34a;
+    --ctrl-bg: #f0fdf4;
+    --ctrl-bd: #bbf7d0;
+    --infl: #2563eb;
+    --infl-bg: #eff6ff;
+    --infl-bd: #bfdbfe;
+    --none: #475569;
+    --none-bg: #f1f5f9;
+    --none-bd: #cbd5e1;
+    --r: 10px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { overflow: hidden; margin: 0; padding: 0; }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--primary);
+    background: var(--bg);
+    padding: 14px;
+  }
+
+  .container { width: 100%; max-width: 900px; margin: 0 auto; }
+
+  .hint {
+    text-align: center;
+    font-size: 12.5px;
+    color: var(--muted);
+    margin: 0 0 10px 0;
+  }
+
+  .scene {
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    background: #fff;
+    padding: 12px 12px 14px;
+    margin-bottom: 10px;
+  }
+
+  .scene-title {
+    text-align: center;
+    font-size: 13px;
+    font-weight: 700;
+    margin: 0 0 6px 0;
+  }
+
+  /* Схема */
+  .scheme {
+    position: relative;
+    height: 235px;
+    margin: 0 4px;
+  }
+
+  .oval {
+    position: absolute;
+    border: 2px dashed;
+    border-radius: 50%;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+
+  .oval-blue {
+    border-color: #93c5fd;
+    left: 11%;
+    right: 11%;
+    top: 18px;
+    bottom: 40px;
+  }
+
+  .oval-blue:hover { background: rgba(37,99,235,0.04); }
+
+  .oval-green {
+    border-color: #86efac;
+    left: 27.5%;
+    width: 30%;
+    top: 44px;
+    bottom: 58px;
+  }
+
+  .oval-green:hover { background: rgba(22,163,74,0.05); }
+
+  .oval-label {
+    position: absolute;
+    top: 5px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    white-space: nowrap;
+  }
+
+  .oval-blue .oval-label { color: var(--infl); }
+  .oval-green .oval-label { color: var(--ctrl); }
+
+  .aspect {
+    position: absolute;
+    font-size: 9.5px;
+    font-style: italic;
+    font-weight: 600;
+    color: var(--ctrl);
+    white-space: nowrap;
+    pointer-events: none;
+  }
+
+  .aspect-1 { top: 76px; left: 47%; }
+  .aspect-2 { top: 152px; left: 29%; }
+  .aspect-3 { top: 152px; left: 46%; }
+
+  .chain {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 95px;
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 16px;
+  }
+
+  .stage {
+    position: relative;
+    border: 1px solid var(--infl-bd);
+    background: #fff;
+    border-radius: 6px;
+    padding: 6px 4px;
+    min-height: 52px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 10.5px;
+    font-weight: 600;
+    line-height: 1.25;
+    color: var(--primary);
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    transition: all 0.15s ease;
+  }
+
+  .stage:hover { background: var(--infl-bg); transform: translateY(-1px); }
+
+  .stage:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: -16px;
+    top: 50%;
+    width: 10px;
+    height: 2px;
+    background: #94a3b8;
+    transform: translateY(-50%);
+  }
+
+  .stage:not(:last-child)::before {
+    content: '';
+    position: absolute;
+    right: -16px;
+    top: 50%;
+    transform: translateY(-50%);
+    border: 4px solid transparent;
+    border-left: 6px solid #94a3b8;
+    border-right: 0;
+    z-index: 1;
+  }
+
+  .stage.active { box-shadow: 0 0 0 2px currentColor; }
+  .stage.active[data-contour="control"] { color: var(--ctrl); background: var(--ctrl-bg); }
+  .stage.active[data-contour="influence"] { color: var(--infl); background: var(--infl-bg); }
+  .stage.active[data-contour="none"] { color: var(--none); background: var(--none-bg); }
+  .stage.active .stage-name { color: inherit; }
+
+  .stage-name { display: block; color: var(--primary); }
+
+  .stage-tag {
+    display: none;
+    font-size: 9px;
+    font-weight: 700;
+    padding: 0 6px;
+    border-radius: 999px;
+  }
+
+  .waste-drop {
+    position: absolute;
+    top: 152px;
+    left: 92.86%;
+    transform: translateX(-50%);
+    font-size: 10px;
+    color: var(--muted);
+    text-align: center;
+    line-height: 1.2;
+    pointer-events: none;
+  }
+
+  .scene-caption {
+    text-align: center;
+    font-size: 11.5px;
+    color: var(--muted);
+    margin: 8px 0 0 0;
+  }
+
+  .scene-note {
+    text-align: center;
+    font-size: 10.5px;
+    color: var(--muted);
+    font-style: italic;
+    margin: 4px auto 0;
+    max-width: 640px;
+  }
+
+  /* Легенда */
+  .legend {
+    display: flex;
+    gap: 6px;
+    justify-content: center;
+    margin-top: 10px;
+    flex-wrap: wrap;
+  }
+
+  .legend-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 5px 12px;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    background: #fff;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--primary);
+    transition: all 0.15s ease;
+  }
+
+  .legend-btn:hover { background: var(--gray); }
+  .legend-btn.active-c { border-color: var(--ctrl); background: var(--ctrl-bg); color: var(--ctrl); }
+  .legend-btn.active-i { border-color: var(--infl); background: var(--infl-bg); color: var(--infl); }
+
+  .legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  .dot-c { background: var(--ctrl); }
+  .dot-i { background: var(--infl); }
+
+  /* Карточка пояснения */
+  .detail {
+    border: 1px solid var(--border);
+    border-left: 4px solid var(--none-bd);
+    border-radius: var(--r);
+    background: var(--gray);
+    padding: 10px 12px;
+    font-size: 12.5px;
+    line-height: 1.5;
+    min-height: 74px;
+    transition: all 0.2s ease;
+  }
+
+  .detail.d-control { border-left-color: var(--ctrl); background: var(--ctrl-bg); }
+  .detail.d-influence { border-left-color: var(--infl); background: var(--infl-bg); }
+  .detail.d-none { border-left-color: var(--none); background: var(--none-bg); }
+
+  .detail-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+    flex-wrap: wrap;
+  }
+
+  .detail-title { font-size: 13.5px; font-weight: 700; }
+
+  .detail-chip {
+    font-size: 10px;
+    font-weight: 700;
+    padding: 1px 8px;
+    border-radius: 999px;
+  }
+
+  .chip-c { background: var(--ctrl-bg); color: var(--ctrl); border: 1px solid var(--ctrl-bd); }
+  .chip-i { background: var(--infl-bg); color: var(--infl); border: 1px solid var(--infl-bd); }
+  .chip-n { background: #fff; color: var(--none); border: 1px solid var(--none-bd); }
+
+  .detail-text { margin: 0 0 4px 0; }
+  .detail-note { margin: 0; font-size: 11.5px; color: var(--muted); }
+  .detail-note strong { color: var(--primary); font-weight: 600; }
+
+  @media (max-width: 720px) {
+    body { padding: 10px; }
+    .scheme { height: auto; margin: 0; }
+    .oval, .aspect, .waste-drop { display: none; }
+    .chain {
+      position: static;
+      grid-template-columns: 1fr;
+      gap: 14px;
+    }
+    .stage { min-height: 44px; flex-direction: row; justify-content: space-between; padding: 6px 10px; }
+    .stage-tag { display: inline-block; }
+    .stage:not(:last-child)::after {
+      right: auto;
+      left: 50%;
+      top: 100%;
+      width: 2px;
+      height: 8px;
+      transform: translateX(-50%);
+    }
+    .stage:not(:last-child)::before {
+      right: auto;
+      left: 50%;
+      top: calc(100% + 8px);
+      transform: translateX(-50%);
+      border: 4px solid transparent;
+      border-top: 6px solid #94a3b8;
+      border-bottom: 0;
+    }
+    .tag-c { background: var(--ctrl-bg); color: var(--ctrl); border: 1px solid var(--ctrl-bd); }
+    .tag-i { background: var(--infl-bg); color: var(--infl); border: 1px solid var(--infl-bd); }
+    .tag-n { background: var(--none-bg); color: var(--none); border: 1px solid var(--none-bd); }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="hint">Нажмите на стадию цепочки или на контур, чтобы увидеть, что делает предприятие на этом шаге</div>
+
+  <div class="scene">
+    <div class="scene-title">Где предприятие управляет процессами и на что влияет</div>
+
+    <div class="scheme">
+      <div class="oval oval-blue" onclick="selectContour('influence')" title="Возможности влияния">
+        <span class="oval-label">Влияние</span>
+      </div>
+      <div class="oval oval-green" onclick="selectContour('control')" title="Прямое управление">
+        <span class="oval-label">Контролирование</span>
+      </div>
+
+      <span class="aspect aspect-1">Загрязнение атмосферного воздуха</span>
+      <span class="aspect aspect-2">Отходы</span>
+      <span class="aspect aspect-3">Загрязнение сточных вод</span>
+
+      <div class="chain" id="chain"></div>
+
+      <div class="waste-drop">↓<br>Отходы</div>
+    </div>
+
+    <p class="scene-caption">Границы показаны условно. Для своего предприятия определите, какими процессами вы управляете и на какие можете влиять</p>
+    <p class="scene-note">Положение стадии внутри контура влияния не означает полного управления всеми участниками цепочки. Степень управления и влияния определяют для конкретного процесса.</p>
+
+    <div class="legend">
+      <button class="legend-btn" id="legC" onclick="selectContour('control')"><span class="legend-dot dot-c"></span>Прямое управление</button>
+      <button class="legend-btn" id="legI" onclick="selectContour('influence')"><span class="legend-dot dot-i"></span>Возможности влияния</button>
+    </div>
+  </div>
+
+  <div class="detail" id="detail">
+    <div class="detail-head"><span class="detail-title">Разберите цепочку жизненного цикла</span></div>
+    <p class="detail-text">Зеленый контур – процессы, порядок которых предприятие устанавливает само. Синий контур – стадии, где предприятие передает требования другим участникам. Откройте любую стадию, чтобы увидеть действия эколога.</p>
+  </div>
+</div>
+
+<script>
+  const STAGES = [
+    { id: 'design', name: 'Проектирование', contour: 'none',
+      text: 'Определите, какие экологические требования учесть при выборе материалов, конструкции и упаковки.',
+      note: 'В примере стадия вне контуров: учебный завод выпускает продукцию по стандарту. Если предприятие само разрабатывает продукцию и упаковку, стадия входит в контур контролирования.' },
+    { id: 'mining', name: 'Добыча сырья', contour: 'influence',
+      text: 'Предприятие не управляет добычей у поставщика. Экологические требования передают через условия закупки и критерии выбора поставщика.',
+      note: 'Положение зависит от условий закупки и от того, насколько прозрачен поставщик.' },
+    { id: 'purchase', name: 'Закупка', contour: 'control',
+      text: 'Уточните требования к сырью и материалам. Определите, что запросить у поставщика и проверить при приемке.',
+      note: 'Предприятие само устанавливает правила приемки и требования к поставщикам.' },
+    { id: 'production', name: 'Производство', contour: 'control',
+      text: 'Установите действия работников, условия выполнения операций и способ проверки результатов.',
+      note: 'Предприятие утверждает порядок работы и проверяет выполнение.' },
+    { id: 'delivery', name: 'Доставка', contour: 'influence',
+      text: 'Определите требования к погрузке, перевозке и разгрузке. Уточните, кто проверяет их выполнение.',
+      note: 'Положение зависит от того, кто везет продукцию: собственная служба или подрядчик.' },
+    { id: 'use', name: 'Использование', contour: 'influence',
+      text: 'Решите, какие сведения передать пользователю, чтобы помочь предотвратить загрязнение при применении и обслуживании продукции.',
+      note: 'Влияние идет через информацию о продукции и сервисе.' },
+    { id: 'disposal', name: 'Утилизация', contour: 'none',
+      text: 'Проверьте, нужны ли получателю сведения о разборке, разделении материалов и обращении с продукцией и упаковкой.',
+      note: 'В примере стадия вне контуров. Влияние возможно через информацию для получателя и требования к упаковке.' }
+  ];
+
+  const CONTOURS = {
+    control: {
+      title: 'Прямое управление',
+      chip: 'Контролирование', chipCls: 'chip-c', detCls: 'd-control',
+      text: 'Предприятие устанавливает порядок работы, распределяет задачи и проверяет выполнение.',
+      note: 'В контур контролирования входят процессы, порядок которых предприятие устанавливает само. На схеме примера это закупка и производство учебного стекольного завода.'
+    },
+    influence: {
+      title: 'Возможности влияния',
+      chip: 'Влияние', chipCls: 'chip-i', detCls: 'd-influence',
+      text: 'Предприятие передает требования и информацию поставщикам, подрядчикам и заказчикам. Возможности влияния зависят от условий взаимодействия.',
+      note: 'Положение стадии внутри контура не означает полного управления всеми участниками цепочки. Степень влияния определяют для конкретного процесса.'
+    }
+  };
+
+  const TAGS = {
+    control: ['tag-c', 'chip-c', 'Контролирование'],
+    influence: ['tag-i', 'chip-i', 'Влияние'],
+    none: ['tag-n', 'chip-n', 'Вне контуров в примере']
+  };
+
+  const chain = document.getElementById('chain');
+  const detail = document.getElementById('detail');
+
+  function renderChain() {
+    chain.innerHTML = '';
+    STAGES.forEach(s => {
+      const b = document.createElement('button');
+      b.className = 'stage';
+      b.dataset.id = s.id;
+      b.dataset.contour = s.contour;
+      b.innerHTML = `<span class="stage-name">${s.name}</span><span class="stage-tag ${TAGS[s.contour][0]}">${TAGS[s.contour][2]}</span>`;
+      b.onclick = () => selectStage(s.id);
+      chain.appendChild(b);
+    });
+  }
+
+  function setActiveStage(id) {
+    document.querySelectorAll('.stage').forEach(b => b.classList.toggle('active', b.dataset.id === id));
+  }
+
+  function setActiveLegend(key) {
+    document.getElementById('legC').className = 'legend-btn' + (key === 'control' ? ' active-c' : '');
+    document.getElementById('legI').className = 'legend-btn' + (key === 'influence' ? ' active-i' : '');
+  }
+
+  function selectStage(id) {
+    const s = STAGES.find(x => x.id === id);
+    if (!s) return;
+    setActiveStage(id);
+    setActiveLegend(null);
+    const t = TAGS[s.contour];
+    detail.className = 'detail d-' + (s.contour === 'none' ? 'none' : s.contour);
+    detail.innerHTML = `
+      <div class="detail-head">
+        <span class="detail-title">${s.name}</span>
+        <span class="detail-chip ${t[1]}">${t[2]}</span>
+      </div>
+      <p class="detail-text">${s.text}</p>
+      <p class="detail-note"><strong>От чего зависит положение.</strong> ${s.note}</p>
+    `;
+    resizeIframe();
+  }
+
+  function selectContour(key) {
+    const c = CONTOURS[key];
+    setActiveStage(null);
+    setActiveLegend(key);
+    detail.className = 'detail ' + c.detCls;
+    detail.innerHTML = `
+      <div class="detail-head">
+        <span class="detail-title">${c.title}</span>
+        <span class="detail-chip ${c.chipCls}">${c.chip}</span>
+      </div>
+      <p class="detail-text">${c.text}</p>
+      <p class="detail-note"><strong>Пояснение.</strong> ${c.note}</p>
+    `;
+    resizeIframe();
+  }
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
+  }
+
+  window.addEventListener('load', () => {
+    renderChain();
+    resizeIframe();
+    setTimeout(resizeIframe, 200);
+  });
+
+  if ('ResizeObserver' in window) {
+    const container = document.querySelector('.container');
+    if (container) {
+      let t;
+      new ResizeObserver(() => {
+        clearTimeout(t);
+        t = setTimeout(resizeIframe, 50);
+      }).observe(container);
+    }
+  }
+</script>
+
+</body>
+</html>
