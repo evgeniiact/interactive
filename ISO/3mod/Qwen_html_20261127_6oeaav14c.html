@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Барабан вопросов аудитора</title>
+<style>
+  :root {
+    --primary: #1e293b;
+    --muted: #64748b;
+    --border: #e2e8f0;
+    --bg: #ffffff;
+    --gray: #f8fafc;
+    --accent: #2563eb;
+    --accent-d: #1d4ed8;
+    --accent-bg: #eff6ff;
+    --accent-bd: #bfdbfe;
+    --ok: #166534;
+    --ok-bg: #f0fdf4;
+    --ok-bd: #bbf7d0;
+    --r: 12px;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { overflow: hidden; margin: 0; padding: 0; }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--primary);
+    background: var(--bg);
+    padding: 14px 12px;
+  }
+
+  .container { max-width: 650px; margin: 0 auto; }
+
+  .top-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+
+  .counter {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--muted);
+  }
+
+  .dots { display: flex; gap: 5px; }
+
+  .dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: all 0.25s ease;
+  }
+
+  .dot.on { background: var(--accent); transform: scale(1.25); }
+
+  /* Барабан */
+  .drum { perspective: 900px; }
+
+  .drum-card {
+    border: 1px solid var(--border);
+    border-radius: var(--r);
+    background: #fff;
+    padding: 16px;
+    min-height: 150px;
+    cursor: pointer;
+    transition: transform 0.24s ease, opacity 0.24s ease, box-shadow 0.2s ease;
+    transform-origin: 50% 50%;
+    box-shadow: 0 2px 10px rgba(30,41,59,.06);
+  }
+
+  .drum-card:hover { box-shadow: 0 4px 14px rgba(30,41,59,.1); }
+
+  .drum-card.out { transform: rotateX(-90deg); opacity: 0; }
+  .drum-card.pre { transform: rotateX(90deg); opacity: 0; transition: none; }
+
+  .role-chip {
+    display: inline-block;
+    background: var(--accent-bg);
+    border: 1px solid var(--accent-bd);
+    color: var(--accent-d);
+    font-size: 11px;
+    font-weight: 700;
+    padding: 2px 10px;
+    border-radius: 999px;
+    margin-bottom: 8px;
+  }
+
+  .question {
+    font-size: 14.5px;
+    font-weight: 700;
+    line-height: 1.5;
+    margin: 0;
+  }
+
+  .answer {
+    max-height: 0;
+    overflow: hidden;
+    transition: max-height 0.3s ease, margin-top 0.3s ease;
+  }
+
+  .answer.show { max-height: 240px; margin-top: 12px; }
+
+  .answer-inner {
+    border-left: 3px solid var(--ok);
+    background: var(--ok-bg);
+    border-radius: 0 8px 8px 0;
+    padding: 10px 12px;
+    font-size: 12.5px;
+    line-height: 1.55;
+  }
+
+  .ans-line { margin: 0 0 6px 0; }
+  .ans-line strong { color: var(--ok); }
+
+  .proof-line { margin: 0; color: var(--muted); }
+  .proof-line strong { color: var(--primary); font-weight: 600; }
+
+  .tap-hint {
+    margin-top: 8px;
+    font-size: 10.5px;
+    font-style: italic;
+    color: var(--muted);
+    text-align: right;
+    transition: opacity 0.2s ease;
+  }
+
+  .tap-hint.hide { opacity: 0; }
+
+  /* Управление */
+  .controls {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-top: 12px;
+    flex-wrap: wrap;
+  }
+
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 16px;
+    border-radius: var(--r);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1px solid var(--border);
+    background: #fff;
+    color: var(--primary);
+    font-family: inherit;
+    transition: all 0.15s ease;
+  }
+
+  .btn:hover { background: var(--gray); border-color: var(--muted); }
+  .btn:focus-visible { outline: 2px solid var(--accent-d); outline-offset: 2px; }
+
+  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+  .btn-primary:hover { background: var(--accent-d); border-color: var(--accent-d); }
+
+  .btn svg { width: 15px; height: 15px; flex-shrink: 0; }
+
+  .btn-primary.spin svg { transition: transform 0.4s ease; }
+  .btn-primary.spin.busy svg { transform: rotate(360deg); }
+
+  @media (max-width: 560px) {
+    body { padding: 10px 8px; }
+    .controls { flex-direction: column; }
+    .btn { width: 100%; justify-content: center; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <div class="top-line">
+    <span class="counter" id="counter">Вопрос 1 из 3</span>
+    <div class="dots" id="dots"></div>
+  </div>
+
+  <div class="drum">
+    <div class="drum-card" id="drumCard" onclick="toggleReveal()" role="button" tabindex="0"
+         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleReveal();}">
+      <span class="role-chip" id="roleChip"></span>
+      <p class="question" id="questionText"></p>
+      <div class="answer" id="answerBox">
+        <div class="answer-inner">
+          <p class="ans-line"><strong>Правильный ответ.</strong> <span id="answerText"></span></p>
+          <p class="proof-line"><strong>Подтверждение.</strong> <span id="proofText"></span></p>
+        </div>
+      </div>
+      <div class="tap-hint" id="tapHint">нажмите на карточку, чтобы увидеть ответ</div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="btn" id="revealBtn" onclick="toggleReveal()">Показать ответ</button>
+    <button class="btn btn-primary spin" id="spinBtn" onclick="spin()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="23 4 23 10 17 10"/>
+        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
+      </svg>
+      Крутить барабан
+    </button>
+  </div>
+
+</div>
+
+<script>
+  const CARDS = [
+    {
+      role: 'У оператора печи',
+      q: '«По какому параметру вы понимаете, что горелка работает в экологичном режиме?»',
+      a: '«По давлению газа и температуре в зоне варки, они указаны в технологической карте».',
+      proof: 'Технологическая карта с рабочими критериями и журнал снятия показаний.'
+    },
+    {
+      role: 'У мастера смены',
+      q: '«Что вы делаете, если датчик температуры показывает отклонение от нормы?»',
+      a: '«Снижаю нагрузку на печь и сразу сообщаю экологу и главному механику».',
+      proof: 'Инструкция по действиям при отклонениях и журнал регистрации сбоев.'
+    },
+    {
+      role: 'У начальника склада',
+      q: '«Как вы проверяете герметичность тары при передаче отходов подрядчику?»',
+      a: '«Визуальный осмотр перед погрузкой, если есть подтеки – не принимаем к отгрузке».',
+      proof: 'Чек-лист осмотра тары и журнал передачи отходов.'
+    }
+  ];
+
+  let idx = 0;
+  let revealed = false;
+  let busy = false;
+
+  const card = document.getElementById('drumCard');
+  const dotsWrap = document.getElementById('dots');
+
+  function buildDots() {
+    dotsWrap.innerHTML = '';
+    CARDS.forEach((_, i) => {
+      const d = document.createElement('span');
+      d.className = 'dot' + (i === idx ? ' on' : '');
+      dotsWrap.appendChild(d);
+    });
+  }
+
+  function fillCard() {
+    const c = CARDS[idx];
+    document.getElementById('roleChip').textContent = c.role;
+    document.getElementById('questionText').textContent = c.q;
+    document.getElementById('answerText').textContent = c.a;
+    document.getElementById('proofText').textContent = c.proof;
+    document.getElementById('counter').textContent = `Вопрос ${idx + 1} из ${CARDS.length}`;
+    revealed = false;
+    document.getElementById('answerBox').classList.remove('show');
+    document.getElementById('tapHint').classList.remove('hide');
+    document.getElementById('revealBtn').textContent = 'Показать ответ';
+    buildDots();
+  }
+
+  function toggleReveal() {
+    revealed = !revealed;
+    document.getElementById('answerBox').classList.toggle('show', revealed);
+    document.getElementById('tapHint').classList.toggle('hide', revealed);
+    document.getElementById('revealBtn').textContent = revealed ? 'Скрыть ответ' : 'Показать ответ';
+    resizeIframe();
+  }
+
+  function spin() {
+    if (busy) return;
+    busy = true;
+    const btn = document.getElementById('spinBtn');
+    btn.classList.add('busy');
+
+    card.classList.add('out');
+
+    setTimeout(() => {
+      idx = (idx + 1) % CARDS.length;
+      fillCard();
+      card.classList.remove('out');
+      card.classList.add('pre');
+      void card.offsetWidth;
+      card.classList.remove('pre');
+
+      setTimeout(() => {
+        busy = false;
+        btn.classList.remove('busy');
+        resizeIframe();
+      }, 260);
+    }, 250);
+  }
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
+  }
+
+  window.addEventListener('load', () => {
+    fillCard();
+    resizeIframe();
+    setTimeout(resizeIframe, 250);
+  });
+
+  if ('ResizeObserver' in window) {
+    const container = document.querySelector('.container');
+    if (container) {
+      let t;
+      new ResizeObserver(() => {
+        clearTimeout(t);
+        t = setTimeout(resizeIframe, 50);
+      }).observe(container);
+    }
+  }
+</script>
+
+</body>
+</html>
