@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
+<title>Цель и рабочий критерий</title>
+<style>
+  :root {
+    --primary: #1e293b;
+    --muted: #64748b;
+    --bg: #ffffff;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { overflow: hidden; margin: 0; padding: 0; }
+
+  body {
+    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--primary);
+    background: var(--bg);
+    padding: 14px 12px;
+  }
+
+  .container { max-width: 650px; margin: 0 auto; }
+
+  .cards {
+    display: flex;
+    gap: 10px;
+    align-items: stretch;
+  }
+
+  .flip-card {
+    flex: 1;
+    min-height: 210px;
+    position: relative;
+    perspective: 1000px;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    -webkit-tap-highlight-color: transparent;
+  }
+
+  .flip-card:focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 4px;
+    border-radius: 12px;
+  }
+
+  .flip-inner {
+    position: absolute;
+    inset: 0;
+    transition: transform 0.5s ease;
+    transform-style: preserve-3d;
+  }
+
+  .flip-card.flipped .flip-inner { transform: rotateY(180deg); }
+
+  .face {
+    position: absolute;
+    inset: 0;
+    backface-visibility: hidden;
+    -webkit-backface-visibility: hidden;
+    border-radius: 12px;
+    padding: 18px 16px 24px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+  }
+
+  .face-front {
+    background: var(--tint);
+    border: 1px solid var(--tint-bd);
+  }
+
+  .face-front::after {
+    content: 'нажмите, чтобы перевернуть';
+    position: absolute;
+    bottom: 8px;
+    left: 16px;
+    font-size: 10px;
+    font-style: italic;
+    color: var(--muted);
+  }
+
+  .face-back {
+    transform: rotateY(180deg);
+    background: #fff;
+    border: 1px solid var(--tint-bd);
+    box-shadow: 0 2px 10px rgba(30,41,59,.06);
+  }
+
+  .card-goal { --tint: #eff6ff; --tint-bd: #bfdbfe; }
+  .card-crit { --tint: #f0fdf4; --tint-bd: #bbf7d0; }
+
+  .quote {
+    font-size: 14px;
+    font-weight: 600;
+    line-height: 1.5;
+    color: var(--primary);
+    margin: 0;
+  }
+
+  .back-text {
+    font-size: 12.5px;
+    line-height: 1.55;
+    color: var(--primary);
+    margin: 0;
+  }
+
+  @media (max-width: 560px) {
+    body { padding: 10px 8px; }
+    .cards { flex-direction: column; }
+    .flip-card { min-height: 190px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="cards">
+
+    <button class="flip-card card-goal" aria-label="Карточка: экологическая цель. Нажмите, чтобы перевернуть">
+      <div class="flip-inner">
+        <div class="face face-front">
+          <p class="quote">«Снизить объем отходов, отправляемых на захоронение, на 15% к концу года».</p>
+        </div>
+        <div class="face face-back">
+          <p class="back-text">Это измеримая цель СЭМ. Она задает результат на год, но не подсказывает работнику в цехе, как именно сортировать отходы в текущую смену.</p>
+        </div>
+      </div>
+    </button>
+
+    <button class="flip-card card-crit" aria-label="Карточка: рабочий критерий. Нажмите, чтобы перевернуть">
+      <div class="flip-inner">
+        <div class="face face-front">
+          <p class="quote">«При обслуживании конвейера раскроя: замасленную ветошь складывать только в красный закрытый контейнер; заполнение – не более 80% от объема».</p>
+        </div>
+        <div class="face face-back">
+          <p class="back-text">Это рабочий критерий. Работник видит четкое правило сортировки, мастер проверяет тару при обходе и вовремя подает заявку на вывоз, а вы контролируете выполнение цели без штрафов и переполнения площадки.</p>
+        </div>
+      </div>
+    </button>
+
+  </div>
+</div>
+
+<script>
+  document.querySelectorAll('.flip-card').forEach(card => {
+    card.addEventListener('click', () => {
+      card.classList.toggle('flipped');
+      resizeIframe();
+    });
+  });
+
+  function resizeIframe() {
+    if (window.parentIFrame && typeof window.parentIFrame.size === 'function') {
+      window.parentIFrame.size();
+    }
+  }
+
+  window.addEventListener('load', () => {
+    resizeIframe();
+    setTimeout(resizeIframe, 250);
+  });
+
+  if ('ResizeObserver' in window) {
+    const container = document.querySelector('.container');
+    if (container) {
+      let t;
+      new ResizeObserver(() => {
+        clearTimeout(t);
+        t = setTimeout(resizeIframe, 50);
+      }).observe(container);
+    }
+  }
+</script>
+
+</body>
+</html>
