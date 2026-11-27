@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/iframe-resizer/4.3.6/iframeResizer.contentWindow.min.js"></script>
-<title>Барабан вопросов аудитора</title>
+<title>Тренажер: найдите слабое место в договоре</title>
 <style>
   :root {
     --primary: #1e293b;
@@ -14,12 +14,13 @@
     --gray: #f8fafc;
     --accent: #2563eb;
     --accent-d: #1d4ed8;
-    --accent-bg: #eff6ff;
-    --accent-bd: #bfdbfe;
     --ok: #166534;
     --ok-bg: #f0fdf4;
     --ok-bd: #bbf7d0;
-    --r: 12px;
+    --bad: #991b1b;
+    --bad-bg: #fef2f2;
+    --bad-bd: #fecaca;
+    --r: 10px;
   }
 
   * { box-sizing: border-box; }
@@ -36,119 +37,132 @@
 
   .container { max-width: 650px; margin: 0 auto; }
 
-  .top-line {
+  .task-head {
     display: flex;
-    justify-content: space-between;
     align-items: center;
-    margin-bottom: 10px;
     gap: 8px;
+    margin-bottom: 6px;
   }
 
-  .counter {
-    font-size: 12px;
+  .task-chip {
+    font-size: 10px;
     font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: #fff;
+    background: var(--accent);
+    border-radius: 999px;
+    padding: 2px 10px;
+    flex-shrink: 0;
+  }
+
+  .task-title {
+    font-size: 15px;
+    font-weight: 700;
+  }
+
+  .task-text {
+    font-size: 13px;
     color: var(--muted);
+    margin: 0 0 12px 0;
+    line-height: 1.5;
   }
 
-  .dots { display: flex; gap: 5px; }
+  .options { display: flex; flex-direction: column; gap: 8px; }
 
-  .dot {
-    width: 8px;
-    height: 8px;
-    border-radius: 50%;
-    background: var(--border);
-    transition: all 0.25s ease;
-  }
-
-  .dot.on { background: var(--accent); transform: scale(1.25); }
-
-  /* Барабан */
-  .drum { perspective: 900px; }
-
-  .drum-card {
+  .option {
+    display: flex;
+    gap: 10px;
+    align-items: flex-start;
+    width: 100%;
+    text-align: left;
     border: 1px solid var(--border);
     border-radius: var(--r);
     background: #fff;
-    padding: 16px;
-    min-height: 150px;
+    padding: 11px 12px;
     cursor: pointer;
-    transition: transform 0.24s ease, opacity 0.24s ease, box-shadow 0.2s ease;
-    transform-origin: 50% 50%;
-    box-shadow: 0 2px 10px rgba(30,41,59,.06);
+    font-family: inherit;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--primary);
+    transition: all 0.15s ease;
   }
 
-  .drum-card:hover { box-shadow: 0 4px 14px rgba(30,41,59,.1); }
+  .option:hover:not(:disabled) {
+    border-color: var(--accent);
+    background: var(--gray);
+    transform: translateY(-1px);
+  }
 
-  .drum-card.out { transform: rotateX(-90deg); opacity: 0; }
-  .drum-card.pre { transform: rotateX(90deg); opacity: 0; transition: none; }
+  .option:disabled { cursor: default; }
 
-  .role-chip {
-    display: inline-block;
-    background: var(--accent-bg);
-    border: 1px solid var(--accent-bd);
-    color: var(--accent-d);
+  .option-num {
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--gray);
+    border: 1px solid var(--border);
+    color: var(--muted);
     font-size: 11px;
     font-weight: 700;
-    padding: 2px 10px;
-    border-radius: 999px;
-    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin-top: 1px;
+    transition: all 0.15s ease;
   }
 
-  .question {
-    font-size: 14.5px;
-    font-weight: 700;
-    line-height: 1.5;
-    margin: 0;
+  .option.wrong {
+    border-color: var(--bad-bd);
+    background: var(--bad-bg);
+    color: var(--bad);
+    opacity: 0.75;
   }
 
-  .answer {
-    max-height: 0;
-    overflow: hidden;
-    transition: max-height 0.3s ease, margin-top 0.3s ease;
-  }
+  .option.wrong .option-num { background: var(--bad); border-color: var(--bad); color: #fff; }
+  .option.wrong .option-num::after { content: '✕'; font-size: 10px; }
+  .option.wrong .option-num span { display: none; }
 
-  .answer.show { max-height: 240px; margin-top: 12px; }
-
-  .answer-inner {
-    border-left: 3px solid var(--ok);
+  .option.correct {
+    border-color: var(--ok-bd);
     background: var(--ok-bg);
-    border-radius: 0 8px 8px 0;
+    color: var(--ok);
+  }
+
+  .option.correct .option-num { background: var(--ok); border-color: var(--ok); color: #fff; }
+  .option.correct .option-num::after { content: '✓'; font-size: 11px; }
+  .option.correct .option-num span { display: none; }
+
+  .feedback {
+    display: none;
+    border-radius: var(--r);
     padding: 10px 12px;
     font-size: 12.5px;
     line-height: 1.55;
+    margin-top: 10px;
   }
 
-  .ans-line { margin: 0 0 6px 0; }
-  .ans-line strong { color: var(--ok); }
+  .feedback.show { display: block; animation: drop 0.2s ease; }
 
-  .proof-line { margin: 0; color: var(--muted); }
-  .proof-line strong { color: var(--primary); font-weight: 600; }
-
-  .tap-hint {
-    margin-top: 8px;
-    font-size: 10.5px;
-    font-style: italic;
-    color: var(--muted);
-    text-align: right;
-    transition: opacity 0.2s ease;
+  @keyframes drop {
+    from { opacity: 0; transform: translateY(-4px); }
+    to { opacity: 1; transform: none; }
   }
 
-  .tap-hint.hide { opacity: 0; }
+  .feedback.ok { background: var(--ok-bg); border: 1px solid var(--ok-bd); color: var(--ok); }
+  .feedback.bad { background: var(--bad-bg); border: 1px solid var(--bad-bd); color: var(--bad); }
+  .feedback strong { font-weight: 700; }
 
-  /* Управление */
-  .controls {
+  .actions {
     display: flex;
-    gap: 8px;
     justify-content: center;
     margin-top: 12px;
-    flex-wrap: wrap;
+    min-height: 38px;
   }
 
   .btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 7px;
-    padding: 9px 16px;
+    padding: 9px 18px;
     border-radius: var(--r);
     font-size: 13px;
     font-weight: 600;
@@ -163,18 +177,9 @@
   .btn:hover { background: var(--gray); border-color: var(--muted); }
   .btn:focus-visible { outline: 2px solid var(--accent-d); outline-offset: 2px; }
 
-  .btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
-  .btn-primary:hover { background: var(--accent-d); border-color: var(--accent-d); }
-
-  .btn svg { width: 15px; height: 15px; flex-shrink: 0; }
-
-  .btn-primary.spin svg { transition: transform 0.4s ease; }
-  .btn-primary.spin.busy svg { transform: rotate(360deg); }
-
   @media (max-width: 560px) {
     body { padding: 10px 8px; }
-    .controls { flex-direction: column; }
-    .btn { width: 100%; justify-content: center; }
+    .option { font-size: 12.5px; }
   }
 </style>
 </head>
@@ -182,121 +187,96 @@
 
 <div class="container">
 
-  <div class="top-line">
-    <span class="counter" id="counter">Вопрос 1 из 3</span>
-    <div class="dots" id="dots"></div>
+  <div class="task-head">
+    <span class="task-chip"></span>
+    <span class="task-title">Найдите слабое место в договоре</span>
   </div>
 
-  <div class="drum">
-    <div class="drum-card" id="drumCard" onclick="toggleReveal()" role="button" tabindex="0"
-         onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();toggleReveal();}">
-      <span class="role-chip" id="roleChip"></span>
-      <p class="question" id="questionText"></p>
-      <div class="answer" id="answerBox">
-        <div class="answer-inner">
-          <p class="ans-line"><strong>Правильный ответ.</strong> <span id="answerText"></span></p>
-          <p class="proof-line"><strong>Подтверждение.</strong> <span id="proofText"></span></p>
-        </div>
-      </div>
-      <div class="tap-hint" id="tapHint">нажмите на карточку, чтобы увидеть ответ</div>
-    </div>
-  </div>
+  <p class="task-text">Перед вами три формулировки для договора с подрядчиком по вывозу отходов. Выберите ту, которая реально защитит завод при проверке.</p>
 
-  <div class="controls">
-    <button class="btn" id="revealBtn" onclick="toggleReveal()">Показать ответ</button>
-    <button class="btn btn-primary spin" id="spinBtn" onclick="spin()">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="23 4 23 10 17 10"/>
-        <path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/>
-      </svg>
-      Крутить барабан
-    </button>
+  <div class="options" id="options"></div>
+
+  <div class="feedback" id="feedback"></div>
+
+  <div class="actions">
+    <button class="btn" id="retryBtn" style="display:none" onclick="resetTask()">Пройти заново</button>
   </div>
 
 </div>
 
 <script>
-  const CARDS = [
+  const OPTIONS = [
     {
-      role: 'У оператора печи',
-      q: '«По какому параметру вы понимаете, что горелка работает в экологичном режиме?»',
-      a: '«По давлению газа и температуре в зоне варки, они указаны в технологической карте».',
-      proof: 'Технологическая карта с рабочими критериями и журнал снятия показаний.'
+      text: '«Подрядчик обязуется соблюдать все требования природоохранного законодательства при транспортировке отходов».',
+      ok: false,
+      fb: 'Общая фраза. Если подрядчик рассыпет отходы, завод будет ссылаться на этот пункт, но доказать вину подрядчика и избежать штрафа будет сложно: в формулировке нет конкретных действий.'
     },
     {
-      role: 'У мастера смены',
-      q: '«Что вы делаете, если датчик температуры показывает отклонение от нормы?»',
-      a: '«Снижаю нагрузку на печь и сразу сообщаю экологу и главному механику».',
-      proof: 'Инструкция по действиям при отклонениях и журнал регистрации сбоев.'
+      text: '«Подрядчик обязуется использовать герметичные кузова, не допускать просыпания отходов на территории завода и за ее пределами, а также предоставлять акты передачи отходов в течение 3 дней».',
+      ok: true,
+      fb: 'Конкретные действия, привязанные к значимому аспекту – потери при транспортировке – и к обязательству по учету отходов. Такую формулировку можно проверить и потребовать исполнить.'
     },
     {
-      role: 'У начальника склада',
-      q: '«Как вы проверяете герметичность тары при передаче отходов подрядчику?»',
-      a: '«Визуальный осмотр перед погрузкой, если есть подтеки – не принимаем к отгрузке».',
-      proof: 'Чек-лист осмотра тары и журнал передачи отходов.'
+      text: '«Подрядчик обязуется сортировать отходы на своем полигоне в соответствии с внутренними правилами».',
+      ok: false,
+      fb: 'Вы не можете контролировать, что подрядчик делает на своем полигоне. Требование должно касаться того, что происходит на вашей территории и в момент передачи отходов.'
     }
   ];
 
-  let idx = 0;
-  let revealed = false;
-  let busy = false;
+  let order = [];
+  let solved = false;
 
-  const card = document.getElementById('drumCard');
-  const dotsWrap = document.getElementById('dots');
+  function shuffle(arr) {
+    const a = arr.slice();
+    for (let i = a.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [a[i], a[j]] = [a[j], a[i]];
+    }
+    return a;
+  }
 
-  function buildDots() {
-    dotsWrap.innerHTML = '';
-    CARDS.forEach((_, i) => {
-      const d = document.createElement('span');
-      d.className = 'dot' + (i === idx ? ' on' : '');
-      dotsWrap.appendChild(d);
+  function render() {
+    const wrap = document.getElementById('options');
+    wrap.innerHTML = '';
+    order.forEach((optIdx, pos) => {
+      const b = document.createElement('button');
+      b.className = 'option';
+      b.dataset.idx = optIdx;
+      b.innerHTML = `<span class="option-num"><span>${pos + 1}</span></span><span>${OPTIONS[optIdx].text}</span>`;
+      b.onclick = () => pick(b, optIdx);
+      wrap.appendChild(b);
     });
   }
 
-  function fillCard() {
-    const c = CARDS[idx];
-    document.getElementById('roleChip').textContent = c.role;
-    document.getElementById('questionText').textContent = c.q;
-    document.getElementById('answerText').textContent = c.a;
-    document.getElementById('proofText').textContent = c.proof;
-    document.getElementById('counter').textContent = `Вопрос ${idx + 1} из ${CARDS.length}`;
-    revealed = false;
-    document.getElementById('answerBox').classList.remove('show');
-    document.getElementById('tapHint').classList.remove('hide');
-    document.getElementById('revealBtn').textContent = 'Показать ответ';
-    buildDots();
-  }
+  function pick(btn, optIdx) {
+    if (solved) return;
+    const data = OPTIONS[optIdx];
+    const fb = document.getElementById('feedback');
 
-  function toggleReveal() {
-    revealed = !revealed;
-    document.getElementById('answerBox').classList.toggle('show', revealed);
-    document.getElementById('tapHint').classList.toggle('hide', revealed);
-    document.getElementById('revealBtn').textContent = revealed ? 'Скрыть ответ' : 'Показать ответ';
+    if (data.ok) {
+      solved = true;
+      btn.classList.add('correct');
+      document.querySelectorAll('.option').forEach(o => o.disabled = true);
+      fb.className = 'feedback ok show';
+      fb.innerHTML = '<strong>Верно.</strong> ' + data.fb;
+      document.getElementById('retryBtn').style.display = 'inline-block';
+    } else {
+      btn.classList.add('wrong');
+      btn.disabled = true;
+      fb.className = 'feedback bad show';
+      fb.innerHTML = '<strong>Ошибка.</strong> ' + data.fb + ' Выберите другую формулировку.';
+    }
     resizeIframe();
   }
 
-  function spin() {
-    if (busy) return;
-    busy = true;
-    const btn = document.getElementById('spinBtn');
-    btn.classList.add('busy');
-
-    card.classList.add('out');
-
-    setTimeout(() => {
-      idx = (idx + 1) % CARDS.length;
-      fillCard();
-      card.classList.remove('out');
-      card.classList.add('pre');
-      void card.offsetWidth;
-      card.classList.remove('pre');
-
-      setTimeout(() => {
-        busy = false;
-        btn.classList.remove('busy');
-        resizeIframe();
-      }, 260);
-    }, 250);
+  function resetTask() {
+    solved = false;
+    order = shuffle([0, 1, 2]);
+    document.getElementById('feedback').className = 'feedback';
+    document.getElementById('feedback').innerHTML = '';
+    document.getElementById('retryBtn').style.display = 'none';
+    render();
+    resizeIframe();
   }
 
   function resizeIframe() {
@@ -306,9 +286,10 @@
   }
 
   window.addEventListener('load', () => {
-    fillCard();
+    order = shuffle([0, 1, 2]);
+    render();
     resizeIframe();
-    setTimeout(resizeIframe, 250);
+    setTimeout(resizeIframe, 200);
   });
 
   if ('ResizeObserver' in window) {
